@@ -171,7 +171,7 @@ static const hy_patch_t HY_FACTORY[] = {
      .mod = {HMOD(LFO2, NONE, CUT1, 20), HMOD(LFO3, NONE, FBAL, 40), HMOD(LFO3, NONE, SH3, 30), HMOD(M1, NONE, CUT, 40)},
      .bend = 2, .level = 100, .name = "DRONE"},
     /* 19 808 sub: a sine with a little feedback, a pitch that falls into place */
-    {.osc = {HOSC(SINE, -12, 0, 127, 10, HOF_RESET), HNOOSC, HNOOSC},
+    {.osc = {HOSC(SINE, 0, 0, 127, 10, HOF_RESET), HNOOSC, HNOOSC},
      .drift = 0, .drive = 30, .route = HR_SER,
      .flt = {HFLT(OFF, 0, 0, 0, 0, 0), HFLT(OFF, 0, 0, 0, 0, 0)},
      .env2 = {0, 0, 127, 0}, .env3 = {0, 60, 0, 40},
