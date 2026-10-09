@@ -30,7 +30,16 @@ CC="${CC:-cc} -O1 -Wall -Wno-unused-function"
 fail=0
 run() { echo "== $1"; shift; "$@" || fail=1; }
 
-[ -f build/felucca.fwsc ] || { echo "run ./build.sh first"; exit 1; }
+# HOST_ONLY=1: without the JieLi toolchain (no build/felucca.fwsc): the generated headers are made here and the
+# tests that need the built package (update entry, update loader, target cost of the render loops) are skipped
+if [ -n "$HOST_ONLY" ]; then
+    mkdir -p build/gen
+    for g in font:felucca_font icons:felucca_icons samples:felucca_samples drumkits:felucca_drumkits logo:sloop_logo; do
+        [ -f "build/gen/${g#*:}.h" ] || python3 "tools/gen_${g%%:*}.py" "build/gen/${g#*:}.h" >/dev/null
+    done
+else
+    [ -f build/felucca.fwsc ] || { echo "run ./build.sh first (or HOST_ONLY=1)"; exit 1; }
+fi
 # the generated headers the FM6 engine needs (tools/build.py generate() makes them too; no Pillow needed)
 mkdir -p build/gen
 [ build/gen/felucca_tables.h -nt tools/gen_tables.py ] || python3 tools/gen_tables.py build/gen/felucca_tables.h
@@ -106,6 +115,7 @@ run "USB SERIAL OFF: the descriptors of a build without CDC, byte for byte" \
 uac_in_app() { ${CC%% *} -E -Ibuild/gen -Ifirmware/hal -Ifirmware/src firmware/src/felucca.c 2>/dev/null | grep -q uac_service; }
 run "USB audio input: built into the firmware (FELUCCA_UAC set before usb.c)" uac_in_app
 
+if [ -z "$HOST_ONLY" ]; then
 $CC -o "$OUT/ota_test" tests/ota_test.c
 run "M-UPGRADE entry" "$OUT/ota_test" build/felucca.fwsc
 
@@ -113,6 +123,9 @@ head -c 200000 build/felucca.bin > "$OUT/old_app.bin"
 python3 tools/fm1pkg_make.py "$OUT/old_app.bin" build/loader/ota.bin "$OUT/old.fwsc" >/dev/null
 $CC -o "$OUT/ldr_test" tests/ldr_test.c
 run "update loader: other app -> this build" "$OUT/ldr_test" "$OUT/old.fwsc" build/felucca.fwsc
+else
+    echo "== skip update entry and loader (HOST_ONLY: no build/felucca.fwsc)"
+fi
 
 $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/hostsim" tests/hostsim.c -lm
 $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/scale_test" tests/scale_test.c -lm
@@ -128,6 +141,9 @@ run "SLICER: no clicks, timing, sync with the sequencer, STUT, cost, demos" "$OU
 $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/fm6_test" tests/fm6_test.c -lm
 mkdir -p build/fm6_demo
 run "FM6: algorithms, envelopes, retrigger, DC, clipping, macros, patch formats, voices, the bank, demos" "$OUT/fm6_test" build/fm6_demo
+$CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/hybrid_test" tests/hybrid_test.c -lm
+mkdir -p build/hybrid_demo
+run "HYBRID (Clipper): oscillators, filters, matrix, controllers, patches, cost, demos" "$OUT/hybrid_test" build/hybrid_demo
 $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/regress" tests/regress.c -lm
 # the CPU budget: counted by the kernel on macOS; elsewhere under callgrind when valgrind is there (exact, ~45 s;
 # SKIP_CPU_VALGRIND=1 to time instead, which is only a rough check)
@@ -135,8 +151,10 @@ if [ -z "$SKIP_CPU_VALGRIND" ] && command -v valgrind >/dev/null 2>&1; then expo
 run "regression: golden renders, health, voices, CPU budget" "$OUT/regress" tests/golden.txt tests/cpu_baseline.txt
 # SLICE (tests/slice_test.c) needs a FELUCCA_SLICE=1 build; the engine is not built by default
 
+if [ -z "$HOST_ONLY" ]; then
 run "regression: target cost of the render loops" python3 tests/target_budget.py \
     build/felucca.dis tests/target_budget.txt
+fi
 
 run "installer CLI (fm1_install.py) against a simulated FM-1" python3 tests/install_test.py
 

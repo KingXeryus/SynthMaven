@@ -2028,11 +2028,60 @@ static const uint8_t MIDI_CC_MAP[][2] = {
     {5, P_GLIDE}, {7, P_LEVEL}, {10, P_PAN}, {71, MCC_RES}, {72, P_REL}, {73, P_ATK}, {74, P_TFLT}, {75, P_DEC},
     {91, P_REV}, {93, P_CHOR}, {94, P_DLY},
 };
+/* Clipper: the performance controllers of a part (eng_hybrid.c part_ctl: the matrix's MW, AT, BEND, EXPR):
+ * pitch bend (En, every engine: voice.c), channel and polyphonic pressure (Dn, An), and the CCs 1 (mod
+ * wheel), 11 (expression), 64 (sustain pedal), 16..19 (HYBRID: the macros M1..M4) */
+static void part_ctl_event(track_t *t, uint32_t st, uint32_t d1, uint32_t d2)
+{
+    uint32_t p = (uint32_t)(t - trk), i;
+    part_ctl_t *c;
+    if (p >= NPART)
+        return;
+    c = &part_ctl[p];
+    if (st == 0xE0u) {
+        c->bend = (int16_t)((((int32_t)d2 << 7 | (int32_t)d1) - 8192) * 4);
+    } else if (st == 0xD0u) {
+        c->at = (uint8_t)(d1 & 127u);
+    } else if (st == 0xA0u) {
+        for (i = 0; i < NVOICE; i++)
+            if (t->v[i].active && t->v[i].gate && t->v[i].note == d1)
+                t->v[i].pat = (uint8_t)(d2 & 127u);
+    }
+}
+static int part_ctl_cc(track_t *t, uint32_t cc, uint32_t value)   /* 1: taken */
+{
+    uint32_t p = (uint32_t)(t - trk);
+    part_ctl_t *c;
+    if (p >= NPART)
+        return 0;
+    c = &part_ctl[p];
+    switch (cc) {
+    case 1: c->mw = (uint8_t)value; return 1;
+    case 11: c->expr = (uint8_t)value; return 1;
+    case 64:
+        if (value >= 64u) {
+            c->sus = 1;
+        } else if (c->sus) {
+            c->sus = 0;
+            trk_sustain_up(t);
+        }
+        return 1;
+    case 16: case 17: case 18: case 19:
+        if (t->eng_req == ENGI_HYBRID)
+            t->p[P_E4 + cc - 16u] = (int16_t)value;
+        return 1;
+    default:
+        return 0;
+    }
+}
+
 static void __attribute__((noinline)) midi_cc(track_t *t, uint32_t cc, uint32_t value)
 {
     const param_desc_t *d = 0;
     int16_t *slot = 0;
     uint32_t i, id = 0xFFFFu;
+    if (part_ctl_cc(t, cc, value))
+        return;
     for (i = 0; i < NELEM(MIDI_CC_MAP); i++)
         if (MIDI_CC_MAP[i][0] == cc)
             id = MIDI_CC_MAP[i][1];
@@ -2271,6 +2320,11 @@ static void events_block(uint32_t n)
         if (st == 0xB0u) {                            /* a CC (IN = CLOCK: none) */
             if (!song.g[G_ROUTE])
                 midi_cc(midi_track(ch), d1, d2);
+            continue;
+        }
+        if (st == 0xE0u || st == 0xD0u || st == 0xA0u) {   /* Clipper: bend, pressure (IN = CLOCK: none) */
+            if (!song.g[G_ROUTE])
+                part_ctl_event(midi_track(ch), st, d1, d2);
             continue;
         }
         if (st != 0x90u && st != 0x80u)

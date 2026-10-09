@@ -20,11 +20,12 @@ enum { V_POLY, V_MONO, V_LEGATO, V_UNISON };   /* P_VOICE */
 /* SLOOP 2.4: FM6 (eng_fm6.c) is engine 9 in every build; SLICE, when built, comes last (10). Projects and user
  * presets store the engine index as a byte, and no shipped SLOOP was built with SLICE, so its number is stored
  * nowhere: FM6 may take 9 and SLICE moves up (engines.c ENGINES[], params.c N_ENGNAME follow this order) */
-#define NENGINES (12 + FELUCCA_SLICE)
+#define NENGINES (13 + FELUCCA_SLICE)
 #define ENGI_GRAIN 8u            /* GRAIN, PHYS, NOISE (SLOOP 2.5, appended after FM6: the stores keep the numbers) */
 #define ENGI_PHYS 10u
 #define ENGI_NOISE 11u
-#define ENGI_SLICE 12u           /* with FELUCCA_SLICE: after NOISE */
+#define ENGI_HYBRID 12u          /* Clipper: the HYBRID voice (eng_hybrid.c), after NOISE */
+#define ENGI_SLICE 13u           /* with FELUCCA_SLICE: after HYBRID */
 #define ENGI_FM6 9u              /* the FM6 engine's index (eng_fm6.c, the stores: append-only) */
 #define UP_SLOTS 32u             /* user presets (upreset.c) */
 #define NELEM(a) (sizeof(a) / sizeof((a)[0]))
@@ -97,6 +98,8 @@ typedef struct {
     int32_t pitch16, pitch_cur;  /* 1/16 semitone, with glide */
     int32_t gstep;               /* glide: 1/4096 semitone per control tick, 0 = RATE (GLIDE: the time an octave takes) */
     int32_t fine;                /* unison detune: phase increment * (1 + fine / 4096) */
+    uint8_t pat;                 /* Clipper: polyphonic aftertouch of the note, 0..127 (MIDI An) */
+    uint8_t sus;                 /* Clipper: released while the sustain pedal is down: held until it comes up */
     uint32_t ph[3];
     int32_t s[8];                /* engine state (filters, envs) */
     uint32_t age;

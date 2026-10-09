@@ -267,6 +267,8 @@ static void voice_start(track_t *t, voice_t *v, uint32_t note, uint32_t vel, int
     v->note = (uint8_t)note;
     v->vel = (uint8_t)vel;
     v->gate = 1;
+    v->sus = 0;
+    v->pat = 0;
     v->active = 1;
     v->stage = 1;
     v->age = ++vage;
@@ -475,8 +477,27 @@ static void trk_note_off(track_t *t, uint32_t note)
     for (i = 0; i < NVOICE; i++)                        /* POLY voices (also ones left from another mode: */
         if (t->v[i].note == note && t->v[i].gate &&     /* VOICE changed while they were held) */
             (mode == V_POLY || i >= (mode == V_UNISON ? trk_nvoice(t) : 1u) || t->mono_note != note)) {
+            if (mode == V_POLY && part_ctl[(uint32_t)(t - trk) % NPART].sus) {
+                t->v[i].sus = 1;                        /* Clipper: the sustain pedal holds it */
+                continue;
+            }
             t->v[i].gate = 0;
             t->v[i].stage = 3;
+        }
+}
+
+/* Clipper: the sustain pedal comes up: the notes it held are released (a key still down keeps its note:
+ * pressed again, its voice started over and lost the mark) */
+static void trk_sustain_up(track_t *t)
+{
+    uint32_t i;
+    for (i = 0; i < NVOICE; i++)
+        if (t->v[i].sus) {
+            t->v[i].sus = 0;
+            if (t->v[i].gate) {
+                t->v[i].gate = 0;
+                t->v[i].stage = 3;
+            }
         }
 }
 
@@ -486,6 +507,7 @@ static void trk_all_off(track_t *t)
     strum_cancel(t, 0, 1);
     for (i = 0; i < NVOICE; i++) {
         t->v[i].gate = 0;
+        t->v[i].sus = 0;
         t->v[i].stage = t->v[i].active ? 3 : 0;
     }
     t->nmono = 0;
@@ -630,6 +652,9 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
     const int16_t *p = t->p;
     uint32_t i;
     int32_t lfo = mulq15(t->lfo_val, t->lfo_fade);
+    /* Clipper: the pitch bend (MIDI En), in 1/4096 semitone: the HYBRID patch's range, else +-2 semitones */
+    int32_t bend = (uint32_t)(t - trk) < NPART ?
+                   (part_ctl[t - trk].bend * (e == &ENG_HYBRID ? (int32_t)hy_cur[t - trk].bend : 2)) >> 3 : 0;
     /* TUNE in cents: whole 1/16 semitones in the pitch, the rest as a fine factor (no dead zone) */
     int32_t tune = song.g[G_TUNE] >= 0 ? song.g[G_TUNE] * 16 / 100 : -((-song.g[G_TUNE] * 16 + 99) / 100);
     int32_t tune_fine = (song.g[G_TUNE] * 16 - tune * 100) * 2367 / 16000;   /* rest, in 1/4096 (1 ct = 2.367) */
@@ -693,7 +718,7 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
             continue;                                   /* held at a silent sustain (SUS 0): nothing to render */
         {   /* the pitch in 1/4096 semitone: glide, LFO, the pitch envelope; the fraction goes into the increment */
             int32_t q = (v->pitch_cur << 8) + v->pitch_frac + ((lfo * p[P_LD_PIT] * 3) >> 7) +
-                        ((v->penv * p[P_ED_PIT] * 3) >> 7);
+                        ((v->penv * p[P_ED_PIT] * 3) >> 7) + bend;
             pitch = (q >> 8) + tune;
             m.pitch16 = clamp(pitch, 0, 2047);
             m.inc = pitch_inc(m.pitch16);
