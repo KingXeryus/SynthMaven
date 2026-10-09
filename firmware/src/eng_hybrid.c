@@ -145,6 +145,8 @@ static const char *const N_HY_DST[] = {"--", "PITCH", "P1", "P2", "P3", "SHP1", 
                                        "RING", "CUT", "CUT1", "CUT2", "RES1", "RES2", "DRIVE", "AMP", "LFO2", "LFO3", "FBAL"};
 _Static_assert(NELEM(N_HY_OSC) == HO_N && NELEM(N_HY_FLT) == HF_N && NELEM(N_HY_ROUTE) == HR_N, "names");
 _Static_assert(NELEM(N_HY_LFOW) == HW_N && NELEM(N_HY_SRC) == HS_N && NELEM(N_HY_DST) == HD_N, "names");
+/* 2^32 CTL 96 / (60 FS): a constant (folded by the compiler) */
+#define HY_SYNC_K ((uint32_t)(((uint64_t)CTL * 96u << 32) / (60u * (uint64_t)FS)))
 /* tempo-synced LFO rates: the period in 1/96 of a beat (1/32 .. 8 bars) */
 static const uint16_t HY_SYNC_DIV[] = {12, 16, 24, 32, 48, 64, 96, 128, 192, 288, 384, 576, 768, 1536, 3072};
 #define HY_NSYNC NELEM(HY_SYNC_DIV)
@@ -268,8 +270,9 @@ static int32_t hy_lfo(const hy_lfo_t *L, hy_voice_t *hv, uint32_t k, int32_t rat
     int32_t r = clamp((int32_t)L->rate + rate_mod, 0, 127), y;
     if (L->flags & HL_SYNC) {                        /* a period of HY_SYNC_DIV / 96 beats at the song tempo */
         uint32_t d = HY_SYNC_DIV[(uint32_t)r * HY_NSYNC / 128u];
-        /* 2^32 per period, CTL samples a tick: inc = 2^32 CTL BPM 96 / (60 FS d) */
-        inc = (uint32_t)(((uint64_t)CTL * 96u * (uint32_t)song.g[G_BPM] << 32) / ((uint64_t)60u * FS * d));
+        /* 2^32 per period, CTL samples a tick: inc = 2^32 CTL 96 BPM / (60 FS d) = HY_SYNC_K BPM / d, in 32 bits
+         * (HY_SYNC_K BPM < 1.2e9; the FM-1 has no 64-bit divide: no __udivdi3) */
+        inc = HY_SYNC_K * (uint32_t)song.g[G_BPM] / d;
     } else {
         inc = LFO_INC[r];
     }
@@ -406,8 +409,9 @@ static void hy_osc_run(const hy_osc_t *o, hy_voice_t *hv, uint32_t k, uint32_t i
         for (i = 0; i < n; i++) {
             uint32_t was = m1ph;
             m1ph += m1inc;
-            if (m1ph < was && m1inc)                 /* the master wrapped in this sample: restart, by the fraction */
-                ph = (uint32_t)(((uint64_t)m1ph * inc) / m1inc);
+            if (m1ph < was && m1inc >= 4096u)        /* the master wrapped in this sample: restart, by the fraction
+                                                      * (in 32 bits: the master's overshoot / its increment, Q12) */
+                ph = (inc >> 12) * (m1ph / (m1inc >> 12));
             y[i] = hy_saw(ph, inc);
             ph += inc;
         }
