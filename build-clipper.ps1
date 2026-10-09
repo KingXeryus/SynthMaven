@@ -17,6 +17,12 @@ if (-not (Test-Path "$sdk\cpu\wl82\tools\uboot.boot")) {
   Write-Host "== Copying the SDK files from $from" -ForegroundColor Cyan
   New-Item -ItemType Directory -Force -Path "build\deps" | Out-Null
   Copy-Item -Recurse -Force $from "build\deps\"
+  # the build caches too (as SLOOP's PREPARER does): the generated samples are not made again
+  $sloop = Split-Path (Split-Path (Split-Path $from))
+  foreach ($c in @("genwav", "hiphop-src")) {
+    if ((Test-Path "$sloop\build\$c") -and -not (Test-Path "build\$c")) { Copy-Item -Recurse "$sloop\build\$c" "build\" }
+  }
+  if ((Test-Path "$sloop\build\gen_samples.cache") -and -not (Test-Path "build\gen_samples.cache")) { Copy-Item "$sloop\build\gen_samples.cache" "build\" }
 }
 Write-Host "== Building the firmware (WSL MinUI-Build)" -ForegroundColor Cyan
 Remove-Item Env:FELUCCA_SLICE -ErrorAction SilentlyContinue
