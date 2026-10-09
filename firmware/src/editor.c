@@ -29,7 +29,8 @@ enum { ED_INFO = 1, ED_GET, ED_SET, ED_DUMP, ED_DESC, ED_STEP_GET, ED_STEP_SET, 
        ED_FILL_GET, ED_FILL_SET,                                                /* v8: fill conditions */
        ED_FM6_GET = 68, ED_FM6_PUT, ED_FM6_LIST, ED_FM6_ERASE };                /* v9: FM6 patches (Felucca's numbers) */
 /* v10 (SLOOP 2.5): DSYN_LIST .. DSYN_PLAY = 72..76, editor_dsyn.c; backup object 9 = the SYN kits */
-#define ED_PROTO 10u                                   /* the protocol version INFO ends with */
+/* v11 (Clipper): HY_GET, HY_PUT = 77, 78, editor_hybrid.c */
+#define ED_PROTO 11u                                   /* the protocol version INFO ends with */
 
 static uint8_t ed_out[600];
 static uint32_t ed_n;
@@ -604,6 +605,7 @@ static int ed_backup(uint32_t cmd, const uint8_t *a, uint32_t na)   /* no flash:
 
 #include "editor_fm6.c"                               /* v9: the FM6 patches (68..71) */
 #include "editor_dsyn.c"                              /* v10: the SYN drum kits (72..76) */
+#include "editor_hybrid.c"                            /* v11 (Clipper): the HYBRID patches (77, 78) */
 
 static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0 and F7 */
 {
@@ -625,6 +627,10 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         ed_send();
         return;
     }
+    if (ed_hy_handle(cmd, a, na)) {                        /* v11: the HYBRID patches */
+        ed_send();
+        return;
+    }
     switch (cmd) {
     case ED_INFO:
         ed_str("FELUCCA " FELUCCA_VERSION, 24);
@@ -636,7 +642,7 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         for (i = 0; i < NENGINES; i++)
             ed_str(ENGINES[i]->name, 8);
         ed_b(NTRK);                                       /* v3 */
-        ed_b(ED_PROTO);                                   /* v5..: the protocol version (9: FM6 patches, 10: SYN kits) */
+        ed_b(ED_PROTO);                                   /* v5..: the protocol version (9: FM6 patches, 10: SYN kits, 11: HYBRID) */
         break;
     case ED_GET:
     case ED_SET:

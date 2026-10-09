@@ -395,6 +395,17 @@
   .fm6ops td, .fm6ops th { padding: 1px 3px; }
   input.fm6n { width: 3.6em; padding: 2px 3px; }
   #fm6panel h3 { margin: 16px 0 6px; color: var(--dim); text-transform: uppercase; }
+  /* Clipper: the HYBRID panel */
+  #hypanel h3 { margin: 16px 0 6px; color: var(--dim); text-transform: uppercase; }
+  .hy { overflow-x: auto; }
+  .hy table { border-collapse: collapse; }
+  .hy td, .hy th { padding: 2px 6px; text-align: left; vertical-align: middle; white-space: nowrap; }
+  .hy th { color: var(--dim); font-weight: 400; }
+  .hy .rg { display: inline-flex; align-items: center; gap: 6px; }
+  .hy .rg input[type=range] { width: 96px; }
+  .hy .rg output { min-width: 5.2em; color: var(--fg); }
+  .hy tr.off td:not(:first-child) { opacity: .45; }
+  .hy .mx td:first-child { color: var(--dim); }
 
   /* ---- narrow screens: the side bar becomes a top bar ---- */
   @media (max-width: 860px) {
@@ -516,6 +527,20 @@
         <div id="fm6voice"></div>
         <h3 data-t="fm6Ops"></h3>
         <div id="fm6ops"></div>
+      </div>
+      <!-- Clipper: the HYBRID engine's patch (firmware protocol v11): only while the selected track plays HYBRID -->
+      <div class="card" id="hypanel" hidden>
+        <h2 data-t="hyTitle" data-ic="ui_knob"></h2>
+        <p class="dim" data-t="hyHelp"></p>
+        <p class="bar"><button id="hyread" data-t="hyReadBtn"></button> <button id="hysend" class="pri" data-t="hySendBtn"></button>
+          <label><input type="checkbox" id="hylive" checked> <span data-t="hyLive"></span></label>
+          <label><span data-t="hyFactory"></span> <select id="hyfact"></select></label> <button id="hyload" data-t="load"></button></p>
+        <p class="bar"><button id="hyinit" data-t="hyInit"></button>
+          <button id="hyexport" data-t="hyExport" data-ic="symbol_download"></button>
+          <button id="hyimport" data-t="hyImport" data-ic="symbol_upload"></button>
+          <input type="file" id="hyfile" accept=".json,application/json" hidden>
+          <label><span data-t="name"></span> <input type="text" id="hyname" maxlength="10" size="11"></label></p>
+        <div id="hybody"></div>
       </div>
     </section>
 
@@ -704,7 +729,8 @@ const CMD = { INFO: 1, GET: 2, SET: 3, DUMP: 4, DESC: 5, STEP_GET: 6, STEP_SET: 
   LOCK_GET: 37, LOCK_SET: 38, MICRO_GET: 39, MICRO_SET: 40,     /* v7 (SLOOP 2.4): parameter locks, nudges */
   FILL_GET: 41, FILL_SET: 42,                         /* v8 (SLOOP 2.4): the steps' fill conditions */
   FM6_GET: 68, FM6_PUT: 69, FM6_LIST: 70, FM6_ERASE: 71,    /* v9 (SLOOP 2.4): the FM6 engine's patches (Felucca 1.0's numbers) */
-  DSYN_LIST: 72, DSYN_GET: 73, DSYN_PUT: 74, DSYN_STORE: 75, DSYN_PLAY: 76 };   /* v10 (SLOOP 2.5): the SYN drum kits */
+  DSYN_LIST: 72, DSYN_GET: 73, DSYN_PUT: 74, DSYN_STORE: 75, DSYN_PLAY: 76,   /* v10 (SLOOP 2.5): the SYN drum kits */
+  HY_GET: 77, HY_PUT: 78 };                          /* v11 (Clipper): the HYBRID engine's patches */
 /* v7: the parameters a step can lock (firmware seq.c p_lockable: the sound, not the sequencer / arp / key / voice
    mode); ids as core.h: LEVEL .. LFO dests, GATE, the sends, GLIDE, PAN, DETUNE, the SLICER, the engine's 8 */
 const lockable = (id) => id <= 16 || id === 32 || (id >= 33 && id <= 36) || id === 38 || id === 39 || id === 44 || (id >= 45 && id <= 48) || id === 50 || (id >= 53 && id <= 60);
@@ -900,6 +926,9 @@ const parse = {
   /* v9 FM6 patches: target 0 a track (0..2), 1 a bank slot, 2 a factory patch; packed: the 128-byte record */
   [CMD.FM6_GET](a) { return { target: a[0], index: a[1], rc: a[2], packed: a[2] ? null : a.slice(3, 3 + 128) }; },
   [CMD.FM6_PUT](a) { return { target: a[0], index: a[1], rc: a[2] }; },
+  /* v11 (Clipper): a HYBRID patch, pack7 of its 128 bytes (HY.unpack) */
+  [CMD.HY_GET](a) { return { target: a[0], index: a[1], rc: a[2], bytes: a[2] ? null : unpack7(a.slice(3)).slice(0, 128) }; },
+  [CMD.HY_PUT](a) { return { target: a[0], index: a[1], rc: a[2] }; },
   [CMD.FM6_LIST](a) {
     const r = new Reader(a), o = { factory: r.b(), bank: r.b(), slots: [] };
     for (let i = 0; i < o.factory + o.bank; i++) { const used = r.b(); o.slots.push({ used, name: used ? r.s() : (r.b(), "") }); }
@@ -998,6 +1027,8 @@ const req = {
   /* v9: FM6 patches (firmware proto >= 9) */
   fm6Get: (target, i) => [CMD.FM6_GET, [target & 0x7F, i & 0x7F]],
   fm6Put: (target, i, packed) => [CMD.FM6_PUT, [target & 0x7F, i & 0x7F, ...Array.from(packed, (x) => x & 0x7F)]],
+  hyGet: (target, i) => [CMD.HY_GET, [target & 0x7F, i & 0x7F]],
+  hyPut: (part, bytes) => [CMD.HY_PUT, [0, part & 0x7F, ...pack7(bytes)]],
   fm6List: () => [CMD.FM6_LIST, []],
   fm6Erase: (i) => [CMD.FM6_ERASE, [i & 0x7F]],
   /* v10: the SYN drum kits (firmware proto >= 10). which: a factory kit 0.., or DSYN.USER + k */
@@ -1028,6 +1059,7 @@ function replyMatches(cmd, args, a) {
     case CMD.LOCK_SET: return a[0] === args[0] && a[1] === args[1] && a[2] === args[2];
     case CMD.MICRO_SET: case CMD.FILL_SET: return a[0] === args[0] && a[1] === args[1];
     case CMD.FM6_GET: case CMD.FM6_PUT: return a[0] === args[0] && a[1] === args[1];
+    case CMD.HY_GET: case CMD.HY_PUT: return a[0] === args[0] && a[1] === args[1];
     case CMD.FM6_ERASE: return a[0] === args[0];
     case CMD.DSYN_GET: return a[0] === args[0];
     case CMD.DSYN_PUT: case CMD.DSYN_PLAY: return a[0] === args[0] && a[1] === args[1];
@@ -2256,6 +2288,16 @@ function makeMockDevice(opt = {}) {
         P("BITCRUSH", [0, 40, 90, 40, 64, 0, 0, 100], [0, 70, 110, 40], 0),
         P("RADIO", [2, 20, 70, 90, 64, 0, 60, 48], [10, 70, 120, 50], 0)] },
   ];
+  if (opt.clipper) {                                /* Clipper: the HYBRID engine (eng_hybrid.c), INFO says protocol 11 */
+    ENG.push({ name: "HYBRID", titles: ["FILT", "MACRO"], edit: [D("CUT", F.BIPCT, -64, 63, 0), D("RES", F.BIPCT, -64, 63, 0),
+      D("FENV", F.BIPCT, -64, 63, 0), E("PTCH", HY.MOCK_NAMES, 0), D("M1", F.PCT, 0, 127, 0), D("M2", F.PCT, 0, 127, 0),
+      D("M3", F.PCT, 0, 127, 0), D("M4", F.PCT, 0, 127, 0)],
+      presets: HY.MOCK_NAMES.map((n, i) => P(n, [0, 0, 0, i, 64, 0, 0, 0], [2, 90, 110, 70], 0)) });
+    const ge = GP.find((d) => d.label === "ENG");
+    ge.names = [...ge.names, "HYBRID"];
+    ge.max = ge.names.length - 1;
+  }
+  const HY_E = ENG.findIndex((e) => e.name === "HYBRID");
   const FM6_E = ENG.findIndex((e) => e.name === "FM6"), FM6_BANK = 27, FM6_NPART = 3;
   const v9 = !opt.legacy && !opt.v3 && !opt.noBackup && !opt.v7 && !opt.v8;   /* SLOOP 2.4: FM6 patches */
   const v10 = v9 && !opt.v9;                         /* SLOOP 2.5: the SYN drum kits */
@@ -2462,7 +2504,7 @@ function makeMockDevice(opt = {}) {
         s(opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)"); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
         ENG.forEach((e) => s(e.name));
         if (!opt.legacy) b(NTRK);
-        if (v5) b(opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
+        if (v5) b(opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : opt.clipper ? 11 : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
         break;
       case CMD.GET: case CMD.SET: {
         if (a.length < 2) return null;
@@ -2732,6 +2774,28 @@ function makeMockDevice(opt = {}) {
           } catch (e) { rc = 2; }
         } else if (op === 3) { st.bkPut = null; rc = 0; }
         b(op); b(id); b(rc);
+        break;
+      }
+      case CMD.HY_GET: case CMD.HY_PUT: {           /* Clipper: editor_hybrid.c */
+        if (!opt.clipper) return null;
+        const pa = a[1], tr = pa < 3 ? st.tracks[pa] : null;
+        if (tr && (tr.hySlot !== tr.p[P_E0 + 3] || !tr.hy)) {   /* PTCH turned (or never read): the factory patch */
+          tr.hySlot = tr.p[P_E0 + 3];
+          tr.hy = HY.MOCK_FACTORY[Math.min(HY.MOCK_FACTORY.length - 1, tr.hySlot | 0)].slice();
+        }
+        if (cmd === CMD.HY_GET) {
+          let rc = a.length !== 2 ? 1 : 0, bytes = null;
+          if (!rc && a[0] === 0 && tr) bytes = tr.hy;
+          else if (!rc && a[0] === 1 && a[1] < HY.MOCK_FACTORY.length) bytes = HY.MOCK_FACTORY[a[1]];
+          else rc = 1;
+          b(a.length ? a[0] : 127); b(a.length > 1 ? a[1] : 127); b(rc);
+          if (!rc) pack7(bytes).forEach(b);
+        } else {
+          const got = a.length > 2 ? unpack7(a.slice(2)) : [];
+          const rc = a[0] !== 0 || !tr || got.length < HY.SIZE ? 1 : 0;
+          if (!rc) tr.hy = HY.pack(HY.unpack(got.slice(0, HY.SIZE)));
+          b(a.length ? a[0] : 127); b(a.length > 1 ? a[1] : 127); b(rc);
+        }
         break;
       }
       case CMD.FM6_GET: case CMD.FM6_PUT: case CMD.FM6_LIST: case CMD.FM6_ERASE: {   /* editor_fm6.c */
@@ -3298,6 +3362,117 @@ const ARR = {
    The tone (a wave with a falling pitch, a second partial), the click, the noise (white, the 808's six metallic
    squares, both, a chip LFSR; the clap's bursts), a resonant filter, drive and level. A kit: 16 of them and its
    crush (bits dropped in the low nibble, sample-and-hold - 1 in the high one). */
+/* Clipper: the HYBRID engine's patch (firmware v11, eng_hybrid.c hy_patch_t: 128 bytes, the signed ones as two's
+   complement). unpack: bytes -> an object to edit; pack: back, every value into its range (as hy_sanitize). */
+const HY = (() => {
+  const OSC = ["OFF", "SAW", "PULSE", "TRI", "SINE", "MORPH", "SUPER", "FM", "SYNC", "FOLD", "NOISE"];
+  const FLT = ["OFF", "LP12", "LP24", "BP", "HP", "NOTCH", "PEAK"];
+  const ROUTE = ["SER", "PAR", "SPLIT"];
+  const LFOW = ["SINE", "TRI", "SAW", "SQR", "S&H", "SMTH"];
+  const SRC = ["--", "ENV2", "ENV3", "AENV", "LFO1", "LFO2", "LFO3", "VEL", "KEY", "MW", "AT", "BEND", "EXPR", "RAND",
+    "M1", "M2", "M3", "M4", "ONE"];
+  const DST = ["--", "PITCH", "P1", "P2", "P3", "SHP1", "SHP2", "SHP3", "LVL1", "LVL2", "LVL3", "RING", "CUT", "CUT1",
+    "CUT2", "RES1", "RES2", "DRIVE", "AMP", "LFO2", "LFO3", "FBAL"];
+  /* what SHP does on each oscillator type (eng_hybrid.c) */
+  const SHAPE = ["", "", "width", "", "feedback", "sine-tri-saw-sqr", "detune", "FM index", "pitch over osc 1", "fold", "darkness"];
+  /* tempo-synced LFO rates (HY_SYNC_DIV: 0..127 in 15 steps) */
+  const SYNC = ["1/32", "1/16T", "1/16", "1/8T", "1/8", "1/4T", "1/4", "1/2T", "1/2", "1/2.", "1 bar", "1.5 bars", "2 bars", "4 bars", "8 bars"];
+  const SIZE = 128, NSLOT = 16, NFACTORY = 24;
+  const s8 = (x) => (x > 127 ? x - 256 : x);
+  const cl = (v, lo, hi) => Math.max(lo, Math.min(hi, Math.round(+v || 0)));
+  function unpack(b) {
+    const o = { osc: [], flt: [], lfo: [], mod: [] };
+    for (let k = 0; k < 3; k++) {
+      const i = k * 6;
+      o.osc.push({ type: b[i], coarse: s8(b[i + 1]), fine: s8(b[i + 2]), level: b[i + 3], shape: b[i + 4],
+        reset: !!(b[i + 5] & 1), fixed: !!(b[i + 5] & 2) });
+    }
+    [o.ring, o.drift, o.drive, o.route, o.fbal] = [b[18], b[19], b[20], b[21], b[22]];
+    for (let k = 0; k < 2; k++) {
+      const i = 23 + k * 6;
+      o.flt.push({ type: b[i], cut: b[i + 1], res: b[i + 2], env: s8(b[i + 3]), key: s8(b[i + 4]), vel: b[i + 5] });
+    }
+    o.env2 = Array.from(b.slice(35, 39));
+    o.env3 = Array.from(b.slice(39, 43));
+    for (let k = 0; k < 2; k++) {
+      const i = 43 + k * 4;
+      o.lfo.push({ wave: b[i], rate: b[i + 1], key: !!(b[i + 2] & 1), sync: !!(b[i + 2] & 2), fade: b[i + 3] });
+    }
+    for (let k = 0; k < NSLOT; k++) {
+      const i = 51 + k * 4;
+      o.mod.push({ src: b[i], via: b[i + 1], dst: b[i + 2], amt: s8(b[i + 3]) });
+    }
+    o.bend = b[115];
+    o.level = b[116];
+    o.name = String.fromCharCode(...Array.from(b.slice(118, 128)).filter((c) => c >= 32 && c <= 126)).trimEnd();
+    return sanitize(o);
+  }
+  function sanitize(o) {
+    const n = { osc: [], flt: [], lfo: [], mod: [] };
+    for (let k = 0; k < 3; k++) {
+      const x = (o.osc && o.osc[k]) || {};
+      n.osc.push({ type: x.type < OSC.length ? cl(x.type, 0, OSC.length - 1) : 0, coarse: cl(x.coarse, -48, 48), fine: cl(x.fine, -64, 63),
+        level: cl(x.level, 0, 127), shape: cl(x.shape, 0, 127), reset: !!x.reset, fixed: !!x.fixed });
+    }
+    n.ring = cl(o.ring, 0, 127); n.drift = cl(o.drift, 0, 127); n.drive = cl(o.drive, 0, 127);
+    n.route = o.route < ROUTE.length ? cl(o.route, 0, ROUTE.length - 1) : 0; n.fbal = cl(o.fbal, 0, 127);
+    for (let k = 0; k < 2; k++) {
+      const x = (o.flt && o.flt[k]) || {};
+      n.flt.push({ type: x.type < FLT.length ? cl(x.type, 0, FLT.length - 1) : 0, cut: cl(x.cut, 0, 127), res: cl(x.res, 0, 127),
+        env: cl(x.env, -64, 63), key: cl(x.key, -64, 63), vel: cl(x.vel, 0, 127) });
+    }
+    n.env2 = [0, 1, 2, 3].map((i) => cl((o.env2 || [])[i], 0, 127));
+    n.env3 = [0, 1, 2, 3].map((i) => cl((o.env3 || [])[i], 0, 127));
+    for (let k = 0; k < 2; k++) {
+      const x = (o.lfo && o.lfo[k]) || {};
+      n.lfo.push({ wave: x.wave < LFOW.length ? cl(x.wave, 0, LFOW.length - 1) : 0, rate: cl(x.rate, 0, 127), key: !!x.key, sync: !!x.sync, fade: cl(x.fade, 0, 127) });
+    }
+    for (let k = 0; k < NSLOT; k++) {
+      const x = (o.mod && o.mod[k]) || {};
+      n.mod.push({ src: x.src < SRC.length ? cl(x.src, 0, SRC.length - 1) : 0, via: x.via < SRC.length ? cl(x.via, 0, SRC.length - 1) : 0,
+        dst: x.dst < DST.length ? cl(x.dst, 0, DST.length - 1) : 0, amt: cl(x.amt, -64, 63) });
+    }
+    n.bend = cl(o.bend, 0, 24);
+    n.level = cl(o.level, 0, 127);
+    n.name = String(o.name || "").replace(/[^\x20-\x7E]/g, " ").slice(0, 10).toUpperCase();
+    return n;
+  }
+  function pack(o) {
+    const x = sanitize(o), b = new Uint8Array(SIZE);
+    x.osc.forEach((v, k) => b.set([v.type, v.coarse & 255, v.fine & 255, v.level, v.shape, (v.reset ? 1 : 0) | (v.fixed ? 2 : 0)], k * 6));
+    b.set([x.ring, x.drift, x.drive, x.route, x.fbal], 18);
+    x.flt.forEach((v, k) => b.set([v.type, v.cut, v.res, v.env & 255, v.key & 255, v.vel], 23 + k * 6));
+    b.set(x.env2, 35);
+    b.set(x.env3, 39);
+    x.lfo.forEach((v, k) => b.set([v.wave, v.rate, (v.key ? 1 : 0) | (v.sync ? 2 : 0), v.fade], 43 + k * 4));
+    x.mod.forEach((v, k) => b.set([v.src, v.via, v.dst, v.amt & 255], 51 + k * 4));
+    b[115] = x.bend;
+    b[116] = x.level;
+    b[117] = 0;
+    for (let i = 0; i < 10; i++) b[118 + i] = i < x.name.length ? x.name.charCodeAt(i) : 0;   /* (C: NUL-padded) */
+    return b;
+  }
+  /* INIT (hybrid_patches.h): one saw, LP12 open */
+  function init() {
+    return sanitize({ osc: [{ type: 1, level: 127 }, {}, {}], route: 0, flt: [{ type: 1, cut: 100 }, {}],
+      env2: [0, 64, 64, 64], env3: [0, 64, 64, 64], lfo: [{ wave: 0, rate: 60 }, { wave: 0, rate: 60 }], mod: [],
+      bend: 2, level: 100, name: "INIT" });
+  }
+  /* readable values: cutoff Hz (30 Hz .. 16 kHz), times (1 ms .. 10 s), LFO Hz (0.05 .. 40), a synced rate */
+  const hz = (v) => 30 * Math.pow(16000 / 30, v / 127);
+  const fmtHz = (f) => (f >= 1000 ? `${(f / 1000).toFixed(f >= 10000 ? 0 : 1)}k` : `${Math.round(f)}`);
+  const ms = (v) => Math.pow(10000, v / 127);
+  const fmtMs = (m) => (m >= 1000 ? `${(m / 1000).toFixed(1)}s` : `${Math.round(m)}ms`);
+  const lfoHz = (v) => 0.05 * Math.pow(800, v / 127);
+  const rateText = (l) => (l.sync ? SYNC[Math.floor(l.rate * SYNC.length / 128)] : `${lfoHz(l.rate).toFixed(2)}Hz`);
+  /* the factory patches as the firmware has them (hybrid_patches.h; web/test_web.mjs checks them), for the mock */
+  const MOCK_FACTORY = (() => { const b = b64dec("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");
+    return Array.from({ length: b.length / SIZE }, (_, i) => b.slice(i * SIZE, (i + 1) * SIZE)); })();
+  const MOCK_NAMES = ["CLIPPER", "POLY PAD", "STRINGS", "ACID", "SYNC LEAD", "FM BELL", "FM KEYS", "WOBBLE", "REESE", "HOOVER", "BRASS", "VOX", "PLUCK", "RISER", "METAL", "FOLD BASS", "CHIP LEAD", "GLASS PAD", "DRONE", "808 SUB", "TRANCE", "SAW PLUCK", "SPACE BEL", "INIT"];
+  return { OSC, FLT, ROUTE, LFOW, SRC, DST, SHAPE, SYNC, SIZE, NSLOT, NFACTORY, unpack, pack, sanitize, init, MOCK_FACTORY, MOCK_NAMES,
+    cutText: (v) => fmtHz(hz(v)), timeText: (v) => fmtMs(ms(v)), rateText };
+})();
+
 const DSYN = {
   USER: 64, NUSER: 4, LANES: 16, SIZE: 22,
   FIELDS: ["wave", "src", "pitch", "fine", "bend", "btime", "hold", "decay", "tlev", "t2", "t2lev", "click",
@@ -3521,6 +3696,14 @@ const TEXT = {
     system: "システム", firmware: "ファームウェア", sync: "同期", tracksN: "トラック", stepsN: "ステップ数", enginesL: "エンジン",
     smpSlots: "サンプルスロット", userBank: "ユーザープリセット", none: "なし",
     fm6Title: "FM6 の音色（6 オペレーター）", fm6Help: "FM6 エンジンの音色をまるごと編集します。本体のノブ（EDIT の 8 つ）はこの音色の上にかかるマクロです。トラックへ送るとすぐ鳴り、PTCH を回すか別の音を読み込むまでそのトラックの音色になります（プロジェクトは PTCH だけを保存します）。バンク（B1〜B27）に保存すると PTCH で呼び出せます（本体を停止してから）。",
+    hyTitle: "HYBRID の音色（Clipper）", hyHelp: "HYBRID エンジンの音色をまるごと編集します。ボイスごとに 3 オシレーター、2 フィルター、専用のエンベロープ 2 つと LFO 2 つ、16 スロットのモジュレーション・マトリクス。本体のノブはこの上の 8 つの値です（CUT、RES、FENV、PTCH、マクロ M1〜M4 はマトリクスのソース）。LIVE ではすぐに音が変わります。PTCH を回すか別の音を読み込むまでトラックの音色です（プロジェクトは PTCH だけ保存：残したい音色は書き出してください）。",
+    hyReadBtn: "トラックから読む", hySendBtn: "トラックへ送る", hyLive: "ライブ", hyFactory: "ファクトリー", hyInit: "初期化",
+    hyExport: "音色を書き出す", hyImport: "音色を読み込む", hyOscs: "オシレーター", hyFilters: "フィルター",
+    hySer: "F1 のあと F2", hyPar: "F1 と F2 を並列、BAL で配分", hySplit: "OSC1（とリング）は F1、OSC2＋3 は F2",
+    hyEnvs: "エンベロープと LFO", hyLfo1: "音量はトラックの ADSR（ENV ページ）、LFO1 はトラックの LFO。どちらもマトリクスのソースです（AENV、LFO1）。",
+    hyMatrix: "モジュレーション・マトリクス", hyMatrixHelp: "各スロット：SOURCE × VIA（任意、例：モジュレーション・ホイール）× AMOUNT → DEST。ピッチ系は 0 付近が細かく（ビブラート）、端で広く（±23 半音）。M1〜M4 は 4 つのマクロノブ（CC 16〜19）。",
+    hyGlobal: "ピッチベンドと音量", hyRead: "HYBRID の音色を読みました：トラック", hySent: "HYBRID の音色を送りました：トラック",
+    hyLoaded: "読み込みました", hyImported: "読み込みました", hyBadFile: "Clipper の HYBRID 音色ではありません：",
     fm6ReadBtn: "トラックから読む", fm6SendBtn: "トラックへ送る", fm6Live: "編集しながら送る", fm6Slot: "スロット",
     fm6StoreBtn: "バンクに保存", fm6Import: "SysEx を読み込む", fm6Export: "SysEx に書き出し", fm6BankExport: "バンクを SysEx に書き出し",
     fm6Init: "初期音色", fm6Voice: "ボイス", fm6Ops: "オペレーター", fm6Carriers: "キャリア", fm6Feedback: "フィードバック",
@@ -3719,6 +3902,14 @@ const TEXT = {
     system: "System", firmware: "Firmware", sync: "Sync", tracksN: "Tracks", stepsN: "Steps", enginesL: "Engines",
     smpSlots: "Sample slots", userBank: "User presets", none: "none",
     fm6Title: "FM6 patch (six operators)", fm6Help: "Edit the whole patch of the FM6 engine. The device's knobs (the eight EDIT values) are macros on top of it. Sent to a track it plays at once and stays that track's patch until PTCH turns or another sound loads (a project keeps PTCH only); stored in the bank (B1..B27) it is a PTCH value (stop the device first).",
+    hyTitle: "HYBRID patch (Clipper)", hyHelp: "The whole patch of the HYBRID engine: three oscillators, two filters, two envelopes and two LFOs of its own per voice, and a 16-slot modulation matrix. The device's knobs play eight values on top of it (CUT, RES, FENV, PTCH and the macros M1..M4: matrix sources). With LIVE each change is heard at once; the patch stays the track's until PTCH turns or another sound loads (a project keeps PTCH: export the patch to keep it).",
+    hyReadBtn: "Read from track", hySendBtn: "Send to track", hyLive: "live", hyFactory: "factory", hyInit: "Init",
+    hyExport: "Export patch", hyImport: "Import patch", hyOscs: "Oscillators", hyFilters: "Filters",
+    hySer: "F1 then F2", hyPar: "F1 and F2 side by side, BAL between them", hySplit: "osc 1 (and the ring) into F1, osc 2 + 3 into F2",
+    hyEnvs: "Envelopes and LFOs", hyLfo1: "The amplitude is the track's ADSR (ENV page) and LFO1 the track's LFO; both are matrix sources too (AENV, LFO1).",
+    hyMatrix: "Modulation matrix", hyMatrixHelp: "Each slot: SOURCE × VIA (optional, e.g. the mod wheel) × AMOUNT → DEST. Pitch rows are fine near 0 (vibrato) and wide at the ends (±23 semitones). M1..M4: the four macro knobs, also CC 16..19.",
+    hyGlobal: "Pitch bend and level", hyRead: "Read the HYBRID patch of track", hySent: "HYBRID patch sent to track",
+    hyLoaded: "Loaded", hyImported: "Imported", hyBadFile: "Not a Clipper HYBRID patch:",
     fm6ReadBtn: "Read from track", fm6SendBtn: "Send to track", fm6Live: "Send while editing", fm6Slot: "Slot",
     fm6StoreBtn: "Store in bank", fm6Import: "Import SysEx", fm6Export: "Export SysEx", fm6BankExport: "Export bank as SysEx",
     fm6Init: "Init voice", fm6Voice: "Voice", fm6Ops: "Operators", fm6Carriers: "carriers", fm6Feedback: "feedback",
@@ -3977,7 +4168,7 @@ async function connect() {
   sayK("connecting");
   try {
     if (!access) {
-      if (MOCK) { mock = makeMockDevice({ legacy: QS.get("legacy") === "1" }); access = mock.access; }
+      if (MOCK) { mock = makeMockDevice({ legacy: QS.get("legacy") === "1", clipper: QS.get("clipper") === "1" }); access = mock.access; }
       else {
         try { access = await navigator.requestMIDIAccess({ sysex: true }); }
         catch (e) { sayK("denied"); return; }
@@ -4228,6 +4419,7 @@ function updateBrowser() {
   }
   if (document.activeElement !== ps) ps.value = String(dev.dump.preset);
   fm6Show();
+  hyShow();
 }
 
 function visible(d) { return d && d.max > d.min && d.label !== "-"; }
@@ -4397,6 +4589,7 @@ async function sendSet(s, id, k) {
       mixFromDump();
       if (!s && id === pSlen() && r.value !== v) lenChanged();   /* (clamped by the device) */
       if (!s && id === dev.info.pe0 + 7 && fm6On()) fm6Later();   /* PTCH: the device loaded that patch */
+      if (!s && id === dev.info.pe0 + 3 && hyOn()) hyLater();     /* (HYBRID's PTCH) */
     }
   } catch (e) { if (e.message !== "closed") console.warn(e); }
 }
@@ -4422,6 +4615,7 @@ async function afterSoundChange(msg = "ready") {
   await loadSteps();                                /* a preset can bring a pattern */
   if (hasTracks()) await readMixer();               /* the sound names and the selected strip */
   await fm6Follow();                                /* FM6: the track's patch (a PTCH value may have loaded one) */
+  await hyFollow();                                 /* Clipper: the HYBRID patch, the same */
   sayK(msg);
 }
 $("init").addEventListener("click", async () => {
@@ -6597,6 +6791,7 @@ function onPush(f) {
       if (!c.scope && c.id === pSlen() && old !== c.value) { $("steptables").dataset.len = ""; renderSteps(); }
       if (!c.scope && c.id === d.info.pe0 && drumGrid() && d.dstepsOk) renderDrumBar();   /* the kit, changed on the device */
       if (!c.scope && c.id === d.info.pe0 + 7 && fm6On()) fm6Later();   /* PTCH turned on the device: another patch */
+      if (!c.scope && c.id === d.info.pe0 + 3 && hyOn()) hyLater();     /* (HYBRID's PTCH) */
     } else if (f.cmd === CMD.RELOAD) {
       d.sel = parse[CMD.RELOAD](f.a).track;          /* v3: another track may be selected on the device */
       if (selfReload.n > 0 && Date.now() < selfReload.until) { selfReload.n--; return; }
@@ -7363,6 +7558,154 @@ $("fm6bankexp").addEventListener("click", () => op(async () => {
   downloadBytes(`sloop-fm6-bank-${today()}.syx`, FM6.bankSysex(out));
   sayK("fm6Exported");
 }));
+/* ---------------------------------------------------------------- HYBRID --- */
+/* Clipper: the HYBRID engine's whole patch (firmware v11, EDITOR_PROTOCOL.md "HYBRID patches"), in the Sound tab while
+   the selected track plays HYBRID. The device shows eight values of it (CUT, RES, FENV offsets, PTCH, the macros M1..M4);
+   here every oscillator, filter, envelope, LFO and matrix slot. LIVE sends each change (the track plays it from its
+   next block); it stays the track's patch until PTCH turns or another sound loads. Files: the patch as JSON. */
+let hyv = HY.init();
+let hyTimer = null, hyPending = false;
+const hyEng = () => (dev && dev.info ? dev.info.engines.indexOf("HYBRID") : -1);
+const hyOk = () => !!dev && !!dev.info && dev.info.proto >= 11 && hyEng() >= 0;
+const hyOn = () => hyOk() && !!dev.dump && dev.dump.engine === hyEng();   /* the selected track plays HYBRID */
+const hyTrack = () => (dev && dev.sel != null ? dev.sel : 0);
+function hyShow() {
+  const on = hyOn();
+  $("hypanel").hidden = !on;
+  if (on) { renderHyFactory(); renderHy(); }
+}
+function hyChanged() {                                    /* after any edit: LIVE sends it (at most every 80 ms) */
+  if (!$("hylive").checked || !hyOn()) return;
+  clearTimeout(hyTimer);
+  hyTimer = setTimeout(() => op(() => hySend(true)), 80);
+}
+/* a slider: get() / set(v), its range, how its value reads */
+function hyRange(get, set, min, max, fmt = String, title = "") {
+  const out = el("output", { text: fmt(get()) });
+  const r = el("input", { type: "range", min, max, step: 1, value: get(), title,
+    oninput: (e) => { set(+e.target.value); out.textContent = fmt(get()); hyChanged(); },
+    ondblclick: (e) => { set(min < 0 ? 0 : min); e.target.value = get(); out.textContent = fmt(get()); hyChanged(); } });
+  return el("span", { class: "rg" }, r, out);
+}
+function hySel(names, get, set, rerender = false, title = "") {
+  const s = el("select", { title, onchange: (e) => { set(+e.target.value); hyChanged(); if (rerender) renderHy(); } },
+    ...names.map((n, k) => el("option", { value: k, text: n })));
+  s.value = String(get());
+  return s;
+}
+function hyCheck(get, set, label) {
+  const c = el("input", { type: "checkbox", onchange: (e) => { set(e.target.checked); hyChanged(); renderHy(); } });
+  c.checked = !!get();
+  return el("label", {}, c, ` ${label}`);
+}
+const hySigned = (v) => (v > 0 ? `+${v}` : String(v));
+const hyTable = (head, rows) => el("div", { class: "hy" }, el("table", {}, el("tr", {}, ...head.map((h) => el("th", { text: h }))), ...rows));
+function renderHy() {
+  const v = hyv, body = [];
+  $("hyname").value = v.name;
+  /* the oscillators */
+  body.push(el("h3", { text: t("hyOscs") }), hyTable(["", "TYPE", "COARSE", "FINE", "LEVEL", "SHAPE", ""],
+    v.osc.map((o, k) => el("tr", { class: o.type ? "" : "off" }, el("td", { text: `OSC ${k + 1}` }),
+      el("td", {}, hySel(HY.OSC, () => o.type, (x) => { o.type = x; }, true)),
+      el("td", {}, hyRange(() => o.coarse, (x) => { o.coarse = x; }, -48, 48, (x) => `${hySigned(x)} st`)),
+      el("td", {}, hyRange(() => o.fine, (x) => { o.fine = x; }, -64, 63, (x) => `${hySigned(x)} ct`)),
+      el("td", {}, hyRange(() => o.level, (x) => { o.level = x; }, 0, 127)),
+      el("td", {}, hyRange(() => o.shape, (x) => { o.shape = x; }, 0, 127, String, HY.SHAPE[o.type] || ""),
+        el("span", { class: "dim", text: ` ${HY.SHAPE[o.type] || ""}` })),
+      el("td", {}, hyCheck(() => o.reset, (x) => { o.reset = x; }, "RESET"), " ", hyCheck(() => o.fixed, (x) => { o.fixed = x; }, "FIXED"))))));
+  body.push(hyTable(["RING 1×2", "DRIFT", "DRIVE"], [el("tr", {},
+    el("td", {}, hyRange(() => v.ring, (x) => { v.ring = x; }, 0, 127)),
+    el("td", {}, hyRange(() => v.drift, (x) => { v.drift = x; }, 0, 127)),
+    el("td", {}, hyRange(() => v.drive, (x) => { v.drive = x; }, 0, 127)))]));
+  /* the filters */
+  body.push(el("h3", { text: t("hyFilters") }), el("p", { class: "bar" }, "ROUTE ", hySel(HY.ROUTE, () => v.route, (x) => { v.route = x; }, true),
+    v.route === 1 ? el("span", {}, " BAL F1↔F2 ", hyRange(() => v.fbal, (x) => { v.fbal = x; }, 0, 127)) : "",
+    el("span", { class: "dim", text: ` ${t(["hySer", "hyPar", "hySplit"][v.route])}` })));
+  body.push(hyTable(["", "TYPE", "CUTOFF", "RES", "ENV2", "KEY", "VEL"], v.flt.map((f, k) => el("tr", { class: f.type ? "" : "off" },
+    el("td", { text: `F${k + 1}` }), el("td", {}, hySel(HY.FLT, () => f.type, (x) => { f.type = x; }, true)),
+    el("td", {}, hyRange(() => f.cut, (x) => { f.cut = x; }, 0, 127, (x) => `${HY.cutText(x)} Hz`)),
+    el("td", {}, hyRange(() => f.res, (x) => { f.res = x; }, 0, 127)),
+    el("td", {}, hyRange(() => f.env, (x) => { f.env = x; }, -64, 63, hySigned)),
+    el("td", {}, hyRange(() => f.key, (x) => { f.key = x; }, -64, 63, (x) => `${Math.round(x * 100 / 64)} %`)),
+    el("td", {}, hyRange(() => f.vel, (x) => { f.vel = x; }, 0, 127))))));
+  /* envelopes and LFOs */
+  body.push(el("h3", { text: t("hyEnvs") }), hyTable(["", "A", "D", "S", "R"], [["ENV2", v.env2], ["ENV3", v.env3]].map(([n, e]) =>
+    el("tr", {}, el("td", { text: n }), ...[0, 1, 2, 3].map((i) => el("td", {},
+      hyRange(() => e[i], (x) => { e[i] = x; }, 0, 127, i === 2 ? (x) => `${Math.round(x * 100 / 127)} %` : HY.timeText)))))));
+  body.push(hyTable(["", "WAVE", "RATE", "", "FADE"], v.lfo.map((l, k) => el("tr", {}, el("td", { text: `LFO${k + 2}` }),
+    el("td", {}, hySel(HY.LFOW, () => l.wave, (x) => { l.wave = x; })),
+    el("td", {}, hyRange(() => l.rate, (x) => { l.rate = x; }, 0, 127, () => HY.rateText(l))),
+    el("td", {}, hyCheck(() => l.key, (x) => { l.key = x; }, "KEY"), " ", hyCheck(() => l.sync, (x) => { l.sync = x; }, "SYNC")),
+    el("td", {}, hyRange(() => l.fade, (x) => { l.fade = x; }, 0, 127, HY.timeText))))));
+  body.push(el("p", { class: "dim", text: t("hyLfo1") }));
+  /* the matrix */
+  body.push(el("h3", { text: t("hyMatrix") }), el("p", { class: "dim", text: t("hyMatrixHelp") }),
+    hyTable(["", "SOURCE", "× VIA", "→ DEST", "AMOUNT"], v.mod.map((m, k) => el("tr", { class: "mx" + (m.src && m.dst ? "" : " off") },
+      el("td", { text: String(k + 1) }),
+      el("td", {}, hySel(HY.SRC, () => m.src, (x) => { m.src = x; }, true)),
+      el("td", {}, hySel(HY.SRC.map((n, i) => (i ? n : "—")), () => m.via, (x) => { m.via = x; })),
+      el("td", {}, hySel(HY.DST, () => m.dst, (x) => { m.dst = x; }, true)),
+      el("td", {}, hyRange(() => m.amt, (x) => { m.amt = x; }, -64, 63, hySigned))))));
+  /* the rest */
+  body.push(el("h3", { text: t("hyGlobal") }), hyTable(["BEND", "LEVEL"], [el("tr", {},
+    el("td", {}, hyRange(() => v.bend, (x) => { v.bend = x; }, 0, 24, (x) => `±${x} st`)),
+    el("td", {}, hyRange(() => v.level, (x) => { v.level = x; }, 0, 127)))]));
+  $("hybody").replaceChildren(...body);
+}
+function renderHyFactory() {
+  const s = $("hyfact"), keep = s.value;
+  const names = (dev && dev.pdesc && dev.pdesc[dev.info.pe0 + 3] && dev.pdesc[dev.info.pe0 + 3].names) || [];
+  const n = names.length || HY.NFACTORY;
+  s.replaceChildren(...Array.from({ length: n }, (_, i) => el("option", { value: i, text: `F${i + 1} ${names[i] || ""}` })));
+  s.value = keep !== "" && +keep < n ? keep : String(dev && dev.dump ? Math.min(n - 1, dev.dump.p[dev.info.pe0 + 3] | 0) : 0);
+}
+async function hyReadTrack(quiet) {
+  const r = parse[CMD.HY_GET](await rq(req.hyGet(0, hyTrack())));
+  if (r.rc) { if (!quiet) checkRc(r.rc); return; }
+  hyv = HY.unpack(r.bytes);
+  renderHy();
+  if (!quiet) sayK("hyRead", ` ${hyTrack() + 1}: ${hyv.name}`);
+}
+async function hySend(quiet) {
+  const r = parse[CMD.HY_PUT](await rq(req.hyPut(hyTrack(), HY.pack(hyv))));
+  checkRc(r.rc);
+  if (!quiet) sayK("hySent", ` ${hyTrack() + 1}`);
+}
+async function hyFollow() { if (hyOn()) await hyReadTrack(true); }
+function hyLater() {                    /* PTCH turned: read the new patch once the queue is quiet */
+  if (hyPending) return;
+  hyPending = true;
+  setTimeout(() => { hyPending = false; op(hyFollow); }, 250);
+}
+$("hyread").addEventListener("click", () => op(() => hyReadTrack(false)));
+$("hysend").addEventListener("click", () => op(() => hySend(false)));
+$("hyload").addEventListener("click", () => op(async () => {
+  const i = +$("hyfact").value;
+  const r = parse[CMD.HY_GET](await rq(req.hyGet(1, i)));
+  checkRc(r.rc);
+  hyv = HY.unpack(r.bytes);
+  renderHy();
+  hyChanged();
+  sayK("hyLoaded", ` F${i + 1}: ${hyv.name}`);
+}));
+$("hyinit").addEventListener("click", () => { hyv = HY.init(); renderHy(); hyChanged(); });
+$("hyname").addEventListener("change", (e) => { hyv.name = HY.sanitize({ ...hyv, name: e.target.value }).name; e.target.value = hyv.name; hyChanged(); });
+$("hyexport").addEventListener("click", () => download(`${fileSlug(hyv.name || "hybrid")}.clipper.json`,
+  { format: "clipper-hybrid", version: 1, patch: HY.sanitize(hyv) }));
+$("hyimport").addEventListener("click", () => $("hyfile").click());
+$("hyfile").addEventListener("change", async (e) => {
+  const f = e.target.files[0];
+  e.target.value = "";
+  if (!f) return;
+  try {
+    const j = JSON.parse(await f.text());
+    if (!j || j.format !== "clipper-hybrid" || !j.patch) throw new Error("format");
+    hyv = HY.sanitize(j.patch);
+    renderHy();
+    hyChanged();
+    sayK("hyImported", ` ${hyv.name}`);
+  } catch (err) { sayK("hyBadFile", ` ${f.name}`); }
+});
 const today = () => new Date().toISOString().slice(0, 10);
 /* v6: backup / restore (the work: backupCapture / backupRestore above) */
 function bkProgress(key) {

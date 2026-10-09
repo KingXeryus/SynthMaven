@@ -34,7 +34,7 @@ const E = vm.runInNewContext(proto + `
    CHOP, chopNovelty, chopHits, chopSnap, chopGrid, chopEqual, chopList, chopPick, chopFit, chopZones, wavFile, zipStore, crc32,
    UP, bank, capturePatch, auditionPatch, startWatch, libraryFile, readLibraryFile, paramKeys, patternFromSteps, stepsFromPattern, upName,
    mixer, GM_DRUM, drumName, parseNotes, fmtValue, F, DRUM_LANES, LV_NAMES, emptyDrum, lockable, MICRO, FC, fillGet, fillSet, pack7, unpack7,
-   backupCapture, backupRestore, backupObjects, b64enc, b64dec, FM6, KIT, kitPad, kitZones, kitLen, kitBytes, kitFit, kitSplit, kitLaneOf, kitPlace, zipRead, ROLL, SMF, ARR, mockSettings, fm6CartWrite, fm6CartPreset, fm6CartSlots, fm6CartPresets, DSYN, DSYN_MOCK_NAMES, DSYN_MOCK_KITS })`,
+   backupCapture, backupRestore, backupObjects, b64enc, b64dec, FM6, KIT, kitPad, kitZones, kitLen, kitBytes, kitFit, kitSplit, kitLaneOf, kitPlace, zipRead, ROLL, SMF, ARR, mockSettings, fm6CartWrite, fm6CartPreset, fm6CartSlots, fm6CartPresets, DSYN, DSYN_MOCK_NAMES, DSYN_MOCK_KITS, HY })`,
 { setTimeout, clearTimeout, setInterval, clearInterval, console, TextEncoder, TextDecoder, Blob, Response, DecompressionStream });
 
 async function editorMock() {
@@ -555,6 +555,37 @@ async function editorBackup() {
   old.done();
 }
 
+
+/* ------------------------------------- Clipper: the HYBRID patch (v11), editor.html HY --- */
+function hybridPatch() {
+  const H = E.HY;
+  /* the factory patches as the firmware has them (tests/hybrid_editor_test.c writes them; skipped without it) */
+  const fp = join(HERE, "../build/host/hy_factory.json");
+  if (!existsSync(fp)) { console.log("HYBRID: skipped (run tests/hybrid_editor_test first)"); return; }
+  const fx = JSON.parse(readFileSync(fp, "utf8"));
+  ok(fx.size === H.SIZE && fx.factory.length === H.NFACTORY, "HYBRID: 128 bytes a patch, as many factory patches as the firmware");
+  ok(fx.factory.every((b) => eq(Array.from(H.pack(H.unpack(Uint8Array.from(b)))), b)), "HYBRID: every factory patch unpacks and packs back byte for byte");
+  const c = H.unpack(Uint8Array.from(fx.factory[0]));
+  ok(c.name === "CLIPPER" && H.OSC[c.osc[0].type] === "SUPER" && c.osc[2].coarse === -12 && c.osc[2].reset && H.FLT[c.flt[0].type] === "LP24"
+    && H.SRC[c.mod[0].src] === "M1" && H.DST[c.mod[0].dst] === "CUT" && c.mod[0].amt === 50 && H.SRC[c.mod[3].via] === "MW",
+    "HYBRID: CLIPPER reads as hybrid_patches.h writes it (signed values, flags, the matrix)");
+  ok(fx.names.every((n, i) => H.unpack(Uint8Array.from(fx.factory[i])).name === n), "HYBRID: every name");
+  ok(H.MOCK_FACTORY.length === fx.factory.length && H.MOCK_FACTORY.every((b, i) => eq(Array.from(b), fx.factory[i])) && eq(H.MOCK_NAMES, fx.names),
+    "HYBRID: the mock's factory patches are the firmware's");
+  const junk = H.pack({ osc: [{ type: 99, coarse: -100, fine: 200, level: 300 }], route: 7, flt: [{ type: -1, env: -99 }],
+    mod: [{ src: 50, via: 2, dst: 99, amt: 100 }], bend: 99, name: "naïve name too long" });
+  const j = H.unpack(junk);
+  ok(j.osc[0].type === 0 && j.osc[0].coarse === -48 && j.osc[0].fine === 63 && j.osc[0].level === 127 && j.route === 0 && j.flt[0].env === -64
+    && j.mod[0].src === 0 && j.mod[0].dst === 0 && j.mod[0].amt === 63 && j.bend === 24 && j.name === "NA VE NAME", "HYBRID: values out of range are put into range");
+  const r = E.req.hyPut(2, H.pack(c));
+  ok(r[0] === E.CMD.HY_PUT && r[1][0] === 0 && r[1][1] === 2 && r[1].length === 2 + 147 && r[1].every((x) => x < 128)
+    && eq(Array.from(E.unpack7(Uint8Array.from(r[1].slice(2)))).slice(0, 128), fx.factory[0]), "HYBRID: HY_PUT is pack7 of the 128 bytes, 7-bit clean");
+  const g = E.parse[E.CMD.HY_GET]([1, 3, 0, ...E.pack7(Uint8Array.from(fx.factory[3]))]);
+  ok(g.target === 1 && g.index === 3 && !g.rc && eq(Array.from(g.bytes), fx.factory[3]), "HYBRID: HY_GET parses back");
+  ok(H.cutText(0) === "30" && H.cutText(127) === "16k" && H.timeText(0) === "1ms" && H.rateText({ rate: 55, sync: true }) === "1/4",
+    "HYBRID: readable values (cutoff, times, a synced rate)");
+}
+
 /* ------------------------------------- editor v5 (SLOOP 2.0): lanes, levels, ratchets --- */
 async function editorV5() {
   const C = E.CMD;
@@ -571,9 +602,10 @@ async function editorV5() {
     && names.indexOf("ED_MICRO_GET") + 1 === C.MICRO_GET && names.indexOf("ED_MICRO_SET") + 1 === C.MICRO_SET
     && names.indexOf("ED_FILL_GET") + 1 === C.FILL_GET && names.indexOf("ED_FILL_SET") + 1 === C.FILL_SET
     && /ED_FM6_GET = 68, ED_FM6_PUT, ED_FM6_LIST, ED_FM6_ERASE/.test(ec) && C.FM6_GET === 68 && C.FM6_ERASE === 71
-    && /#define ED_PROTO 10u/.test(ec) && /ed_b\(ED_PROTO\);/.test(ec)
+    && /#define ED_PROTO 11u/.test(ec) && /ed_b\(ED_PROTO\);/.test(ec)
+    && /enum \{ ED_HY_GET = 77, ED_HY_PUT \};/.test(readFileSync(join(HERE, "../firmware/src/editor_hybrid.c"), "utf8")) && C.HY_GET === 77 && C.HY_PUT === 78
     && /enum \{ ED_DSYN_LIST = 72, ED_DSYN_GET, ED_DSYN_PUT, ED_DSYN_STORE, ED_DSYN_PLAY \};/.test(readFileSync(join(HERE, "../firmware/src/editor_dsyn.c"), "utf8"))
-    && C.DSYN_LIST === 72 && C.DSYN_PLAY === 76, "v5..v10: command numbers and INFO == editor.c / editor_dsyn.c");
+    && C.DSYN_LIST === 72 && C.DSYN_PLAY === 76, "v5..v11: command numbers and INFO == editor.c / editor_dsyn.c / editor_hybrid.c");
   const enumNames = (id) => (new RegExp(`${id}\\[\\] = \\{([^}]*)\\}`).exec(pc) || [])[1].split(",").map((x) => x.trim().replace(/"/g, ""));
   const chord = E.parse[C.DESC](await rq(E.req.desc(0, 49)));
   const gd = [];
@@ -1357,6 +1389,7 @@ await editorTracks();
 await editorMixer();
 await editorTrackParam();
 await editorV5();
+hybridPatch();
 await editorV7();
 await editorV8();
 await editorV9();

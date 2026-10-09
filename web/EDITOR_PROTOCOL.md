@@ -413,6 +413,29 @@ Backup object **9** is the four kits (`dsu_bank_t`, 1464 bytes: "DSU1", version 
 crush, src, 2 reserved, 16 x 22). Its commit answers rc 3 while the song plays. A device before v10 answers the
 begin of object 9 with rc 5: the editor skips it (as object 8 on a v8 device).
 
+## v11: HYBRID patches (Clipper)
+
+The HYBRID engine (`firmware/src/eng_hybrid.c`, engine 12) plays a 128-byte patch on each synth part
+(`hy_patch_t`; the editor's `HY` module packs and unpacks it field by field). INFO ends with protocol 11.
+
+| cmd | name | request | reply |
+| --- | --- | --- | --- |
+| 77 | HY_GET | target, index | target, index, rc, [pack7 of the 128 bytes] |
+| 78 | HY_PUT | 0, part, pack7 of the 128 bytes | 0, part, rc |
+
+- HY_GET target 0: the patch part `index` (0..2) plays, or the one sent to it and not played yet; target 1:
+  factory patch `index` (the PTCH names come with the DESC of P_E3).
+- HY_PUT: the part's own patch from its next audio block, every value put into range (`hy_sanitize`); it stays
+  until PTCH turns or another sound loads. A project keeps PTCH only.
+- rc: 0 ok, 1 a bad request (another target, part 3 = the drums, a short patch, a factory index past the end).
+
+Layout (byte offsets; signed fields two's complement): oscillators 0..17 (6 each: type, coarse -48..48, fine -64..63,
+level, shape, flags bit 0 reset / bit 1 fixed pitch), ring 18, drift 19, drive 20, route 21 (SER, PAR, SPLIT),
+balance 22, filters 23..34 (6 each: type, cutoff, resonance, ENV2 amount -64..63, key tracking -64..63, velocity),
+ENV2 35..38 and ENV3 39..42 (A D S R), LFO 2 and 3 43..50 (4 each: wave, rate, flags bit 0 key / bit 1 tempo sync,
+fade), the matrix 51..114 (16 slots of source, via, destination, amount -64..63), bend range 115 (0..24), level 116,
+0 at 117, the name 118..127 (ASCII, NUL-padded).
+
 ## Notes for the editor
 
 - **One request at a time.** Wait for the reply, about 10–50 ms, before sending the next.

@@ -144,6 +144,8 @@ run "FM6: algorithms, envelopes, retrigger, DC, clipping, macros, patch formats,
 $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/hybrid_test" tests/hybrid_test.c -lm
 mkdir -p build/hybrid_demo
 run "HYBRID (Clipper): oscillators, filters, matrix, controllers, patches, cost, demos" "$OUT/hybrid_test" build/hybrid_demo
+$CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/hybrid_editor_test" tests/hybrid_editor_test.c -lm
+run "HYBRID editor commands (v11): HY_GET, HY_PUT, ranges, bad requests" "$OUT/hybrid_editor_test" "$OUT/hy_factory.json"
 $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/regress" tests/regress.c -lm
 # the CPU budget: counted by the kernel on macOS; elsewhere under callgrind when valgrind is there (exact, ~45 s;
 # SKIP_CPU_VALGRIND=1 to time instead, which is only a rough check)
