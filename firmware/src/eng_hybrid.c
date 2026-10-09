@@ -170,7 +170,9 @@ static inline void hsvf_coef(hsvf_t *c, int32_t cut, int32_t k)   /* cut 0..127 
 }
 static inline int32_t hy_damp(int32_t res) { return 8192 - clamp(res, 0, 127) * 7600 / 127; }   /* 2.0 .. 0.145 */
 
-/* one SVF stage over a buffer: one loop per output (the choice made once a block, not per sample) */
+/* one SVF stage over a buffer: one loop per output (the choice made once a block, not per sample). Inputs within
+ * +-60000 (the mix is, by construction; hybrid_render bounds a filter's output going into another): with the states
+ * clamped at +-150000 every product fits in 32 bits at any cutoff and resonance (checked over the whole table) */
 #define HSVF_LOOP(OUT)                                                                                         \
     for (i = 0; i < n; i++) {                                                                                  \
         int32_t in = x[i], v3 = in - ic2;                                                                      \
@@ -292,7 +294,7 @@ static int32_t hy_lfo(const hy_lfo_t *L, hy_voice_t *hv, uint32_t k, int32_t rat
 }
 
 /* ------------------------------------------------------- oscillators --- */
-/* the 90s supersaw (after A. Shore's analysis of the JP-8000): seven saws, their offsets at full detune
+/* the 90s supersaw (after Adam Szabo's analysis of the JP-8000): seven saws, their offsets at full detune
  * (Q16 of the frequency), the detune curve and the side saws' level against the centre's */
 static const int32_t SUPER_OFF[HY_SUPER - 1u] = {-7210, -4121, -1279, 1305, 4074, 7042};
 static int32_t super_detune(uint32_t shape)       /* SHP 0..127 -> 0..65536, finer at the low end */
@@ -371,7 +373,7 @@ static void hy_osc_run(const hy_osc_t *o, hy_voice_t *hv, uint32_t k, uint32_t i
     }
     case HO_SUPER: {
         int32_t d = super_detune((uint32_t)sh >> 8), dq = d >> 1;          /* dq: 0..32768 */
-        /* the centre saw's level falls and the side saws' rises with the detune (Shore's fits, simplified) */
+        /* the centre saw's level falls and the side saws' rises with the detune (Szabo's fits, simplified) */
         int32_t cg = 32767 - mulq15(dq, 18000), sg = 2000 + mulq15(dq, 16000);
         uint32_t sinc[HY_SUPER - 1u], j;
         for (j = 0; j < HY_SUPER - 1u; j++)
@@ -711,13 +713,13 @@ static void hybrid_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
                     d[i] += mulq15(buf[k][i], g);
         }
         if (ring && P->osc[0].type && P->osc[1].type) {
-            int32_t g = ring >> 2;
+            int32_t g = ring >> 2;                   /* (the inputs bounded: a SUPER reaches ~2x full scale) */
             if (!na++)
                 for (i = 0; i < n; i++)
-                    a[i] = mulq15(mulq15(buf[0][i], buf[1][i]), g);
+                    a[i] = mulq15(mulq15(clamp(buf[0][i], -32767, 32767), clamp(buf[1][i], -32767, 32767)), g);
             else
                 for (i = 0; i < n; i++)
-                    a[i] += mulq15(mulq15(buf[0][i], buf[1][i]), g);
+                    a[i] += mulq15(mulq15(clamp(buf[0][i], -32767, 32767), clamp(buf[1][i], -32767, 32767)), g);
         }
         if (!na)
             for (i = 0; i < n; i++)
@@ -751,16 +753,25 @@ static void hybrid_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
     bal = clamp((int32_t)P->fbal * 258 + md[HD_FBAL], 0, 32767);
     if (P->route == HR_SER) {
         hy_filter(P->flt[0].type, &fc[0], &fc2[0], a, n, hv->f[0]);
-        hy_filter(P->flt[1].type, &fc[1], &fc2[1], a, n, hv->f[1]);
+        if (P->flt[1].type) {
+            if (P->flt[0].type)                      /* F1's output into F2: bounded (a resonant PEAK reaches ~5x; every
+                                                      * SVF product stays in 32 bits with inputs within +-60000) */
+                for (i = 0; i < n; i++)
+                    a[i] = clamp(a[i], -60000, 60000);
+            hy_filter(P->flt[1].type, &fc[1], &fc2[1], a, n, hv->f[1]);
+        }
     } else {
         if (P->route == HR_PAR)
             for (i = 0; i < n; i++)
                 b[i] = a[i];
         hy_filter(P->flt[0].type, &fc[0], &fc2[0], a, n, hv->f[0]);
         hy_filter(P->flt[1].type, &fc[1], &fc2[1], b, n, hv->f[1]);
-        if (P->route == HR_PAR)
-            for (i = 0; i < n; i++)
-                a[i] += mulq15(b[i] - a[i], bal);
+        if (P->route == HR_PAR)                      /* (resonant outputs reach ~+-300000: bounded, then the balance
+                                                      * at a quarter scale, every product in 32 bits) */
+            for (i = 0; i < n; i++) {
+                int32_t x = clamp(a[i], -65535, 65535), y = clamp(b[i], -65535, 65535);
+                a[i] = x + (mulq15((y - x) >> 2, bal) << 2);
+            }
         else
             for (i = 0; i < n; i++)
                 a[i] += b[i];

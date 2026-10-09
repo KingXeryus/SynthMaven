@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""The SLOOP logo: a four-colour sail (the four tracks: blue, green, yellow, orange) on the
-mast of a 270-degree dial (the knobs of the UI), a hull, and a geometric monoline wordmark.
+"""The Clipper logo: a three-masted clipper, its square sails in the four track colours (blue, green, yellow,
+orange) inside a 270-degree dial (the knobs of the UI), a hull, and a geometric monoline wordmark "clipper"
+(the line of SLOOP's, from which Clipper comes).
 
   tools/gen_logo.py OUT.h          firmware boot splash (RLE, 16-colour palette, RGB565)
-  tools/gen_logo.py --assets DIR   sloop-logo.svg, sloop-logo.png, sloop-icon.svg/png, sloop-splash.png
+  tools/gen_logo.py --assets DIR   clipper-logo.svg/png, clipper-icon.svg/png, clipper-splash.png
 """
 import math
 import sys
@@ -15,167 +16,145 @@ from PIL import Image, ImageDraw
 BLUE, GREEN, YELLOW, ORANGE = (40, 124, 255), (30, 204, 112), (255, 198, 24), (255, 98, 26)
 WHITE, BLACK = (242, 242, 242), (0, 0, 0)
 HEX = lambda c: "#%02X%02X%02X" % c
-SAIL = [BLUE, GREEN, YELLOW, ORANGE]
-
-# ---- geometry (units: the icon is 240 x 240, the wordmark x-height is 72) -------------------
-ICON = dict(r=106, w=12, mast_dx=-30, top=-80, bot=38, sail_w=96, gap=6, hull=64)
-XH, SW = 72, 12                                  # wordmark x-height, stroke
+XH, SW = 72, 12                                  # wordmark x-height, stroke (units: the icon is 240 x 240)
 
 
-def sail_bands(cx, cy, k):
-    g = ICON
-    mx, top, bot = cx + g["mast_dx"] * k, cy + g["top"] * k, cy + g["bot"] * k
-    sx, h, wmax, gap = mx + 11 * k, bot - top, g["sail_w"] * k, g["gap"] * k
-    bh = (h - 3 * gap) / 4
-    out = []
-    for i, c in enumerate(SAIL):
-        y0 = top + i * (bh + gap)
-        y1 = y0 + bh
-        out.append((c, [(sx, y0), (sx + wmax * (y0 - top) / h, y0), (sx + wmax * (y1 - top) / h, y1), (sx, y1)]))
-    return mx, top, bot, out
+class Pen:
+    """round-capped strokes and fills, drawn with PIL (k: scale, ox/oy: offset) or written as SVG"""
+
+    def __init__(self, d=None, k=1.0, ox=0.0, oy=0.0):
+        self.d, self.k, self.ox, self.oy, self.svg = d, k, ox, oy, []
+
+    def P(self, x, y):
+        return self.ox + x * self.k, self.oy + y * self.k
+
+    def dot(self, x, y, w, col):
+        if self.d:
+            (X, Y), r = self.P(x, y), w * self.k / 2
+            self.d.ellipse([X - r, Y - r, X + r, Y + r], fill=col)
+
+    def line(self, x0, y0, x1, y1, w=SW, col=WHITE):
+        if self.d:
+            self.d.line([self.P(x0, y0), self.P(x1, y1)], fill=col, width=max(1, round(w * self.k)))
+            self.dot(x0, y0, w, col)
+            self.dot(x1, y1, w, col)
+        else:
+            self.svg.append(f'<line x1="{x0:.2f}" y1="{y0:.2f}" x2="{x1:.2f}" y2="{y1:.2f}" stroke="{HEX(col)}" '
+                            f'stroke-width="{w}" stroke-linecap="round"/>')
+
+    def arc(self, cx, cy, r, a0, a1, w=SW, col=WHITE, caps=True):
+        """an arc of radius r (the stroke's centre line), a0 -> a1 degrees clockwise on screen"""
+        if self.d:
+            (X, Y), R, W = self.P(cx, cy), (r + w / 2) * self.k, max(1, round(w * self.k))
+            self.d.arc([X - R, Y - R, X + R, Y + R], start=a0, end=a1, fill=col, width=W)
+            if caps:
+                for a in (a0, a1):
+                    self.dot(cx + r * math.cos(math.radians(a)), cy + r * math.sin(math.radians(a)), w, col)
+        else:
+            p = (cx + r * math.cos(math.radians(a0)), cy + r * math.sin(math.radians(a0)))
+            q = (cx + r * math.cos(math.radians(a1)), cy + r * math.sin(math.radians(a1)))
+            if (a1 - a0) % 360 == 0:
+                self.svg.append(f'<circle cx="{cx:.2f}" cy="{cy:.2f}" r="{r:.2f}" fill="none" stroke="{HEX(col)}" stroke-width="{w}"/>')
+                return
+            large = 1 if (a1 - a0) % 360 > 180 else 0
+            self.svg.append(f'<path d="M{p[0]:.2f} {p[1]:.2f} A{r:.2f} {r:.2f} 0 {large} 1 {q[0]:.2f} {q[1]:.2f}" fill="none" '
+                            f'stroke="{HEX(col)}" stroke-width="{w}" stroke-linecap="{"round" if caps else "butt"}"/>')
+
+    def poly(self, pts, col):
+        if self.d:
+            self.d.polygon([self.P(x, y) for x, y in pts], fill=col)
+        else:
+            self.svg.append('<polygon points="' + " ".join(f"{x:.2f},{y:.2f}" for x, y in pts) + f'" fill="{HEX(col)}"/>')
 
 
-def rrect(d, box, r, fill):
-    """rounded rectangle (ImageDraw.rounded_rectangle needs Pillow 8.2)"""
-    x0, y0, x1, y1 = box
-    r = min(r, (x1 - x0) / 2, (y1 - y0) / 2)
-    d.rectangle([x0 + r, y0, x1 - r, y1], fill=fill)
-    d.rectangle([x0, y0 + r, x1, y1 - r], fill=fill)
-    for cx, cy in ((x0 + r, y0 + r), (x1 - r, y0 + r), (x0 + r, y1 - r), (x1 - r, y1 - r)):
-        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=fill)
+# ---- the icon: the dial, three masts with their sails, the hull ---------------------------------
+MASTS = [(-46, -58, 3), (0, -84, 4), (46, -58, 3)]   # x from the centre, top, tiers of sails
+SAIL_COLS = [ORANGE, YELLOW, GREEN, BLUE]            # from the lowest tier up
+BOT, HULL = 38, 52
 
 
-def draw_icon(d, ox, oy, k):
-    g = ICON
-    cx, cy, r, w = ox + 120 * k, oy + 120 * k, g["r"] * k, g["w"] * k
-    d.arc([cx - r, cy - r, cx + r, cy + r], start=135, end=405, fill=WHITE, width=max(1, round(w)))
-    for a in (135, 405):
-        x = cx + (r - w / 2) * math.cos(math.radians(a))
-        y = cy + (r - w / 2) * math.sin(math.radians(a))
-        d.ellipse([x - w / 2, y - w / 2, x + w / 2, y + w / 2], fill=WHITE)
-    mx, top, bot, bands = sail_bands(cx, cy, k)
-    rrect(d, [mx - 5 * k, top - 4 * k, mx + 5 * k, bot + 14 * k], 5 * k, WHITE)
-    for c, poly in bands:
-        d.polygon(poly, fill=c)
-    rrect(d, [cx - g["hull"] * k, bot + 24 * k, cx + g["hull"] * k, bot + 36 * k], 6 * k, WHITE)
+def icon(pen, ox, oy):
+    cx, cy = ox + 120, oy + 120
+    pen.arc(cx, cy, 100, 135, 405)
+    for dx, top, n in MASTS:
+        mx, y0, y1 = cx + dx, cy + top, cy + BOT
+        pen.line(mx, y0 - 2, mx, y1 + 12, w=8)
+        gap, h = 5, (y1 - y0 - 4 * 5) / 4                # tiers of the same height on every mast
+        for i in range(n):                               # i = 0 the lowest
+            b = y1 - i * (h + gap)
+            t = b - h
+            wb, wt = 19 - 2.5 * i, 17 - 2.5 * i          # half widths: narrower up the mast
+            pen.poly([(mx - wt, t), (mx + wt, t), (mx + wb, b), (mx - wb, b)], SAIL_COLS[i])
+    pen.line(cx - HULL, cy + BOT + 18, cx + HULL, cy + BOT + 18, w=12)
+    pen.line(cx - HULL + 14, cy + BOT + 32, cx + HULL - 14, cy + BOT + 32, w=8)
 
 
-def word_width(k):
-    rx = 0.29 * XH
-    return (2 * rx + 20 + SW + 20 + 3 * XH + 2 * 18) * k
+# ---- the wordmark "clipper": circles of the x-height, verticals, round ends -----------------------
+R = XH / 2 - SW / 2                                  # the bowls' centre-line radius
+GAP = 16
 
 
-def draw_word(d, ox, oy, k, col=WHITE):
-    w, xh = SW * k, XH * k
-
-    def cap(x, y):
-        d.ellipse([x - w / 2, y - w / 2, x + w / 2, y + w / 2], fill=col)
-
-    def line(x0, y0, x1, y1):
-        d.line([(x0, y0), (x1, y1)], fill=col, width=max(1, round(w)))
-        cap(x0, y0)
-        cap(x1, y1)
-
-    base, x = oy + xh, ox
-    ry, rx = (xh + w) / 4, 0.29 * xh
-    b1, b2 = [x, oy, x + 2 * rx, oy + 2 * ry], [x, base - 2 * ry, x + 2 * rx, base]
-    d.arc(b1, start=90, end=335, fill=col, width=max(1, round(w)))
-    d.arc(b2, start=270, end=515, fill=col, width=max(1, round(w)))
-    for b, a in ((b1, 335), (b2, 155)):
-        cx, cy, a = (b[0] + b[2]) / 2, (b[1] + b[3]) / 2, math.radians(a)
-        cap(cx + (rx - w / 2) * math.cos(a), cy + (ry - w / 2) * math.sin(a))
-    x += 2 * rx + 20 * k
-    line(x + w / 2, oy - 32 * k, x + w / 2, base - w / 2)
-    x += w + 20 * k
-    R = xh / 2
-    for _ in range(3):
-        d.ellipse([x, oy, x + 2 * R, oy + 2 * R], outline=col, width=max(1, round(w)))
-        if _ < 2:
-            x += 2 * R + 18 * k
-    line(x + w / 2, oy + R, x + w / 2, base + 36 * k)
+def word_width():
+    return word(Pen(), 0, 0)                          # (a dry run: where the r ends)
 
 
-def render(kind, W, H, k, bg=BLACK, ss=4):
-    im = Image.new("RGB", (W * ss, H * ss), bg)
+def word(pen, ox, oy):
+    x, mid, base, w = ox, oy + XH / 2, oy + XH, SW
+    pen.arc(x + XH / 2, mid, R, 40, 320)                 # c
+    x += XH + GAP
+    pen.line(x + w / 2, oy - 32 + w / 2, x + w / 2, base - w / 2)          # l
+    x += w + GAP
+    pen.line(x + w / 2, oy + w / 2, x + w / 2, base - w / 2)                # i
+    pen.dot(x + w / 2, oy - 22, w * 1.1, WHITE) if pen.d else pen.svg.append(
+        f'<circle cx="{x + w / 2:.2f}" cy="{oy - 22:.2f}" r="{w * 0.55:.2f}" fill="{HEX(WHITE)}"/>')
+    x += w + GAP
+    for _ in range(2):                                   # p p
+        pen.arc(x + XH / 2, mid, R, 0, 360, caps=False)
+        pen.line(x + w / 2, mid, x + w / 2, base + 36 - w / 2)
+        x += XH + GAP
+    pen.arc(x + XH / 2, mid, R, 40, 360)                 # e: the bowl open at the lower right, its bar
+    pen.line(x + w / 2, mid, x + XH - w / 2, mid)
+    x += XH + GAP
+    pen.line(x + w / 2, oy + w / 2, x + w / 2, base - w / 2)                # r
+    pen.arc(x + w / 2 + R, mid, R, 180, 290)
+    return x + w / 2 + 2 * R * 0.95 - ox
+
+
+def render(kind, W, H, k, ss=4):
+    im = Image.new("RGB", (W * ss, H * ss), BLACK)
     d = ImageDraw.Draw(im)
     K = k * ss
-    if kind == "h":                                   # icon + wordmark side by side
-        draw_icon(d, 10 * K, (H * ss - 240 * K) / 2, K)
-        draw_word(d, 270 * K, H * ss / 2 - 36 * K, K)
-    elif kind == "v":                                 # icon over the wordmark (the boot splash)
-        draw_icon(d, (W * ss - 240 * K) / 2, 0, K)
-        draw_word(d, (W * ss - word_width(K)) / 2, 262 * K, K)
+    if kind == "h":                                      # icon + wordmark side by side
+        icon(Pen(d, K, 10 * K, (H * ss - 240 * K) / 2), 0, 0)
+        word(Pen(d, K, 270 * K, H * ss / 2 - 36 * K), 0, 0)
+    elif kind == "v":                                    # icon over the wordmark (the boot splash)
+        icon(Pen(d, K, (W * ss - 240 * K) / 2, 0), 0, 0)
+        word(Pen(d, K, (W * ss - word_width() * K) / 2, 270 * K), 0, 0)
     else:
-        draw_icon(d, (W * ss - 240 * K) / 2, (H * ss - 240 * K) / 2, K)
+        icon(Pen(d, K, (W * ss - 240 * K) / 2, (H * ss - 240 * K) / 2), 0, 0)
     return im.resize((W, H), Image.LANCZOS)
 
 
-# ---- SVG (stroke centred on the path) ---------------------------------------------------------
-def svg_icon(ox, oy):
-    g, k = ICON, 1.0
-    cx, cy, w = ox + 120, oy + 120, g["w"]
-    r = g["r"] - w / 2
-    a0, a1 = math.radians(135), math.radians(405)
-    p0 = (cx + r * math.cos(a0), cy + r * math.sin(a0))
-    p1 = (cx + r * math.cos(a1), cy + r * math.sin(a1))
-    s = [f'<path d="M{p0[0]:.2f} {p0[1]:.2f} A{r:.2f} {r:.2f} 0 1 1 {p1[0]:.2f} {p1[1]:.2f}" fill="none" '
-         f'stroke="{HEX(WHITE)}" stroke-width="{w}" stroke-linecap="round"/>']
-    mx, top, bot, bands = sail_bands(cx, cy, k)
-    s.append(f'<rect x="{mx - 5:.2f}" y="{top - 4:.2f}" width="10" height="{bot + 14 - top + 4:.2f}" rx="5" fill="{HEX(WHITE)}"/>')
-    for c, poly in bands:
-        s.append('<polygon points="' + " ".join(f"{x:.2f},{y:.2f}" for x, y in poly) + f'" fill="{HEX(c)}"/>')
-    s.append(f'<rect x="{cx - g["hull"]:.2f}" y="{bot + 24:.2f}" width="{2 * g["hull"]}" height="12" rx="6" fill="{HEX(WHITE)}"/>')
-    return s
-
-
-def svg_word(ox, oy):
-    w, xh, col = SW, XH, HEX(WHITE)
-    base, x = oy + xh, ox
-    ry, rx = (xh + w) / 4 - w / 2, 0.29 * xh - w / 2
-    c1 = (x + 0.29 * xh, oy + (xh + w) / 4)
-    c2 = (x + 0.29 * xh, base - (xh + w) / 4)
-
-    def pt(c, a):
-        a = math.radians(a)
-        return c[0] + rx * math.cos(a), c[1] + ry * math.sin(a)
-    s = []
-    # top bowl 90 -> 335 (clockwise on screen), bottom bowl 270 -> 515
-    for c, a, b in ((c1, 90, 335), (c2, 270, 515)):
-        p, q = pt(c, a), pt(c, b)
-        large = 1 if (b - a) > 180 else 0
-        s.append(f'<path d="M{p[0]:.2f} {p[1]:.2f} A{rx:.2f} {ry:.2f} 0 {large} 1 {q[0]:.2f} {q[1]:.2f}" fill="none" '
-                 f'stroke="{col}" stroke-width="{w}" stroke-linecap="round"/>')
-    x += 2 * 0.29 * xh + 20
-    s.append(f'<line x1="{x + w / 2:.2f}" y1="{oy - 32 + w / 2:.2f}" x2="{x + w / 2:.2f}" y2="{base - w / 2:.2f}" '
-             f'stroke="{col}" stroke-width="{w}" stroke-linecap="round"/>')
-    x += w + 20
-    R = xh / 2
-    for i in range(3):
-        s.append(f'<circle cx="{x + R:.2f}" cy="{oy + R:.2f}" r="{R - w / 2:.2f}" fill="none" stroke="{col}" stroke-width="{w}"/>')
-        if i < 2:
-            x += 2 * R + 18
-    s.append(f'<line x1="{x + w / 2:.2f}" y1="{oy + R:.2f}" x2="{x + w / 2:.2f}" y2="{base + 36 - w / 2:.2f}" '
-             f'stroke="{col}" stroke-width="{w}" stroke-linecap="round"/>')
-    return s
-
-
 def svg(kind):
+    pen = Pen()
     if kind == "h":
-        W, H = 760, 260
-        body = svg_icon(10, 10) + svg_word(270, H / 2 - 36)
+        W, H = 270 + word_width() + 20, 260
+        icon(pen, 10, 10)
+        sub = Pen()
+        word(sub, 270, H / 2 - 36)
+        pen.svg += sub.svg
     else:
         W, H = 240, 240
-        body = svg_icon(0, 0)
-    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" role="img" '
-            f'aria-label="SLOOP">\n<rect width="{W}" height="{H}" fill="#000"/>\n' + "\n".join(body) + "\n</svg>\n")
+        icon(pen, 0, 0)
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W:.0f} {H}" width="{W:.0f}" height="{H}" role="img" '
+            f'aria-label="Clipper">\n<rect width="{W:.0f}" height="{H}" fill="#000"/>\n' + "\n".join(pen.svg) + "\n</svg>\n")
 
 
 # ---- firmware splash ---------------------------------------------------------------------------
 SPLASH_W, SPLASH_H = 240, 188
-# the scale: the icon (240), the gap (22), the wordmark's x-height (72), the p's descender (36) and its round
-# end (6): 376 units in SPLASH_H rows. At 0.56 (before 2.4) the p's tail ran past row 188 and was cut
-SPLASH_K = 0.5
-assert (262 + 72 + 36 + 6) * SPLASH_K <= SPLASH_H, "the wordmark's p must fit the splash"
+SPLASH_K = 0.44
+assert (270 + 72 + 36 + 6) * SPLASH_K <= SPLASH_H, "the wordmark's p must fit the splash"
+assert word_width() * SPLASH_K <= SPLASH_W - 4, "the wordmark must fit the splash"
 
 
 def rgb565(c):
@@ -205,7 +184,8 @@ def splash_header(path):
             j += 1
         rle.append(((j - i - 1) << 4) | px[i])
         i = j
-    L = ["/* generated by tools/gen_logo.py: the SLOOP boot splash */", "#pragma once", "#include <stdint.h>",
+    # (the names stay SLOOP_*: firmware/src/splash.c reads them)
+    L = ["/* generated by tools/gen_logo.py: the Clipper boot splash */", "#pragma once", "#include <stdint.h>",
          f"#define SLOOP_SPLASH_W {SPLASH_W}", f"#define SLOOP_SPLASH_H {SPLASH_H}",
          "static const uint16_t SLOOP_SPLASH_PAL[16] = {" + ", ".join(f"0x{rgb565(c):04X}" for c in cols) + "};",
          f"static const uint8_t SLOOP_SPLASH_RLE[{len(rle)}] = {{"]
@@ -219,11 +199,12 @@ def splash_header(path):
 def assets(out):
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
-    (out / "sloop-logo.svg").write_text(svg("h"))
-    (out / "sloop-icon.svg").write_text(svg("i"))
-    render("h", 1520, 520, 2.0).save(out / "sloop-logo.png")
-    render("i", 512, 512, 512 / 240).save(out / "sloop-icon.png")
-    render("v", SPLASH_W, SPLASH_H, SPLASH_K).resize((SPLASH_W * 2, SPLASH_H * 2), Image.NEAREST).save(out / "sloop-splash.png")
+    (out / "clipper-logo.svg").write_text(svg("h"))
+    (out / "clipper-icon.svg").write_text(svg("i"))
+    W = int(270 + word_width() + 20)
+    render("h", W * 2, 520, 2.0).save(out / "clipper-logo.png")
+    render("i", 512, 512, 512 / 240).save(out / "clipper-icon.png")
+    render("v", SPLASH_W, SPLASH_H, SPLASH_K).resize((SPLASH_W * 2, SPLASH_H * 2), Image.NEAREST).save(out / "clipper-splash.png")
     print(f"logo: assets in {out}")
 
 

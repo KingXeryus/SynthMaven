@@ -7,7 +7,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SLOOP Editor</title>
+<title>Clipper Editor</title>
 <style>
   /* SLOOP 2.4 editor: the FM-1's screen on a big display. Black, the four track colours, the device's own
      Terminus pixel font (tools/gen_webfont.py, inlined: the editor also runs from file://), 16 px and 32 px only
@@ -440,22 +440,36 @@
 <body>
 <div class="app">
   <aside class="side">
-    <a class="brand" href="#sound" aria-label="SLOOP">
-      <svg viewBox="44 24 572 186" role="img" aria-hidden="true">
+    <a class="brand" href="#sound" aria-label="Clipper">
+      <svg viewBox="20 20 731 220" role="img" aria-hidden="true">
         <path d="M59.29 200.71 A100.00 100.00 0 1 1 200.71 200.71" fill="none" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
-        <rect x="95" y="46" width="10" height="136" rx="5" fill="#F2F2F2"/>
-        <polygon points="111,50 111,50 131.34,75 111,75" fill="#287CFF"/>
-        <polygon points="111,81 136.22,81 156.56,106 111,106" fill="#1ECC70"/>
-        <polygon points="111,112 161.44,112 181.78,137 111,137" fill="#FFC618"/>
-        <polygon points="111,143 186.66,143 207,168 111,168" fill="#FF621A"/>
-        <rect x="66" y="192" width="128" height="12" rx="6" fill="#F2F2F2"/>
-        <path d="M290.88 130 A14.88 15 0 1 1 304.37 108.66" fill="none" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
-        <path d="M290.88 130 A14.88 15 0 1 1 277.39 151.34" fill="none" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
-        <line x1="337.76" y1="68" x2="337.76" y2="160" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
-        <circle cx="399.76" cy="130" r="30" fill="none" stroke="#F2F2F2" stroke-width="12"/>
-        <circle cx="489.76" cy="130" r="30" fill="none" stroke="#F2F2F2" stroke-width="12"/>
-        <circle cx="579.76" cy="130" r="30" fill="none" stroke="#F2F2F2" stroke-width="12"/>
-        <line x1="549.76" y1="130" x2="549.76" y2="196" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
+        <line x1="84.00" y1="70.00" x2="84.00" y2="180.00" stroke="#F2F2F2" stroke-width="8" stroke-linecap="round"/>
+        <polygon points="67.00,149.00 101.00,149.00 103.00,168.00 65.00,168.00" fill="#FF621A"/>
+        <polygon points="69.50,125.00 98.50,125.00 100.50,144.00 67.50,144.00" fill="#FFC618"/>
+        <polygon points="72.00,101.00 96.00,101.00 98.00,120.00 70.00,120.00" fill="#1ECC70"/>
+        <line x1="130.00" y1="44.00" x2="130.00" y2="180.00" stroke="#F2F2F2" stroke-width="8" stroke-linecap="round"/>
+        <polygon points="113.00,142.50 147.00,142.50 149.00,168.00 111.00,168.00" fill="#FF621A"/>
+        <polygon points="115.50,112.00 144.50,112.00 146.50,137.50 113.50,137.50" fill="#FFC618"/>
+        <polygon points="118.00,81.50 142.00,81.50 144.00,107.00 116.00,107.00" fill="#1ECC70"/>
+        <polygon points="120.50,51.00 139.50,51.00 141.50,76.50 118.50,76.50" fill="#287CFF"/>
+        <line x1="176.00" y1="70.00" x2="176.00" y2="180.00" stroke="#F2F2F2" stroke-width="8" stroke-linecap="round"/>
+        <polygon points="159.00,149.00 193.00,149.00 195.00,168.00 157.00,168.00" fill="#FF621A"/>
+        <polygon points="161.50,125.00 190.50,125.00 192.50,144.00 159.50,144.00" fill="#FFC618"/>
+        <polygon points="164.00,101.00 188.00,101.00 190.00,120.00 162.00,120.00" fill="#1ECC70"/>
+        <line x1="78.00" y1="186.00" x2="182.00" y2="186.00" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
+        <line x1="92.00" y1="200.00" x2="168.00" y2="200.00" stroke="#F2F2F2" stroke-width="8" stroke-linecap="round"/>
+        <path d="M328.98 149.28 A30.00 30.00 0 1 1 328.98 110.72" fill="none" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
+        <line x1="364.00" y1="68.00" x2="364.00" y2="160.00" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
+        <line x1="392.00" y1="100.00" x2="392.00" y2="160.00" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
+        <circle cx="392.00" cy="72.00" r="6.60" fill="#F2F2F2"/>
+        <circle cx="450.00" cy="130.00" r="30.00" fill="none" stroke="#F2F2F2" stroke-width="12"/>
+        <line x1="420.00" y1="130.00" x2="420.00" y2="196.00" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
+        <circle cx="538.00" cy="130.00" r="30.00" fill="none" stroke="#F2F2F2" stroke-width="12"/>
+        <line x1="508.00" y1="130.00" x2="508.00" y2="196.00" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
+        <path d="M648.98 149.28 A30.00 30.00 0 1 1 656.00 130.00" fill="none" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
+        <line x1="596.00" y1="130.00" x2="656.00" y2="130.00" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
+        <line x1="684.00" y1="100.00" x2="684.00" y2="160.00" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
+        <path d="M684.00 130.00 A30.00 30.00 0 0 1 724.26 101.81" fill="none" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
       </svg>
       <span>editor</span>
     </a>
@@ -708,7 +722,7 @@
       </div>
     </section>
 
-    <footer>SLOOP, based on Felucca by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener">Hügelton Instruments</a>. GPL-3.0.<br>
+    <footer>Clipper, from SLOOP, based on Felucca by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener">Hügelton Instruments</a>. GPL-3.0.<br>
       <span data-t="foot"></span> M-VAVE and FM-1 are trademarks of their respective owners.<br>
       <a href="FUKIAI-LICENSE.txt" data-t="iconsCredit"></a> · <span data-t="fontCredit"></span></footer>
   </main>
@@ -1747,7 +1761,7 @@ async function backupCapture(rq, info, progress = () => {}) {
 }
 /* a backup file -> {id: Uint8Array}; every object checked against its length and CRC */
 function backupObjects(file) {
-  if (!file || file.format !== BK.FORMAT || !(file.version >= 1) || !Array.isArray(file.objects)) throw new BackupError("bkBad", "not a SLOOP backup");
+  if (!file || file.format !== BK.FORMAT || !(file.version >= 1) || !Array.isArray(file.objects)) throw new BackupError("bkBad", "not a Clipper / SLOOP backup");
   const m = new Map();
   for (const o of file.objects) {
     const d = b64dec(o.data || "");
@@ -2501,7 +2515,7 @@ function makeMockDevice(opt = {}) {
         b(0);
         break;
       case CMD.INFO:
-        s(opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)"); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
+        s(opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : (opt.clipper ? "FELUCCA CLIPPER 0.1 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)")); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
         ENG.forEach((e) => s(e.name));
         if (!opt.legacy) b(NTRK);
         if (v5) b(opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : opt.clipper ? 11 : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
@@ -3612,7 +3626,7 @@ const TEXT = {
     foot: "Chrome か Edge で使えます。", iconsCredit: "アイコン: Fukiai（MIT）Hügelton Instruments",
     nomidi: "このブラウザでは使えません。Chrome か Edge で開いてください。",
     denied: "MIDI（SysEx）の使用が許可されませんでした。",
-    nodevice: "SLOOP が見つかりません。USB で接続して、もう一度押してください。",
+    nodevice: "Clipper が見つかりません。USB で接続して、もう一度押してください。",
     connecting: "接続中", reading: "読み込み中 ", steploading: "ステップを読み込み中 ",
     ready: "接続しました", disconnected: "切断されました", lost: "FM-1 が外されました",
     noreply: "応答がありません", error: "エラー: ", busy: "処理中",
@@ -3660,7 +3674,7 @@ const TEXT = {
     putDone: "本体に書き込みました: スロット ", storedSlot: "本体に保存しました: スロット ", erasedSlot: "消去しました: スロット ",
     loadedUser: "読み込みました: ", reloaded: "本体で音色が変わったので読み直しました", readingBank: "スロットを読み込み中",
     badEngine: "このファームウェアにないエンジンです: ", flashFail: "書き込みに失敗しました（rc {rc}）",
-    installer: "SLOOP インストーラー",
+    installer: "Clipper インストーラー",
     tabSeq: "シーケンサー", tabTracks: "トラック", tabSettings: "設定",
     navTrack: "トラック", navSounds: "サウンド", navDevice: "本体", tabKits: "ドラムキット", fm1: "FM-1",
     stepList: "ステップ一覧（音名を入力）", stepsOf: "{n} ステップ", fontCredit: "フォント: Terminus（SIL OFL 1.1）",
@@ -3691,7 +3705,7 @@ const TEXT = {
     bkTitle: "バックアップ", bkHelp: "FM-1 の中身をすべて 1 つのファイルに保存します: 今の曲、プロジェクト 1〜4（ソングのセクション A〜D）、ユーザープリセット、FM6 の音色バンク、サンプル USR1〜4、設定（色、キャリブレーション、ソング、ライト）。復元すると、本体はファイルの状態に戻ります（今の内容は上書きされます）。",
     bkSave: "バックアップを保存", bkLoad: "ファイルから復元", bkSaving: "バックアップ中 ", bkSaved: "バックアップを保存しました",
     bkRestoring: "復元中 ", bkRestored: "復元しました", bkConfirm: "FM-1 の今の内容をすべてこのバックアップで置き換えます。続けますか？",
-    bkBad: "SLOOP のバックアップファイルではないか、壊れています: ", bkStop: "FM-1 の再生を止めてから、もう一度復元してください。",
+    bkBad: "Clipper のバックアップファイルではないか、壊れています: ", bkStop: "FM-1 の再生を止めてから、もう一度復元してください。",
     bkStale: "本体の内容が途中で変わりました。もう一度バックアップしてください: ", bkRead: "読み取りエラー: ", bkWrite: "書き込みエラー: ", bkRc4: "フラッシュがありません",
     system: "システム", firmware: "ファームウェア", sync: "同期", tracksN: "トラック", stepsN: "ステップ数", enginesL: "エンジン",
     smpSlots: "サンプルスロット", userBank: "ユーザープリセット", none: "なし",
@@ -3714,7 +3728,7 @@ const TEXT = {
     fm6CartTick: "バンクに入れる", fm6Cart: "カートリッジをバンクに保存（{n} 音色 → {b}）", fm6CartFirst: "最初の {n}", fm6CartNone: "なし",
     fm6CartFull: "バンクは最大", fm6CartAsk: "{x} の {n} 音色を {b} に保存します（バンクの残りはそのまま）。よろしいですか？",
     fm6CartOver: "そのうち {k} スロットは使用中で、置き換えられます。", fm6CartStop: "ソングを止めてから保存してください",
-    fm6CartDone: "バンクに保存しました:", fm6CartOld: "この FM-1 のファームウェアではできません（SLOOP 2.4 以降）",
+    fm6CartDone: "バンクに保存しました:", fm6CartOld: "この FM-1 のファームウェアではできません（新しいファームウェアが必要です）",
     fm6UpWhere: "ユーザープリセットにも追加（FM-1 の PRESETS / SELECT で名前から選べます）:", fm6UpNone: "しない（PTCH で選ぶ）",
     fm6UpFree: "する: 空きスロットに（空き {k}）", fm6UpFrom: "する: {u} から",
     fm6UpAsk: "ユーザープリセット {n} 個を {u} に作ります（各音色の名前で、FM6 の PTCH がそのスロットに）。",
@@ -3739,7 +3753,7 @@ const TEXT = {
     kitNotePair: "{x}: キットを USR3 と USR4 の 2 スロットに分けて入れます（自動）。USR1 と USR2 は楽器（SAMPLE）用に空いたまま。",
     kitNoteOne: "{x}: キット全体を 1 スロットに（約 7 秒）。他のスロットは楽器用に空いたまま。",
     kitReplaces: "今の中身を置き換えます: {x}",
-    kitNo4: "このファームウェアには USR4 がありません（SLOOP 2.4 以降）。",
+    kitNo4: "このファームウェアには USR4 がありません（新しいファームウェアが必要です）。",
     kitStep3: "FM-1 に送る",
     kitWhereFM1: "FM-1 では: トラック 4（ドラム）→ KIT = {x}。保存したプロジェクトもこのキットを覚えています。",
     smpIntro: "FM-1 に入れる自分の音。スロットは 4 つ（USR1〜USR4）、各約 7 秒。スロットには楽器（トラック 1〜3 の SAMPLE エンジンで鳴らす）か、ドラムキット（「ドラムキット」ページで作る）が入ります。",
@@ -3766,10 +3780,10 @@ const TEXT = {
     smpPlaying: "トラック",
     smpFull: "1 スロット 16 ファイルまで",
     chopSendBelow: "送信は下の 3 で。",
-    /* SLOOP 2.5: DRUM SYNTH */
+    /* Clipper 2.5: DRUM SYNTH */
     tabDrumSynth: "ドラムシンセ", dsTitle: "ドラムシンセ",
     dsHelp: "自分のシンセドラムキット SYN1〜SYN4（ドラムトラックの KIT の最後）。音を選び、値を変えると FM-1 ですぐ鳴ります。「FM-1 に保存」でフラッシュに残ります（ソングを止めて）。値をダブルクリック: 元のキットの値に戻す。",
-    dsOld: "この FM-1 のファームウェアにはドラムシンセがありません（SLOOP 2.5 以降）。",
+    dsOld: "この FM-1 のファームウェアにはドラムシンセがありません（新しいファームウェアが必要です）。",
     dsFrom: "元のキット:", dsCopy: "コピー", dsBits: "CRUSH", dsHoldS: "S&H", dsOff: "OFF",
     dsStore: "FM-1 に保存", dsUse: "ドラムトラックで使う", dsSave: "ファイルに保存", dsOpen: "ファイルを開く",
     dsPlay: "鳴らす", dsAuto: "変えたら鳴らす",
@@ -3777,8 +3791,8 @@ const TEXT = {
     dsNotStored: "まだ保存していません", dsStored: "保存済み",
     dsBad: "FM-1 が受け付けませんでした", dsCopyAsk: "{k} を {x} のコピーにします。よろしいですか？", dsCopied: "コピーしました:",
     dsStop: "ソングを止めてから保存してください", dsFlash: "フラッシュに書けませんでした", dsSaved: "FM-1 に保存しました",
-    dsFileBad: "SLOOP のドラムシンセキットではありません", dsOpenAsk: "{x} を {k} に読み込みます。よろしいですか？", dsOpened: "読み込みました:",
-    /* SLOOP 2.5: length, piano roll, MIDI files, song */
+    dsFileBad: "Clipper のドラムシンセキットではありません", dsOpenAsk: "{x} を {k} に読み込みます。よろしいですか？", dsOpened: "読み込みました:",
+    /* Clipper 2.5: length, piano roll, MIDI files, song */
     lenLabel: "長さ（ステップ）", viewGrid: "グリッド", viewRoll: "ピアノロール",
     midiExport: "MIDI 書き出し", midiImportBtn: "MIDI 読み込み",
     rollLen: "音の長さ", rollUp: "オクターブ上", rollDown: "オクターブ下",
@@ -3802,7 +3816,7 @@ const TEXT = {
     songAdd: "追加", songSum: "{n} / {max} 項目、{bars} 小節", songLoop: "最後まで来たら:",
     songLoopOff: "止まる", songLoopOn: "最初に戻る", songRead: "FM-1 から読む", songSend: "FM-1 に送る",
     songUp: "上へ", songDown: "下へ", songDel: "削除",
-    songOld: "この FM-1 のファームウェアではソングを読めません（SLOOP 2.5 以降）。",
+    songOld: "この FM-1 のファームウェアではソングを読めません（新しいファームウェアが必要です）。",
     songBad: "このソングは送れません（16 項目、1〜64 小節まで）", songRefused: "ソングを止めてから送ってください",
     songSent: "ソングを FM-1 に送りました",
   },
@@ -3818,7 +3832,7 @@ const TEXT = {
     foot: "Works in Chrome or Edge.", iconsCredit: "Icons: Fukiai (MIT), Hügelton Instruments",
     nomidi: "This browser cannot do it. Open the page in Chrome or Edge.",
     denied: "MIDI (SysEx) access was not allowed.",
-    nodevice: "SLOOP not found. Connect the FM-1 by USB and press Connect again.",
+    nodevice: "Clipper not found. Connect the FM-1 by USB and press Connect again.",
     connecting: "Connecting", reading: "Reading ", steploading: "Reading steps ",
     ready: "Connected", disconnected: "Disconnected", lost: "The FM-1 was unplugged",
     noreply: "No reply from the device", error: "Error: ", busy: "Busy",
@@ -3866,7 +3880,7 @@ const TEXT = {
     putDone: "Written to the device: slot ", storedSlot: "Stored on the device: slot ", erasedSlot: "Erased slot ",
     loadedUser: "Loaded ", reloaded: "The sound changed on the device: read again", readingBank: "Reading the slots",
     badEngine: "This firmware has no such engine: ", flashFail: "Write failed (rc {rc})",
-    installer: "SLOOP installer",
+    installer: "Clipper installer",
     tabSeq: "Sequencer", tabTracks: "Tracks", tabSettings: "Settings",
     navTrack: "Track", navSounds: "Sounds", navDevice: "Device", tabKits: "Drum kit", fm1: "FM-1",
     stepList: "Step list (type note names)", stepsOf: "{n} steps", fontCredit: "Font: Terminus (SIL OFL 1.1)",
@@ -3877,7 +3891,7 @@ const TEXT = {
     kitUsed: "{s} s of {t} s", kitOver: "too long",
     kitEmptyPad: "Drop a WAV here\nor click", kitTune: "Pitch", kitGain: "Gain", kitLen: "Length",
     kitPlay: "Play", kitRemove: "Remove", kitNone: "Put a sound on a pad first.", kitSent: "Kit sent to ",
-    kitUsing: "Drum track KIT: ", kitNoKit: "This firmware's drum track has no USR kits (SLOOP 2.4 and later).",
+    kitUsing: "Drum track KIT: ", kitNoKit: "This firmware's drum track has no USR kits (a newer firmware).",
     kitConfirm: "Replace {x} with this kit?", kitAssigned: "Sorted: ",
     kitFull: "All 16 pads are taken", kitLoaded: "ZIP opened: ",
     needDevice: "Connect the FM-1 to edit.", smpNone: "This firmware has no user sample slots.",
@@ -3897,7 +3911,7 @@ const TEXT = {
     bkTitle: "Backup", bkHelp: "Everything on the FM-1 in one file: the music you are working on, the projects 1–4 (the song sections A–D), the user presets, the FM6 patch bank, the samples USR1–USR4 and the settings (colours, calibration, the song, the lights). Restoring puts the FM-1 back as it was in the file (what is on it now is replaced).",
     bkSave: "Save a backup", bkLoad: "Restore from a file", bkSaving: "Backing up ", bkSaved: "Backup saved",
     bkRestoring: "Restoring ", bkRestored: "Restored", bkConfirm: "Replace everything on the FM-1 with this backup?",
-    bkBad: "Not a SLOOP backup, or damaged: ", bkStop: "Stop the FM-1 (PLAY), then restore again.",
+    bkBad: "Not a Clipper backup, or damaged: ", bkStop: "Stop the FM-1 (PLAY), then restore again.",
     bkStale: "The FM-1 changed during the backup; back up again: ", bkRead: "Read error: ", bkWrite: "Write error: ", bkRc4: "No flash",
     system: "System", firmware: "Firmware", sync: "Sync", tracksN: "Tracks", stepsN: "Steps", enginesL: "Engines",
     smpSlots: "Sample slots", userBank: "User presets", none: "none",
@@ -3920,7 +3934,7 @@ const TEXT = {
     fm6CartTick: "Put in the bank", fm6Cart: "Store cartridge in bank ({n} → {b})", fm6CartFirst: "First {n}", fm6CartNone: "None",
     fm6CartFull: "The bank holds at most", fm6CartAsk: "Store {n} voice(s) of {x} in {b}? The rest of the bank stays as it is.",
     fm6CartOver: "Slots already in use (their patch will be replaced): {k}.", fm6CartStop: "Stop the song first, then store",
-    fm6CartDone: "Stored in the bank:", fm6CartOld: "This FM-1's firmware cannot do it (SLOOP 2.4 or later)",
+    fm6CartDone: "Stored in the bank:", fm6CartOld: "This FM-1's firmware cannot do it (a newer firmware)",
     fm6UpWhere: "Also add them to the user presets (pick them by name with PRESETS / SELECT on the FM-1):", fm6UpNone: "No (pick them with PTCH)",
     fm6UpFree: "Yes, in the free slots ({k} free)", fm6UpFrom: "Yes, from {u}",
     fm6UpAsk: "Also {n} user preset(s) in {u}, named after the voices (FM6, PTCH on their slot).",
@@ -3945,7 +3959,7 @@ const TEXT = {
     kitNotePair: "{x}: the kit is shared out over the two slots USR3 and USR4 by itself. USR1 and USR2 stay free for your instruments (SAMPLE).",
     kitNoteOne: "{x}: the whole kit in one slot (about 7 s). The other slots stay free for instruments.",
     kitReplaces: "It replaces what is there now: {x}",
-    kitNo4: "This firmware has no USR4 (SLOOP 2.4 and later).",
+    kitNo4: "This firmware has no USR4 (a newer firmware).",
     kitStep3: "Send it to the FM-1",
     kitWhereFM1: "On the FM-1: track 4 (drums) → KIT = {x}. A project you save remembers the kit.",
     smpIntro: "Your own sounds on the FM-1. Four slots (USR1–USR4) of about 7 s each. A slot holds an instrument, played by a synth track with the SAMPLE engine, or a drum kit (made on the Drum kit page).",
@@ -3972,10 +3986,10 @@ const TEXT = {
     smpPlaying: "Track",
     smpFull: "A slot takes 16 files at most",
     chopSendBelow: "Sending: step 3 below.",
-    /* SLOOP 2.5: DRUM SYNTH */
+    /* Clipper 2.5: DRUM SYNTH */
     tabDrumSynth: "Drum synth", dsTitle: "Drum synth",
     dsHelp: "Your own synthesised drum kits, SYN1 to SYN4 (the last kits of the drum track's KIT). Pick a sound, change its values: the FM-1 plays it at once. Store on the FM-1 keeps them in flash (stop the song first). Double-click a value: back to the kit it started from.",
-    dsOld: "This FM-1's firmware has no drum synth (SLOOP 2.5 or later).",
+    dsOld: "This FM-1's firmware has no drum synth (a newer firmware).",
     dsFrom: "Start from:", dsCopy: "Copy", dsBits: "CRUSH", dsHoldS: "S&H", dsOff: "OFF",
     dsStore: "Store on the FM-1", dsUse: "Use on the drum track", dsSave: "Save file", dsOpen: "Open file",
     dsPlay: "Play", dsAuto: "Play on change",
@@ -3983,8 +3997,8 @@ const TEXT = {
     dsNotStored: "not stored yet", dsStored: "stored",
     dsBad: "The FM-1 refused it", dsCopyAsk: "Make {k} a copy of {x}?", dsCopied: "Copied:",
     dsStop: "Stop the song first, then store", dsFlash: "Could not write the flash", dsSaved: "Stored on the FM-1",
-    dsFileBad: "Not a SLOOP drum synth kit", dsOpenAsk: "Load {x} into {k}?", dsOpened: "Loaded:",
-    /* SLOOP 2.5: length, piano roll, MIDI files, song */
+    dsFileBad: "Not a Clipper drum synth kit", dsOpenAsk: "Load {x} into {k}?", dsOpened: "Loaded:",
+    /* Clipper 2.5: length, piano roll, MIDI files, song */
     lenLabel: "Length (steps)", viewGrid: "Grid", viewRoll: "Piano roll",
     midiExport: "Export MIDI", midiImportBtn: "Import MIDI",
     rollLen: "Note length", rollUp: "Octave up", rollDown: "Octave down",
@@ -4008,7 +4022,7 @@ const TEXT = {
     songAdd: "Add", songSum: "{n} of {max} entries, {bars} bars", songLoop: "At the end:",
     songLoopOff: "stop", songLoopOn: "start again", songRead: "Read from the FM-1", songSend: "Send to the FM-1",
     songUp: "Up", songDown: "Down", songDel: "Remove",
-    songOld: "This FM-1's firmware cannot share its song (SLOOP 2.5 or later).",
+    songOld: "This FM-1's firmware cannot share its song (a newer firmware).",
     songBad: "This song cannot be sent (16 entries, 1–64 bars each)", songRefused: "Stop the song first, then send",
     songSent: "Song sent to the FM-1",
   },
@@ -4168,7 +4182,7 @@ async function connect() {
   sayK("connecting");
   try {
     if (!access) {
-      if (MOCK) { mock = makeMockDevice({ legacy: QS.get("legacy") === "1", clipper: QS.get("clipper") === "1" }); access = mock.access; }
+      if (MOCK) { mock = makeMockDevice({ legacy: QS.get("legacy") === "1", clipper: QS.get("clipper") !== "0" }); access = mock.access; }
       else {
         try { access = await navigator.requestMIDIAccess({ sysex: true }); }
         catch (e) { sayK("denied"); return; }
@@ -4958,7 +4972,7 @@ function midiExport() {
   const len = stepLen(), div = curDiv(), tr = dev.sel || 0, drum = isDrum();
   const notes = drum && drumGrid() && dev.dstepsOk ? SMF.fromDrums(dev.dsteps, len, div) : SMF.fromSteps(dev.steps, len, div);
   if (!notes.length) { sayK("midiEmpty"); return; }
-  downloadBytes(`sloop-track${tr + 1}.mid`, SMF.write(notes, { bpm: gBpm(), ch: drum ? 9 : tr, name: `SLOOP track ${tr + 1}` }));
+  downloadBytes(`clipper-track${tr + 1}.mid`, SMF.write(notes, { bpm: gBpm(), ch: drum ? 9 : tr, name: `Clipper track ${tr + 1}` }));
   sayK("midiSaved", String(notes.length));
 }
 let MI = null;                                           /* the file being imported: {name, smf, src} */
@@ -7555,7 +7569,7 @@ $("fm6bankexp").addEventListener("click", () => op(async () => {
     const r = parse[CMD.FM6_GET](await rq(req.fm6Get(FM6.TARGET.BANK, k)));
     out.push(r.rc ? null : FM6.unpack(r.packed));
   }
-  downloadBytes(`sloop-fm6-bank-${today()}.syx`, FM6.bankSysex(out));
+  downloadBytes(`clipper-fm6-bank-${today()}.syx`, FM6.bankSysex(out));
   sayK("fm6Exported");
 }));
 /* ---------------------------------------------------------------- HYBRID --- */
@@ -7720,7 +7734,7 @@ function bkReport(e) {
 $("bk-save").addEventListener("click", () => op(async () => {
   try {
     const arc = await backupCapture(rq, dev.info, bkProgress("bkSaving"));
-    download(`SLOOP-backup-${today()}.json`, arc);
+    download(`Clipper-backup-${today()}.json`, arc);
     sayK("bkSaved");
   } catch (e) { bkReport(e); } finally { $("bk-prog").hidden = true; }
 }));
