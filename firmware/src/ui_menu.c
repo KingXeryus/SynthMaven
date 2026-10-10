@@ -87,8 +87,13 @@ static void draw_menu(void)
             cv_text(4, 119, &FONT_S, "GPL-3.0, NO WARRANTY", C_HI);
             cv_text(4, 132, &FONT_S, "GITHUB.COM/ISOD89/CLIPPER-FM1", C_AMB);   /* (the source of this firmware) */
             cv_text(4, 146, &FONT_S, "FONT: TERMINUS (OFL)", C_DIM);
+#if CLIPPER_SYNTH                                            /* (no built-in samples: the DSP's sources) */
+            cv_text(4, 159, &FONT_S, "LADDER: ZAVALISHIN", C_DIM);
+            cv_text(4, 172, &FONT_S, "PLATE: DATTORRO", C_DIM);
+#else
             cv_text(4, 159, &FONT_S, "SAMPLES: VERSILIAN (CC0)", C_DIM);
             cv_text(4, 172, &FONT_S, "+ SONIC PI (CC0)", C_DIM);
+#endif
             cv_text(4, 185, &FONT_S, "PHASE: CRISPYZEBRA (GPL)", C_DIM);
             cv_text(4, 198, &FONT_S, "VOICE: REF. KLATTSCH (MIT)", C_DIM);
         } else {

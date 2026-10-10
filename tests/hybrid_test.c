@@ -38,7 +38,7 @@ static void check(const char *what, int ok)
 /* ------------------------------------------------------------ helpers --- */
 static hy_patch_t init_patch(void)
 {
-    hy_patch_t p = HY_FACTORY[HY_NFACTORY - 1u];     /* INIT: one saw, LP12 open */
+    hy_patch_t p = HY_FACTORY[HY_INIT];               /* INIT: one saw, LP12 open */
     memset(p.mod, 0, sizeof p.mod);
     p.flt[0].type = HF_OFF;
     p.drift = 0;
@@ -56,7 +56,7 @@ static void setup(const hy_patch_t *p)
     memset((void *)hy_gen, 0, sizeof hy_gen);
     memset(hy_slot_seen, 0, sizeof hy_slot_seen);
     host_tracks_init();
-    host_preset(&trk[0], ENGI_HYBRID, HY_NFACTORY - 1u);
+    host_preset(&trk[0], ENGI_HYBRID, HY_INIT);
     trk[0].p[P_VOICE] = V_POLY;
     trk[0].p[P_ATK] = 0;
     trk[0].p[P_DEC] = 64;

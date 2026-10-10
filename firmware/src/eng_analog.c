@@ -132,6 +132,12 @@ static const preset_t ANALOG_PRESETS[] = {
      XP(P_LD_PIT + 1, 1, P_LRATE + 1, 80, P_LFADE + 1, 60, P_GLIDE + 1, 30)},
     {"SAW BASS", {0, 6, 64, 0, 52, 30, 40, 64}, {0, 60, 60, 20}, 30, 1, FX(8, 0, 0, 4), XP(P_TRANS + 1, -24)},
     {"SINE PAD", {3, 10, 64, 4, 90, 0, 0, 32}, {80, 90, 118, 90}, 0, 0, FX(0, 60, 20, 65)},
+    /* Clipper 0.2: the 24 dB ladder (FX > FILTER > MODL = MOOG; in the groovebox that slot is the slicer's pattern,
+     * its slicer off): a fat mono bass and a 70s lead */
+    {"MINI BASS", {0, 6, 64, 0, 42, 60, 40, 64}, {0, 64, 70, 24}, 46, 1, FX(0, 0, 0, 4),
+     XP(P_FMODEL + 1, FM_MOOG, P_GLIDE + 1, 26, P_TRANS + 1, -24)},
+    {"MINI LEAD", {0, 9, 64, 0, 62, 80, 30, 64}, {2, 70, 110, 40}, 26, 1, FX(0, 0, 26, 24),
+     XP(P_FMODEL + 1, FM_MOOG, P_GLIDE + 1, 36, P_LD_PIT + 1, 1, P_LRATE + 1, 82)},
 };
 
 static const engine_t ENG_ANALOG = {

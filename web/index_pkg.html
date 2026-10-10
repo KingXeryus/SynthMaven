@@ -66,17 +66,17 @@
   <!--BANNER-->
   <h1 data-t="kicker"></h1>
   <section data-l="en">
-  <p class="lead">Clipper turns the FM-1 into a deep polyphonic synthesizer: 13 synthesis engines, 177 sounds, and HYBRID, a voice with three oscillators, two filters and a 16-slot modulation matrix that you can edit entirely in your browser.</p>
+  <p class="lead">Clipper turns the FM-1 into a deep polyphonic synthesizer: 13 synthesis engines, 160 sounds, and HYBRID, a voice with three oscillators, two filters and a 16-slot modulation matrix that you can edit entirely in your browser.</p>
   </section>
   <section data-l="fr">
-  <p class="lead">Clipper fait de la FM-1 un vrai synthétiseur polyphonique : 13 moteurs de synthèse, 177 sons, et HYBRID, une voix à trois oscillateurs, deux filtres et une matrice de modulation de 16 slots, entièrement éditable dans ton navigateur.</p>
+  <p class="lead">Clipper fait de la FM-1 un vrai synthétiseur polyphonique : 13 moteurs de synthèse, 160 sons, et HYBRID, une voix à trois oscillateurs, deux filtres et une matrice de modulation de 16 slots, entièrement éditable dans ton navigateur.</p>
   </section>
   <section data-l="ja">
-  <p class="lead">Clipper は FM-1 を本格的なポリフォニック・シンセサイザーに変えます。13 の音源エンジン、177 の音色、そして 3 オシレーター・2 フィルター・16 スロットのモジュレーション・マトリクスを持つ HYBRID。音色はすべてブラウザから編集できます。</p>
+  <p class="lead">Clipper は FM-1 を本格的なポリフォニック・シンセサイザーに変えます。13 の音源エンジン、160 の音色、そして 3 オシレーター・2 フィルター・16 スロットのモジュレーション・マトリクスを持つ HYBRID。音色はすべてブラウザから編集できます。</p>
   </section>
   <div class="tiles">
     <div class="tile" style="--c: var(--blue)"><b>13</b><span data-t="tEng"></span></div>
-    <div class="tile" style="--c: var(--green)"><b>177</b><span data-t="tSnd"></span></div>
+    <div class="tile" style="--c: var(--green)"><b>160</b><span data-t="tSnd"></span></div>
     <div class="tile" style="--c: var(--yellow)"><b>3+2</b><span data-t="tHy"></span></div>
     <div class="tile" style="--c: var(--orange)"><b>16</b><span data-t="tMx"></span></div>
   </div>
@@ -90,8 +90,8 @@
   <section class="about" data-l="en">
     <h2>Engines</h2>
     <dl class="engines">
-      <div><dt>HYBRID</dt><dd>The Clipper voice. Three oscillators (saw, pulse, triangle, sine with feedback, morph, a seven-saw supersaw, FM, hard sync, wavefolder, noise), ring modulation, drift and drive; two filters (LP12, LP24, band-pass, high-pass, notch, peak) in series, in parallel or split; two envelopes and two tempo-synced LFOs per voice; a 16-slot modulation matrix; four macros.</dd></div>
-      <div><dt>ANALOG</dt><dd>Virtual analog: two band-limited oscillators with PWM, noise, drive and a resonant low-pass.</dd></div>
+      <div><dt>HYBRID</dt><dd>The Clipper voice. Three oscillators (saw, pulse, triangle, sine with feedback, morph, a seven-saw supersaw, FM, hard sync, wavefolder, noise), ring modulation, drift and drive; two filters (LP12, LP24, a Moog ladder, band-pass, high-pass, notch, peak) in series, in parallel or split; two envelopes and two tempo-synced LFOs per voice; a 16-slot modulation matrix; four macros.</dd></div>
+      <div><dt>ANALOG</dt><dd>Virtual analog: two band-limited oscillators with PWM, noise, drive, and a resonant low-pass: a 12 dB SVF or a 24 dB Moog ladder.</dd></div>
       <div><dt>FM6</dt><dd>Six-operator FM with 32 algorithms. Load classic DX7 patches (.syx) from the editor.</dd></div>
       <div><dt>DIGITAL</dt><dd>Four-operator FM with eight algorithms: bells, basses, electric pianos.</dd></div>
       <div><dt>PHASE</dt><dd>Phase distortion in the tradition of the 80s CZ synths.</dd></div>
@@ -100,8 +100,8 @@
       <div><dt>WHEEL</dt><dd>Tonewheel organ with nine drawbars.</dd></div>
       <div><dt>VOICE</dt><dd>Formant synthesis: sung vowels from the keyboard.</dd></div>
       <div><dt>PHYS</dt><dd>Physical models: plucked strings, bells and bars, drum heads, sympathetic strings (after Mutable Instruments Rings and DaisySP).</dd></div>
-      <div><dt>GRAIN</dt><dd>Granular synthesis over the built-in instruments and your own samples.</dd></div>
-      <div><dt>SAMPLE</dt><dd>Multisampled piano, strings, horns, flute, vibraphone, bass, and your own samples.</dd></div>
+      <div><dt>GRAIN</dt><dd>Granular synthesis over your own samples.</dd></div>
+      <div><dt>SAMPLE</dt><dd>Your own multisampled instruments, sent from the editor (four slots).</dd></div>
       <div><dt>NOISE</dt><dd>From analog hiss to metallic shift-register tones, through a resonant filter.</dd></div>
     </dl>
     <h2>Play</h2>
@@ -113,16 +113,17 @@
     </ul>
     <h2>Sound</h2>
     <ul>
-      <li>44.1 kHz, band-limited oscillators (polyBLEP), level-matched presets.</li>
-      <li>Effects: distortion, stereo chorus, tempo-synced delay, and a modulated feedback-delay-network reverb.</li>
+      <li>44.1 kHz. Band-limited oscillators everywhere: polyBLEP saws and pulses, polyBLAMP triangles, a band-limited hard sync, FM, feedback and wavefolding held below 20 kHz.</li>
+      <li>Zero-delay-feedback filters: a 24 dB Moog ladder that self-oscillates, SVFs whose resonance saturates softly.</li>
+      <li>Effects: distortion, stereo chorus, tempo-synced delay, a room reverb and a plate reverb (after Dattorro) with pre-delay. Level-matched presets.</li>
       <li>A web editor for every parameter: the whole HYBRID patch, DX7 banks, your sound library, backups.</li>
     </ul>
   </section>
   <section class="about" data-l="fr">
     <h2>Moteurs</h2>
     <dl class="engines">
-      <div><dt>HYBRID</dt><dd>La voix de Clipper. Trois oscillateurs (dent de scie, pulse, triangle, sinus avec feedback, morph, supersaw à sept dents de scie, FM, hard sync, wavefolder, bruit), modulation en anneau, drift et saturation ; deux filtres (LP12, LP24, passe-bande, passe-haut, notch, peak) en série, en parallèle ou séparés ; deux enveloppes et deux LFO synchronisables au tempo par voix ; une matrice de modulation de 16 slots ; quatre macros.</dd></div>
-      <div><dt>ANALOG</dt><dd>Analogique virtuel : deux oscillateurs à bande limitée avec PWM, bruit, saturation et passe-bas résonant.</dd></div>
+      <div><dt>HYBRID</dt><dd>La voix de Clipper. Trois oscillateurs (dent de scie, pulse, triangle, sinus avec feedback, morph, supersaw à sept dents de scie, FM, hard sync, wavefolder, bruit), modulation en anneau, drift et saturation ; deux filtres (LP12, LP24, ladder Moog, passe-bande, passe-haut, notch, peak) en série, en parallèle ou séparés ; deux enveloppes et deux LFO synchronisables au tempo par voix ; une matrice de modulation de 16 slots ; quatre macros.</dd></div>
+      <div><dt>ANALOG</dt><dd>Analogique virtuel : deux oscillateurs à bande limitée avec PWM, bruit, saturation, et un passe-bas résonant : SVF 12 dB ou ladder Moog 24 dB.</dd></div>
       <div><dt>FM6</dt><dd>FM à six opérateurs, 32 algorithmes. Charge les patchs DX7 classiques (.syx) depuis l'éditeur.</dd></div>
       <div><dt>DIGITAL</dt><dd>FM à quatre opérateurs, huit algorithmes : cloches, basses, pianos électriques.</dd></div>
       <div><dt>PHASE</dt><dd>Distorsion de phase, dans l'esprit des synthés CZ des années 80.</dd></div>
@@ -131,8 +132,8 @@
       <div><dt>WHEEL</dt><dd>Orgue à roues phoniques, neuf tirettes.</dd></div>
       <div><dt>VOICE</dt><dd>Synthèse de formants : des voyelles chantées au clavier.</dd></div>
       <div><dt>PHYS</dt><dd>Modèles physiques : cordes pincées, cloches et lames, peaux de tambour, cordes sympathiques (d'après Mutable Instruments Rings et DaisySP).</dd></div>
-      <div><dt>GRAIN</dt><dd>Synthèse granulaire sur les instruments intégrés et tes propres samples.</dd></div>
-      <div><dt>SAMPLE</dt><dd>Piano, cordes, cuivres, flûte, vibraphone et basse multi-échantillonnés, plus tes propres samples.</dd></div>
+      <div><dt>GRAIN</dt><dd>Synthèse granulaire sur tes propres samples.</dd></div>
+      <div><dt>SAMPLE</dt><dd>Tes propres instruments multi-échantillonnés, envoyés depuis l&#39;éditeur (quatre emplacements).</dd></div>
       <div><dt>NOISE</dt><dd>Du souffle analogique aux sons métalliques des registres à décalage, à travers un filtre résonant.</dd></div>
     </dl>
     <h2>Jouer</h2>
@@ -144,16 +145,17 @@
     </ul>
     <h2>Le son</h2>
     <ul>
-      <li>44,1 kHz, oscillateurs à bande limitée (polyBLEP), presets de niveau égal.</li>
-      <li>Effets : distorsion, chorus stéréo, delay synchronisé au tempo, et une réverbération à réseau de retards modulée.</li>
+      <li>44,1 kHz. Oscillateurs à bande limitée partout : dents de scie et pulses polyBLEP, triangles polyBLAMP, hard sync à bande limitée, FM, feedback et wavefolding tenus sous 20 kHz.</li>
+      <li>Filtres à retour sans délai (ZDF) : un ladder Moog 24 dB qui auto-oscille, des SVF dont la résonance sature en douceur.</li>
+      <li>Effets : distorsion, chorus stéréo, delay synchronisé au tempo, une réverb room et une réverb plate (d&#39;après Dattorro) avec pré-délai. Presets de niveau égal.</li>
       <li>Un éditeur web pour chaque paramètre : tout le patch HYBRID, les banques DX7, ta bibliothèque de sons, les sauvegardes.</li>
     </ul>
   </section>
   <section class="about" data-l="ja">
     <h2>エンジン</h2>
     <dl class="engines">
-      <div><dt>HYBRID</dt><dd>Clipper のボイス。3 オシレーター（ノコギリ波、パルス、三角波、フィードバック付きサイン、モーフ、7 本のスーパーソウ、FM、ハードシンク、ウェーブフォルダー、ノイズ）、リングモジュレーション、ドリフト、ドライブ。2 フィルター（LP12、LP24、BP、HP、ノッチ、ピーク）を直列・並列・スプリットで。ボイスごとに 2 エンベロープとテンポ同期できる 2 LFO、16 スロットのマトリクス、4 つのマクロ。</dd></div>
-      <div><dt>ANALOG</dt><dd>バーチャルアナログ：帯域制限された 2 オシレーター、PWM、ノイズ、ドライブ、レゾナンス付きローパス。</dd></div>
+      <div><dt>HYBRID</dt><dd>Clipper のボイス。3 オシレーター（ノコギリ波、パルス、三角波、フィードバック付きサイン、モーフ、7 本のスーパーソウ、FM、ハードシンク、ウェーブフォルダー、ノイズ）、リングモジュレーション、ドリフト、ドライブ。2 フィルター（LP12、LP24、Moog ラダー、BP、HP、ノッチ、ピーク）を直列・並列・スプリットで。ボイスごとに 2 エンベロープとテンポ同期できる 2 LFO、16 スロットのマトリクス、4 つのマクロ。</dd></div>
+      <div><dt>ANALOG</dt><dd>バーチャルアナログ：帯域制限された 2 オシレーター、PWM、ノイズ、ドライブ、レゾナンス付きローパス（12 dB SVF または 24 dB Moog ラダー）。</dd></div>
       <div><dt>FM6</dt><dd>6 オペレーター FM、32 アルゴリズム。エディタから DX7 の音色（.syx）を読み込めます。</dd></div>
       <div><dt>DIGITAL</dt><dd>4 オペレーター FM、8 アルゴリズム：ベル、ベース、エレピ。</dd></div>
       <div><dt>PHASE</dt><dd>80 年代の CZ シンセの流れをくむフェイズ・ディストーション。</dd></div>
@@ -162,8 +164,8 @@
       <div><dt>WHEEL</dt><dd>9 本のドローバーを持つトーンホイール・オルガン。</dd></div>
       <div><dt>VOICE</dt><dd>フォルマント合成：鍵盤で歌う母音。</dd></div>
       <div><dt>PHYS</dt><dd>物理モデリング：弦、ベルとバー、ドラムヘッド、共鳴弦（Mutable Instruments Rings と DaisySP より）。</dd></div>
-      <div><dt>GRAIN</dt><dd>内蔵の楽器と自分のサンプルによるグラニュラー合成。</dd></div>
-      <div><dt>SAMPLE</dt><dd>マルチサンプルのピアノ、ストリングス、ホーン、フルート、ビブラフォン、ベース、そして自分のサンプル。</dd></div>
+      <div><dt>GRAIN</dt><dd>自分のサンプルによるグラニュラー合成。</dd></div>
+      <div><dt>SAMPLE</dt><dd>エディタから送る自分のマルチサンプル楽器（4 スロット）。</dd></div>
       <div><dt>NOISE</dt><dd>アナログのヒスからシフトレジスターの金属音まで、レゾナンス・フィルターを通して。</dd></div>
     </dl>
     <h2>演奏</h2>
@@ -175,8 +177,9 @@
     </ul>
     <h2>サウンド</h2>
     <ul>
-      <li>44.1 kHz、帯域制限オシレーター（polyBLEP）、音量をそろえたプリセット。</li>
-      <li>エフェクト：ディストーション、ステレオ・コーラス、テンポ同期ディレイ、モジュレーション付き FDN リバーブ。</li>
+      <li>44.1 kHz。すべて帯域制限オシレーター：polyBLEP のノコギリ波とパルス、polyBLAMP の三角波、帯域制限ハードシンク、20 kHz 以下に抑えた FM・フィードバック・ウェーブフォールド。</li>
+      <li>ゼロディレイ・フィードバック・フィルター：自己発振する 24 dB Moog ラダー、レゾナンスがやわらかく飽和する SVF。</li>
+      <li>エフェクト：ディストーション、ステレオ・コーラス、テンポ同期ディレイ、ルームとプレート（Dattorro 方式、プリディレイ付き）の 2 種類のリバーブ。音量をそろえたプリセット。</li>
       <li>すべてのパラメーターを編集できるウェブ・エディタ：HYBRID の音色、DX7 バンク、音色ライブラリ、バックアップ。</li>
     </ul>
   </section>
@@ -197,9 +200,9 @@
     <p class="small" data-t="back"></p>
   </details>
   <p class="small"><b>Clipper</b> by 3dSam (<a href="https://github.com/isod89" target="_blank" rel="noopener">isod89</a>), grown from <a href="https://github.com/isod89/sloop-fm1" target="_blank" rel="noopener">SLOOP</a> and based on <a href="https://github.com/hugelton/Felucca" target="_blank" rel="noopener">Felucca</a> by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener">Hügelton Instruments</a>.
-    FM6: msfa / Dexed (Apache-2.0). PHYS: DaisySP and Mutable Instruments Rings (MIT). Supersaw after Adam Szabo's JP-8000 analysis.
+    FM6: msfa / Dexed (Apache-2.0). PHYS: DaisySP and Mutable Instruments Rings (MIT). Supersaw after Adam Szabo's JP-8000 analysis; ladder after Vadim Zavalishin; plate after Jon Dattorro.
     Hold OCT− alone while switching on for USB rescue.<br>
-    Font: Terminus (Dimitar Toshkov Zhekov, SIL OFL 1.1). Samples: Versilian Studios VSCO-2 Community Edition and VCSL (CC0 1.0), and the Hügelton Sample Pack (© Hügelton Instruments, not CC0).<br>
+    Font: Terminus (Dimitar Toshkov Zhekov, SIL OFL 1.1).<br>
     M-VAVE and FM-1 are trademarks of their respective owners; Clipper is not affiliated with them.<br>
     <span data-t="license"></span> <a href="https://github.com/hugelton/Felucca" target="_blank" rel="noopener">github.com/hugelton/Felucca</a></p>
 </main>

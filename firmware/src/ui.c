@@ -3,7 +3,7 @@
 /* Felucca user interface. Four columns map to KNOB 1..4. Rendering is lazy:
  * every element remembers what it last drew and is redrawn only on change. */
 #ifndef FELUCCA_VERSION
-#define FELUCCA_VERSION "CLIPPER 0.1"  /* the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
+#define FELUCCA_VERSION "CLIPPER 0.2"  /* the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
 #endif
 static void project_save(uint32_t slot);
 static void arrangement_save(void);
@@ -414,6 +414,9 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
 #if CLIPPER_SYNTH                                    /* (no built-in samples: the user's own, slot 1) */
     {BK_KEYS, 4, "USER SMP"}, {BK_PAD, ENGI_GRAIN, "USER GRAIN"},
 #endif
+    /* Clipper 0.2: the MOOG ladder */
+    {BK_BASS, ENGI_HYBRID, "MOOG BASS"}, {BK_BASS, 0, "MINI BASS"}, {BK_LEAD, ENGI_HYBRID, "MOOG LEAD"},
+    {BK_LEAD, 0, "MINI LEAD"}, {BK_PAD, ENGI_HYBRID, "LADDER PAD"},
 #if FELUCCA_SLICE
     {BK_FX, ENGI_SLICE, "BREAK 16"}, {BK_FX, ENGI_SLICE, "CHOP 8"}, {BK_FX, ENGI_SLICE, "REVERSE"},
     {BK_FX, ENGI_SLICE, "USR SLICE"},

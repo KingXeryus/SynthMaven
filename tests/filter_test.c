@@ -188,7 +188,7 @@ static void t_saturation(void)
 /* ------------------------------------------------------------ engines --- */
 static hy_patch_t init_patch(void)
 {
-    hy_patch_t p = HY_FACTORY[HY_NFACTORY - 1u];     /* INIT: one saw, LP12 open */
+    hy_patch_t p = HY_FACTORY[HY_INIT];               /* INIT: one saw, LP12 open */
     memset(p.mod, 0, sizeof p.mod);
     p.drift = 0;
     return p;
@@ -211,7 +211,7 @@ static void setup_engine(uint32_t eng, uint32_t preset)
 }
 static void hy_play(const hy_patch_t *p)
 {
-    setup_engine(ENGI_HYBRID, HY_NFACTORY - 1u);
+    setup_engine(ENGI_HYBRID, HY_INIT);
     hy_set_patch(0, p);
 }
 

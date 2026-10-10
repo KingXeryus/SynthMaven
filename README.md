@@ -7,9 +7,17 @@ Free and open source (GPL-3.0). It grew out of <a href="https://github.com/isod8
 
 ---
 
-> **Status: 0.1, first test build.** It has not run on a device yet. Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
+> **Status: 0.2, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
 
-SLOOP is a groovebox. **Clipper is a synthesizer**, one instrument like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine and no song mode. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
+SLOOP is a groovebox. **Clipper is a synthesizer**, one instrument like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine, no song mode and no built-in samples. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
+
+## New in 0.2: the sound
+
+- **MOOG ladder**: a 24 dB four-pole ladder with zero-delay feedback (after Vadim Zavalishin) and a tanh at its input: it drives warm, its resonance saturates softly, and it self-oscillates on pitch. A filter type in HYBRID; on ANALOG, FX → FILTER → **MODL** chooses SVF (12 dB) or MOOG (24 dB).
+- **Soft resonance**: HYBRID's state-variable filters saturate softly instead of clipping.
+- **Anti-aliasing**: triangles are band-limited (polyBLAMP), the hard sync gets a BLEP at each reset, and FM, sine feedback and the wavefolder are held below 20 kHz on high notes. Measured by `tests/alias_test.c`: folded partials stay under -40 dB (triangles -62 dB, the folder -66 dB), against -7 dB before for a full fold.
+- **Plate reverb** (after Jon Dattorro): FX → REVERB has TYPE (ROOM / PLATE), SIZE, DAMP and PRE (pre-delay, ms). The chorus moved to its own CHORUS page.
+- **No built-in samples**: 300 KB of flash go to synthesis. SAMPLE and GRAIN play your own samples (the editor's Samples tab, four slots). 160 factory sounds.
 
 ## On the FM-1
 
@@ -17,6 +25,7 @@ SLOOP is a groovebox. **Clipper is a synthesizer**, one instrument like the orig
 | --- | --- |
 | **HOME** | The synth screen: the sound's name, its family, its number in the list, the engine and a live scope. The four knobs play the sound's main controls (for HYBRID: CUT, RES, M1, M2). Press HOME again for the full-screen visualiser. |
 | **PRESETS** | Every sound, one by one, factory and user presets. |
+| **FX pages** | FX (sends), FILTER (the sound's DJ filter and MODL), DLY, REVERB, CHORUS. |
 | **ALGORITHM** | Jumps to the next family: PAD, BASS, LEAD, PLCK, KEYS, STAB, FX and the rest. |
 | **FX, EDIT, ARP, GLO, SAVE** | A tap opens the pages. While one of them is held, the keys still play, so you can hold EDIT and play. |
 | **SEQ, SEL** | Held, they are the two layers a synth needs: SEQ shows the 16 steps on the keys, SEL the key and the chords. A tap opens their pages. |
