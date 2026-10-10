@@ -1,4 +1,4 @@
-# Clipper — démarrage rapide (version de test 0.2)
+# Clipper — démarrage rapide (version de test 0.3)
 
 **Clipper** est un firmware de **synthétiseur** pour le M-VAVE FM-1 : un seul instrument, comme le firmware d'origine, Felucca ou Baudgirl. Ce n'est plus une groovebox : pas de pistes, pas de boîte à rythmes, pas de mode song, pas de samples intégrés. Il garde de SLOOP les 12 moteurs, les effets, l'arpégiateur, le séquenceur de pas, l'audio USB et le MIDI. Il ajoute **HYBRID**, une voix à 3 oscillateurs, 2 filtres et une matrice de modulation de 16 slots, avec 24 sons d'usine. Il ajoute aussi le pitch bend, la molette, l'aftertouch et la pédale de sustain sur tous les moteurs.
 
@@ -15,7 +15,7 @@ Clipper vit dans son propre dossier, **`CLIPPER`**, à côté de celui de SLOOP.
 | Adresse | http://localhost:**8766** | http://localhost:**8767** |
 | Écran de démarrage | voilier, « sloop » | trois-mâts, « clipper » |
 
-Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maintenu) → SYSTEM → ABOUT, qui affiche **CLIPPER 0.2**.
+Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maintenu) → SYSTEM → ABOUT, qui affiche **CLIPPER 0.3**.
 
 ## 1. Compiler et installer
 
@@ -23,6 +23,15 @@ Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maint
 2. Double-clique sur **`INSTALL-CLIPPER.bat`**. Il utilise les mêmes outils que SLOOP (WSL MinUI-Build, la chaîne JieLi). La première fois, il copie les trois fichiers du SDK depuis `..\SLOOP\build\deps\ac79`. S'il ne les trouve pas, copie ce dossier `build\deps\ac79` de SLOOP dans `CLIPPER\build\deps\`.
 3. La page d'installation s'ouvre sur http://localhost:8767/webapp/installer/ (Chrome ou Edge, FM-1 en USB). Clique sur **Install**.
 4. La FM-1 redémarre sur l'écran **clipper**. Tes projets, presets, samples et réglages de SLOOP sont toujours là.
+
+## Nouveau dans la 0.3 : jouer comme sur un grand synthé
+
+- **EQ et compresseur du master** : FX → **EQ+COMP** : LOW (étagère à 150 Hz), MID (cloche à 1 kHz), HIGH (étagère à 5 kHz), ±12 dB (MID ±10) par pas de 1 dB, et **COMP**, un compresseur de bus stéréo (le « glue » : un seul bouton baisse le seuil de -6 à -30 dB et monte le ratio de 2:1 à 4:1, avec gain de compensation automatique). À plat et à 0, ils sont court-circuités. Tout glisse, aucun clic.
+- **Layer et split** : EDIT → **LAYER** : MODE (OFF / LAYER / SPLIT), SOUND (n'importe lequel des 308 sons ou de tes presets comme 2e son), SPLIT (la note de partage : le layer en dessous, le son principal à partir d'elle), LEVEL ; **LAYER 2** : OCT (le layer de -2 à +2 octaves), PAN, FILT et **SWAP** (les deux sons échangent leur place : toutes les pages éditent alors l'autre son ; SWAP encore pour revenir). Clavier, MIDI, séquenceur et arpégiateur jouent les deux.
+- **Unisson polyphonique sur tous les moteurs** : EDIT → VOICE : **UNI2** et **UNI4** empilent 2 ou 4 voix désaccordées par note (DTUNE sur VOICE 2). UNI reste l'empilement mono de 8 voix.
+- **Morph et randomiseur** : EDIT → **MORPH** : SET A, SET B, puis MORPH fait passer tout le son de l'un à l'autre (MIDI CC 20). EDIT → **RANDOM** : AMT, WHAT (EDIT, +ENV, ALL), RAND, et BACK pour annuler.
+- **Modulation** : LFO → **MOD** : VEL>F (vélocité vers le cutoff), MW> et AT> (molette et aftertouch) vers VIB (vibrato 5,5 Hz), CUT, SHP, WAH ou TREM. Sur tous les moteurs (HYBRID garde sa matrice).
+- **308 sons** : 99 nouveaux sur tous les moteurs, chacun au même niveau à travers la vraie chaîne de sortie du synthé.
 
 ## Nouveau dans la 0.2 : le son
 
@@ -34,7 +43,7 @@ Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maint
 - **ACID** : une basse façon 303, une voix. Dent de scie ou carré dans le ladder, puis DIST. L'enveloppe de filtre (ENV, DEC), l'**accent** (une note à vélocité 120 ou plus, les pas ACCENT du séquenceur : plus fort, enveloppe plus courte et plus profonde) et son **balayage** (SWP : une suite d'accents pousse le cutoff de plus en plus haut, le « squelch »), et les **slides** : un pas SLIDE, ou du legato avec GLIDE en mode TIME, glisse sans relancer l'enveloppe. EDIT : WAVE CUT RES ENV / DEC ACC DIST SWP.
 - **STRINGS** : une string machine des années 70 (Solina, ARP, Elka). Registres 16', 8' et 4', de la dent de scie au carré (SHP), un ensemble à trois lignes (balayage lent et vibrato rapide : ENS, RATE), un passe-bas qui suit le clavier. EDIT : 16' 8' 4' ENS / CUT RATE SHP RES.
 - **MACRO** : quatre modèles inspirés de Mutable Instruments Plaits sur trois boutons HARM, TIMB, MORPH : **CHORD** (onze accords, renversements), **SWARM** (huit oscillateurs qui dérivent), **ADDTV** (16 harmoniques sous une bosse mobile), **SPEECH** (des formants qui disent AI, AU, OI, UA, WOW, YEAH, AEIOU, MAMA, tenus ou parlés). Puis un passe-bas et un **low-pass gate** (DEC, LPG). EDIT : MODL HARM TIMB MRPH / CUT RES DEC LPG.
-- **Plus de samples intégrés** : 300 Ko de flash libérés pour la synthèse. SAMPLE et GRAIN jouent tes propres samples (onglet Samples de l'éditeur, 4 emplacements). 209 sons d'usine : cinq nouveaux sur le ladder (MOOG BASS, MOOG LEAD, LADDER PAD, MINI BASS, MINI LEAD), seize sur WAVE, huit sur ACID, huit sur STRINGS, douze sur MACRO. 17 moteurs.
+- **Plus de samples intégrés** : 300 Ko de flash libérés pour la synthèse. SAMPLE et GRAIN jouent tes propres samples (onglet Samples de l'éditeur, 4 emplacements). 209 sons d'usine en 0.2 (308 en 0.3) : cinq nouveaux sur le ladder (MOOG BASS, MOOG LEAD, LADDER PAD, MINI BASS, MINI LEAD), seize sur WAVE, huit sur ACID, huit sur STRINGS, douze sur MACRO. 17 moteurs.
 
 ## 2. Sur la FM-1
 
@@ -76,8 +85,9 @@ C'est ce qui décide combien de voix Clipper peut jouer. La FM-1 doit être bran
 1. Choisis le son **CLIPPER** avec PRESETS.
 2. Va sur **GLO → SYSTEM** : la 4e case affiche **CPU %**.
 3. Tiens **8 notes** (les deux mains, ou un accord depuis un clavier MIDI) et note le chiffre.
-4. Refais la même chose avec **POLY PAD** puis **TRANCE**.
-5. Si tout reste sous ~70 %, ferme la fenêtre, puis lance **`INSTALL-CLIPPER.bat 12`**. Ça compile la version à **12 voix**. Réinstalle et refais la mesure avec 12 notes.
+4. Refais la même chose avec **POLY PAD**, **TRANCE**, puis **HARMONIUM** (MACRO) et **ENSEMBLE** (STRINGS).
+5. Nouveau en 0.3 : mets **EQ+COMP** (FX) à LOW +3 et COMP 60, puis un **LAYER** (EDIT → LAYER : MODE LAYER, SOUND OMNI STR) sous CLIPPER, et tiens 8 notes.
+6. Si tout reste sous ~70 %, ferme la fenêtre, puis lance **`INSTALL-CLIPPER.bat 12`**. Ça compile la version à **12 voix**. Réinstalle et refais la mesure avec 12 notes.
 
 Envoie-moi les chiffres. Signale aussi un son qui craque, une note qui reste coincée ou un écran bizarre.
 

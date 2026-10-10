@@ -138,6 +138,20 @@ static const preset_t ANALOG_PRESETS[] = {
      XP(P_FMODEL + 1, FM_MOOG, P_GLIDE + 1, 26, P_TRANS + 1, -24)},
     {"MINI LEAD", {0, 9, 64, 0, 62, 80, 30, 64}, {2, 70, 110, 40}, 26, 1, FX(0, 0, 26, 24),
      XP(P_FMODEL + 1, FM_MOOG, P_GLIDE + 1, 36, P_LD_PIT + 1, 1, P_LRATE + 1, 82)},
+#if CLIPPER_SYNTH
+    /* Clipper 0.3 */
+    {"JUNO PAD", {4, 14, 64, 4, 62, 10, 0, 40}, {60, 100, 118, 88}, 8, 0, FX(0, 60, 20, 60), XP(P_LRATE + 1, 30, P_LD_SHP + 1, 30)},
+    {"OBX BRASS", {0, 16, 64, 0, 50, 20, 10, 64}, {14, 74, 100, 40}, 34, 0, FX(0, 20, 10, 30), XP(P_VOICE + 1, V_PUNI2, P_DETUNE + 1, 50)},
+    {"TAURUS", {0, 6, 64, 0, 40, 40, 50, 64}, {0, 80, 100, 30}, 30, 1, FX(0, 0, 0, 4),
+     XP(P_FMODEL + 1, FM_MOOG, P_TRANS + 1, -24, P_GLIDE + 1, 20)},
+    {"PROPH LEAD", {1, 10, 64, 0, 74, 40, 20, 64}, {2, 70, 110, 40}, 20, 1, FX(0, 10, 26, 24), XP(P_GLIDE + 1, 30, P_FMODEL + 1, FM_MOOG)},
+    {"UNI STAB", {0, 20, 64, 0, 70, 30, 10, 64}, {0, 62, 20, 30}, 40, 0, FX(0, 10, 30, 30), XP(P_VOICE + 1, V_PUNI4, P_DETUNE + 1, 60)},
+    {"SQR PLUCK", {1, 4, 64, 0, 48, 40, 0, 80}, {0, 70, 0, 50}, 50, 0, FX(0, 10, 30, 30)},
+    {"DYN BASS", {0, 6, 64, 0, 40, 50, 30, 64}, {0, 64, 80, 24}, 30, 1, FX(0, 0, 0, 5),
+     XP(P_VELF + 1, 40, P_TRANS + 1, -12, P_FMODEL + 1, FM_MOOG)},
+    {"WAH LEAD", {0, 8, 64, 0, 60, 70, 20, 64}, {2, 70, 110, 40}, 0, 1, FX(0, 10, 26, 24),
+     XP(P_MWDST + 1, MD_WAH, P_LRATE + 1, 70, P_LD_FLT + 1, 20, P_GLIDE + 1, 30)},
+#endif
 };
 
 static const engine_t ENG_ANALOG = {

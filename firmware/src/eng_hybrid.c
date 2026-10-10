@@ -871,7 +871,7 @@ static const engine_t ENG_HYBRID = {
         {"M3", F_PCT, 0, 127, 0, 0, 0},
         {"M4", F_PCT, 0, 127, 0, 0, 0},
     },
-    HY_PRESETS, HY_NFACTORY, 0, hybrid_note_on, hybrid_render,
+    HY_PRESETS, NELEM(HY_PRESETS), 0, hybrid_note_on, hybrid_render,
     0x5D9F, {P_E0, P_E1, P_E4, P_E5},
     0, 0, 0, hy_block,
 };

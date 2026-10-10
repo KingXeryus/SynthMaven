@@ -7,9 +7,18 @@ Free and open source (GPL-3.0). It grew out of <a href="https://github.com/isod8
 
 ---
 
-> **Status: 0.2, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
+> **Status: 0.3, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
 
-SLOOP is a groovebox. **Clipper is a synthesizer** with 17 engines, one instrument like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine, no song mode and no built-in samples. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
+SLOOP is a groovebox. **Clipper is a synthesizer** with 17 engines and 308 sounds, one instrument like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine, no song mode and no built-in samples. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
+
+## New in 0.3: playing it like a big synth
+
+- **Master EQ and compressor**: FX → **EQ+COMP**: LOW (a shelf at 150 Hz), MID (a peak at 1 kHz), HIGH (a shelf at 5 kHz), each ±12 dB (MID ±10) in 1 dB steps, and **COMP**, a stereo bus compressor (the "glue": one knob lowers the threshold from -6 to -30 dB and raises the ratio from 2:1 to 4:1, with automatic make-up gain). Flat and at 0 they are bypassed, bit for bit; every change glides, no click.
+- **Layer and split**: EDIT → **LAYER**: MODE (OFF / LAYER / SPLIT), SOUND (any of the 308 sounds or your presets as the second sound), SPLIT (the split note: the layer below, the main sound from it up), LEVEL; **LAYER 2**: OCT (the layer -2..+2 octaves), PAN, FILT and **SWAP** (the two sounds trade places: every page then edits the other one; SWAP again to go back). Keys, MIDI, the sequencer and the arpeggiator all play both; a note always ends where it started.
+- **Poly unison on every engine**: EDIT → VOICE: **UNI2** and **UNI4** stack 2 or 4 detuned voices on each note (DTUNE on VOICE 2), in POLY. (UNI is still the 8-voice mono stack.)
+- **Morph and randomizer**: EDIT → **MORPH**: SET A, SET B, then MORPH moves the whole sound between them (every continuous value; the switches change half way; MIDI CC 20). EDIT → **RANDOM**: AMT, WHAT (EDIT: the engine's 8 values, +ENV: and the envelopes, ALL: and the LFO and the sends), RAND, and BACK to undo.
+- **Modulation**: LFO → **MOD**: VEL>F (velocity to the cutoff, ±), MW> and AT> (the mod wheel and aftertouch, channel or polyphonic) to VIB (a 5.5 Hz vibrato), CUT, SHP (the engine's shape), WAH (the sound's LFO on the cutoff) or TREM. Every engine (HYBRID keeps its own matrix).
+- **308 sounds**: 99 new ones across every engine (Juno, OB, Taurus, Prophet, DX, CZ, SID, B3, bowed and plucked models, 303s, string machines, chords, swarms, speech...), each level-matched through the synth's own output chain.
 
 ## New in 0.2: the sound
 
@@ -21,7 +30,7 @@ SLOOP is a groovebox. **Clipper is a synthesizer** with 17 engines, one instrume
 - **ACID**: a 303-style bass line engine, one voice. Saw or square (45 %) into the ladder, a one-pole high-pass and DIST. The filter envelope (ENV, DEC), the **accent** (a note at velocity 120 and up, the sequencer's ACCENT steps: louder, the envelope shorter and deeper) and its **sweep** (SWP: a run of accents charges a capacitor that pushes the cutoff further up, the squelch), and **slides**: a SLIDE step, or legato with GLIDE in TIME mode, glides without restarting the envelopes. EDIT: WAVE CUT RES ENV / DEC ACC DIST SWP.
 - **STRINGS**: a 1970s string machine (Solina, ARP, Elka). Divide-down registers 16', 8' and 4' locked on one phase, saw towards square (SHP), three ensemble lines moved by a slow sweep (~0.6 Hz) and a fast shimmer (~6 Hz) 120 degrees apart (ENS, RATE), a key-tracked 12 dB low-pass. EDIT: 16' 8' 4' ENS / CUT RATE SHP RES.
 - **MACRO**: four macro-oscillator models in the spirit of Mutable Instruments Plaits (the ideas, not the code), on three knobs HARM, TIMB, MORPH: **CHORD** (OCT 5TH SUS4 m m7 m9 m11 6/9 M9 M7 M, inversions, saw to square), **SWARM** (eight oscillators spread up to a semitone, each drifting), **ADDTV** (harmonics 1..16 under a moving bump, odd to even, nothing above 0.45 FS), **SPEECH** (a glottal source through three formants gliding along a word: AI AU OI UA WOW YEAH AEIOU MAMA, held or spoken). Then a low-pass and a **low-pass gate** (DEC, LPG). EDIT: MODL HARM TIMB MRPH / CUT RES DEC LPG.
-- **No built-in samples**: 300 KB of flash go to synthesis. SAMPLE and GRAIN play your own samples (the editor's Samples tab, four slots). 209 factory sounds: five new ones on the ladder (MOOG BASS, MOOG LEAD, LADDER PAD, MINI BASS, MINI LEAD), sixteen on WAVE, eight on ACID, eight on STRINGS, twelve on MACRO. 17 engines.
+- **No built-in samples**: 300 KB of flash go to synthesis. SAMPLE and GRAIN play your own samples (the editor's Samples tab, four slots). 209 factory sounds in 0.2 (308 in 0.3): five new ones on the ladder (MOOG BASS, MOOG LEAD, LADDER PAD, MINI BASS, MINI LEAD), sixteen on WAVE, eight on ACID, eight on STRINGS, twelve on MACRO. 17 engines.
 
 ## On the FM-1
 

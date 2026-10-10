@@ -91,7 +91,7 @@ int main(int argc, char **argv)
                 printf("clipper: BANK %s: no such preset in engine %u\n", BANK[n].name, BANK[n].e);
                 ok = 0;
             }
-        for (e = ENGI_WAVE; e <= ENGI_MACRO; e++)
+        for (e = 0; e < NENGINES; e++)
             for (k = 0; k < ENGINES[e]->npresets; k++) {
                 for (hits = 0, n = 0; n < NBANK; n++)
                     hits += BANK[n].e == e && bank_pi[n] == k;
@@ -100,7 +100,7 @@ int main(int argc, char **argv)
                     ok = 0;
                 }
             }
-        check(ok, "the preset list: every name found, every WAVE / ACID / STRINGS / MACRO preset once");
+        check(ok, "the preset list: every name found, every factory preset of every engine once");
     }
     /* back to CLIPPER for the rest */
     set_engine_of(TSEL, ENGI_HYBRID); apply_preset_to(TSEL, 0); frames(3);

@@ -127,9 +127,9 @@ run "Clipper 0.2 ACID (accent, sweep, slide), STRINGS (registers, ensemble), MAC
 mkdir -p "$OUT/synth3"
 $SYN -o "$OUT/synth3_test" tests/synth3_test.c -lm
 run "Clipper 0.3: master EQ and COMP, poly unison, VEL / MW / AT, LAYER and SPLIT, SWAP, MORPH, RANDOM, the pages" "$OUT/synth3_test" "$OUT/synth3"
-if $SYN_UB -o "$OUT/synth3_asan" tests/synth3_test.c -lm 2>/dev/null; then
+if $SYN_UB -o "$OUT/synth3_ub" tests/synth3_test.c -lm 2>/dev/null; then
     mkdir -p "$OUT/synth3_asan"
-    run "Clipper 0.3 under ASan + UBSan" sh -c "'$OUT/synth3_asan' '$OUT/synth3_asan' >/dev/null && echo clean"
+    run "Clipper 0.3 under ASan + UBSan" sh -c "'$OUT/synth3_ub' '$OUT/synth3_asan' >/dev/null && echo clean"
 fi
 if $SYN_UB -o "$OUT/engines2_asan" tests/engines2_test.c -lm 2>/dev/null; then
     run "Clipper 0.2 new engines under ASan + UBSan" sh -c "'$OUT/engines2_asan' >/dev/null && echo clean"

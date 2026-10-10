@@ -312,7 +312,9 @@ static void t_user(void)
     char w[140];
     memset(host_slots, 0xFF, sizeof host_slots);
     wt_user_scan(0);
-    setup(NELEM(WAVE_PRESETS) - 1u);                 /* USER WT: USR1 */
+    for (f = 0; f < NELEM(WAVE_PRESETS) && strcmp(WAVE_PRESETS[f].name, "USER WT"); f++)
+        ;
+    setup(f);                                        /* USER WT: USR1 */
     trk[0].p[P_E4] = 127;
     build(WT_NFACTORY);
     r = play(57, 40, 0, 0, 1);
@@ -380,12 +382,14 @@ static void t_bounded(void)
 static void demos(const char *dir)
 {
     uint32_t pi;
-    for (pi = 0; pi + 1u < NELEM(WAVE_PRESETS); pi++) {
+    for (pi = 0; pi < NELEM(WAVE_PRESETS); pi++) {
         char path[256], name[32];
         FILE *f;
         uint32_t i, k, b;
         static int32_t buf[CTL];
         static const uint8_t PH[] = {45, 52, 57, 60, 64, 57, 52, 48};
+        if (!strcmp(WAVE_PRESETS[pi].name, "USER WT"))
+            continue;                                /* (an empty slot: nothing to hear) */
         setup(pi);
         snprintf(name, sizeof name, "%s", WAVE_PRESETS[pi].name);
         for (i = 0; name[i]; i++)
