@@ -12,6 +12,8 @@ typedef struct {               /* proportional, see tools/gen_font.py */
     const uint8_t *bw;         /* bitmap width per glyph (starts FONT_PAD left of the pen) */
     const uint16_t *off;       /* byte offset of each glyph */
     const uint8_t *data;
+    uint8_t bits;              /* 1 = 1 bit a pixel (a pixel font: glyph rows one after the other, high
+                                * bit first, each glyph from a whole byte); 0 = 2 pixels a byte, alpha 0..15 */
 } felucca_font_t;
 #include "felucca_font.h"
 
@@ -143,8 +145,19 @@ static int32_t cv_text(int32_t x, int32_t y, const felucca_font_t *f, const char
         uint32_t gi = glyph(f, (uint8_t)*s), gx, gy, w, bpr;
         const uint8_t *gd;
         w = f->bw[gi];
-        bpr = ((w >> f->sh) + 1u) / 2u;
         gd = f->data + f->off[gi];
+        if (f->bits == 1u) {                           /* on / off pixels: full colour where a bit is set */
+            uint32_t sw = w >> f->sh;
+            for (gy = 0; gy < f->h; gy++)
+                for (gx = 0; gx < w; gx++) {
+                    uint32_t i = (gy >> f->sh) * sw + (gx >> f->sh);
+                    if ((gd[i >> 3] >> (7u - (i & 7u))) & 1u)
+                        cv_pset(x - f->pad + (int32_t)gx, y + (int32_t)gy, ramp[15]);
+                }
+            x += f->adv[gi];
+            continue;
+        }
+        bpr = ((w >> f->sh) + 1u) / 2u;
         for (gy = 0; gy < f->h; gy++)
             for (gx = 0; gx < w; gx++) {
                 uint32_t sx = gx >> f->sh, v = gd[(gy >> f->sh) * bpr + sx / 2u];
