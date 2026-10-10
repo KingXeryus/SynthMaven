@@ -759,7 +759,7 @@ const PUSH = new Set([CMD.CHANGED, CMD.RELOAD, CMD.STEP_CHANGED, CMD.TRACK_CHANG
 /* user preset bank: name 1..12 printable ASCII, a 16-step pattern of (note, flags 1 acc 2 slide 4 tie) */
 const UP = { NAME_MAX: 12, PAT: 16, LIST_MAX: 16 };
 const F = { INT: 0, PCT: 1, BIPCT: 2, TIME: 3, LFOHZ: 4, CUTOFF: 5, DB: 6, SEMI: 7, ENUM: 8, BPM: 9, NOTE: 10, ONOFF: 11, OCT: 12, STEPS: 13,
-  SWING: 14, FILT: 15 };
+  SWING: 14, FILT: 15, CDB: 16, SPLIT: 17 };   /* (Clipper 0.3: the master EQ's dB around the centre; the layer's split) */
 /* v5 (SLOOP 2.0): the drum track's 16 sounds (firmware drums.c LANE_NOTE / LANE_NAME), one per white key
    F3..G5; a hit has a level (NORM, GHOST, SOFT, HARD: OCT- / OCT+ held on the device) and a ratchet x1..x4 */
 const DRUM_LANES = [[36, "KICK"], [35, "KICK 2"], [38, "SNARE"], [39, "CLAP"], [42, "HAT"], [46, "OPEN HAT"], [44, "PEDAL"], [37, "RIM"],
@@ -1196,6 +1196,8 @@ function fmtValue(d, v) {
   switch (d.fmt) {
     case F.PCT: return [String(d.max > 0 ? Math.trunc((v * 100 + Math.trunc(d.max / 2)) / d.max) : v), "%"];
     case F.SWING: return [String(Math.max(0, Math.min(100, v))), ""];   /* 0 straight .. 100 the most (as the FM-1, 2.5) */
+    case F.CDB: return [sign(v - Math.trunc((d.min + d.max) / 2)), "dB"];
+    case F.SPLIT: { const n = Math.max(0, v - 4); return [NOTE_NAMES[n % 12] + (Math.trunc(n / 12) - 1), ""]; }
     case F.FILT: return !v ? ["OFF", ""] : v < 0 ? ["LP" + Math.trunc((-v * 100 + 32) / 64), "%"] : ["HP" + Math.trunc((v * 100 + 31) / 63), "%"];
     case F.BIPCT: return [sign(Math.trunc(v * 100 / 64)), "%"];
     case F.TIME: {

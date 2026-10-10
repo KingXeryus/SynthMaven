@@ -81,7 +81,7 @@ static uint32_t voice_victim(const track_t *self, int soft, track_t **pp)
     for (p = 0; p < NPART; p++) {
         track_t *t = &trk[p];
         uint32_t mode = (uint32_t)t->p[P_VOICE], nu = mode == V_UNISON ? trk_nvoice(t) : 1u;
-        uint32_t low = mode == V_POLY ? lowest_held(t) : NVOICE;
+        uint32_t low = voice_poly((int)mode) ? lowest_held(t) : NVOICE;
         if (soft && t == self)
             continue;
         for (i = 0; i < NVOICE; i++) {
@@ -93,7 +93,7 @@ static uint32_t voice_victim(const track_t *self, int soft, track_t **pp)
                 c = 1;                                  /* released */
             else if (mode == V_UNISON && i > 0 && i < nu)
                 c = 2;                                  /* an extra UNISON voice */
-            else if (!soft && mode == V_POLY && i != low)
+            else if (!soft && voice_poly((int)mode) && i != low)
                 c = 3;                                  /* held, not the bass */
             else
                 continue;
@@ -142,11 +142,11 @@ static void shed_voice(void)
     }
     for (p = 0; p < NPART; p++) {
         const track_t *t = &trk[p];
-        uint32_t mode = (uint32_t)t->p[P_VOICE], low = mode == V_POLY ? lowest_held(t) : 0u;
+        uint32_t mode = (uint32_t)t->p[P_VOICE], low = voice_poly((int)mode) ? lowest_held(t) : 0u;
         for (i = 0; i < NVOICE; i++) {
             voice_t *v = &trk[p].v[i];
             if (v->active && v->gate && v->stage != 4u &&
-                ((mode == V_POLY && i != low) || (mode != V_POLY && i > 0u)) && (!best || v->age < best->age))
+                ((voice_poly((int)mode) && i != low) || (!voice_poly((int)mode) && i > 0u)) && (!best || v->age < best->age))
                 best = v;
         }
     }
@@ -370,6 +370,71 @@ static void mono_remove(track_t *t, uint32_t note)
     t->nmono = (uint8_t)k;
 }
 
+#if CLIPPER_SYNTH
+/* Clipper 0.3: poly unison (VOICE UNI2 / UNI4): each note on 2 or 4 voices spread by DETUNE as UNISON's (the
+ * outer ones as wide), random start phases. The voice for one more: a free one while the budget has room, else
+ * this part's oldest released, else a released or extra voice of another part, else this part's oldest held that is
+ * not its lowest note (the bass). The same note again restarts its own voices in place */
+static int puni_taken(const uint32_t *idx, uint32_t n, uint32_t i)
+{
+    uint32_t j;
+    for (j = 0; j < n; j++)
+        if (idx[j] == i)
+            return 1;
+    return 0;
+}
+static uint32_t puni_pick(track_t *t, const uint32_t *idx, uint32_t n, uint32_t np)
+{
+    uint32_t i, best = np, low = lowest_held(t);
+    if (voices_busy() < NVOICE)
+        for (i = 0; i < np; i++)
+            if (!t->v[i].active && !puni_taken(idx, n, i))
+                return i;
+    for (i = 0; i < np; i++)
+        if (t->v[i].active && !t->v[i].gate && t->v[i].stage != 4u && !puni_taken(idx, n, i) &&
+            (best == np || t->v[i].age < t->v[best].age))
+            best = i;
+    if (best < np)
+        return best;
+    if (voice_room(t, 1))                                /* another part gives one up (soft) */
+        for (i = 0; i < np; i++)
+            if (!t->v[i].active && !puni_taken(idx, n, i))
+                return i;
+    for (i = 0; i < np; i++)
+        if (t->v[i].gate && !puni_taken(idx, n, i) && (low >= NVOICE || t->v[i].note != t->v[low].note) &&
+            (best == np || t->v[i].age < t->v[best].age))
+            best = i;
+    return best;
+}
+static void puni_on(track_t *t, uint32_t note, uint32_t vel)
+{
+    static uint32_t seed = 0x2468ACEu;
+    uint32_t np = trk_nvoice(t), k = t->p[P_VOICE] == V_PUNI2 ? 2u : 4u, idx[4], n = 0, i, j;
+    if (k > np)
+        k = np;
+    for (i = 0; i < np && n < k; i++)                  /* the same note: its voices again */
+        if (t->v[i].active && t->v[i].note == note && t->v[i].stage != 4u)
+            idx[n++] = i;
+    while (n < k) {
+        i = puni_pick(t, idx, n, np);
+        if (i >= np)
+            break;
+        idx[n++] = i;
+    }
+    for (j = 0; j < n; j++) {
+        voice_t *v = &t->v[idx[j]];
+        int was = v->active && v->stage != 0;
+        int32_t s = n > 1u ? (2 * (int32_t)j - (int32_t)(n - 1u)) * 7 : 0;   /* -7 .. 7 (x (n - 1)) */
+        v->fine = n > 1u ? s * t->p[P_DETUNE] * 56 / (889 * (int32_t)(n - 1u)) : 0;
+        voice_start(t, v, note, n >= 4u ? vel / 2u : n > 1u ? vel * 70u / 100u : vel, t->p[P_GLIDE] != 0);
+        if (j && !was && !eng_sampled(ENGINES[t->engine])) {   /* random start phases (in phase they stack) */
+            seed = seed * 1664525u + 1013904223u;
+            v->ph[0] += seed;
+        }
+    }
+}
+#endif
+
 /* the notes each synth part started since the UI last looked (menu NOTES: a short note lights its key
  * for a few frames, as a drum hit does; ui_studio.c pads_tick). Set here (mostly the audio ISR), taken
  * by the UI with the IRQ off */
@@ -377,7 +442,7 @@ static volatile uint32_t note_hits[NPART][4];
 /* the visualiser (ui_vis.c): the tracks a note started on (bit per track), each one's last note, a kick */
 static volatile uint8_t vis_hit, vis_kick_hit, vis_note[NTRK];
 
-static void trk_note_on(track_t *t, uint32_t note, uint32_t vel)
+static void trk_note_on1(track_t *t, uint32_t note, uint32_t vel)
 {
     uint32_t any = 0, i, mode = (uint32_t)t->p[P_VOICE];
     if (trk_silent(t))
@@ -408,10 +473,17 @@ static void trk_note_on(track_t *t, uint32_t note, uint32_t vel)
         t->lfo_ph = (uint32_t)t->p[P_LPHASE] << 25;
         t->lfo_fade = 0;
     }
-    if (mode == V_POLY) {
-        voice_t *v = voice_alloc(t, note);
+    if (voice_poly((int)mode)) {
+        voice_t *v;
         t->nmono = 0;                                   /* no stale mono stack after a mode change */
         t->mono_note = 0;
+#if CLIPPER_SYNTH
+        if (mode >= V_PUNI2) {                          /* Clipper 0.3: poly unison */
+            puni_on(t, note, vel);
+            return;
+        }
+#endif
+        v = voice_alloc(t, note);
         v->fine = 0;
         voice_start(t, v, note, vel, t->p[P_GLIDE] != 0);
         return;
@@ -444,7 +516,7 @@ static void strum_cancel(const track_t *t, uint32_t note, int all)
         if (stq[i].on && stq[i].trk == (uint8_t)(t - trk) && (all || stq[i].note == note))
             stq[i].on = 0;
 }
-static void trk_note_off(track_t *t, uint32_t note)
+static void trk_note_off1(track_t *t, uint32_t note)
 {
     uint32_t i, k = 0, mode = (uint32_t)t->p[P_VOICE];
     if (is_drum(t))
@@ -458,7 +530,7 @@ static void trk_note_off(track_t *t, uint32_t note)
     t->xp_n = (uint8_t)k;
     mono_remove(t, note);                               /* in any mode: a key let go after a VOICE change must
                                                          * not stay in the MONO stack (after Felucca 1.0) */
-    if (mode != V_POLY) {
+    if (!voice_poly((int)mode)) {
         uint32_t nv = mode == V_UNISON ? trk_nvoice(t) : 1u;
         if (t->mono_note == note) {
             uint32_t next = mono_pick(t);
@@ -476,8 +548,8 @@ static void trk_note_off(track_t *t, uint32_t note)
     }
     for (i = 0; i < NVOICE; i++)                        /* POLY voices (also ones left from another mode: */
         if (t->v[i].note == note && t->v[i].gate &&     /* VOICE changed while they were held) */
-            (mode == V_POLY || i >= (mode == V_UNISON ? trk_nvoice(t) : 1u) || t->mono_note != note)) {
-            if (mode == V_POLY && part_ctl[(uint32_t)(t - trk) % NPART].sus) {
+            (voice_poly((int)mode) || i >= (mode == V_UNISON ? trk_nvoice(t) : 1u) || t->mono_note != note)) {
+            if (voice_poly((int)mode) && part_ctl[CLIPPER_SYNTH ? 0u : (uint32_t)(t - trk) % NPART].sus) {
                 t->v[i].sus = 1;                        /* Clipper: the sustain pedal holds it */
                 continue;
             }
@@ -488,7 +560,7 @@ static void trk_note_off(track_t *t, uint32_t note)
 
 /* Clipper: the sustain pedal comes up: the notes it held are released (a key still down keeps its note:
  * pressed again, its voice started over and lost the mark) */
-static void trk_sustain_up(track_t *t)
+static void trk_sustain_up1(track_t *t)
 {
     uint32_t i;
     for (i = 0; i < NVOICE; i++)
@@ -501,7 +573,7 @@ static void trk_sustain_up(track_t *t)
         }
 }
 
-static void trk_all_off(track_t *t)
+static void trk_all_off1(track_t *t)
 {
     uint32_t i;
     strum_cancel(t, 0, 1);
@@ -514,6 +586,75 @@ static void trk_all_off(track_t *t)
     t->mono_note = 0;
     t->xp_n = 0;
 }
+
+/* Clipper 0.3: the layer. Track 2's sound with track 1's (LAYER: every note on both; SPLIT: below SPLIT on track
+ * 2, from it up on track 1), its octave OCT; what a note-on did is kept per note, so its note-off goes where it
+ * went whatever changed meanwhile (the mode, the split, the octave). Track 2 has no other way in: its sequencer and
+ * arpeggiator never run, the keys, MIDI and track 1's sequencer and arpeggiator all come through here */
+#if CLIPPER_SYNTH
+static volatile int16_t syn_morph_req = -1;      /* MIDI CC 20 (seq.c): MORPH, applied by the UI (ui_synth.c) */
+static uint8_t ly_route[128], ly_note[128];           /* per note: bit 0 track 1, bit 1 track 2; track 2's note */
+static uint32_t layer_mode(void)
+{
+    int32_t m = trk[1].p[P_LYMODE];
+    return m == LY_LAYER || m == LY_SPLIT ? (uint32_t)m : LY_OFF;
+}
+static void trk_note_on(track_t *t, uint32_t note, uint32_t vel)
+{
+    uint32_t m, r = 1;
+    if (t != &trk[0] || note > 127u) {
+        trk_note_on1(t, note, vel);
+        return;
+    }
+    m = layer_mode();
+    if (m == LY_LAYER)
+        r = 3;
+    else if (m == LY_SPLIT)
+        r = (int32_t)note >= trk[1].p[P_LYSPLIT] - 4 ? 1u : 2u;
+    if (ly_route[note] & 2u)                            /* (the same note again: its layer note first let go) */
+        trk_note_off1(&trk[1], ly_note[note]);
+    ly_route[note] = (uint8_t)r;
+    if (r & 2u) {
+        ly_note[note] = (uint8_t)clamp((int32_t)note + (trk[1].p[P_LYOCT] - 2) * 12, 0, 127);
+        trk_note_on1(&trk[1], ly_note[note], vel);
+    }
+    if (r & 1u)
+        trk_note_on1(t, note, vel);
+}
+static void trk_note_off(track_t *t, uint32_t note)
+{
+    uint32_t r;
+    if (t != &trk[0] || note > 127u) {
+        trk_note_off1(t, note);
+        return;
+    }
+    r = ly_route[note] ? ly_route[note] : 1u;
+    ly_route[note] = 0;
+    if (r & 2u)
+        trk_note_off1(&trk[1], ly_note[note]);
+    if (r & 1u)
+        trk_note_off1(t, note);
+}
+static void trk_sustain_up(track_t *t)
+{
+    trk_sustain_up1(t);
+    if (t == &trk[0])
+        trk_sustain_up1(&trk[1]);
+}
+static void trk_all_off(track_t *t)
+{
+    trk_all_off1(t);
+    if (t == &trk[0]) {
+        trk_all_off1(&trk[1]);
+        memset(ly_route, 0, sizeof ly_route);
+    }
+}
+#else
+#define trk_note_on trk_note_on1
+#define trk_note_off trk_note_off1
+#define trk_sustain_up trk_sustain_up1
+#define trk_all_off trk_all_off1
+#endif
 
 /* note i of a chord of n (notes[]): at once, or strummed (rank: its place from the lowest, or the highest) */
 static void trk_note_chord(track_t *t, const uint8_t *notes, uint32_t n, uint32_t i, uint32_t vel)
@@ -596,7 +737,7 @@ static void engine_block(track_t *t)
             uint32_t n = t->xp_n;
             t->xp_n = 0;
             for (i = 0; i < n; i++)
-                trk_note_on(t, t->xp_note[i], t->xp_vel[i]);
+                trk_note_on1(t, t->xp_note[i], t->xp_vel[i]);   /* (the layer had it then) */
         }
     }
     for (i = 0; i < 8u; i++)                            /* the engine's own values, for a later fade */
@@ -653,8 +794,19 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
     uint32_t i;
     int32_t lfo = mulq15(t->lfo_val, t->lfo_fade);
     /* Clipper: the pitch bend (MIDI En), in 1/4096 semitone: the HYBRID patch's range, else +-2 semitones */
+    uint32_t pc = CLIPPER_SYNTH ? 0u : (uint32_t)(t - trk) % NPART;   /* (Clipper: the layer plays part 1's controls) */
     int32_t bend = (uint32_t)(t - trk) < NPART ?
-                   (part_ctl[t - trk].bend * (e == &ENG_HYBRID ? (int32_t)hy_cur[t - trk].bend : 2)) >> 3 : 0;
+                   (part_ctl[pc].bend * (e == &ENG_HYBRID ? (int32_t)hy_cur[t - trk].bend : 2)) >> 3 : 0;
+#if CLIPPER_SYNTH
+    /* Clipper 0.3: the mod wheel's and the aftertouch's destinations (P_MWDST, P_ATDST), velocity to the cutoff
+     * (P_VELF); VIB and TREM ride a vibrato LFO of their own (~5.5 Hz sine), WAH the sound's LFO */
+    static uint32_t vib_ph[NPART];
+    int32_t vib, mw = part_ctl[pc].mw, cat = part_ctl[pc].at;
+    if (e == &ENG_HYBRID)                               /* (HYBRID: its matrix takes MW and AT) */
+        mw = cat = 0;
+    vib_ph[(uint32_t)(t - trk) % NPART] += 535642u * n;
+    vib = osc_sine(vib_ph[(uint32_t)(t - trk) % NPART]);
+#endif
     /* TUNE in cents: whole 1/16 semitones in the pitch, the rest as a fine factor (no dead zone) */
     int32_t tune = song.g[G_TUNE] >= 0 ? song.g[G_TUNE] * 16 / 100 : -((-song.g[G_TUNE] * 16 + 99) / 100);
     int32_t tune_fine = (song.g[G_TUNE] * 16 - tune * 100) * 2367 / 16000;   /* rest, in 1/4096 (1 ct = 2.367) */
@@ -698,6 +850,13 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
             m.amp1 = e->ownenv ? env : mulq15(env, v->vel * 258);
             if (p[P_LD_AMP])
                 m.amp1 = mulq15(m.amp1, 32767 - mulq15((lfo + 32768) >> 1, p[P_LD_AMP] * 258));
+#if CLIPPER_SYNTH
+            {   /* TREM: up to 60 % of the level away, at the vibrato's rate */
+                int32_t tr = (p[P_MWDST] == MD_TREM ? mw : 0) + (p[P_ATDST] == MD_TREM ? (e == &ENG_HYBRID ? 0 : v->pat > cat ? v->pat : cat) : 0);
+                if (tr)
+                    m.amp1 = mulq15(m.amp1, 32767 - mulq15((vib + 32768) >> 1, (tr > 127 ? 127 : tr) * 155));
+            }
+#endif
             if (fade)                                   /* linear to 0 over the fade */
                 m.amp1 = m.amp1 * (int32_t)(t->xf - 1u) / (int32_t)XF_BLOCKS;
             m.amp0 = v->env_out;
@@ -719,6 +878,13 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
         {   /* the pitch in 1/4096 semitone: glide, LFO, the pitch envelope; the fraction goes into the increment */
             int32_t q = (v->pitch_cur << 8) + v->pitch_frac + ((lfo * p[P_LD_PIT] * 3) >> 7) +
                         ((v->penv * p[P_ED_PIT] * 3) >> 7) + bend;
+#if CLIPPER_SYNTH
+            {   /* VIB: up to +-half a semitone */
+                int32_t vd = (p[P_MWDST] == MD_VIB ? mw : 0) + (p[P_ATDST] == MD_VIB ? (e == &ENG_HYBRID ? 0 : v->pat > cat ? v->pat : cat) : 0);
+                if (vd)
+                    q += (vib * (vd > 127 ? 127 : vd)) >> 11;
+            }
+#endif
             pitch = (q >> 8) + tune;
             m.pitch16 = clamp(pitch, 0, 2047);
             m.inc = pitch_inc(m.pitch16);
@@ -731,6 +897,26 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
         if (v->vel > 110)                               /* accent opens the filter with the env */
             m.cutoff += (m.envq15 * 24) >> 7;
         m.shape = (64 << 8) + ((lfo * p[P_LD_SHP]) >> 7) + ((m.envq15 * p[P_ED_SHP]) >> 7);
+#if CLIPPER_SYNTH
+        {   /* VEL>F: around velocity 96, up to ~2 octaves up (127) and ~4.5 down (32); CUT: up to ~4 octaves,
+             * WAH: the sound's LFO on the cutoff, up to ~+-2 octaves; SHP: the shape up to its top */
+            int32_t a = e == &ENG_HYBRID ? 0 : v->pat > cat ? v->pat : cat;
+            if (p[P_VELF])
+                m.cutoff += ((int32_t)v->vel - 96) * p[P_VELF] * 4;
+            if (p[P_MWDST] == MD_CUT)
+                m.cutoff += mw * 120;
+            if (p[P_ATDST] == MD_CUT)
+                m.cutoff += a * 120;
+            if (p[P_MWDST] == MD_WAH)
+                m.cutoff += (lfo * mw) >> 9;
+            if (p[P_ATDST] == MD_WAH)
+                m.cutoff += (lfo * a) >> 9;
+            if (p[P_MWDST] == MD_SHP)
+                m.shape += mw * 128;
+            if (p[P_ATDST] == MD_SHP)
+                m.shape += a * 128;
+        }
+#endif
         e->render(t, v, out, n, &m);
         nr++;
     }

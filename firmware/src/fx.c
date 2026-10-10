@@ -646,6 +646,9 @@ static void djf_process(int32_t *l, int32_t *r, uint32_t n)
 }
 
 #include "punch.c"            /* PUNCH-IN FX on the whole mix (FX held + a white key) */
+#if CLIPPER_SYNTH
+#include "bus.c"              /* Clipper 0.3: the master EQ and compressor */
+#endif
 static int32_t master_cur = -1;                        /* the volume knob, ramped per sample (no zipper) */
 static void mix_block(int32_t *out, uint32_t n)
 {
@@ -690,6 +693,9 @@ static void mix_block(int32_t *out, uint32_t n)
     dust_process(mix_l, mix_r, n);
     punch_process(mix_l, mix_r, n);
     djf_process(mix_l, mix_r, n);
+#if CLIPPER_SYNTH
+    bus_process(mix_l, mix_r, n);
+#endif
     m1 = (int32_t)song.master_q12;
     m0 = master_cur < 0 ? m1 : master_cur;
     master_cur = m1;

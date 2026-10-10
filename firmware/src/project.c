@@ -309,6 +309,7 @@ static void proj_capture(project_t *p)        /* what is playing now, as a proje
         p->g[i] = song.g[i];
     p->sel = song.sel;
     p->drdly = (uint8_t)song.g[G_DRDLY];
+    p->rsv[0] = CLIPPER_SYNTH ? CLIPPER_PROJ_MARK : 0u;   /* (Clipper 0.3: its bus, layer and modulation are set) */
     for (i = 0; i < NTRK; i++) {
         memcpy(p->t[i].p, trk[i].p, sizeof trk[i].p);
         p->t[i].engine = trk[i].eng_req;
@@ -328,9 +329,11 @@ static void proj_apply(const project_t *p, int all)
 {
     uint32_t i, k;
     for (i = 0; i < PROJ_NG; i++)
-        if (all ? i != G_SLOT && i != G_LOAD && i != G_SAVE && i != G_SYNC && i != G_MIDI && i != G_ROUTE : i == G_DRLVL || i == G_DRREV)
+        if (all ? i != G_SLOT && i != G_LOAD && i != G_SAVE && i != G_SYNC && i != G_MIDI && i != G_ROUTE :
+                  !CLIPPER_SYNTH && (i == G_DRLVL || i == G_DRREV))   /* (Clipper: the master EQ, not a section's) */
             song.g[i] = (int16_t)clamp(p->g[i], GP[i].min, GP[i].max);
-    song.g[G_DRDLY] = (int16_t)clamp(p->drdly, GP[G_DRDLY].min, GP[G_DRDLY].max);   /* (a load and a section, as REV) */
+    if (all || !CLIPPER_SYNTH)
+        song.g[G_DRDLY] = (int16_t)clamp(p->drdly, GP[G_DRDLY].min, GP[G_DRDLY].max);   /* (a load and a section, as REV) */
     for (k = 0; k < NTRK; k++) {
         track_t *t = &trk[k];
         const proj_trk_t *s = &p->t[k];
@@ -382,6 +385,10 @@ static void proj_apply(const project_t *p, int all)
             }
         fm6_track_loaded(t);                            /* FM6: the project keeps PTCH, not the patch: its slot's */
     }
+#if CLIPPER_SYNTH
+    if (all && p->rsv[0] != CLIPPER_PROJ_MARK)          /* a SLOOP or Clipper 0.1 / 0.2 project: what its drum */
+        clipper_proj_neutral();                         /* globals and slicer slots held means nothing here */
+#endif
 }
 
 #ifndef PROJ_HOST

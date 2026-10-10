@@ -378,6 +378,10 @@ static uint32_t graph_signature(void)
     for (i = 0; i < P_COUNT; i++)
         h = (h ^ (uint32_t)t->p[i]) * 16777619u;
     h ^= (uint32_t)TSEL->preset * 7u + (uint32_t)song.g[G_SLOT] * 13u + TSEL->user * 257u + up_gen * 7919u + ui.uslot * 104729u;
+#if CLIPPER_SYNTH
+    if (pg->scope == SC_SYN)                         /* the layer's sound, A and B */
+        h ^= syn_sig() * 2246822519u;
+#endif
     if (pg->graph == GR_SLCR && t->p[P_SLCR])        /* the SLICER's step playing */
         h ^= (sl[song.sel].idx + 1u) * 2654435761u;
     if (pg->graph == GR_SLOTS)                       /* (a checksum over each slot) */
@@ -777,6 +781,14 @@ static void draw_graph(void)
             cv_oy = 0;
             graph_user();
             break;
+#if CLIPPER_SYNTH
+        case GR_LAYER:
+            graph_layer();
+            break;
+        case GR_MORPH:
+            graph_morph();
+            break;
+#endif
         default:
             if (big_page(pg)) {
                 cv_oy = 0;

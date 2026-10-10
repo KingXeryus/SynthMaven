@@ -19,7 +19,8 @@
 #define NPART 3                  /* synth parts: tracks 1..3 */
 #define NTRK 4                   /* + the drum track */
 #define TRK_DRUM 3
-enum { V_POLY, V_MONO, V_LEGATO, V_UNISON };   /* P_VOICE */
+enum { V_POLY, V_MONO, V_LEGATO, V_UNISON, V_PUNI2, V_PUNI4 };   /* P_VOICE (Clipper 0.3: UNI2 / UNI4, poly unison) */
+static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /* a note per key, its own voices */
 #define NSTEP 64
 #define HALF_FRAMES 256          /* I2S half buffer: 5.8 ms at 44.1 kHz */
 #ifndef FELUCCA_SLICE
@@ -55,7 +56,9 @@ enum {
     F_INT, F_PCT, F_BIPCT, F_TIME, F_LFOHZ, F_CUTOFF, F_DB, F_SEMI, F_ENUM, F_BPM, F_NOTE,
     F_ONOFF, F_OCT, F_STEPS,
     F_SWING,                    /* 0..100: MPC swing, 50 % (straight) .. 75 % */
-    F_FILT                      /* -64..63: the DJ filter, LP <- OFF -> HP */
+    F_FILT,                     /* -64..63: the DJ filter, LP <- OFF -> HP */
+    F_CDB,                      /* Clipper: dB around the middle of the range (the master EQ) */
+    F_SPLIT                     /* Clipper: the layer's split, a MIDI note stored + 4 (68 = C4) */
 };
 
 typedef struct {
@@ -99,6 +102,29 @@ enum { FM_SVF = 1, FM_MOOG = 2 };
 #define G_RTYPE G_DUCK
 #define G_RPRE G_ROLL
 enum { RT_ROOM, RT_PLATE };
+/* Clipper 0.3: the drum globals are the master bus (bus.c): EQ LOW / MID / HIGH, dB around their centre (so a SLOOP
+ * project, its drum level 100, reverb 16, channel 10, loads flat), and COMP (the drums' delay send: 0 = off) */
+#define G_EQLOW G_DRLVL
+#define G_EQMID G_DRCH
+#define G_EQHIGH G_DRREV
+#define G_COMP G_DRDLY
+#define EQ_LOW_C 100
+#define EQ_MID_C 10
+#define EQ_HIGH_C 16
+/* Clipper 0.3: the per-sound modulation (voice.c track_render) in the slicer's slots (the synth has none):
+ * VEL>F velocity to the cutoff (bipolar), the mod wheel's and the aftertouch's destination (MD_*) */
+#define P_VELF P_SLCR
+#define P_MWDST P_SLRATE
+#define P_ATDST P_SLDEPTH
+enum { MD_OFF, MD_VIB, MD_CUT, MD_SHP, MD_WAH, MD_TREM };
+/* Clipper 0.3: the layer (track 2's sound under or beside track 1's: voice.c layer_*) keeps its settings in track 2's
+ * pattern parameters (its sequencer never runs in the synth): MODE (OFF, LAYER, SPLIT), SPLIT (the lowest note of
+ * the main sound, stored + 4: a SLOOP default of 64 is C4), OCT (-2..2, stored + 2); its level is track 2's LEVEL */
+#define P_LYMODE P_SSWING
+#define P_LYSPLIT P_SGATE
+#define P_LYOCT P_SDIV
+enum { LY_OFF, LY_LAYER, LY_SPLIT };
+#define CLIPPER_PROJ_MARK 0xC3u  /* project_t.rsv[0]: written by Clipper 0.3 (else the bus, layer, mod reset) */
 
 enum {                          /* global parameters */
     G_BPM, G_SWING, G_CLOCK, G_TUNE,
@@ -360,8 +386,8 @@ static int is_drum(const track_t *t) { return t == TDRUM; }
 static int trk_silent(const track_t *t)
 {
     uint32_t i = (uint32_t)(t - trk);
-    if (CLIPPER_SYNTH && i)
-        return 1;                /* Clipper: only the instrument (track 1) sounds */
+    if (CLIPPER_SYNTH && i)      /* Clipper: only the instrument (track 1) sounds, and its layer (track 2) when on */
+        return i != 1u || (trk[1].p[P_LYMODE] != LY_LAYER && trk[1].p[P_LYMODE] != LY_SPLIT);
     return t->p[P_MUTE] || (song.solo && !((song.solo >> i) & 1u));
 }
 #define RING_PUBLISH() __asm__ volatile("" ::: "memory")   /* slot store before the index update */

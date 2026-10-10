@@ -434,7 +434,7 @@ static void step_add(track_t *t, uint32_t idx, uint32_t note, uint32_t vel, uint
 {
     step_t *s = &t->step[idx];
     uint32_t k;
-    if (s->time != ST_NOTE || !s->n || t->p[P_VOICE] != V_POLY) {
+    if (s->time != ST_NOTE || !s->n || !voice_poly(t->p[P_VOICE])) {
         s->n = 0;                                   /* a fresh step */
         s->flags = 0;
         s->vel = 0;
@@ -2077,6 +2077,11 @@ static int part_ctl_cc(track_t *t, uint32_t cc, uint32_t value)   /* 1: taken */
         if (t->eng_req == ENGI_HYBRID)
             t->p[P_E4 + cc - 16u] = (int16_t)value;
         return 1;
+#if CLIPPER_SYNTH
+    case 20:                                          /* Clipper 0.3: MORPH (ui_synth.c, the UI applies it) */
+        syn_morph_req = (int16_t)(value & 127u);
+        return 1;
+#endif
     default:
         return 0;
     }

@@ -346,7 +346,7 @@ static void project_new(void)
     }
     TDRUM->p[P_E0] = DRUM_DEFAULT_KIT;
     for (i = 0; i < G_COUNT; i++)
-        if (i != G_SLOT && i != G_DRCH && i != G_SYNC && i != G_MIDI && i != G_ROUTE)
+        if (i != G_SLOT && (i != G_DRCH || CLIPPER_SYNTH) && i != G_SYNC && i != G_MIDI && i != G_ROUTE)
             song.g[i] = GP[i].def;
     song.solo = 0;
     song.octave = 0;
@@ -405,6 +405,12 @@ static void edit_param(uint32_t slot, int32_t steps)
         return;
     v = clamp(*vp + accel(EN_K1 + slot, steps, d->max - d->min), d->min, d->max);
     *vp = (int16_t)v;
+#if CLIPPER_SYNTH
+    if (pg->scope == SC_SYN) {                            /* the layer, MORPH, RANDOM (ui_synth.c) */
+        syn_changed(id, vp);
+        return;
+    }
+#endif
     if (pg->scope != SC_GLOBAL && p_lockable(id))
         ui.lock_par = (uint8_t)id;                        /* the SEQ layer's lock parameter: the last one touched */
     if (!v)
@@ -483,7 +489,7 @@ static void seq_entry(uint32_t pressed)
             st->lvl = st->rat = 0;
             st->time = ST_NOTE;
         }
-        if (t->p[P_CHORD] && !t->p[P_VOICE]) {            /* chord mode (2.4.1): the chord as it sounded (CHORD+,
+        if (t->p[P_CHORD] && voice_poly(t->p[P_VOICE])) {            /* chord mode (2.4.1): the chord as it sounded (CHORD+,
                                                             * VLEAD), not only its root; (not played yet: built here) */
             uint8_t c[4];
             uint32_t m, j;
@@ -495,7 +501,7 @@ static void seq_entry(uint32_t pressed)
             }
             for (j = 0; j < m && st->n < 4u; j++)
                 st->note[st->n++] = c[j];
-        } else if (t->p[P_VOICE]) {
+        } else if (!voice_poly(t->p[P_VOICE])) {
             st->note[0] = (uint8_t)note;
             st->n = 1;
         } else if (st->n < 4u) {
@@ -813,6 +819,9 @@ static void ui_input(void)
     int layered;
     if (CLIPPER_SYNTH && song.sel)                      /* Clipper: one instrument (an editor, an old project) */
         song.sel = 0;
+#if CLIPPER_SYNTH
+    syn_tick();                                         /* MIDI CC 20: MORPH */
+#endif
     enc_hold = 0;                                       /* (panel.c: every knob readable again this pass) */
     if (pressed || notes)
         ui_input_ms = fm1_ms;

@@ -12,7 +12,11 @@ static const char *const N_SCALE[] = {"CHR", "MAJ", "MIN", "DOR", "MIX", "PEN", 
                                     "PHRY", "LYD", "LOC", "MEL", "BLUES", "WHOLE", "DIMHW", "DIMWH"};
 static const char *const N_ONOFF[] = {"OFF", "ON"};
 static const char *const N_QUANT[] = {"OFF", "SNAP", "WHITE"};   /* seq.c kb_map; 1 = SNAP as the old ON */
+#if CLIPPER_SYNTH
+static const char *const N_VOICE[] = {"POLY", "MONO", "LEG", "UNI", "UNI2", "UNI4"};   /* V_POLY .. V_PUNI4 */
+#else
 static const char *const N_VOICE[] = {"POLY", "MONO", "LEG", "UNI"};   /* V_POLY .. V_UNISON */
+#endif
 static const char *const N_GLMODE[] = {"RATE", "TIME"};
 static const char *const N_PRIO[] = {"LAST", "LOW", "HIGH"};
 static const char *const N_ALLOC[] = {"ROT", "REUSE"};
@@ -26,7 +30,9 @@ static const char *const N_SLCR[] = {"OFF", "GATE", "STUT"};             /* SL_O
 static const char *const N_FMODEL[] = {"SVF", "MOOG"};                  /* P_FMODEL: FM_SVF, FM_MOOG */
 static const char *const N_SLDIV[] = {"1/8", "1/16", "1/32", "8T", "16T", "32T"};   /* SL_DEN */
 static const char *const N_CHORD[] = {"OFF", "TRIAD", "7TH", "9TH", "SUS4", "POWER"};   /* seq.c CHORD_DEG */
-static const char *const N_RTYPE[] = {"ROOM", "PLATE"};                 /* G_RTYPE: RT_ROOM, RT_PLATE */
+static const char *const N_RTYPE[] = {"ROOM", "PLATE"};
+static const char *const N_MODDST[] = {"OFF", "VIB", "CUT", "SHP", "WAH", "TREM"};   /* MD_OFF .. MD_TREM */
+static const char *const N_LYMODE[] = {"OFF", "LAYER", "SPLIT"};       /* LY_OFF .. LY_SPLIT */                 /* G_RTYPE: RT_ROOM, RT_PLATE */
 static const char *const N_ROLL[] = {"1/8", "1/16", "1/32", "32T", "1/64"};   /* seq.c ROLL_DEN */
 static const char *const N_ENGNAME[] = {"ANALOG", "DIGITAL", "PHASE", "LOFI", "SAMPLE", "VOICE", "TRIO", "WHEEL", "GRAIN",
                                         "FM6", "PHYS", "NOISE", "HYBRID",
@@ -87,19 +93,41 @@ static const param_desc_t TP[P_COUNT] = {
     [P_DETUNE] = PD("DTUNE", F_INT, 0, 127, 40),
     [P_PAN] = PD("PAN", F_BIPCT, -64, 63, 0),
     [P_MUTE] = PE("MUTE", N_ONOFF, 0),
-    [P_SLCR] = PE("SLCR", N_SLCR, 0),
-#if CLIPPER_SYNTH
+#if CLIPPER_SYNTH                                  /* the sound's modulation (core.h P_VELF ..: voice.c) */
+    [P_SLCR] = PD("VEL>F", F_BIPCT, -64, 63, 0),
     [P_SLPAT] = {"MODL", F_ENUM, FM_SVF, FM_MOOG, FM_SVF, N_FMODEL, 0},   /* P_FMODEL (core.h) */
+    [P_SLRATE] = PE("MW>", N_MODDST, MD_VIB),
+    [P_SLDEPTH] = PE("AT>", N_MODDST, MD_CUT),
 #else
+    [P_SLCR] = PE("SLCR", N_SLCR, 0),
     [P_SLPAT] = PD("PAT", F_INT, 1, 16, 1),        /* SL_PAT[] */
-#endif
     [P_SLRATE] = PE("RATE", N_SLDIV, 1),
     [P_SLDEPTH] = PD("DEPTH", F_PCT, 0, 127, 127),
+#endif
     [P_CHORD] = PE("CHORD", N_CHORD, 0),
     [P_TFLT] = PD("FILT", F_FILT, -64, 63, 0),
     [P_STRUM] = PD("STRUM", F_INT, -60, 60, 0),   /* ms a note: > 0 low to high (down), < 0 high to low */
     [P_VLEAD] = PE("VLEAD", N_ONOFF, 0),
 };
+#if CLIPPER_SYNTH
+/* a project that Clipper 0.3 did not write: its drum globals and slicer slots meant something else */
+static void clipper_proj_neutral(void)
+{
+    uint32_t k;
+    song.g[G_EQLOW] = EQ_LOW_C;
+    song.g[G_EQMID] = EQ_MID_C;
+    song.g[G_EQHIGH] = EQ_HIGH_C;
+    song.g[G_COMP] = 0;
+    for (k = 0; k < NPART; k++) {
+        trk[k].p[P_VELF] = TP[P_VELF].def;
+        trk[k].p[P_MWDST] = TP[P_MWDST].def;
+        trk[k].p[P_ATDST] = TP[P_ATDST].def;
+    }
+    trk[1].p[P_LYMODE] = LY_OFF;
+    trk[1].p[P_LYSPLIT] = 64;                         /* C4 */
+    trk[1].p[P_LYOCT] = 2;                            /* 0 */
+}
+#endif
 /* a preset's extra parameters (preset_t.x) into p, each clamped to its range */
 static void preset_extras(int16_t *p, const preset_t *pr)
 {
@@ -137,9 +165,15 @@ static const param_desc_t GP[G_COUNT] = {
     [G_ENGGO] = PE("SET", N_GO, 0),
     [G_CLRSEQ] = PE("CLRSQ", N_GO, 0),
     [G_INITSND] = PE("INIT", N_GO, 0),
+#if CLIPPER_SYNTH                                         /* the master bus (core.h G_EQLOW .., bus.c) */
+    [G_DRCH] = PD("MID", F_CDB, EQ_MID_C - 10, EQ_MID_C + 10, EQ_MID_C),
+    [G_DRLVL] = PD("LOW", F_CDB, EQ_LOW_C - 12, EQ_LOW_C + 12, EQ_LOW_C),
+    [G_DRREV] = PD("HIGH", F_CDB, EQ_HIGH_C - 12, EQ_HIGH_C + 12, EQ_HIGH_C),
+#else
     [G_DRCH] = PD("CH", F_INT, 0, 16, 10),            /* GM drum part MIDI channel, 0 = off */
     [G_DRLVL] = PD("LVL", F_INT, 0, 127, 100),
     [G_DRREV] = PD("REV", F_INT, 0, 127, 16),
+#endif
     [G_DUST] = PD("DUST", F_PCT, 0, 127, 0),
 #if CLIPPER_SYNTH                                         /* G_RTYPE, G_RPRE (core.h): the reverb, fx.c */
     [G_DUCK] = PE("TYPE", N_RTYPE, RT_ROOM),
@@ -151,7 +185,11 @@ static const param_desc_t GP[G_COUNT] = {
     [G_ROLL] = PE("ROLL", N_ROLL, 1),
 #endif
     [G_NEWPRJ] = PE("NEW", N_GO, 0),
+#if CLIPPER_SYNTH
+    [G_DRDLY] = PD("COMP", F_PCT, 0, 127, 0),         /* G_COMP */
+#else
     [G_DRDLY] = PD("DLY", F_INT, 0, 127, 0),
+#endif
 };
 
 static const param_desc_t DRUM_KIT_DESC = PE("KIT", DRUM_KIT_NAMES, 0);
@@ -259,7 +297,7 @@ static void param_format(const param_desc_t *d, int32_t v, char *val, const char
         *unit = "st";
         break;
     case F_ENUM:
-        str_cpy(val, d->names[v < d->min ? d->min : v > d->max ? d->max : v], 6);
+        str_cpy(val, d->names[(v < d->min ? d->min : v > d->max ? d->max : v) - d->min], 6);   /* (P_FMODEL: from 1) */
         if (d->unit)
             *unit = d->unit;
         break;
@@ -277,6 +315,37 @@ static void param_format(const param_desc_t *d, int32_t v, char *val, const char
         fmt_int(val, v);
         *unit = "STEP";
         break;
+    case F_CDB: {                                     /* dB around the middle of the range */
+        int32_t c = (d->min + d->max) / 2, x = v - c;
+        if (x > 0) {
+            char t[8];
+            fmt_int(t, x);
+            val[0] = '+';
+            str_cpy(val + 1, t, 6);
+        } else {
+            fmt_int(val, x);
+        }
+        *unit = "dB";
+        break;
+    }
+    case F_SPLIT: {                                   /* stored + 4: C4 = 60 + 4 */
+        uint32_t k;
+        v -= 4;
+        if (v < 0)
+            v = 0;
+        str_cpy(val, N_NOTE[(uint32_t)v % 12u], 6);
+        k = 0;
+        while (val[k])
+            k++;
+        if (v < 12) {
+            val[k++] = '-';
+            val[k++] = '1';
+        } else {
+            val[k++] = (char)('0' + (v / 12 - 1) % 10);
+        }
+        val[k] = 0;
+        break;
+    }
     default:
         if (d->names) {                               /* F_INT with a 0-terminated name list: the range */
             uint32_t k = 0;                           /* split evenly over the names (engine desc hooks) */
@@ -295,9 +364,9 @@ static void param_format(const param_desc_t *d, int32_t v, char *val, const char
 /* ------------------------------------------------------------ pages --- */
 enum { FAM_HOME, FAM_ENV, FAM_LFO, FAM_FX, FAM_SCL, FAM_EDIT, FAM_GLO, FAM_SAVE, FAM_ARP, FAM_SEQ, FAM_TRK,
        FAM_COUNT };
-enum { SC_TRACK, SC_GLOBAL, SC_ENGINE, SC_STEP, SC_TRK, SC_SONG, SC_DRUM };
+enum { SC_TRACK, SC_GLOBAL, SC_ENGINE, SC_STEP, SC_TRK, SC_SONG, SC_DRUM, SC_SYN };   /* SC_SYN: ui_synth.c */
 enum { GR_NONE, GR_ADSR, GR_LFO, GR_STEPS, GR_ARP, GR_SCALE, GR_FX, GR_ROLL, GR_BROWSE, GR_SLOTS, GR_USER, GR_TRK,
-       GR_SLCR };
+       GR_SLCR, GR_LAYER, GR_MORPH };
 
 typedef struct {
     const char *title;
@@ -310,6 +379,9 @@ static const page_t PAGES[] = {
     {"ENV DEST", FAM_ENV, SC_TRACK, GR_NONE, {P_ED_FLT, P_ED_PIT, P_ED_SHP, 0xFF}},   /* (P_ED_FX: the level trim, no page) */
     {"LFO", FAM_LFO, SC_TRACK, GR_LFO, {P_LRATE, P_LWAVE, P_LPHASE, P_LFADE}},
     {"LFO DEST", FAM_LFO, SC_TRACK, GR_NONE, {P_LD_PIT, P_LD_FLT, P_LD_SHP, P_LD_AMP}},
+#if CLIPPER_SYNTH                                                        /* (velocity, mod wheel, aftertouch) */
+    {"MOD", FAM_LFO, SC_TRACK, GR_NONE, {P_VELF, P_MWDST, P_ATDST, 0xFF}},
+#endif
     {"FX", FAM_FX, SC_TRACK, GR_FX, {P_DIST, P_CHOR, P_DLY, P_REV}},
 #if CLIPPER_SYNTH                                                        /* (the sound's filter model too) */
     {"FILTER", FAM_FX, SC_TRACK, GR_NONE, {P_TFLT, P_FMODEL, 0xFF, 0xFF}},
@@ -323,6 +395,7 @@ static const page_t PAGES[] = {
 #if CLIPPER_SYNTH                                                        /* (the plate: TYPE and PRE-delay) */
     {"REVERB", FAM_FX, SC_GLOBAL, GR_NONE, {G_RTYPE, G_RSIZE, G_RDAMP, G_RPRE}},
     {"CHORUS", FAM_FX, SC_GLOBAL, GR_NONE, {G_CRATE, G_CDEPTH, 0xFF, 0xFF}},
+    {"EQ+COMP", FAM_FX, SC_GLOBAL, GR_NONE, {G_EQLOW, G_EQMID, G_EQHIGH, G_COMP}},   /* (the master bus: bus.c) */
 #else
     {"REV/CHO", FAM_FX, SC_GLOBAL, GR_NONE, {G_RSIZE, G_RDAMP, G_CRATE, G_CDEPTH}},
 #endif
@@ -333,6 +406,10 @@ static const page_t PAGES[] = {
     {"VOICE", FAM_EDIT, SC_TRACK, GR_NONE, {P_VOICE, P_GLIDE, P_GLMODE, P_PRIO}},
 #if CLIPPER_SYNTH                                                        /* (one instrument: nothing to mute) */
     {"VOICE 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_ALLOC, P_DETUNE, P_PAN, 0xFF}},
+    {"LAYER", FAM_EDIT, SC_SYN, GR_LAYER, {0, 1, 2, 3}},         /* X_LYMODE X_LYSOUND X_LYSPLIT X_LYLEVEL */
+    {"LAYER 2", FAM_EDIT, SC_SYN, GR_LAYER, {4, 5, 6, 7}},       /* X_LYOCT X_LYPAN X_LYFILT X_LYSWAP */
+    {"MORPH", FAM_EDIT, SC_SYN, GR_MORPH, {8, 9, 10, 0xFF}},     /* X_MORPH X_SETA X_SETB */
+    {"RANDOM", FAM_EDIT, SC_SYN, GR_NONE, {11, 12, 13, 14}},     /* X_RNDAMT X_RNDWHAT X_RNDGO X_RNDBACK */
 #else
     {"VOICE 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_ALLOC, P_DETUNE, P_PAN, P_MUTE}},
 #endif
@@ -371,6 +448,9 @@ static int page_for_drum(const page_t *pg)
     return pg->scope != SC_ENGINE && (pg->scope != SC_TRACK || pg->fam == FAM_SEQ || pg->graph == GR_SLCR);
 }
 
+#if CLIPPER_SYNTH
+static const param_desc_t *syn_desc(uint32_t id, int16_t **valp);   /* ui_synth.c */
+#endif
 static const param_desc_t *page_desc(const page_t *pg, uint32_t slot, int16_t **valp)
 {
     uint32_t id = pg->id[slot];
@@ -386,6 +466,10 @@ static const param_desc_t *page_desc(const page_t *pg, uint32_t slot, int16_t **
         *valp = &song.g[id];
         return &GP[id];
     }
+#if CLIPPER_SYNTH
+    if (pg->scope == SC_SYN)
+        return syn_desc(id, valp);
+#endif
     *valp = &TSEL->p[id];
     return track_desc(TSEL, id);
 }

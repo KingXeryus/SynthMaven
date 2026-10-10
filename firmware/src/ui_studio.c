@@ -726,3 +726,7 @@ static void rec_screen_draw(void)
         }
     }
 }
+
+#if CLIPPER_SYNTH
+#include "ui_synth.c"           /* Clipper 0.3: LAYER, MORPH, RANDOM (before ui_draw.c and ui_input.c) */
+#endif
