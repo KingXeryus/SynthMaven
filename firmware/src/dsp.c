@@ -159,7 +159,8 @@ static inline void ladder_coef(ladder_t *c, int32_t cut, int32_t res)   /* cut 0
     c->H = 65536 - G;
     c->G4 = mul_sh(G2, G2, 16);
     c->k = clamp(res, 0, 127) * 16900 / 127;                     /* 0 .. 4.13 */
-    c->inv = (int32_t)(((uint64_t)1 << 32) / (uint32_t)(65536 + mul_sh(c->k, c->G4, 12)));
+    c->inv = (int32_t)(0xFFFFFFFFu / (uint32_t)(65536 + mul_sh(c->k, c->G4, 12)));   /* (32 bits: the FM-1 has
+                                                                                      * no 64-bit divide) */
 }
 /* one sample: x (clamped to +-131072); s[4] the stages (Q12) */
 static inline int32_t ladder_tick(const ladder_t *c, int32_t x, int32_t *s)
