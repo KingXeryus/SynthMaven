@@ -8,6 +8,15 @@
  * right, as if MASTER were all the way up: the picture does not follow the volume knob, even at 0), the tracks' peaks (fx.c / drums.c, as the TRACKS meters read them), the notes that started
  * (voice.c vis_hit) and the transport clock. Everything is drawn in the main loop, every other frame, in two
  * bands of 120 rows (the canvas holds 124): no cost to the audio. */
+#if CLIPPER_SYNTH
+/* Clipper 0.3: no full-screen visualiser (its code and its 5.5 KB of the pool go to the synth); HOME keeps its scope */
+#define VIS_N 1u
+static const char *const VIS_NAME[VIS_N] = {"OFF"};
+static int vis_shown(void) { return 0; }
+static void vis_open(void) {}
+static void vis_draw(void) {}
+static void vis_select(int32_t s) { (void)s; }
+#else
 #define VIS_N 12u
 static const char *const VIS_NAME[VIS_N] = {"OSCILLOSCOPE", "SPECTRUM", "SPECTROGRAM", "LISSAJOUS", "VU METERS",
                                             "CIRCLE", "TAPE", "LCD", "BOUNCE", "ORBIT", "WIRES", "CLIPPER"};
@@ -652,3 +661,4 @@ static void vis_select(int32_t s)
     ui.force = 1;
     settings_later = 1;                                 /* (kept with the settings, once stopped) */
 }
+#endif

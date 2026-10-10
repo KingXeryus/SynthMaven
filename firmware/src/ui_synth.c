@@ -53,6 +53,7 @@ static void snap_put(track_t *t, const syn_snap_t *s)
     uint32_t i;
     if (!s->ok)
         return;
+    sound_fade_begin(t);
     fm1_irq_off();
     t->eng_req = s->eng;
     for (i = 0; i < P_COUNT; i++)
@@ -149,6 +150,7 @@ static void syn_randomize(void)
     int32_t amt = xv[X_RNDAMT];
     uint32_t i, what = (uint32_t)xv[X_RNDWHAT];
     snap_take(&syn_back, t);
+    sound_fade_begin(t);
     syn_seed ^= fm1_ms * 2654435761u;
     for (i = 0; i < P_COUNT; i++) {
         const param_desc_t *d = syn_pdesc(t->eng_req, i);
@@ -206,6 +208,8 @@ static void layer_swap(void)
     syn_snap_t sa, sb;
     snap_take(&sa, a);
     snap_take(&sb, b);
+    sound_fade_begin(a);
+    sound_fade_begin(b);
     trk_all_off(a);
     fm1_irq_off();
     a->eng_req = sb.eng, b->eng_req = sa.eng;

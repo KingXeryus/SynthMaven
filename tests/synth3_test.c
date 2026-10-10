@@ -399,6 +399,95 @@ static void t_random(void)
     ok(!memcmp(trk[0].p, before, sizeof before), "BACK: the sound as it was");
 }
 
+
+/* a preset changed under a held note (0.3): the old sound fades out with its own values, no step; the same for a
+ * WAVE table change (and the new table built in a few passes of the main loop) */
+static double max_step(uint32_t a, uint32_t b)
+{
+    double m = 0;
+    uint32_t i;
+    for (i = a + 1u; i < b; i++)
+        if (fabs(capt[i] - capt[i - 1]) > m)
+            m = fabs(capt[i] - capt[i - 1]);
+    return m;
+}
+static void t_fade(void)
+{
+    char w[160];
+    static const char *const TO[] = {"SUB BASS", "SINE PAD", "FUNK BASS", "TRAP PLUCK", "MINI LEAD"};
+    uint32_t k, worst_ok = 1;
+    double worst = 0;
+    trk[1].p[P_LYMODE] = LY_OFF;
+    for (k = 0; k < 5u; k++) {
+        double before, after;
+        uint32_t pi, i;
+        sound(0, 0u, 0);
+        trk[0].p[P_E0] = 3, trk[0].p[P_E4] = 127, trk[0].p[P_E6] = 0, trk[0].p[P_SUS] = 127, trk[0].p[P_REL] = 100;
+        trk[0].p[P_ATK] = 0, trk[0].p[P_ED_PIT] = trk[0].p[P_LD_PIT] = 0, trk[0].p[P_VOICE] = V_POLY;
+        trk[0].p[P_DLY] = trk[0].p[P_REV] = trk[0].p[P_CHOR] = trk[0].p[P_DIST] = 0;
+        trk_note_on(&trk[0], 57, 120);
+        capture(300);
+        before = max_step(200 * CTL, 300 * CTL);
+        for (pi = 0, i = 0; i < ENGINES[0]->npresets; i++)
+            if (!strcmp(ENGINES[0]->presets[i].name, TO[k]))
+                pi = i;
+        apply_preset_to(&trk[0], pi);
+        capture(120);
+        after = max_step(0, 120 * CTL);
+        trk_note_off(&trk[0], 57);
+        frames(20);
+        if (after / before > worst)
+            worst = after / before;
+        worst_ok &= after < before * 1.3;
+    }
+    snprintf(w, sizeof w, "a preset changed under a held sine: no step (the largest x%.2f of the sine's own)", worst);
+    ok(worst_ok, w);
+    {   /* WAVE: a table change under a held note; the new table */
+        uint32_t pa = 0, pb = 0, i, passes = 0;
+        double before, after;
+        for (i = 0; i < ENGINES[ENGI_WAVE]->npresets; i++) {
+            if (!strcmp(ENGINES[ENGI_WAVE]->presets[i].name, "WT BASIC")) pa = i;
+            if (!strcmp(ENGINES[ENGI_WAVE]->presets[i].name, "VOCAL WT")) pb = i;
+        }
+        sound(0, ENGI_WAVE, pa);
+        while (wt_have != (int16_t)(trk[0].p[P_E0] % WT_NALL) && passes < 100)
+            wt_service(), passes++;
+        trk[0].p[P_DLY] = trk[0].p[P_REV] = trk[0].p[P_CHOR] = 0, trk[0].p[P_SUS] = 127, trk[0].p[P_REL] = 100;
+        trk_note_on(&trk[0], 45, 110);
+        capture(300);
+        before = max_step(200 * CTL, 300 * CTL);
+        apply_preset_to(&trk[0], pb);
+        {   /* the audio runs, the main loop builds between blocks (as on the FM-1) */
+            static int32_t o[CTL * 2];
+            uint32_t bl, j;
+            for (bl = 0; bl < 120u; bl++) {
+                mix_block(o, CTL);
+                for (j = 0; j < CTL; j++)
+                    capt[bl * CTL + j] = o[2 * j];
+                if (bl >= 10u) {
+                    wt_service();
+                    if (wt_have != (int16_t)(trk[0].p[P_E0] % WT_NALL))
+                        passes++;
+                }
+            }
+        }
+        after = max_step(0, 120 * CTL);
+        trk_note_off(&trk[0], 45);
+        frames(20);
+        snprintf(w, sizeof w, "WAVE: a table change under a held note fades (x%.2f of the saw's own step)", after / before);
+        ok(after < before * 1.3, w);
+    }
+    {   /* the build: passes of wt_service for a whole table */
+        uint32_t n = 0;
+        wt_have = -1, wt_building = -1;
+        trk[0].p[P_E0] = 4;
+        while (wt_have != 4 && n < 100)
+            wt_service(), n++;
+        snprintf(w, sizeof w, "WAVE: a whole table built in %u passes of the main loop", n);
+        ok(n <= 4u, w);
+    }
+}
+
 static void t_pages(void)
 {
     static const char *const T[] = {"EQ+COMP", "MOD", "LAYER", "LAYER 2", "MORPH", "RANDOM"};
@@ -442,6 +531,7 @@ int main(int argc, char **argv)
     t_layer();
     t_morph();
     t_random();
+    t_fade();
     t_pages();
     printf(fails ? "synth3: %d FAILED\n" : "synth3: all passed\n", fails);
     return fails;

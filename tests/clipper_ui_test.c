@@ -2,7 +2,7 @@
  * Copyright (C) 2026 3dSam (Clipper) */
 /* Clipper's synth interface (CLIPPER_SYNTH 1), on the harness of tests/ui_pages_test.c (the real UI on a
  * framebuffer, the audio running between frames):
- *   power-on: the instrument plays CLIPPER; HOME is the synth screen (no tracks), HOME again the visualiser
+ *   power-on: the instrument plays CLIPPER; HOME is the synth screen (no tracks; 0.3: no visualiser)
  *   PRESETS browses the sounds, ALGORITHM jumps from kind to kind (and back); not on a page that edits the sound
  *   one instrument: an old project / the editor selecting another track comes back to track 1; tracks 2..4 and the
  *   drums are silent even with patterns and notes; MIDI plays the instrument on every channel (omni, 10 too)
@@ -215,11 +215,10 @@ int main(int argc, char **argv)
             }
         check(!bad, "the pages of every button: never a SONG, DRUMS or TRACKS screen");
     }
-    /* HOME again: the visualiser over the synth screen; HOME: back */
+    /* HOME again: Clipper 0.3 has no full-screen visualiser: still the synth screen */
     go_home(); frames(2);
     tap(B_HOME); frames(3);
-    check(vis_shown(), "HOME on HOME: the visualiser");
-    ui.force = 1; frame(); ppm("clipper-vis");
+    check(!vis_shown() && ui.home, "HOME on HOME: still the synth screen (no visualiser)");
     tap(B_HOME); frames(3);
     check(!vis_shown() && ui.home, "HOME again: the synth screen");
     /* REC: armed, the screen shows the instrument alone; held: the pattern cleared */

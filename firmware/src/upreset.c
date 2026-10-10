@@ -249,6 +249,7 @@ static int up_load_to(track_t *t, uint32_t k)
     for (i = 0; i < P_COUNT; i++)                       /* (LEN etc. of a kept pattern changed too, and */
         if (param_kept(i))                              /* a preset pattern then counted as edited) */
             v[i] = t->p[i];
+    sound_fade_begin(t);
     panic_req |= (uint8_t)(1u << trk_index(t));
     fm1_irq_off();                                      /* the audio ISR must not see half a sound */
     t->eng_req = r->engine;

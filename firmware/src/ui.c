@@ -277,6 +277,7 @@ static void apply_preset_to(track_t *t, uint32_t pi)
     uint32_t i;
     if (is_drum(t))
         return;
+    sound_fade_begin(t);                              /* Clipper: what sounds fades out with its own values */
     panic_req |= (uint8_t)(1u << trk_index(t));       /* MONO/POLY may change: release what sounds */
     t->user = 0;
     if (t == TSEL)
@@ -317,6 +318,7 @@ static void set_engine_of(track_t *t, uint32_t ei)
     uint32_t i;
     if (is_drum(t))
         return;
+    sound_fade_begin(t);
     fm1_irq_off();
     locks_restore(t);                                 /* (a lock in force: its base first, then the new sound) */
     t->eng_req = (uint8_t)(ei % NENGINES);

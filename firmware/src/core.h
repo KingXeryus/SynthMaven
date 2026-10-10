@@ -331,6 +331,10 @@ typedef struct track {
     uint8_t xf_on, xf;           /* fading; blocks of the fade still to render */
     int16_t pe_old[8];           /* P_E0..P_E7 of the sounding engine: the fade renders with these */
     uint8_t xp_n, xp_note[4], xp_vel[4];   /* note-ons during the fade, played on the new engine */
+#if CLIPPER_SYNTH
+    uint8_t xf_snd;              /* Clipper 0.3: the fade is a sound change (a preset, a SWAP...): the old sound */
+    int16_t p_old[P_E0];         /* fades with all its own values (voice.c sound_fade_begin, fx.c mix_part) */
+#endif
 } track_t;
 
 typedef struct {

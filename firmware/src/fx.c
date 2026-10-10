@@ -520,7 +520,7 @@ static void tflt_run(djf_t *f, const tsvf_t *c, int32_t *b, uint32_t n, uint32_t
 
 /* one synth part into the dry mix and the sends; a part with no voice sounding costs
  * the LFO tick and a cleared buffer only (after the DIST tail has run out) */
-static void mix_part(track_t *t, uint32_t n)
+static void mix_part1(track_t *t, uint32_t n)
 {
     int32_t *b = part_buf;
     uint32_t i;
@@ -576,6 +576,23 @@ static void mix_part(track_t *t, uint32_t n)
         }
         t->peak = pk;
     }
+}
+
+/* Clipper 0.3: a sound fading out after a change renders, mixes and sends with its own values (voice.c
+ * sound_fade_begin) */
+static void mix_part(track_t *t, uint32_t n)
+{
+#if CLIPPER_SYNTH
+    if (t->xf_snd && t->xf_on && t->xf) {
+        int16_t keep[P_E0];
+        memcpy(keep, t->p, sizeof keep);
+        memcpy(t->p, t->p_old, sizeof keep);
+        mix_part1(t, n);
+        memcpy(t->p, keep, sizeof keep);
+        return;
+    }
+#endif
+    mix_part1(t, n);
 }
 
 /* ---- DUST: the master through an old sampler and a record. G_DUST 0..127 turns up together: drive

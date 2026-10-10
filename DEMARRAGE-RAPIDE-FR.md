@@ -31,6 +31,9 @@ Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maint
 - **Unisson polyphonique sur tous les moteurs** : EDIT → VOICE : **UNI2** et **UNI4** empilent 2 ou 4 voix désaccordées par note (DTUNE sur VOICE 2). UNI reste l'empilement mono de 8 voix.
 - **Morph et randomiseur** : EDIT → **MORPH** : SET A, SET B, puis MORPH fait passer tout le son de l'un à l'autre (MIDI CC 20). EDIT → **RANDOM** : AMT, WHAT (EDIT, +ENV, ALL), RAND, et BACK pour annuler.
 - **Modulation** : LFO → **MOD** : VEL>F (vélocité vers le cutoff), MW> et AT> (molette et aftertouch) vers VIB (vibrato 5,5 Hz), CUT, SHP, WAH ou TREM. Sur tous les moteurs (HYBRID garde sa matrice).
+- **Changements de son sans clic** : un preset, un moteur, un preset utilisateur, SWAP, RAND ou BACK changé pendant que des notes sonnent les fait disparaître en 6 ms avec leurs propres réglages ; les notes jouées pendant ce temps attendent le nouveau son.
+- **WAVE charge 6 fois plus vite** : les tables sont calculées par FFT inverse au lieu de sommes additives, 4 frames par passage de la boucle : une nouvelle table est prête en 4 passages.
+- **Plus de visualiseur plein écran** (son code et 5,5 Ko de mémoire vont au synthé) ; HOME garde son oscilloscope.
 - **308 sons** : 99 nouveaux sur tous les moteurs, chacun au même niveau à travers la vraie chaîne de sortie du synthé.
 
 ## Nouveau dans la 0.2 : le son
@@ -49,7 +52,7 @@ Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maint
 
 | | |
 | --- | --- |
-| **HOME** | L'écran du synthé : le nom du son, sa famille, son numéro dans la liste, le moteur et un oscilloscope. Les 4 knobs règlent les contrôles principaux du son. Appuie encore sur HOME pour le visualiseur plein écran. |
+| **HOME** | L'écran du synthé : le nom du son, sa famille, son numéro dans la liste, le moteur et un oscilloscope. Les 4 knobs règlent les contrôles principaux du son. |
 | **PRESETS** | Tous les sons, un par un. |
 | **ALGORITHM** | Saute à la famille suivante (PAD, BASS, LEAD, PLCK, KEYS, STAB, FX…). |
 | **FX, EDIT, ARP, GLO, SAVE** | Un appui ouvre les pages. Bouton maintenu, le clavier joue toujours. Pages FX : FX, FILTER (avec MODL), DLY, REVERB, CHORUS. |

@@ -18,6 +18,9 @@ SLOOP is a groovebox. **Clipper is a synthesizer** with 17 engines and 308 sound
 - **Poly unison on every engine**: EDIT → VOICE: **UNI2** and **UNI4** stack 2 or 4 detuned voices on each note (DTUNE on VOICE 2), in POLY. (UNI is still the 8-voice mono stack.)
 - **Morph and randomizer**: EDIT → **MORPH**: SET A, SET B, then MORPH moves the whole sound between them (every continuous value; the switches change half way; MIDI CC 20). EDIT → **RANDOM**: AMT, WHAT (EDIT: the engine's 8 values, +ENV: and the envelopes, ALL: and the LFO and the sends), RAND, and BACK to undo.
 - **Modulation**: LFO → **MOD**: VEL>F (velocity to the cutoff, ±), MW> and AT> (the mod wheel and aftertouch, channel or polyphonic) to VIB (a 5.5 Hz vibrato), CUT, SHP (the engine's shape), WAH (the sound's LFO on the cutoff) or TREM. Every engine (HYBRID keeps its own matrix).
+- **Smooth sound changes**: a preset, an engine, a user preset, SWAP, RAND or BACK changed under ringing notes fades them out over 6 ms with their own values (no click); notes played meanwhile wait for the new sound.
+- **WAVE loads 6x faster**: a table's band-limited copies come from an inverse FFT instead of additive sums (the same samples within 2 steps of 32767), four frames per pass of the main loop: a new table is ready in four passes.
+- **No full-screen visualiser** (its code and 5.5 KB of RAM go to the synth); HOME keeps its scope.
 - **308 sounds**: 99 new ones across every engine (Juno, OB, Taurus, Prophet, DX, CZ, SID, B3, bowed and plucked models, 303s, string machines, chords, swarms, speech...), each level-matched through the synth's own output chain.
 
 ## New in 0.2: the sound
@@ -36,7 +39,7 @@ SLOOP is a groovebox. **Clipper is a synthesizer** with 17 engines and 308 sound
 
 | | |
 | --- | --- |
-| **HOME** | The synth screen: the sound's name, its family, its number in the list, the engine and a live scope. The four knobs play the sound's main controls (for HYBRID: CUT, RES, M1, M2). Press HOME again for the full-screen visualiser. |
+| **HOME** | The synth screen: the sound's name, its family, its number in the list, the engine and a live scope. The four knobs play the sound's main controls (for HYBRID: CUT, RES, M1, M2). |
 | **PRESETS** | Every sound, one by one, factory and user presets. |
 | **FX pages** | FX (sends), FILTER (the sound's DJ filter and MODL), DLY, REVERB, CHORUS. |
 | **ALGORITHM** | Jumps to the next family: PAD, BASS, LEAD, PLCK, KEYS, STAB, FX and the rest. |

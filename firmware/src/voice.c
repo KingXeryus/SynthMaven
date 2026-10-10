@@ -707,7 +707,11 @@ static void strum_block(uint32_t n)
  * parameters (pe_old: an engine never reads another engine's values, which index its tables); only
  * then the engine switches and the notes that came during the fade start on it. A part with nothing
  * sounding switches at once. */
+#if CLIPPER_SYNTH
+#define XF_BLOCKS 8u                                    /* Clipper: 8 x 32 samples, 5.8 ms (a bass fades without a thump) */
+#else
 #define XF_BLOCKS 4u                                    /* 4 x 32 samples: 2.9 ms */
+#endif
 static void engine_block(track_t *t)
 {
     uint32_t i, any = 0;
@@ -731,6 +735,9 @@ static void engine_block(track_t *t)
         }
         t->engine = t->eng_req % NENGINES;
         t->xf_on = 0;
+#if CLIPPER_SYNTH
+        t->xf_snd = 0;
+#endif
         t->nmono = 0;
         t->mono_note = 0;
         {
@@ -743,6 +750,30 @@ static void engine_block(track_t *t)
     for (i = 0; i < 8u; i++)                            /* the engine's own values, for a later fade */
         t->pe_old[i] = t->p[P_E0 + i];
 }
+
+#if CLIPPER_SYNTH
+/* Clipper 0.3: before a sound changes under sounding voices (a preset, an engine, a user preset, SWAP, BACK...):
+ * they fade out over XF_BLOCKS with all their own values (p_old: fx.c mix_part renders the part with them; pe_old the
+ * engine's), then go; notes played meanwhile wait for the new sound (engine_block). Without it the voices ringing
+ * on took the new values at once (a new trim, filter, envelope, table) and clicked. The main loop / UI calls it */
+static void sound_fade_begin(track_t *t)
+{
+    uint32_t i, any = 0;
+    if ((uint32_t)(t - trk) >= NPART || t->xf_on)
+        return;
+    for (i = 0; i < NVOICE; i++)
+        any |= t->v[i].active && t->v[i].stage != 0;
+    if (!any)
+        return;
+    memcpy(t->p_old, t->p, sizeof t->p_old);
+    t->xf_snd = 1;
+    t->xf = XF_BLOCKS;
+    RING_PUBLISH();
+    t->xf_on = 1;                                       /* (last: the ISR uses p_old from then on) */
+}
+#else
+#define sound_fade_begin(t) ((void)0)
+#endif
 
 /* one control tick (CTL samples) of the amplitude envelope; returns Q15 */
 static int32_t env_tick(track_t *t, voice_t *v)

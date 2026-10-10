@@ -83,9 +83,21 @@ static const engine_t *const ENGINES[NENGINES] = {&ENG_ANALOG, &ENG_DIGITAL, &EN
 };
 #if CLIPPER_SYNTH
 _Static_assert(ENGI_WAVE == 13u && ENGI_ACID == 14u && ENGI_STRINGS == 15u && ENGI_MACRO == 16u, "ENGINES[] order (Clipper)");
-static int32_t wt_wanted(void)                       /* (eng_wave.c) the table of the instrument, track 1 */
+/* (eng_wave.c) the table of the instrument: track 1's, else its layer's (one table in RAM: two WAVE sounds share
+ * track 1's); while a sound fades out after a change (voice.c sound_fade_begin) its table stays */
+static int32_t wt_wanted(void)
 {
-    return ENGINES[trk[0].eng_req % NENGINES] == &ENG_WAVE ? (int32_t)((uint32_t)trk[0].p[P_E0] % WT_NALL) : -1;
+    uint32_t k;
+    for (k = 0; k < 2u; k++) {
+        const track_t *t = &trk[k];
+        if (k && (t->p[P_LYMODE] != LY_LAYER && t->p[P_LYMODE] != LY_SPLIT))
+            break;
+        if (t->xf_on && ENGINES[t->engine % NENGINES] == &ENG_WAVE)
+            return wt_have;
+        if (ENGINES[t->eng_req % NENGINES] == &ENG_WAVE)
+            return (int32_t)((uint32_t)t->p[P_E0] % WT_NALL);
+    }
+    return -1;
 }
 #endif
 _Static_assert(ENGI_FM6 == 9u, "ENGINES[ENGI_FM6] is FM6");
