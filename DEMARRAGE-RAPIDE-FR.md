@@ -30,7 +30,7 @@ Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maint
 - **Résonance douce** : les filtres SVF d'HYBRID saturent en douceur au lieu d'écrêter.
 - **Anti-aliasing** : triangles à bande limitée, hard sync corrigé à chaque reset, FM, feedback et wavefolder tenus sous 20 kHz dans les aigus.
 - **Réverb plate** (d'après Dattorro) : FX → REVERB : TYPE (ROOM ou PLATE), SIZE, DAMP et PRE (pré-délai en ms). Le chorus a sa propre page CHORUS.
-- **Plus de samples intégrés** : 300 Ko de flash libérés pour la synthèse. SAMPLE et GRAIN jouent tes propres samples (onglet Samples de l'éditeur, 4 emplacements). 160 sons d'usine.
+- **Plus de samples intégrés** : 300 Ko de flash libérés pour la synthèse. SAMPLE et GRAIN jouent tes propres samples (onglet Samples de l'éditeur, 4 emplacements). 165 sons d'usine, dont cinq nouveaux sur le ladder : MOOG BASS, MOOG LEAD, LADDER PAD, MINI BASS, MINI LEAD.
 
 ## 2. Sur la FM-1
 

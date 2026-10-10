@@ -17,7 +17,7 @@ SLOOP is a groovebox. **Clipper is a synthesizer**, one instrument like the orig
 - **Soft resonance**: HYBRID's state-variable filters saturate softly instead of clipping.
 - **Anti-aliasing**: triangles are band-limited (polyBLAMP), the hard sync gets a BLEP at each reset, and FM, sine feedback and the wavefolder are held below 20 kHz on high notes. Measured by `tests/alias_test.c`: folded partials stay under -40 dB (triangles -62 dB, the folder -66 dB), against -7 dB before for a full fold.
 - **Plate reverb** (after Jon Dattorro): FX → REVERB has TYPE (ROOM / PLATE), SIZE, DAMP and PRE (pre-delay, ms). The chorus moved to its own CHORUS page.
-- **No built-in samples**: 300 KB of flash go to synthesis. SAMPLE and GRAIN play your own samples (the editor's Samples tab, four slots). 160 factory sounds.
+- **No built-in samples**: 300 KB of flash go to synthesis. SAMPLE and GRAIN play your own samples (the editor's Samples tab, four slots). 165 factory sounds (five new ones on the ladder: MOOG BASS, MOOG LEAD, LADDER PAD, MINI BASS, MINI LEAD).
 
 ## On the FM-1
 
