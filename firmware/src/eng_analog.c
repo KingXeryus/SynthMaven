@@ -11,6 +11,7 @@ static void analog_note_on(track_t *t, voice_t *v)
         v->ph[0] = 0;                                 /* a fresh note: from phase 0 (an 808 starts the same every time) */
     v->ph[1] = v->ph[0] + 0x40000000u;
     v->s[0] = v->s[1] = 0;                            /* filter */
+    v->s[3] = v->s[4] = v->s[5] = v->s[6] = 0;        /* (MOOG: the ladder's four stages) */
     if (!v->s[2])
         v->s[2] = 0x1234567 + (int32_t)v->age;        /* noise state */
 }
@@ -22,6 +23,8 @@ static void analog_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
     int32_t det = p[P_E1], mix = p[P_E2], noise = p[P_E3];
     int32_t cut = (p[P_E4] << 8) + m->cutoff + (p[P_E7] * (v->pitch16 - 60 * 16) >> 4);
     tsvf_t flt;
+    ladder_t lad;
+    int moog = CLIPPER_SYNTH && t->p[P_FMODEL] == FM_MOOG;      /* Clipper: the 24 dB ladder (P_FMODEL) */
     int32_t drive = 32768 + p[P_E6] * 768;                       /* 1x .. 4x */
     int32_t dw = p[P_E6] * 258;                                  /* DRV: dry -> driven (a clean range low) */
     uint32_t inc1 = m->inc;
@@ -34,7 +37,11 @@ static void analog_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
     int32_t nz = noise * 200, drv = p[P_E6];
     uint32_t ph0 = v->ph[0], ph1 = v->ph[1];                  /* state in locals: out[] may alias v->s[] */
     int32_t ic1 = v->s[0], ic2 = v->s[1], nst = v->s[2];
-    tsvf_coef(&flt, cut, p[P_E5]);
+    int32_t ls[4] = {v->s[3], v->s[4], v->s[5], v->s[6]};      /* (MOOG's stages, in locals too) */
+    if (moog)
+        ladder_coef(&lad, cut, p[P_E5]);
+    else
+        tsvf_coef(&flt, cut, p[P_E5]);
     if (det == 0)
         inc2 = inc1;
     for (i = 0; i < n; i++) {
@@ -45,10 +52,10 @@ static void analog_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
             if (m2)
                 b = osc_pulse(ph1, inc2, 0x80000000u);
             break;
-        case 2:
-            a = osc_tri(ph0);
+        case 2:                                       /* (Clipper 0.2: band-limited, dsp.c osc_tri_bl) */
+            a = osc_tri_bl(ph0, inc1);
             if (m2)
-                b = osc_tri(ph1);
+                b = osc_tri_bl(ph1, inc2);
             break;
         case 3:
             a = osc_sine(ph0);
@@ -74,7 +81,7 @@ static void analog_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
         if (drv)                                      /* pre-shifts: drive is up to 4x, no overflow */
             s += mulq15(softclip(((s >> 2) * (drive >> 2)) >> 11) - s, dw);
         {   /* filter: linear up to half scale, then a soft knee (only resonance peaks saturate) */
-            int32_t y = tsvf_lp(&flt, s >> 1, &ic1, &ic2), a = y < 0 ? -y : y;
+            int32_t y = moog ? ladder_tick(&lad, s, ls) >> 1 : tsvf_lp(&flt, s >> 1, &ic1, &ic2), a = y < 0 ? -y : y;
             if (a > 16000) {
                 a = 16000 + (softclip((a - 16000) * 2) >> 1);
                 y = y < 0 ? -a : a;
@@ -87,6 +94,7 @@ static void analog_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
     v->ph[1] = ph1;
     v->s[0] = ic1;
     v->s[1] = ic2;
+    v->s[3] = ls[0], v->s[4] = ls[1], v->s[5] = ls[2], v->s[6] = ls[3];
     v->s[2] = nst;
 }
 

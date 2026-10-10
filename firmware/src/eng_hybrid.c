@@ -38,7 +38,7 @@
 #define HY_SUPER 7u
 
 enum { HO_OFF, HO_SAW, HO_PULSE, HO_TRI, HO_SINE, HO_MORPH, HO_SUPER, HO_FM, HO_SYNC, HO_FOLD, HO_NOISE, HO_N };
-enum { HF_OFF, HF_LP12, HF_LP24, HF_BP, HF_HP, HF_NOTCH, HF_PEAK, HF_N };
+enum { HF_OFF, HF_LP12, HF_LP24, HF_BP, HF_HP, HF_NOTCH, HF_PEAK, HF_MOOG, HF_N };   /* (MOOG: Clipper 0.2) */
 enum { HR_SER, HR_PAR, HR_SPLIT, HR_N };
 enum { HW_SINE, HW_TRI, HW_SAW, HW_SQR, HW_SH, HW_SMOOTH, HW_N };   /* the voices' LFO waves */
 /* matrix sources: Q15, bipolar (LFOs, KEY, BEND, RAND) or unipolar (the rest) */
@@ -110,10 +110,10 @@ typedef struct {
     uint32_t sph[HY_NOSC][HY_SUPER - 1u];   /* SUPER: the six detuned saws */
     int32_t fb[HY_NOSC];         /* last sample (FM feedback, osc 1's FM from osc 3) */
     int32_t nlp[HY_NOSC];        /* NOISE colour */
-    int32_t f[2][4];             /* filters: two SVF stages each (ic1, ic2) */
+    int32_t f[2][4];             /* filters: two SVF stages each (ic1, ic2), or MOOG's four (Q4) */
     int32_t e[2];                /* ENV2, ENV3: Q24 */
     uint8_t est[2];              /* their stages: 0 idle, 1 attack, 2 decay / sustain, 3 release */
-    uint8_t pad[2];
+    uint8_t ftype[2];            /* the filters' types their states belong to (a change clears them) */
     int32_t lrm[2];              /* the matrix's LFO 2 / 3 RATE rows of the last tick (rate units) */
     uint32_t lph[2];             /* LFO 2, 3 */
     int32_t lval[2], lprev[2], lnext[2], lfade[2];
@@ -136,7 +136,7 @@ static struct {                                  /* the patch read once when it 
 } hy_act[NPART];
 
 static const char *const N_HY_OSC[] = {"OFF", "SAW", "PULSE", "TRI", "SINE", "MORPH", "SUPER", "FM", "SYNC", "FOLD", "NOISE"};
-static const char *const N_HY_FLT[] = {"OFF", "LP12", "LP24", "BP", "HP", "NOTCH", "PEAK"};
+static const char *const N_HY_FLT[] = {"OFF", "LP12", "LP24", "BP", "HP", "NOTCH", "PEAK", "MOOG"};
 static const char *const N_HY_ROUTE[] = {"SER", "PAR", "SPLIT"};
 static const char *const N_HY_LFOW[] = {"SINE", "TRI", "SAW", "SQR", "S&H", "SMTH"};
 static const char *const N_HY_SRC[] = {"--", "ENV2", "ENV3", "AENV", "LFO1", "LFO2", "LFO3", "VEL", "KEY", "MW", "AT",
@@ -175,13 +175,23 @@ static inline int32_t hy_damp(int32_t res) { return 8192 - clamp(res, 0, 127) * 
 /* one SVF stage over a buffer: one loop per output (the choice made once a block, not per sample). Inputs within
  * +-60000 (the mix is, by construction; hybrid_render bounds a filter's output going into another): with the states
  * clamped at +-150000 every product fits in 32 bits at any cutoff and resonance (checked over the whole table) */
+/* Clipper 0.2: the states saturate softly above 96000 (a tanh knee towards 150000) instead of being cut there:
+ * a screaming resonance rounds off like an analog one instead of clipping */
+static inline int32_t hsvf_sat(int32_t x)
+{
+    int32_t a = x < 0 ? -x : x;
+    if (a <= 96000)
+        return x;
+    a = 96000 + ((softclip(((a - 96000) * 155) >> 8) * 54000) >> 15);   /* tanh((a - 96000) / 54000) */
+    return x < 0 ? -a : a;
+}
 #define HSVF_LOOP(OUT)                                                                                         \
     for (i = 0; i < n; i++) {                                                                                  \
         int32_t in = x[i], v3 = in - ic2;                                                                      \
         int32_t v1 = (a1 * ic1 + a2 * v3) >> 13;                                                               \
         int32_t v2 = ic2 + ((a2 * ic1 + a3 * v3) >> 13);                                                       \
-        ic1 = clamp(2 * v1 - ic1, -150000, 150000);                                                            \
-        ic2 = clamp(2 * v2 - ic2, -150000, 150000);                                                            \
+        ic1 = hsvf_sat(2 * v1 - ic1);                                                                          \
+        ic2 = hsvf_sat(2 * v2 - ic2);                                                                          \
         x[i] = (OUT);                                                                                          \
     }
 static void hsvf_run(const hsvf_t *c, int32_t *x, uint32_t n, int32_t *st, uint32_t mode)   /* 0 LP .. 4 PEAK */
@@ -199,10 +209,22 @@ static void hsvf_run(const hsvf_t *c, int32_t *x, uint32_t n, int32_t *st, uint3
     st[1] = ic2;
 }
 
+/* MOOG: the ladder (dsp.c ladder_tick) over a buffer, its four stages in st[0..3] */
+static void hy_ladder(const ladder_t *c, int32_t *x, uint32_t n, int32_t *st)
+{
+    int32_t s[4] = {st[0], st[1], st[2], st[3]};
+    uint32_t i;
+    for (i = 0; i < n; i++)
+        x[i] = ladder_tick(c, x[i], s);
+    st[0] = s[0], st[1] = s[1], st[2] = s[2], st[3] = s[3];
+}
+
 /* a filter of the patch over a buffer (type HF_*, coefficients made for this block) */
-static void hy_filter(uint32_t type, const hsvf_t *c, const hsvf_t *c2, int32_t *x, uint32_t n, int32_t *st)
+static void hy_filter(uint32_t type, const hsvf_t *c, const hsvf_t *c2, const ladder_t *lc, int32_t *x, uint32_t n,
+                      int32_t *st)
 {
     switch (type) {
+    case HF_MOOG: hy_ladder(lc, x, n, st); break;
     case HF_LP12: hsvf_run(c, x, n, st, 0); break;
     case HF_LP24:
         hsvf_run(c2, x, n, st, 0);                   /* (the first stage flat, the resonance on the second) */
@@ -316,6 +338,16 @@ static inline int32_t hy_saw(uint32_t ph, uint32_t inc)
     return s;
 }
 
+/* Clipper 0.2: how far an index (FM, feedback, fold) may go at this pitch before its partials pass 20 kHz and fold
+ * back: (20 kHz / f0 - 1) x k (k: the index units per unit of bandwidth / f0). One 32-bit divide a block. */
+#define HY_FM_K 10                /* FM: 127 = ~1.98 cycles = 12.4 rad; Carson: (beta + 1) f0 < 20 kHz */
+#define HY_FB_K 90                /* SINE feedback: g 4064 = ~0.5 cycle; tuned on tests/alias_test.c (2.4 kHz) */
+static int32_t hy_index_max(uint32_t inc, int32_t k)
+{
+    int32_t r = (int32_t)(1948000000u / (inc >> 8));             /* 20 kHz / f0, x 256 */
+    return r > 256 ? ((r - 256) * k) >> 8 : 0;
+}
+
 /* osc k of the voice into y[n] (Q15); prev: the buffer of the oscillator before (FM), m1: osc 1's start
  * phase and increment (SYNC) */
 static void hy_osc_run(const hy_osc_t *o, hy_voice_t *hv, uint32_t k, uint32_t inc, int32_t shape, int32_t *y,
@@ -334,12 +366,14 @@ static void hy_osc_run(const hy_osc_t *o, hy_voice_t *hv, uint32_t k, uint32_t i
             y[i] = (hy_saw(ph, inc) - hy_saw(ph + pw, inc)) >> 1;
         break;
     }
-    case HO_TRI:
+    case HO_TRI:                                     /* (band-limited: polyBLAMP at the corners, dsp.c) */
         for (i = 0; i < n; i++, ph += inc)
-            y[i] = osc_tri(ph);
+            y[i] = osc_tri_bl(ph, inc);
         break;
     case HO_SINE: {                                  /* self feedback: the mean of the last two outputs */
         int32_t fb = hv->fb[k], last = hv->nlp[k], g = sh >> 3;          /* 0..4064 */
+        if (inc >= 65536u)                           /* (Clipper 0.2: held on the high notes, see hy_index_max) */
+            g = clamp(g, 0, hy_index_max(inc, HY_FB_K));
         for (i = 0; i < n; i++, ph += inc) {
             int32_t s = osc_sine(ph + ((uint32_t)(((fb + last) >> 1) * g) << 4));
             last = fb;
@@ -359,11 +393,11 @@ static void hy_osc_run(const hy_osc_t *o, hy_voice_t *hv, uint32_t k, uint32_t i
         if (seg == 0) {
             for (i = 0; i < n; i++, ph += inc) {
                 int32_t a = osc_sine(ph);
-                y[i] = a + mulq15(osc_tri(ph) - a, x);
+                y[i] = a + mulq15(osc_tri_bl(ph, inc) - a, x);
             }
         } else if (seg == 1) {
             for (i = 0; i < n; i++, ph += inc) {
-                int32_t a = osc_tri(ph);
+                int32_t a = osc_tri_bl(ph, inc);
                 y[i] = a + mulq15(hy_saw(ph, inc) - a, x);
             }
         } else {
@@ -396,6 +430,8 @@ static void hy_osc_run(const hy_osc_t *o, hy_voice_t *hv, uint32_t k, uint32_t i
     }
     case HO_FM: {                                    /* phase modulation by the buffer before, up to ~2 cycles */
         int32_t g = sh >> 8;
+        if (inc >= 65536u)                           /* (Clipper 0.2: Carson's bandwidth kept under 20 kHz) */
+            g = clamp(g, 0, hy_index_max(inc, HY_FM_K));
         for (i = 0; i < n; i++, ph += inc)
             y[i] = osc_sine(ph + ((uint32_t)(prev[i] * g) << 11));
         break;
@@ -409,15 +445,32 @@ static void hy_osc_run(const hy_osc_t *o, hy_voice_t *hv, uint32_t k, uint32_t i
         for (i = 0; i < n; i++) {
             uint32_t was = m1ph;
             m1ph += m1inc;
-            if (m1ph < was && m1inc >= 4096u)        /* the master wrapped in this sample: restart, by the fraction
+            if (m1ph < was && m1inc >= 4096u) {      /* the master wrapped in this sample: restart, by the fraction
                                                       * (in 32 bits: the master's overshoot / its increment, Q12) */
-                ph = (inc >> 12) * (m1ph / (m1inc >> 12));
-            y[i] = hy_saw(ph, inc);
+                /* Clipper 0.2: band-limited. The saw falls by h (its value then) at t samples before this one: the
+                 * polyBLEP residual of that step, scaled by h, on this sample ((1 - t)^2 / 2) and the one before
+                 * (t^2 / 2; the first sample of a block cannot reach back: one reset in 32 there) */
+                uint32_t q12 = m1ph / (m1inc >> 12), at = ph - (inc >> 12) * q12;
+                int32_t h = (int32_t)(at >> 16), tq = (int32_t)(q12 << 3), a = 32768 - tq;
+                ph = (inc >> 12) * q12;
+                y[i] = (int32_t)(ph >> 16) - 32768 + ((((a * a) >> 16) * h) >> 15);
+                if (i)
+                    y[i - 1] -= (((tq * tq) >> 16) * h) >> 15;
+            } else {
+                y[i] = hy_saw(ph, inc);
+            }
             ph += inc;
         }
         break;
     case HO_FOLD: {                                  /* sin(pi/2 g sin x), g 1 .. 8 */
         int32_t g = 256 + ((sh * 7) >> 7);           /* Q8 */
+        /* Clipper 0.2: its partials reach about (pi / 2 g + 2) f0: g is held where they would pass 20 kHz (the
+         * fold opens up less on the high notes, as nothing folds back into the band) */
+        if (inc >= 65536u) {
+            int32_t b = (int32_t)(1948000000u / (inc >> 8)) - 512;    /* (pi / 2 g)max x 256: 20 kHz / f0 - 2 */
+            int32_t gl = (b * 163) >> 8;                               /* x 2 / pi: g Q8 */
+            g = clamp(g, 256, gl > 256 ? gl : 256);
+        }
         for (i = 0; i < n; i++, ph += inc)
             y[i] = osc_sine((uint32_t)((osc_sine(ph) * g) >> 8) << 15);
         break;
@@ -621,6 +674,7 @@ static void hybrid_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
     static int32_t buf[HY_NOSC][CTL], a[CTL], b[CTL];   /* (static: the audio ISR's stack stays small) */
     uint32_t inc[HY_NOSC];
     hsvf_t fc[2], fc2[2];
+    ladder_t lc[2];
     int32_t lv[HY_NOSC], gain, ring, drive, dw, bal;
     if (!hv || n > CTL)
         return;
@@ -746,30 +800,38 @@ static void hybrid_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
         int32_t cut, res, env = f->env + t->p[P_E2];
         if (!f->type)
             continue;
+        if (hv->ftype[k] != f->type) {               /* another type: its states mean something else (scale too) */
+            hv->ftype[k] = f->type;
+            hv->f[k][0] = hv->f[k][1] = hv->f[k][2] = hv->f[k][3] = 0;
+        }
         cut = ((int32_t)f->cut << 8) + (t->p[P_E0] << 8) + ((e2 * env) >> 6) +
               (((m->pitch16 - 60 * 16) * f->key * 75) >> 8) + ((v->vel * (int32_t)f->vel) >> 1) + m->cutoff +
               ((md[HD_CUT] + md[k ? HD_CUT2 : HD_CUT1]) * 127 >> 7);
         res = (int32_t)f->res + t->p[P_E1] + ((md[k ? HD_RES2 : HD_RES1] * 127) >> 15);
+        if (f->type == HF_MOOG) {
+            ladder_coef(&lc[k], cut, clamp(res, 0, 127));
+            continue;
+        }
         hsvf_coef(&fc[k], cut, hy_damp(res));
         if (f->type == HF_LP24)
             hsvf_coef(&fc2[k], cut, 5793);           /* (the first stage: Butterworth, k = sqrt 2) */
     }
     bal = clamp((int32_t)P->fbal * 258 + md[HD_FBAL], 0, 32767);
     if (P->route == HR_SER) {
-        hy_filter(P->flt[0].type, &fc[0], &fc2[0], a, n, hv->f[0]);
+        hy_filter(P->flt[0].type, &fc[0], &fc2[0], &lc[0], a, n, hv->f[0]);
         if (P->flt[1].type) {
             if (P->flt[0].type)                      /* F1's output into F2: bounded (a resonant PEAK reaches ~5x; every
                                                       * SVF product stays in 32 bits with inputs within +-60000) */
                 for (i = 0; i < n; i++)
                     a[i] = clamp(a[i], -60000, 60000);
-            hy_filter(P->flt[1].type, &fc[1], &fc2[1], a, n, hv->f[1]);
+            hy_filter(P->flt[1].type, &fc[1], &fc2[1], &lc[1], a, n, hv->f[1]);
         }
     } else {
         if (P->route == HR_PAR)
             for (i = 0; i < n; i++)
                 b[i] = a[i];
-        hy_filter(P->flt[0].type, &fc[0], &fc2[0], a, n, hv->f[0]);
-        hy_filter(P->flt[1].type, &fc[1], &fc2[1], b, n, hv->f[1]);
+        hy_filter(P->flt[0].type, &fc[0], &fc2[0], &lc[0], a, n, hv->f[0]);
+        hy_filter(P->flt[1].type, &fc[1], &fc2[1], &lc[1], b, n, hv->f[1]);
         if (P->route == HR_PAR)                      /* (resonant outputs reach ~+-300000: bounded, then the balance
                                                       * at a quarter scale, every product in 32 bits) */
             for (i = 0; i < n; i++) {

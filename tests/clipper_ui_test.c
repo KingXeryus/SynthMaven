@@ -171,12 +171,16 @@ int main(int argc, char **argv)
         uint32_t k, duck = 0, mute = 0;
         for (i = 0; i < NPAGES; i++)
             for (k = 0; k < 4u; k++) {
-                if (PAGES[i].scope == SC_GLOBAL && (PAGES[i].id[k] == G_DUCK || PAGES[i].id[k] == G_ROLL))
-                    duck++;
+                if (PAGES[i].scope == SC_GLOBAL && PAGES[i].id[k] != 0xFF &&
+                    (!strcmp(GP[PAGES[i].id[k]].label, "DUCK") || !strcmp(GP[PAGES[i].id[k]].label, "ROLL")))
+                    duck++;                          /* (their slots are the reverb's TYPE and PRE: G_RTYPE, G_RPRE) */
                 if (PAGES[i].scope == SC_TRACK && PAGES[i].id[k] == P_MUTE)
                     mute++;
             }
         check(!duck && !mute, "no DUCK, ROLL or MUTE on any page");
+        check(page_named("REVERB") && page_named("CHORUS") && !strcmp(GP[G_RTYPE].label, "TYPE") &&
+              !strcmp(GP[G_RPRE].label, "PRE"), "REVERB (TYPE SIZE DAMP PRE) and CHORUS pages");
+        check(!strcmp(TP[P_FMODEL].label, "MODL") && page_named("FILTER"), "FILTER page: the filter MODEL (ANALOG's ladder)");
     }
     {   /* every page of every button, walked: no SONG / DRUMS / TRACKS screen on the way */
         static const uint32_t FAMS[] = {FAM_ENV, FAM_LFO, FAM_FX, FAM_SCL, FAM_EDIT, FAM_GLO, FAM_SAVE, FAM_ARP, FAM_SEQ};

@@ -5,7 +5,12 @@
  * A mono ring of the mix (PUNCH_N samples, 0.74 s) feeds the loops, reverse, tape stop,
  * half speed, wobble and echo; the filters, crush and gate run in stereo. Every change
  * crossfades over 64 samples. Runs in the audio ISR (mix_block, fx.c). */
+#if CLIPPER_SYNTH                         /* Clipper: no punch-in effects (no FX layer): the ring's 64 KB go to the
+                                           * plate reverb and the wavetables; punch_process passes the mix through */
+#define PUNCH_N 2048u
+#else
 #define PUNCH_N 32768u                    /* power of two */
+#endif
 /* the transport clock (core.h clk_pos) places the loops and the gate on the grid */
 static uint32_t clk_samples(void) { return clk_pos / (uint32_t)song.g[G_BPM]; }   /* samples into the beat */
 #define PUNCH_NFX 16u
@@ -130,6 +135,8 @@ static void punch_process(int32_t *l, int32_t *r, uint32_t n)
     int32_t want = punch.req;
     uint32_t beat, step, echo_d;
     tsvf_t c1, c2;
+    if (CLIPPER_SYNTH)
+        return;
     if (punch.cur < 0 && want < 0) {                   /* idle: only the ring */
         for (i = 0; i < n; i++)
             punch_ring[punch.w++ & (PUNCH_N - 1u)] = (int16_t)clamp((l[i] + r[i]) >> 4, -32768, 32767);

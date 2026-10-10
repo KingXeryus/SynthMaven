@@ -165,6 +165,129 @@ static uint32_t delay_samples(void)
     return s < 16u ? 16u : s >= DLY_LEN ? DLY_LEN - 1u : s;
 }
 
+#if CLIPPER_SYNTH
+/* Clipper 0.2: a plate reverb (G_RTYPE = PLATE), after J. Dattorro, "Effect Design, Part 1" (JAES 45/9, 1997): a
+ * pre-delay (G_RPRE), a bandwidth low-pass and four input diffusers, then a tank of two halves feeding each other (a
+ * figure eight); in each half a modulated diffuser (moving reflections: long tails do not ring), a delay, the damping
+ * low-pass (DAMP), the decay (SIZE), a second diffuser and a delay. The output is taken from seven taps across the
+ * tank a side, as in the paper: dense from the start, wide, smooth.
+ * It runs at half the rate (22.05 kHz, as the Lexicon 224 ran at 20 kHz): the paper's lengths (29.76 kHz) x 0.741,
+ * 33 KB of lines (the punch-in ring's memory, gone in the synth); two input samples averaged into one tank step, the
+ * output between the last two steps. */
+enum { PL_AP1, PL_AP2, PL_AP3, PL_AP4, PL_MA, PL_DA1, PL_AA, PL_DA2, PL_MB, PL_DB1, PL_AB, PL_DB2, PL_PRE, PL_N };
+#define PL_EXC 12                 /* the modulated diffusers' excursion (+- samples) */
+static const uint16_t PL_LEN[PL_N] = {105, 79, 281, 205, 498 + PL_EXC + 2, 3299, 1334, 2756, 673 + PL_EXC + 2, 3124,
+                                      1968, 2343, 2206};
+#define PL_TOTAL (105 + 79 + 281 + 205 + 512 + 3299 + 1334 + 2756 + 687 + 3124 + 1968 + 2343 + 2206)
+static int16_t pl_buf[PL_TOTAL] __attribute__((section(".pool")));
+static struct {
+    uint16_t base[PL_N], w[PL_N];
+    int32_t bw, dmp[2], end[2], y0l, y0r, y1l, y1r, acc;
+    uint32_t lph;
+    uint8_t half, ready;
+} pl;
+
+static void plate_clear(void)
+{
+    uint32_t k, b = 0;
+    for (k = 0; k < PL_TOTAL; k++)
+        pl_buf[k] = 0;
+    for (k = 0; k < PL_N; k++) {
+        pl.base[k] = (uint16_t)b;
+        pl.w[k] = 0;
+        b += PL_LEN[k];
+    }
+    pl.bw = pl.dmp[0] = pl.dmp[1] = pl.end[0] = pl.end[1] = 0;
+    pl.y0l = pl.y0r = pl.y1l = pl.y1r = pl.acc = 0;
+    pl.half = 0;
+    pl.ready = 1;
+}
+/* line k: d samples back (1 = the newest, PL_LEN[k] the oldest) */
+static inline int32_t pl_tap(uint32_t k, uint32_t d)
+{
+    uint32_t i = pl.w[k] + PL_LEN[k] - d;
+    return pl_buf[pl.base[k] + (i >= PL_LEN[k] ? i - PL_LEN[k] : i)];
+}
+static inline void pl_put(uint32_t k, int32_t x)
+{
+    pl_buf[pl.base[k] + pl.w[k]] = (int16_t)clamp(x, -32768, 32767);
+    if (++pl.w[k] >= PL_LEN[k])
+        pl.w[k] = 0;
+}
+static inline int32_t pl_ap(uint32_t k, int32_t x, int32_t c)  /* a diffuser: an allpass over line k, c Q15 */
+{
+    int32_t d = pl_tap(k, PL_LEN[k]), v = x - mulq15(d, c);
+    pl_put(k, v);
+    return d + mulq15(v, c);
+}
+static inline int32_t pl_mod_ap(uint32_t k, int32_t x, int32_t c, int32_t pos)   /* pos: the delay, Q8 samples */
+{
+    uint32_t di = (uint32_t)pos >> 8;
+    int32_t a = pl_tap(k, di), b = pl_tap(k, di + 1u), d = a + (((b - a) * (pos & 255)) >> 8), v = x - mulq15(d, c);
+    pl_put(k, v);
+    return d + mulq15(v, c);
+}
+/* one tank step (22.05 kHz) on x: the left and right outputs */
+static void plate_step(int32_t x, int32_t decay, int32_t damp, uint32_t pre, int32_t *yl, int32_t *yr)
+{
+    int32_t a, b, ma, mb;
+    pl_put(PL_PRE, x);
+    x = pre ? pl_tap(PL_PRE, pre) : x;
+    pl.bw += mulq15(x - pl.bw, 26000);                          /* bandwidth (~6 kHz at 22.05) */
+    x = pl_ap(PL_AP1, pl.bw, 24576);                            /* 0.75 */
+    x = pl_ap(PL_AP2, x, 24576);
+    x = pl_ap(PL_AP3, x, 20480);                                /* 0.625 */
+    x = pl_ap(PL_AP4, x, 20480);
+    pl.lph += 194783u;                                          /* ~1 Hz at 22.05 kHz */
+    ma = ((498 << 8) + ((osc_sine(pl.lph) * PL_EXC) >> 7));
+    mb = ((673 << 8) + ((osc_sine(pl.lph + 0x40000000u) * PL_EXC) >> 7));
+    a = pl_mod_ap(PL_MA, x + mulq15(pl.end[1], decay), -22938, ma);   /* -0.7: the decay diffusion */
+    b = pl_mod_ap(PL_MB, x + mulq15(pl.end[0], decay), -22938, mb);
+    pl_put(PL_DA1, a);
+    pl_put(PL_DB1, b);
+    a = pl_tap(PL_DA1, PL_LEN[PL_DA1]);
+    b = pl_tap(PL_DB1, PL_LEN[PL_DB1]);
+    pl.dmp[0] += mulq15(a - pl.dmp[0], damp);
+    pl.dmp[1] += mulq15(b - pl.dmp[1], damp);
+    a = pl_ap(PL_AA, mulq15(pl.dmp[0], decay), 16384);          /* 0.5 */
+    b = pl_ap(PL_AB, mulq15(pl.dmp[1], decay), 16384);
+    pl_put(PL_DA2, a);
+    pl_put(PL_DB2, b);
+    pl.end[0] = pl_tap(PL_DA2, PL_LEN[PL_DA2]);
+    pl.end[1] = pl_tap(PL_DB2, PL_LEN[PL_DB2]);
+    *yl = pl_tap(PL_DA1, 197) + pl_tap(PL_DA1, 2203) - pl_tap(PL_AA, 1417) + pl_tap(PL_DA2, 1479) -
+          pl_tap(PL_DB1, 1474) - pl_tap(PL_AB, 139) - pl_tap(PL_DB2, 790);
+    *yr = pl_tap(PL_DB1, 262) + pl_tap(PL_DB1, 2687) - pl_tap(PL_AB, 910) + pl_tap(PL_DB2, 1980) -
+          pl_tap(PL_DA1, 1564) - pl_tap(PL_AA, 248) - pl_tap(PL_DA2, 90);
+}
+/* the plate over a block: rev_in (the reverb sends) -> + wet_l, wet_r */
+static void plate_run(const int32_t *rev_in, int32_t *wet_l, int32_t *wet_r, uint32_t n)
+{
+    int32_t decay = 6554 + song.g[G_RSIZE] * 155;               /* 0.2 .. 0.8: RT60 ~0.8 .. 5 s (twice a half) */
+    int32_t damp = 32767 - song.g[G_RDAMP] * 193;               /* the damping low-pass: open .. 0.25 */
+    uint32_t pre = (uint32_t)clamp(song.g[G_RPRE], 0, 100) * 2205u / 100u;   /* ms -> 22.05 kHz samples */
+    uint32_t i;
+    if (!pl.ready)
+        plate_clear();
+    for (i = 0; i < n; i++) {
+        int32_t x = mulq15(rev_in[i], 13000);                   /* (as the room's input) */
+        if (!pl.half) {
+            pl.acc = x;
+            wet_l[i] += (pl.y0l + pl.y1l) >> 1;                 /* between the last two steps */
+            wet_r[i] += (pl.y0r + pl.y1r) >> 1;
+        } else {
+            int32_t yl, yr;
+            plate_step((pl.acc + x) >> 1, decay, damp, pre, &yl, &yr);
+            pl.y0l = pl.y1l, pl.y0r = pl.y1r;
+            pl.y1l = (yl * 19661) >> 14, pl.y1r = (yr * 19661) >> 14;   /* x 1.2: the paper's 0.6, as loud as ROOM */
+            wet_l[i] += pl.y0l;
+            wet_r[i] += pl.y0r;
+        }
+        pl.half ^= 1u;
+    }
+}
+#endif
+
 /* process the three buses for one block; sends in, wet out (stereo). The LFOs (chorus, reverb line)
  * are computed per block and ramped: no sine per sample */
 static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t *rev_in, int32_t *wet_l,
@@ -176,7 +299,21 @@ static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t
     int32_t g = 17000 + song.g[G_RSIZE] * 104, lpk = 32767 - song.g[G_RDAMP] * 200;   /* loop gain (RT60 ~0.4..4 s), damping */
     int32_t cdepth = song.g[G_CDEPTH] * 6;
     int32_t ca0, ca1, cb0, cb1, ma, mb, dca, dcb;
+    int plate = CLIPPER_SYNTH && song.g[G_RTYPE] == RT_PLATE;   /* Clipper: the plate instead of the room */
     const uint32_t L0 = REV_LINE[0] + REV_MOD + 2u, B1 = L0, B2 = B1 + REV_LINE[1], B3 = B2 + REV_LINE[2];
+#if CLIPPER_SYNTH
+    {   /* a change of type: the other one starts from silence (no old tail bursting out of its lines) */
+        static int was_plate = -1;
+        if (plate != was_plate) {
+            if (plate)
+                pl.ready = 0;
+            else
+                for (k = 0; k < NELEM(rev_line); k++)
+                    rev_line[k] = 0;
+            was_plate = plate;
+        }
+    }
+#endif
     {   /* the chorus' two read points (Q8 samples back) and line 0's extra length, at both ends of the block */
         int32_t s0 = osc_sine(fx.cho_ph), s1, m0 = osc_sine(fx.rev_ph), m1;
         fx.cho_ph += LFO_INC[song.g[G_CRATE] & 127];
@@ -210,7 +347,12 @@ static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t
         x = mulq15(x << 1, dmix);
         yl += x;
         yr += x;
-        /* reverb: two diffusers, then the four lines */
+        /* reverb: two diffusers, then the four lines (Clipper: or the plate, after the loop) */
+        if (plate) {
+            wet_l[i] = yl;
+            wet_r[i] = yr;
+            continue;
+        }
         a = mulq15(rev_in[i], 13000);
         {
             int16_t *c = rev_ap;
@@ -251,6 +393,10 @@ static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t
         wet_l[i] = yl + o0 + o2;
         wet_r[i] = yr + o1 - o3;
     }
+#if CLIPPER_SYNTH
+    if (plate)
+        plate_run(rev_in, wet_l, wet_r, n);
+#endif
 }
 
 /* one block of the whole mix (shared with tests/hostsim.c): events -> each part
@@ -276,7 +422,7 @@ static struct {
 
 static void duck_block(uint32_t adv)
 {
-    int32_t depth = song.g[G_DUCK] * 258, x;
+    int32_t depth = CLIPPER_SYNTH ? 0 : song.g[G_DUCK] * 258, x;   /* (Clipper: its slot is the reverb TYPE) */
     uint32_t len = BEAT_U / 2u;
     duck.g0 = duck.g1;
     if (drums.kick) {

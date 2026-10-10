@@ -77,6 +77,16 @@ enum {                          /* per-track parameters */
     P_E0, P_E1, P_E2, P_E3, P_E4, P_E5, P_E6, P_E7,
     P_COUNT
 };
+/* Clipper: the synth has no slicer, so its pattern's slot holds the filter MODEL of the engines with a low-pass of
+ * their own (ANALOG): 1 SVF (12 dB, as before), 2 MOOG (the 24 dB ladder, dsp.c). The same slot: projects and user
+ * presets keep it without a new format */
+#define P_FMODEL P_SLPAT
+enum { FM_SVF = 1, FM_MOOG = 2 };
+/* Clipper: two globals of the groovebox are free in the synth (no kick to duck to, no note repeat): the reverb's
+ * TYPE (ROOM, PLATE: fx.c) and the plate's PRE-delay (ms) */
+#define G_RTYPE G_DUCK
+#define G_RPRE G_ROLL
+enum { RT_ROOM, RT_PLATE };
 
 enum {                          /* global parameters */
     G_BPM, G_SWING, G_CLOCK, G_TUNE,

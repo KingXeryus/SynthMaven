@@ -19,7 +19,11 @@
  * from the steps), the track's + the global SWING as the sequencer has them (seq.c trk_grid); sample
  * exact. With the SLICER OFF and no ramp left, the signal is not touched. */
 #define SL_NPAT 16
+#if CLIPPER_SYNTH                         /* Clipper: no slicer (slicer_track: the clock only): its 32 KB are free */
+#define SL_LEN 64u
+#else
 #define SL_LEN 4096u                    /* recording, 22.05 kHz samples a track: 186 ms, 8 KB */
+#endif
 #define SL_RAMP_LOG2 7
 #define SL_RAMP (1 << SL_RAMP_LOG2)     /* 128 samples, 2.9 ms */
 #define SL_SLOPE (32768 / SL_RAMP)
@@ -154,7 +158,8 @@ static void slicer_track(const track_t *t, int32_t *b, uint32_t n)
 {
     uint32_t k = (uint32_t)(t - trk), i = 0, bpm = (uint32_t)song.g[G_BPM];
     sl_t *s = &sl[k];
-    int act = b && (t->p[P_SLCR] != SL_OFF || s->gc || s->w);
+    int act = !CLIPPER_SYNTH && b && (t->p[P_SLCR] != SL_OFF || s->gc || s->w);   /* (Clipper: no slicer, its
+                                                      * pattern's slot is the filter MODEL: the clock only) */
     while (i < n) {
         uint32_t m, left;
         while (s->pos >= s->len)
@@ -172,7 +177,7 @@ static void slicer_track(const track_t *t, int32_t *b, uint32_t n)
 static int slicer_busy(const track_t *t)
 {
     const sl_t *s = &sl[t - trk];
-    return s->w || (t->p[P_SLCR] == SL_STUT && s->loop);
+    return !CLIPPER_SYNTH && (s->w || (t->p[P_SLCR] == SL_STUT && s->loop));
 }
 
 /* the drum track: as drums_render, through the SLICER when it is on (or still fading) */

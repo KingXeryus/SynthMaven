@@ -23,8 +23,10 @@ static const char *const N_DASH[] = {"--"};
 static const char *const N_SYNC[] = {"INT", "USB", "TRS"};   /* G_SYNC: the tempo and PLAY / STOP from (seq.c mclk) */
 static const char *const N_GO[] = {"--", "GO"};
 static const char *const N_SLCR[] = {"OFF", "GATE", "STUT"};             /* SL_OFF .. SL_STUT (slicer.c) */
+static const char *const N_FMODEL[] = {"SVF", "MOOG"};                  /* P_FMODEL: FM_SVF, FM_MOOG */
 static const char *const N_SLDIV[] = {"1/8", "1/16", "1/32", "8T", "16T", "32T"};   /* SL_DEN */
 static const char *const N_CHORD[] = {"OFF", "TRIAD", "7TH", "9TH", "SUS4", "POWER"};   /* seq.c CHORD_DEG */
+static const char *const N_RTYPE[] = {"ROOM", "PLATE"};                 /* G_RTYPE: RT_ROOM, RT_PLATE */
 static const char *const N_ROLL[] = {"1/8", "1/16", "1/32", "32T", "1/64"};   /* seq.c ROLL_DEN */
 static const char *const N_ENGNAME[] = {"ANALOG", "DIGITAL", "PHASE", "LOFI", "SAMPLE", "VOICE", "TRIO", "WHEEL", "GRAIN",
                                         "FM6", "PHYS", "NOISE", "HYBRID",
@@ -83,7 +85,11 @@ static const param_desc_t TP[P_COUNT] = {
     [P_PAN] = PD("PAN", F_BIPCT, -64, 63, 0),
     [P_MUTE] = PE("MUTE", N_ONOFF, 0),
     [P_SLCR] = PE("SLCR", N_SLCR, 0),
+#if CLIPPER_SYNTH
+    [P_SLPAT] = {"MODL", F_ENUM, FM_SVF, FM_MOOG, FM_SVF, N_FMODEL, 0},   /* P_FMODEL (core.h) */
+#else
     [P_SLPAT] = PD("PAT", F_INT, 1, 16, 1),        /* SL_PAT[] */
+#endif
     [P_SLRATE] = PE("RATE", N_SLDIV, 1),
     [P_SLDEPTH] = PD("DEPTH", F_PCT, 0, 127, 127),
     [P_CHORD] = PE("CHORD", N_CHORD, 0),
@@ -132,9 +138,15 @@ static const param_desc_t GP[G_COUNT] = {
     [G_DRLVL] = PD("LVL", F_INT, 0, 127, 100),
     [G_DRREV] = PD("REV", F_INT, 0, 127, 16),
     [G_DUST] = PD("DUST", F_PCT, 0, 127, 0),
+#if CLIPPER_SYNTH                                         /* G_RTYPE, G_RPRE (core.h): the reverb, fx.c */
+    [G_DUCK] = PE("TYPE", N_RTYPE, RT_ROOM),
+    [G_FILT] = PD("FILT", F_FILT, -64, 63, 0),
+    [G_ROLL] = {"PRE", F_INT, 0, 100, 0, 0, "ms"},
+#else
     [G_DUCK] = PD("DUCK", F_PCT, 0, 127, 0),
     [G_FILT] = PD("FILT", F_FILT, -64, 63, 0),
     [G_ROLL] = PE("ROLL", N_ROLL, 1),
+#endif
     [G_NEWPRJ] = PE("NEW", N_GO, 0),
     [G_DRDLY] = PD("DLY", F_INT, 0, 127, 0),
 };
@@ -296,12 +308,21 @@ static const page_t PAGES[] = {
     {"LFO", FAM_LFO, SC_TRACK, GR_LFO, {P_LRATE, P_LWAVE, P_LPHASE, P_LFADE}},
     {"LFO DEST", FAM_LFO, SC_TRACK, GR_NONE, {P_LD_PIT, P_LD_FLT, P_LD_SHP, P_LD_AMP}},
     {"FX", FAM_FX, SC_TRACK, GR_FX, {P_DIST, P_CHOR, P_DLY, P_REV}},
+#if CLIPPER_SYNTH                                                        /* (the sound's filter model too) */
+    {"FILTER", FAM_FX, SC_TRACK, GR_NONE, {P_TFLT, P_FMODEL, 0xFF, 0xFF}},
+#else
     {"FILTER", FAM_FX, SC_TRACK, GR_NONE, {P_TFLT, 0xFF, 0xFF, 0xFF}},   /* the track's filter (drum track too) */
+#endif
 #if !CLIPPER_SYNTH                                                       /* (Clipper: no groovebox slicer) */
     {"SLICER", FAM_FX, SC_TRACK, GR_SLCR, {P_SLCR, P_SLPAT, P_SLRATE, P_SLDEPTH}},   /* drum track too */
 #endif
     {"DLY", FAM_FX, SC_GLOBAL, GR_NONE, {G_DTIME, G_DFDBK, G_DCOLOR, G_DMIX}},
+#if CLIPPER_SYNTH                                                        /* (the plate: TYPE and PRE-delay) */
+    {"REVERB", FAM_FX, SC_GLOBAL, GR_NONE, {G_RTYPE, G_RSIZE, G_RDAMP, G_RPRE}},
+    {"CHORUS", FAM_FX, SC_GLOBAL, GR_NONE, {G_CRATE, G_CDEPTH, 0xFF, 0xFF}},
+#else
     {"REV/CHO", FAM_FX, SC_GLOBAL, GR_NONE, {G_RSIZE, G_RDAMP, G_CRATE, G_CDEPTH}},
+#endif
     {"SEL", FAM_SCL, SC_TRACK, GR_SCALE, {P_ROOT, P_SCALE, P_QUANT, P_CHORD}},
     {"SEL 2", FAM_SCL, SC_TRACK, GR_SCALE, {P_TRANS, P_STRUM, P_VLEAD, 0xFF}},   /* (2.4: the chords played) */
     {"EDIT 1", FAM_EDIT, SC_ENGINE, GR_NONE, {P_E0, P_E1, P_E2, P_E3}},

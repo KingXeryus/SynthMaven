@@ -110,6 +110,12 @@ $SYN -o "$OUT/clipper_stress" tests/stress_test.c -lm
 run "Clipper synth: stress (hard random use, clean stop)" "$OUT/clipper_stress" "${STRESS_FRAMES:-40000}"
 $SYN -o "$OUT/clipper_soak" tests/soak_test.c -lm
 run "Clipper synth: soak, ${SOAK_MIN:-10} minutes of random live use" "$OUT/clipper_soak" "${SOAK_MIN:-10}"
+$SYN -o "$OUT/filter_test" tests/filter_test.c -lm
+run "Clipper 0.2 filters: the MOOG ladder (response, resonance, no dead band, bounded), soft SVF states, ANALOG MODL" "$OUT/filter_test"
+$SYN -o "$OUT/alias_test" tests/alias_test.c -lm
+run "Clipper 0.2 anti-aliasing: every oscillator's folded partials below 15 kHz (TRI, SYNC, FOLD, FM, feedback)" "$OUT/alias_test"
+$SYN -o "$OUT/reverb_test" tests/reverb_test.c -lm
+run "Clipper 0.2 plate reverb: decay, damping, width, level, pre-delay, stable, type switch" "$OUT/reverb_test" "$OUT/clipper/reverbs.wav"
 SYN_UB="${CC_UB:-cc} -DCLIPPER_SYNTH=1 -O1 -g -w -fsanitize=address,undefined -fno-sanitize=shift-base,signed-integer-overflow -fno-sanitize-recover=all -Ibuild/gen -Ifirmware/src -Ifirmware/hal"
 if $SYN_UB -o "$OUT/clipper_ui_asan" tests/clipper_ui_test.c -lm 2>/dev/null; then
     mkdir -p "$OUT/clipper_asan"
