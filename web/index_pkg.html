@@ -46,7 +46,16 @@
   button#stock-go { font: 600 14px/1 inherit; font-family: inherit; background: var(--tile); color: var(--fg); border: 1px solid var(--line);
                     padding: 12px 16px; cursor: pointer; }
   button#stock-go:disabled { color: var(--dim); cursor: default; }
-  @media (max-width: 420px) { .tiles { grid-template-columns: repeat(2, 1fr); } .logo svg { width: 170px; } }
+  h2 { font-size: 13px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); margin: 32px 0 10px; }
+  .about ul { margin: 0; padding-left: 18px; } .about li { margin: 0 0 6px; }
+  .engines { margin: 0; display: grid; gap: 2px; }
+  .engines div { display: grid; grid-template-columns: 84px 1fr; gap: 12px; padding: 8px 10px; background: var(--tile); }
+  .engines div:first-child { border-left: 3px solid var(--orange); }
+  .engines dt { font-weight: 600; letter-spacing: .04em; }
+  .engines dd { margin: 0; color: var(--fg); font-size: 14px; }
+  [data-l][hidden] { display: none; }
+  @media (max-width: 420px) { .tiles { grid-template-columns: repeat(2, 1fr); } .logo svg { width: 170px; }
+    .engines div { grid-template-columns: 1fr; gap: 2px; } }
 </style>
 </head>
 <body>
@@ -55,13 +64,21 @@
   <div class="strip"><i></i><i></i><i></i><i></i></div>
   <!--STUDIO_GUIDE-->
   <!--BANNER-->
-  <h1>Firmware for the M-VAVE FM-1</h1>
-  <p class="lead">A groovebox you play live: four tracks — three synths and a drum machine — 12 synth engines (with six-operator FM and DX7 patches), 153 sounds, 37 drum kits from 808 to techno, amapiano and ambient, your own samples and drum kits, 16 punch-in effects. House, techno, hip-hop, drum &amp; bass, synthwave, lo-fi, ambient: make what you want. No factory patterns, nothing to load: everything you hear, you play.</p>
+  <h1 data-t="kicker"></h1>
+  <section data-l="en">
+  <p class="lead">Clipper turns the FM-1 into a deep polyphonic synthesizer: 13 synthesis engines, 177 sounds, and HYBRID, a voice with three oscillators, two filters and a 16-slot modulation matrix that you can edit entirely in your browser.</p>
+  </section>
+  <section data-l="fr">
+  <p class="lead">Clipper fait de la FM-1 un vrai synthétiseur polyphonique : 13 moteurs de synthèse, 177 sons, et HYBRID, une voix à trois oscillateurs, deux filtres et une matrice de modulation de 16 slots, entièrement éditable dans ton navigateur.</p>
+  </section>
+  <section data-l="ja">
+  <p class="lead">Clipper は FM-1 を本格的なポリフォニック・シンセサイザーに変えます。13 の音源エンジン、177 の音色、そして 3 オシレーター・2 フィルター・16 スロットのモジュレーション・マトリクスを持つ HYBRID。音色はすべてブラウザから編集できます。</p>
+  </section>
   <div class="tiles">
-    <div class="tile" style="--c: var(--blue)"><b>153</b><span>sounds, 12 engines, your samples</span></div>
-    <div class="tile" style="--c: var(--green)"><b>37</b><span>drum kits, 909 to afro, + your own</span></div>
-    <div class="tile" style="--c: var(--yellow)"><b>16</b><span>punch-in fx: hold fx + key</span></div>
-    <div class="tile" style="--c: var(--orange)"><b>rec</b><span>no click: the loop follows you</span></div>
+    <div class="tile" style="--c: var(--blue)"><b>13</b><span data-t="tEng"></span></div>
+    <div class="tile" style="--c: var(--green)"><b>177</b><span data-t="tSnd"></span></div>
+    <div class="tile" style="--c: var(--yellow)"><b>3+2</b><span data-t="tHy"></span></div>
+    <div class="tile" style="--c: var(--orange)"><b>16</b><span data-t="tMx"></span></div>
   </div>
   <p data-t="intro"></p>
   <p data-t="warn"></p>
@@ -70,6 +87,99 @@
   <p id="status"></p>
   <pre id="log"></pre>
   <a class="ed" href="../editor/" data-t="editor"></a>
+  <section class="about" data-l="en">
+    <h2>Engines</h2>
+    <dl class="engines">
+      <div><dt>HYBRID</dt><dd>The Clipper voice. Three oscillators (saw, pulse, triangle, sine with feedback, morph, a seven-saw supersaw, FM, hard sync, wavefolder, noise), ring modulation, drift and drive; two filters (LP12, LP24, band-pass, high-pass, notch, peak) in series, in parallel or split; two envelopes and two tempo-synced LFOs per voice; a 16-slot modulation matrix; four macros.</dd></div>
+      <div><dt>ANALOG</dt><dd>Virtual analog: two band-limited oscillators with PWM, noise, drive and a resonant low-pass.</dd></div>
+      <div><dt>FM6</dt><dd>Six-operator FM with 32 algorithms. Load classic DX7 patches (.syx) from the editor.</dd></div>
+      <div><dt>DIGITAL</dt><dd>Four-operator FM with eight algorithms: bells, basses, electric pianos.</dd></div>
+      <div><dt>PHASE</dt><dd>Phase distortion in the tradition of the 80s CZ synths.</dd></div>
+      <div><dt>TRIO</dt><dd>The sound chip of the 8-bit home computers: three oscillators, ring modulation, sync and a multimode filter.</dd></div>
+      <div><dt>LOFI</dt><dd>Chiptune voice: pulse, triangle, wave RAM and pitch sweeps.</dd></div>
+      <div><dt>WHEEL</dt><dd>Tonewheel organ with nine drawbars.</dd></div>
+      <div><dt>VOICE</dt><dd>Formant synthesis: sung vowels from the keyboard.</dd></div>
+      <div><dt>PHYS</dt><dd>Physical models: plucked strings, bells and bars, drum heads, sympathetic strings (after Mutable Instruments Rings and DaisySP).</dd></div>
+      <div><dt>GRAIN</dt><dd>Granular synthesis over the built-in instruments and your own samples.</dd></div>
+      <div><dt>SAMPLE</dt><dd>Multisampled piano, strings, horns, flute, vibraphone, bass, and your own samples.</dd></div>
+      <div><dt>NOISE</dt><dd>From analog hiss to metallic shift-register tones, through a resonant filter.</dd></div>
+    </dl>
+    <h2>Play</h2>
+    <ul>
+      <li>Up to 8 voices of polyphony, with glide, unison and velocity.</li>
+      <li>Arpeggiator, step sequencer with chords and recording, scales and chords on the keys.</li>
+      <li>MIDI over USB and TRS on every channel: pitch bend, mod wheel, expression, sustain pedal, channel and polyphonic aftertouch, the four macros on CC 16 to 19.</li>
+      <li>The FM-1 is also a USB audio interface: record it straight into your computer.</li>
+    </ul>
+    <h2>Sound</h2>
+    <ul>
+      <li>44.1 kHz, band-limited oscillators (polyBLEP), level-matched presets.</li>
+      <li>Effects: distortion, stereo chorus, tempo-synced delay, and a modulated feedback-delay-network reverb.</li>
+      <li>A web editor for every parameter: the whole HYBRID patch, DX7 banks, your sound library, backups.</li>
+    </ul>
+  </section>
+  <section class="about" data-l="fr">
+    <h2>Moteurs</h2>
+    <dl class="engines">
+      <div><dt>HYBRID</dt><dd>La voix de Clipper. Trois oscillateurs (dent de scie, pulse, triangle, sinus avec feedback, morph, supersaw à sept dents de scie, FM, hard sync, wavefolder, bruit), modulation en anneau, drift et saturation ; deux filtres (LP12, LP24, passe-bande, passe-haut, notch, peak) en série, en parallèle ou séparés ; deux enveloppes et deux LFO synchronisables au tempo par voix ; une matrice de modulation de 16 slots ; quatre macros.</dd></div>
+      <div><dt>ANALOG</dt><dd>Analogique virtuel : deux oscillateurs à bande limitée avec PWM, bruit, saturation et passe-bas résonant.</dd></div>
+      <div><dt>FM6</dt><dd>FM à six opérateurs, 32 algorithmes. Charge les patchs DX7 classiques (.syx) depuis l'éditeur.</dd></div>
+      <div><dt>DIGITAL</dt><dd>FM à quatre opérateurs, huit algorithmes : cloches, basses, pianos électriques.</dd></div>
+      <div><dt>PHASE</dt><dd>Distorsion de phase, dans l'esprit des synthés CZ des années 80.</dd></div>
+      <div><dt>TRIO</dt><dd>La puce sonore des ordinateurs 8 bits : trois oscillateurs, modulation en anneau, sync et filtre multimode.</dd></div>
+      <div><dt>LOFI</dt><dd>Voix chiptune : pulse, triangle, wave RAM et balayages de hauteur.</dd></div>
+      <div><dt>WHEEL</dt><dd>Orgue à roues phoniques, neuf tirettes.</dd></div>
+      <div><dt>VOICE</dt><dd>Synthèse de formants : des voyelles chantées au clavier.</dd></div>
+      <div><dt>PHYS</dt><dd>Modèles physiques : cordes pincées, cloches et lames, peaux de tambour, cordes sympathiques (d'après Mutable Instruments Rings et DaisySP).</dd></div>
+      <div><dt>GRAIN</dt><dd>Synthèse granulaire sur les instruments intégrés et tes propres samples.</dd></div>
+      <div><dt>SAMPLE</dt><dd>Piano, cordes, cuivres, flûte, vibraphone et basse multi-échantillonnés, plus tes propres samples.</dd></div>
+      <div><dt>NOISE</dt><dd>Du souffle analogique aux sons métalliques des registres à décalage, à travers un filtre résonant.</dd></div>
+    </dl>
+    <h2>Jouer</h2>
+    <ul>
+      <li>Jusqu'à 8 voix de polyphonie, avec glide, unisson et vélocité.</li>
+      <li>Arpégiateur, séquenceur pas à pas avec accords et enregistrement, gammes et accords sur les touches.</li>
+      <li>MIDI par USB et TRS sur tous les canaux : pitch bend, molette, expression, pédale de sustain, aftertouch par canal et polyphonique, les quatre macros sur les CC 16 à 19.</li>
+      <li>La FM-1 devient aussi une interface audio USB : enregistre-la directement dans ton ordinateur.</li>
+    </ul>
+    <h2>Le son</h2>
+    <ul>
+      <li>44,1 kHz, oscillateurs à bande limitée (polyBLEP), presets de niveau égal.</li>
+      <li>Effets : distorsion, chorus stéréo, delay synchronisé au tempo, et une réverbération à réseau de retards modulée.</li>
+      <li>Un éditeur web pour chaque paramètre : tout le patch HYBRID, les banques DX7, ta bibliothèque de sons, les sauvegardes.</li>
+    </ul>
+  </section>
+  <section class="about" data-l="ja">
+    <h2>エンジン</h2>
+    <dl class="engines">
+      <div><dt>HYBRID</dt><dd>Clipper のボイス。3 オシレーター（ノコギリ波、パルス、三角波、フィードバック付きサイン、モーフ、7 本のスーパーソウ、FM、ハードシンク、ウェーブフォルダー、ノイズ）、リングモジュレーション、ドリフト、ドライブ。2 フィルター（LP12、LP24、BP、HP、ノッチ、ピーク）を直列・並列・スプリットで。ボイスごとに 2 エンベロープとテンポ同期できる 2 LFO、16 スロットのマトリクス、4 つのマクロ。</dd></div>
+      <div><dt>ANALOG</dt><dd>バーチャルアナログ：帯域制限された 2 オシレーター、PWM、ノイズ、ドライブ、レゾナンス付きローパス。</dd></div>
+      <div><dt>FM6</dt><dd>6 オペレーター FM、32 アルゴリズム。エディタから DX7 の音色（.syx）を読み込めます。</dd></div>
+      <div><dt>DIGITAL</dt><dd>4 オペレーター FM、8 アルゴリズム：ベル、ベース、エレピ。</dd></div>
+      <div><dt>PHASE</dt><dd>80 年代の CZ シンセの流れをくむフェイズ・ディストーション。</dd></div>
+      <div><dt>TRIO</dt><dd>8 ビット・パソコンの音源チップ：3 オシレーター、リングモジュレーション、シンク、マルチモード・フィルター。</dd></div>
+      <div><dt>LOFI</dt><dd>チップチューン：パルス、三角波、波形メモリ、ピッチスイープ。</dd></div>
+      <div><dt>WHEEL</dt><dd>9 本のドローバーを持つトーンホイール・オルガン。</dd></div>
+      <div><dt>VOICE</dt><dd>フォルマント合成：鍵盤で歌う母音。</dd></div>
+      <div><dt>PHYS</dt><dd>物理モデリング：弦、ベルとバー、ドラムヘッド、共鳴弦（Mutable Instruments Rings と DaisySP より）。</dd></div>
+      <div><dt>GRAIN</dt><dd>内蔵の楽器と自分のサンプルによるグラニュラー合成。</dd></div>
+      <div><dt>SAMPLE</dt><dd>マルチサンプルのピアノ、ストリングス、ホーン、フルート、ビブラフォン、ベース、そして自分のサンプル。</dd></div>
+      <div><dt>NOISE</dt><dd>アナログのヒスからシフトレジスターの金属音まで、レゾナンス・フィルターを通して。</dd></div>
+    </dl>
+    <h2>演奏</h2>
+    <ul>
+      <li>最大 8 ボイスのポリフォニー、グライド、ユニゾン、ベロシティ。</li>
+      <li>アルペジエーター、和音と録音に対応したステップシーケンサー、鍵盤上のスケールとコード。</li>
+      <li>USB と TRS の MIDI（全チャンネル）：ピッチベンド、モジュレーション、エクスプレッション、サスティン、チャンネル／ポリ・アフタータッチ、CC 16〜19 の 4 マクロ。</li>
+      <li>FM-1 は USB オーディオ・インターフェースにもなり、そのままパソコンに録音できます。</li>
+    </ul>
+    <h2>サウンド</h2>
+    <ul>
+      <li>44.1 kHz、帯域制限オシレーター（polyBLEP）、音量をそろえたプリセット。</li>
+      <li>エフェクト：ディストーション、ステレオ・コーラス、テンポ同期ディレイ、モジュレーション付き FDN リバーブ。</li>
+      <li>すべてのパラメーターを編集できるウェブ・エディタ：HYBRID の音色、DX7 バンク、音色ライブラリ、バックアップ。</li>
+    </ul>
+  </section>
   <hr>
   <p class="small" data-t="direct"></p>
   <p class="small" data-t="beta"></p>
@@ -86,7 +196,8 @@
     <p><button id="stock-go" disabled data-t="stockGo"></button></p>
     <p class="small" data-t="back"></p>
   </details>
-  <p class="small">Clipper comes from SLOOP and is based on Felucca by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener">Hügelton Instruments</a>.
+  <p class="small"><b>Clipper</b> by 3dSam (<a href="https://github.com/isod89" target="_blank" rel="noopener">isod89</a>), grown from <a href="https://github.com/isod89/sloop-fm1" target="_blank" rel="noopener">SLOOP</a> and based on <a href="https://github.com/hugelton/Felucca" target="_blank" rel="noopener">Felucca</a> by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener">Hügelton Instruments</a>.
+    FM6: msfa / Dexed (Apache-2.0). PHYS: DaisySP and Mutable Instruments Rings (MIT). Supersaw after Adam Szabo's JP-8000 analysis.
     Hold OCT− alone while switching on for USB rescue.<br>
     Font: Terminus (Dimitar Toshkov Zhekov, SIL OFL 1.1). Samples: Versilian Studios VSCO-2 Community Edition and VCSL (CC0 1.0), and the Hügelton Sample Pack (© Hügelton Instruments, not CC0).<br>
     M-VAVE and FM-1 are trademarks of their respective owners; Clipper is not affiliated with them.<br>
@@ -97,6 +208,8 @@
 const $ = (id) => document.getElementById(id);
 const TEXT = {
   ja: {
+    kicker: "M-VAVE FM-1 のためのシンセサイザー・ファームウェア",
+    tEng: "音源エンジン", tSnd: "音色、レベル調整済み", tHy: "hybrid：オシレーターとフィルター", tMx: "モジュレーション・スロット",
     intro: "FM-1 を USB で接続してください。（Chrome か Edge で使えます）",
     warn: "書き込み中は USB を抜かないでください。",
     install: "インストール", other: "English",
@@ -131,9 +244,11 @@ const TEXT = {
     back: "M-VAVE のアップデーター M-UPGRADE（Downloads → PC Software）でも戻せます。FM-1 が見つからない場合は、MIDI を使う他のアプリとブラウザのタブを閉じてください。",
   },
   en: {
+    kicker: "Synthesizer firmware for the M-VAVE FM-1",
+    tEng: "synthesis engines", tSnd: "sounds, level-matched", tHy: "hybrid: oscillators + filters", tMx: "modulation matrix slots",
     intro: "Connect the FM-1 by USB. (Works in Chrome or Edge.)",
     warn: "Do not unplug the USB cable while writing.",
-    install: "Install", other: "日本語",
+    install: "Install", other: "français",
     editor: "Editor (after installing: edit sounds and sequences from the computer)",
     direct: "Connect the USB cable directly to the computer. No probe or Transporter is needed.",
     brick: "If an install fails and the FM-1 no longer starts, recovering it needs a Transporter:",
@@ -164,17 +279,55 @@ const TEXT = {
     stockFinish: "The FM-1 is in Clipper's update mode. Press Install to finish the Clipper update first, then return to the official V15.",
     back: "M-VAVE's own updater, M-UPGRADE (Downloads → PC Software), works too. If it does not find the FM-1, close every other app and browser tab that uses MIDI.",
   },
+  fr: {
+    kicker: "Firmware synthétiseur pour la M-VAVE FM-1",
+    tEng: "moteurs de synthèse", tSnd: "sons, niveaux égalisés", tHy: "hybrid : oscillateurs + filtres", tMx: "slots de modulation",
+    intro: "Branche la FM-1 en USB. (Fonctionne dans Chrome ou Edge.)",
+    warn: "Ne débranche pas le câble USB pendant l'écriture.",
+    install: "Installer", other: "日本語",
+    editor: "Éditeur (après l'installation : édite les sons et les séquences depuis l'ordinateur)",
+    direct: "Branche le câble USB directement sur l'ordinateur. Aucune sonde ni Transporter n'est nécessaire.",
+    brick: "Si une installation échoue et que la FM-1 ne démarre plus, il faut un Transporter pour la récupérer :",
+    beta: "C'est une version bêta qui peut être instable. L'auteur décline toute responsabilité si ta FM-1 est endommagée ou fonctionne mal à cause de ce firmware personnalisé. Utilise-le à tes risques.",
+    nomidi: "Ce navigateur ne peut pas le faire. Ouvre la page dans Chrome ou Edge.", loadfail: "Chargement impossible : ",
+    start: "Démarrage", verify: "Vérification", loader: "Passage en mode mise à jour", write: "Écriture",
+    reboot: "Redémarrage", done: "Terminé", stopped: "Arrêté. Rebranche le câble USB et appuie de nouveau sur Installer.",
+    error: "Erreur : ",
+    denied: "L'accès MIDI (SysEx) a été refusé. Autorise le MIDI dans les paramètres du site (barre d'adresse) et appuie de nouveau sur Installer.",
+    notfound: "FM-1 introuvable. Vérifie le câble USB (un câble de données), ferme les autres applis qui utilisent le MIDI, et appuie de nouveau sur Installer.",
+    model: "L'appareil branché n'est pas une FM-1.",
+    lost: "La connexion USB a été perdue. Rebranche-la et appuie de nouveau sur Installer.",
+    noloader: "La FM-1 en mode mise à jour est introuvable. Rebranche le câble USB et appuie de nouveau sur Installer (elle reste en mode mise à jour jusqu'à la fin).",
+    noreturn: "La FM-1 n'est pas revenue. Éteins-la et rallume-la.",
+    mismatch: "Écrit, mais la FM-1 annonce une autre version : ",
+    foreign: "La FM-1 est en mode mise à jour d'un autre firmware. Termine cette mise à jour avec son propre outil (M-UPGRADE), puis appuie de nouveau sur Installer : ",
+    badpkg: "Le fichier à installer est endommagé. Recharge la page.",
+    leave: "Écriture en cours. Ne ferme pas la page.",
+    license: "GPL-3.0, sans garantie. Source :",
+    stockTitle: "Revenir au firmware officiel (V15)",
+    stockHelp: "Télécharge la FM-1 V15 officielle sur le site de M-VAVE et choisis le FM-1.fwsc qu'elle contient, sans le modifier. Le fichier est vérifié dans ce navigateur ; il n'est envoyé nulle part.",
+    stockBackup: "Le firmware officiel ne peut pas ouvrir la musique, les projets ni les samples de Clipper. Fais d'abord une sauvegarde avec l'éditeur (Projects → Backup) ; réinstalle Clipper et restaure-la depuis l'éditeur quand tu veux les retrouver.",
+    stockEditor: "Ouvrir l'éditeur pour sauvegarder", stockSaved: "J'ai enregistré une sauvegarde sur cet ordinateur",
+    stockFile: "Le FM-1.fwsc officiel", stockGo: "Installer la V15 officielle",
+    stockValid: "V15 officielle vérifiée", stockBad: "Ce n'est pas la V15 officielle : ",
+    stockConfirm: "Installer la V15 officielle sur la FM-1 ? Le firmware officiel ne peut pas ouvrir la musique de Clipper. As-tu fait une sauvegarde ?",
+    stockFinish: "La FM-1 est en mode mise à jour de Clipper. Appuie d'abord sur Installer pour terminer la mise à jour de Clipper, puis reviens à la V15 officielle.",
+    back: "L'outil de M-VAVE, M-UPGRADE (Downloads → PC Software), fonctionne aussi. S'il ne trouve pas la FM-1, ferme toutes les autres applis et onglets qui utilisent le MIDI.",
+  },
 };
-let lang = (navigator.language || "en").toLowerCase().startsWith("ja") ? "ja" : "en";
+let lang = (navigator.language || "en").toLowerCase().slice(0, 2);
+if (!["ja", "fr"].includes(lang)) lang = "en";
+const NEXT = { en: "fr", fr: "ja", ja: "en" };
 const t = (k) => TEXT[lang][k];
 let lastKey = null, lastArg = "";
 function applyLang() {
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-t]").forEach((e) => { e.textContent = t(e.dataset.t); });
+  document.querySelectorAll("[data-l]").forEach((e) => { e.hidden = e.dataset.l !== lang; });
   $("lang").textContent = t("other");
   if (lastKey) $("status").textContent = t(lastKey) + lastArg;
 }
-$("lang").addEventListener("click", () => { lang = lang === "ja" ? "en" : "ja"; applyLang(); });
+$("lang").addEventListener("click", () => { lang = NEXT[lang]; applyLang(); });
 applyLang();
 const sayK = (k, arg = "") => { lastKey = k; lastArg = arg; $("status").textContent = t(k) + arg; };
 const say = (txt) => { lastKey = null; $("status").textContent = txt; };
