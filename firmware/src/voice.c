@@ -18,9 +18,10 @@ static int eng_sampled(const engine_t *e) { return e == &ENG_SAMPLE || e == &ENG
 #else
 static int eng_sampled(const engine_t *e) { return e == &ENG_SAMPLE; }
 #endif
-static int32_t lfo_wave(track_t *t, uint32_t ph)
+/* an LFO's wave (N_LWAVE) at phase ph; rnd: its S&H value, Q15 */
+static int32_t lfo_wave_n(int32_t wave, uint32_t ph, int32_t rnd)
 {
-    switch (t->p[P_LWAVE]) {
+    switch (wave) {
     case 1:
         return osc_tri(ph);
     case 2:
@@ -28,11 +29,40 @@ static int32_t lfo_wave(track_t *t, uint32_t ph)
     case 3:
         return ph < 0x80000000u ? 32767 : -32767;
     case 4:
-        return (int32_t)(t->lfo_rnd >> 16) - 32768;
+        return rnd;
     default:
         return osc_sine(ph);
     }
 }
+static int32_t lfo_wave(track_t *t, uint32_t ph)
+{
+    return lfo_wave_n(t->p[P_LWAVE], ph, (int32_t)(t->lfo_rnd >> 16) - 32768);
+}
+
+#if CLIPPER_SYNTH
+/* Clipper 0.4: MPE (menu SYSTEM > MPE; seq.c MIDI in). Channel 1 is the master channel (the part's bend, pressure,
+ * CCs, as ever); a note on a member channel (2..16) is that channel's own: its pitch bend (over the range chosen
+ * here, 48 semitones by the MPE standard), its pressure (as a polyphonic aftertouch: AT) and its CC 74 (SLIDE, a
+ * matrix source; with no slot taking it, the cutoff) follow it alone (voice.c track_render, v->ch) */
+#define MPE_MODES 6u
+static uint8_t mpe_mode;                                /* 0 off, else the member channels' bend range (MPE_RANGE) */
+static const char *const MPE_NAME[MPE_MODES] = {"OFF", "48 ST", "2 ST", "12 ST", "24 ST", "96 ST"};
+static const uint8_t MPE_RANGE[MPE_MODES] = {0, 48, 2, 12, 24, 96};
+static int16_t mpe_bend[16];                            /* per channel: Q15, as part_ctl's */
+static uint8_t mpe_press[16];                           /* 0..127 */
+static int8_t mpe_slide[16];                            /* CC 74 - 64: 0 at rest */
+static uint8_t mpe_cur_ch;                              /* the channel of the note being started (seq.c), 0 = none */
+static void mpe_reset(void)
+{
+    uint32_t i;
+    for (i = 0; i < 16u; i++) {
+        mpe_bend[i] = 0;
+        mpe_press[i] = 0;
+        mpe_slide[i] = 0;
+    }
+    mpe_cur_ch = 0;
+}
+#endif
 
 static void track_lfo_tick(track_t *t)
 {
@@ -279,6 +309,20 @@ static void voice_start(track_t *t, voice_t *v, uint32_t note, uint32_t vel, int
         v->env = 0;
         v->env_out = 0;
     }                                                   /* sounding: the attack starts from the current level */
+#if CLIPPER_SYNTH
+    {   /* Clipper 0.4: ENV 2 starts over (from its level when sounding), LFO 2 (KEY) from 0, a new random value */
+        static uint32_t seed = 0x5EED1234u;             /* (its own: rng()'s other users unchanged) */
+        if (!sounding)
+            v->env2 = 0;
+        v->e2st = 1;
+        v->l2ph = 0;
+        seed = seed * 1664525u + 1013904223u;
+        v->rnd = (int16_t)(seed >> 16);
+        seed = seed * 1664525u + 1013904223u;
+        v->l2rnd = (int16_t)(seed >> 16);
+        v->ch = mpe_cur_ch;
+    }
+#endif
     e->note_on(t, v);
     if (sounding && !eng_sampled(e)) {                 /* retrigger / steal: keep phases and filter states */
         v->ph[0] = ph0;                                 /* (resetting them clicks) */
@@ -336,6 +380,9 @@ static void mono_play(track_t *t, uint32_t note, uint32_t vel, int retrig, int g
             }
         } else {                                            /* legato: new pitch, same envelope */
             v->note = (uint8_t)note;
+#if CLIPPER_SYNTH
+            v->ch = mpe_cur_ch;                             /* (MPE: the new note's channel) */
+#endif
             v->pitch16 = (int32_t)note * 16;
             if (vel > v->vel && nv == 1u)
                 v->vel = (uint8_t)vel;
@@ -817,6 +864,78 @@ static int32_t env_tick(track_t *t, voice_t *v)
     return v->env >> 9;
 }
 
+#if CLIPPER_SYNTH
+/* Clipper 0.4: ENV 2, a second ADSR (P_E2ATK..P_E2REL) for the matrix; it releases with the voice. Q15 */
+static int32_t env2_tick(const int16_t *p, voice_t *v)
+{
+    if (v->stage >= 3u && v->e2st && v->e2st < 3u)
+        v->e2st = 3;
+    switch (v->e2st) {
+    case 1:
+        v->env2 += (int32_t)ENV_LIN[p[P_E2ATK] & 127];
+        if (v->env2 >= (1 << 24)) {
+            v->env2 = 1 << 24;
+            v->e2st = 2;
+        }
+        break;
+    case 2:
+        v->env2 += mulq16(((int32_t)p[P_E2SUS] << 17) - v->env2, ENV_EXP[p[P_E2DEC] & 127]);
+        break;
+    case 3:
+        v->env2 -= mulq16(v->env2, ENV_EXP[p[P_E2REL] & 127]);
+        if (v->env2 < (1 << 12)) {
+            v->env2 = 0;
+            v->e2st = 0;
+        }
+        break;
+    default:
+        v->env2 = 0;
+        break;
+    }
+    return v->env2 >> 9;
+}
+
+/* Clipper 0.4: the modulation matrix, on every engine. Six slots (P_M1SRC..P_M6AMT) of a source (MS_*: LFO 1 / 2,
+ * ENV 1 / 2, velocity, key, mod wheel, aftertouch, a random value per note, MPE slide), all Q15, times AMT
+ * (-64..63), to a destination (MT_*): the pitch (+-24 semitones, finer near 0), the cutoff (+-4 octaves), the shape,
+ * the level, the pan (the part's, from its newest note), LFO 2's rate, or any of the engine's eight EDIT values
+ * (over their whole range, per note). The slots in use, read once a block */
+typedef struct {
+    uint8_t src[MX_SLOTS], dst[MX_SLOTS];
+    int8_t amt[MX_SLOTS];
+    uint32_t n, srcs, dsts;                             /* slots in use; bit per source, per destination */
+} mx_t;
+static void mx_load(const int16_t *p, mx_t *x)
+{
+    uint32_t k;
+    x->n = x->srcs = x->dsts = 0;
+    for (k = 0; k < MX_SLOTS; k++) {
+        int32_t sr = p[P_M1SRC + 3u * k], ds = p[P_M1DST + 3u * k], a = p[P_M1AMT + 3u * k];
+        if (sr <= MS_OFF || sr >= MS_NSRC || ds <= MT_OFF || ds >= MT_COUNT || !a)
+            continue;
+        if (ds == MT_L2RATE && sr == MS_LFO2)
+            continue;                                   /* (LFO 2 on its own rate: none) */
+        x->src[x->n] = (uint8_t)sr;
+        x->dst[x->n] = (uint8_t)ds;
+        x->amt[x->n] = (int8_t)clamp(a, -64, 63);
+        x->srcs |= 1u << sr;
+        x->dsts |= 1u << ds;
+        x->n++;
+    }
+}
+/* LFO 2's rate index, + the slots to MT_L2RATE (sv: the sources) */
+static uint32_t mx_l2rate(const int16_t *p, const mx_t *x, const int32_t *sv)
+{
+    int32_t r = 0;
+    uint32_t k;
+    if (x->dsts & (1u << MT_L2RATE))
+        for (k = 0; k < x->n; k++)
+            if (x->dst[k] == MT_L2RATE)
+                r += sv[x->src[k]] * x->amt[k] >> 6;
+    return (uint32_t)clamp(p[P_L2RATE] + (r >> 9), 0, 127);   /* (+-64 steps) */
+}
+#endif
+
 /* render one block of a part into out (cleared here); returns the voices rendered */
 static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
 {
@@ -837,6 +956,10 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
         mw = cat = 0;
     vib_ph[(uint32_t)(t - trk) % NPART] += 535642u * n;
     vib = osc_sine(vib_ph[(uint32_t)(t - trk) % NPART]);
+    /* Clipper 0.4: the matrix (mx_load); sv: its sources (the part's here, the voice's in the loop) */
+    mx_t mx;
+    int32_t sv[MS_NSRC], l2free, pan_new = 0;
+    uint32_t pan_age = 0, catr = part_ctl[pc].at;
 #endif
     /* TUNE in cents: whole 1/16 semitones in the pitch, the rest as a fine factor (no dead zone) */
     int32_t tune = song.g[G_TUNE] >= 0 ? song.g[G_TUNE] * 16 / 100 : -((-song.g[G_TUNE] * 16 + 99) / 100);
@@ -851,14 +974,39 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
             t->p[P_E0 + i] = t->pe_old[i];
         }
     track_lfo_tick(t);
+#if CLIPPER_SYNTH
+    mx_load(p, &mx);
+    for (i = 0; i < MS_NSRC; i++)
+        sv[i] = 0;
+    sv[MS_LFO1] = lfo;                                  /* (the part's sources; with FADE, as the LFO's routes) */
+    sv[MS_MW] = part_ctl[pc].mw * 258;                  /* (on HYBRID too: its own matrix has them as well) */
+    sv[MS_AT] = (int32_t)catr * 258;
+    {   /* LFO 2 FREE: one for the part, its rate moved by the part's sources only */
+        uint32_t old = t->l2ph;
+        t->l2ph += LFO_INC[mx_l2rate(p, &mx, sv)];
+        if (t->l2ph < old)
+            t->l2rnd = (int16_t)(rng() >> 16);
+        l2free = lfo_wave_n(p[P_L2WAVE], t->l2ph, t->l2rnd);
+    }
+#endif
     if (e->block)                                       /* the engine's per-part work (DRAWBAR: bars, rotor) */
         e->block(t);
     for (i = 0; i < NVOICE; i++) {
         voice_t *v = &t->v[i];
         vmod_t m;
         int32_t env, pitch;
+#if CLIPPER_SYNTH
+        int32_t mpit = 0, mcut = 0, mshp = 0, mamp = 0, med[8];
+        uint32_t medm = 0;                              /* bit per EDIT value the matrix moves */
+        int mpe;
+#endif
         if (!v->active)
             continue;
+#if CLIPPER_SYNTH
+        mpe = mpe_mode && v->ch;                        /* MPE: the note's own channel */
+        if (mpe)
+            v->pat = mpe_press[v->ch & 15u];            /* (its pressure: the voice's aftertouch) */
+#endif
         {
             env = env_tick(t, v);
             if (e->ownenv && v->active) {               /* the engine's envelopes (FM6): they end the voice */
@@ -875,6 +1023,55 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
                     env = 32767;
                 }
             }
+#if CLIPPER_SYNTH
+            if (mx.n) {                                 /* the matrix: the voice's sources, then every slot */
+                uint32_t k;
+                int32_t pan = 0;
+                sv[MS_ENV1] = env;
+                sv[MS_ENV2] = mx.srcs & (1u << MS_ENV2) ? env2_tick(p, v) : 0;
+                sv[MS_VEL] = v->vel * 258;
+                sv[MS_KEY] = clamp(((int32_t)v->note - 60) * 512, -32768, 32767);
+                sv[MS_AT] = (int32_t)(v->pat > catr ? v->pat : catr) * 258;
+                sv[MS_RAND] = v->rnd;
+                sv[MS_SLIDE] = mpe ? mpe_slide[v->ch & 15u] * 512 : 0;
+                if (p[P_L2MODE] == L2_KEY) {            /* LFO 2 KEY: the note's own, from its start */
+                    uint32_t old = v->l2ph;
+                    sv[MS_LFO2] = 0;
+                    v->l2ph += LFO_INC[mx_l2rate(p, &mx, sv)];
+                    if (v->l2ph < old)
+                        v->l2rnd = (int16_t)(rng() >> 16);
+                    sv[MS_LFO2] = lfo_wave_n(p[P_L2WAVE], v->l2ph, v->l2rnd);
+                } else {
+                    sv[MS_LFO2] = l2free;
+                }
+                for (k = 0; k < mx.n; k++) {
+                    int32_t x = sv[mx.src[k]] * mx.amt[k] >> 6;   /* Q15 x AMT / 64 */
+                    uint32_t d = mx.dst[k];
+                    if (d == MT_PITCH)                  /* +-24 semitones, AMT squared: fine near 0 */
+                        mpit += (x * (mx.amt[k] < 0 ? -mx.amt[k] : mx.amt[k]) * 24) >> 9;
+                    else if (d == MT_CUT)
+                        mcut += x >> 1;
+                    else if (d == MT_SHAPE)
+                        mshp += x >> 1;
+                    else if (d == MT_AMP)
+                        mamp += x;
+                    else if (d == MT_PAN)
+                        pan += x;
+                    else if (d >= MT_E1) {
+                        if (!(medm & (1u << (d - MT_E1))))
+                            med[d - MT_E1] = 0;
+                        medm |= 1u << (d - MT_E1);
+                        med[d - MT_E1] += x;
+                    }
+                }
+                if ((mx.dsts & (1u << MT_PAN)) && v->age >= pan_age) {   /* the pan: the newest note's */
+                    pan_age = v->age;
+                    pan_new = pan;
+                }
+            } else if (mx.srcs & (1u << MS_ENV2)) {
+                env2_tick(p, v);
+            }
+#endif
             if (e->amp)                                 /* the engine's own amplitude curve */
                 env = e->amp(t, v, env);
             m.envq15 = e->ownenv ? 0 : env;
@@ -887,6 +1084,8 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
                 if (tr)
                     m.amp1 = mulq15(m.amp1, 32767 - mulq15((vib + 32768) >> 1, (tr > 127 ? 127 : tr) * 155));
             }
+            if (mamp)                                   /* the matrix's AMP: 0 .. x1.5 */
+                m.amp1 = m.amp1 * clamp(32768 + mamp, 0, 49151) >> 15;
 #endif
             if (fade)                                   /* linear to 0 over the fade */
                 m.amp1 = m.amp1 * (int32_t)(t->xf - 1u) / (int32_t)XF_BLOCKS;
@@ -914,6 +1113,9 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
                 int32_t vd = (p[P_MWDST] == MD_VIB ? mw : 0) + (p[P_ATDST] == MD_VIB ? (e == &ENG_HYBRID ? 0 : v->pat > cat ? v->pat : cat) : 0);
                 if (vd)
                     q += (vib * (vd > 127 ? 127 : vd)) >> 11;
+                q += clamp(mpit, -24 * 4096, 24 * 4096);   /* the matrix */
+                if (mpe)                                /* MPE: the note's own bend */
+                    q += (mpe_bend[v->ch & 15u] * (int32_t)MPE_RANGE[mpe_mode % MPE_MODES]) >> 3;
             }
 #endif
             pitch = (q >> 8) + tune;
@@ -946,11 +1148,39 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
                 m.shape += mw * 128;
             if (p[P_ATDST] == MD_SHP)
                 m.shape += a * 128;
+            m.cutoff += clamp(mcut, -32767, 32767);    /* the matrix */
+            if (mshp)
+                m.shape = clamp(m.shape + clamp(mshp, -32767, 32767), 0, 127 << 8);
+            if (mpe && !(mx.srcs & (1u << MS_SLIDE)))  /* MPE: SLIDE to the cutoff when no slot takes it */
+                m.cutoff += mpe_slide[v->ch & 15u] * 200;   /* (+-64: about +-3 octaves) */
+        }
+        if (medm) {                                     /* the EDIT values the matrix moves: this voice's own */
+            int16_t keep[8];
+            uint32_t k;
+            for (k = 0; k < 8u; k++) {
+                const param_desc_t *d = &e->edit[k];
+                keep[k] = t->p[P_E0 + k];
+                if ((medm >> k) & 1u && d->fmt != F_ENUM && d->max > d->min)
+                    t->p[P_E0 + k] = (int16_t)clamp(keep[k] + ((clamp(med[k], -32767, 32767) * (d->max - d->min)) >> 15),
+                                                     d->min, d->max);
+            }
+            e->render(t, v, out, n, &m);
+            for (k = 0; k < 8u; k++)
+                t->p[P_E0 + k] = keep[k];
+            nr++;
+            continue;
         }
 #endif
         e->render(t, v, out, n, &m);
         nr++;
     }
+#if CLIPPER_SYNTH
+    {   /* the matrix's PAN (fx.c mix_part): to the newest note's, 4 steps a block at most (no click) */
+        int32_t tgt = (mx.dsts & (1u << MT_PAN)) ? clamp(pan_new >> 9, -64, 64) : 0;
+        if (pan_age || !(mx.dsts & (1u << MT_PAN)))
+            t->panmod = (int16_t)(t->panmod + clamp(tgt - t->panmod, -4, 4));
+    }
+#endif
     if (fade) {
         for (i = 0; i < 8u; i++)
             t->p[P_E0 + i] = pe_new[i];

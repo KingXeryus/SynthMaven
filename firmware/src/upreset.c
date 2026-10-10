@@ -15,7 +15,12 @@
  * With -DUP_HOST (host test) only the part above #ifndef UP_HOST is built;
  * it needs nothing but core.h. */
 #define UP_PER_BANK 16u
+#if CLIPPER_SYNTH
+#define UP_PMAX 92u                              /* Clipper 0.4: + LFO 2, ENV 2, the matrix (a 232-byte record) */
+#else
 #define UP_PMAX 72u                              /* room for P_COUNT to grow */
+#endif
+#define UP_PMAX_V1 72u                           /* the record of SLOOP and Clipper 0.1 .. 0.3 (192 bytes) */
 #define UP_USED 0xA5u
 #define UP_VER 1u
 #define UP_BANK_MAGIC 0x31425055u                /* "UPB1" */
@@ -30,9 +35,20 @@ typedef struct {
     uint16_t rsize, nslot;
     up_rec_t r[UP_PER_BANK];
 } up_bank_t;
-_Static_assert(sizeof(up_rec_t) == 192, "user preset record layout");
+typedef struct {                                 /* that record (Clipper: read, then made today's) */
+    uint8_t used, ver, engine, np;
+    char name[12];
+    int16_t p[UP_PMAX_V1];
+    uint8_t note[16], flags[16];
+} up_rec_v1_t;
+_Static_assert(sizeof(up_rec_t) == (CLIPPER_SYNTH ? 232 : 192) && sizeof(up_rec_v1_t) == 192, "user preset record layout");
+_Static_assert(8u + UP_PER_BANK * sizeof(up_rec_t) <= 3840u, "a bank fits one flash object (storage.c ST_PAYLOAD_MAX)");
 _Static_assert(P_COUNT <= UP_PMAX && P_COUNT < 128, "user preset record: P_COUNT");
+#if CLIPPER_SYNTH
+static up_bank_t up_bank[UP_SLOTS / UP_PER_BANK] __attribute__((section(".pool")));   /* (Clipper 0.4: 7.4 KB out of .bss) */
+#else
 static up_bank_t up_bank[UP_SLOTS / UP_PER_BANK];
+#endif
 
 static up_rec_t *up_rec(uint32_t k) { return &up_bank[k / UP_PER_BANK].r[k % UP_PER_BANK]; }
 
@@ -47,6 +63,25 @@ static int up_used(uint32_t k) { return k < UP_SLOTS && up_valid(up_rec(k)); }
 static void up_bank_check(uint32_t b, int len)  /* after loading bank b (len bytes, -1 = none): wrong shape -> empty */
 {
     up_bank_t *bk = &up_bank[b];
+#if CLIPPER_SYNTH
+    if (len == (int)(8u + UP_PER_BANK * sizeof(up_rec_v1_t)) && bk->magic == UP_BANK_MAGIC &&
+        bk->rsize == sizeof(up_rec_v1_t) && bk->nslot == UP_PER_BANK) {   /* Clipper 0.3's bank: today's records */
+        uint32_t k = UP_PER_BANK;
+        while (k--) {                                /* (from the last: each moves up, over what was read) */
+            up_rec_v1_t o;
+            up_rec_t *r = &bk->r[k];
+            memcpy(&o, (const uint8_t *)bk->r + k * sizeof o, sizeof o);
+            memset(r, 0, sizeof *r);
+            r->used = o.used, r->ver = o.ver, r->engine = o.engine, r->np = o.np;
+            memcpy(r->name, o.name, sizeof r->name);
+            memcpy(r->p, o.p, sizeof o.p);            /* (np values: mapped by count, up_params) */
+            memcpy(r->note, o.note, sizeof r->note);
+            memcpy(r->flags, o.flags, sizeof r->flags);
+        }
+        bk->rsize = sizeof(up_rec_t);
+        return;
+    }
+#endif
     if (len != (int)sizeof *bk || bk->magic != UP_BANK_MAGIC || bk->rsize != sizeof(up_rec_t) ||
         bk->nslot != UP_PER_BANK)
         memset(bk, 0, sizeof *bk);

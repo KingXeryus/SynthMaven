@@ -510,6 +510,47 @@ static void t_pages(void)
     frames(2);
 }
 
+/* Clipper 0.4: the pages LFO 2, ENV 2, MATRIX (its knobs: SLOT, SRC, DST, AMT on the slot turned to), MPE kept */
+static void t_pages4(void)
+{
+    track_t *t = &trk[0];
+    char w[160];
+    uint32_t k;
+    ok(page_idx("LFO 2") >= 0 && page_idx("ENV 2") >= 0 && page_idx("MATRIX") >= 0, "0.4: the pages LFO 2, ENV 2, MATRIX");
+    for (k = 0; k < MX_SLOTS; k++)
+        t->p[P_M1SRC + 3u * k] = MS_OFF, t->p[P_M1DST + 3u * k] = MT_OFF, t->p[P_M1AMT + 3u * k] = 0;
+    go_page("MATRIX");
+    knob(1, 2), knob(2, 2), knob(3, 30);
+    snprintf(w, sizeof w, "MATRIX: slot 1 turned to LFO2 > CUT +30 (%d %d %d)", t->p[P_M1SRC], t->p[P_M1DST], t->p[P_M1AMT]);
+    ok(t->p[P_M1SRC] == MS_LFO2 && t->p[P_M1DST] == MT_CUT && t->p[P_M1AMT] == 30, w);
+    knob(0, 2), knob(1, 5), knob(2, MT_E1 + 2);
+    snprintf(w, sizeof w, "MATRIX: SLOT 3, its own values (VEL > E3), slot 1 kept (%d %d)", t->p[P_M3SRC], t->p[P_M3DST]);
+    ok(t->p[P_M3SRC] == MS_VEL && t->p[P_M3DST] == MT_E1 + 2 && t->p[P_M1SRC] == MS_LFO2, w);
+    knob(3, -20);
+    ppm("synth4-matrix");
+    go_page("LFO 2");
+    knob(2, 1);
+    ok(t->p[P_L2MODE] == L2_KEY, "LFO 2 page: MODE KEY");
+    ppm("synth4-lfo2");
+    go_page("ENV 2");
+    t->p[P_E2SUS] = 0;
+    knob(2, 3);
+    snprintf(w, sizeof w, "ENV 2 page: SUS turned up (%d)", t->p[P_E2SUS]);
+    ok(t->p[P_E2SUS] > 0, w);
+    ppm("synth4-env2");
+    for (k = 0; k < MX_SLOTS; k++)
+        t->p[P_M1SRC + 3u * k] = MS_OFF, t->p[P_M1DST + 3u * k] = MT_OFF, t->p[P_M1AMT + 3u * k] = 0;
+    t->p[P_L2MODE] = L2_FREE;
+    mpe_mode = 4;
+    k = lights_word();
+    mpe_mode = 0;
+    lights_from_word(k);
+    ok(mpe_mode == 4, "MPE (menu SYSTEM): kept with the settings");
+    mpe_mode = 0;
+    go_home();
+    frames(2);
+}
+
 int main(int argc, char **argv)
 {
     uint32_t i;
@@ -533,6 +574,7 @@ int main(int argc, char **argv)
     t_random();
     t_fade();
     t_pages();
+    t_pages4();
     printf(fails ? "synth3: %d FAILED\n" : "synth3: all passed\n", fails);
     return fails;
 }

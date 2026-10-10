@@ -32,8 +32,17 @@
                                                 * G_DRDLY rides in the byte after sel (0 in older projects: off),
                                                 * so the format and its size do not change */
 _Static_assert(G_DRDLY == PROJ_NG && G_COUNT == PROJ_NG + 1u, "the globals a project holds, then G_DRDLY");
+/* the parameters a track holds: P_COUNT of SLOOP 2.4 / 2.5 (P_E0 was 53). Clipper 0.4 added PROJ_NX before P_E0
+ * (LFO 2, ENV 2, the matrix: core.h); the synth never uses tracks 3 and 4, so the first PROJ_NX values of their
+ * p[] hold those of tracks 1 and 2 (marked CLIPPER_PROJ_MARK: proj_capture, proj_apply). The format and its size
+ * do not change: older firmware reads a Clipper 0.4 project as before, without them */
+#define PROJ_NP 61u
+#define PROJ_E0 53u
+#define PROJ_NX (P_E0 - PROJ_E0)
+_Static_assert(P_COUNT == PROJ_NP || (CLIPPER_SYNTH && P_COUNT == PROJ_NP + PROJ_NX && PROJ_NX <= PROJ_E0 && NTRK == 4),
+               "a track's parameters as stored (Clipper: tracks 3 and 4 hold the rest)");
 typedef struct {                               /* one track; the drum track ignores engine / preset */
-    int16_t p[P_COUNT];
+    int16_t p[PROJ_NP];
     uint8_t engine, preset;
     union {
         step_t step[NSTEP];
@@ -162,10 +171,10 @@ static void proj_trk_from_v3(proj_trk_t *d, const proj_trk_v3_t *s, int drum)
 {
     uint32_t k, nc = PROJ_NP_V3 - 8u;
     proj_trk_plain(d);
-    for (k = 0; k < P_E0; k++)
+    for (k = 0; k < PROJ_E0; k++)
         d->p[k] = k < nc ? s->p[k] : TP[k].def;
     for (k = 0; k < 8u; k++)
-        d->p[P_E0 + k] = s->p[nc + k];
+        d->p[PROJ_E0 + k] = s->p[nc + k];
     d->p[P_SSWING] = swing_from_v3(d->p[P_SSWING]);
     d->p[P_ASWING] = swing_from_v3(d->p[P_ASWING]);
     d->engine = drum ? 0u : s->engine;
@@ -205,10 +214,10 @@ static int proj_from_v4(project_t *q, const project_v4_t *v4, int n)
     q->sel = v4->sel;
     for (i = 0; i < NTRK; i++) {
         uint32_t k;
-        for (k = 0; k < P_E0; k++)                     /* by id up to P_CHORD, the parameters added since: */
+        for (k = 0; k < PROJ_E0; k++)                  /* by id up to P_CHORD, the parameters added since: */
             q->t[i].p[k] = k < PROJ_NP_V4 - 8u ? v4->t[i].p[k] : TP[k].def;   /* their defaults; P_E0.. moved */
         for (k = 0; k < 8u; k++)
-            q->t[i].p[P_E0 + k] = v4->t[i].p[PROJ_NP_V4 - 8u + k];
+            q->t[i].p[PROJ_E0 + k] = v4->t[i].p[PROJ_NP_V4 - 8u + k];
         q->t[i].engine = v4->t[i].engine;
         q->t[i].preset = v4->t[i].preset;
         memcpy(q->t[i].step, v4->t[i].step, sizeof q->t[i].step);
@@ -273,8 +282,8 @@ static int proj_from_v1(project_t *q, const project_v1_t *v1, int n)
     proj_from_v3_ok(q, v3);
     for (i = 1; i < NTRK; i++) {               /* the other tracks: their defaults, no steps */
         uint32_t k;
-        for (k = 0; k < P_COUNT; k++)
-            q->t[i].p[k] = k >= P_E0 ? ENGINES[trk_def_engine(i)]->edit[k - P_E0].def : TP[k].def;
+        for (k = 0; k < PROJ_NP; k++)
+            q->t[i].p[k] = k >= PROJ_E0 ? ENGINES[trk_def_engine(i)]->edit[k - PROJ_E0].def : TP[k].def;
         q->t[i].engine = (uint8_t)trk_def_engine(i);
         q->t[i].preset = 0xFF;                 /* 0xFF: its default preset (project_load) */
         memset(q->t[i].step, 0, sizeof q->t[i].step);
@@ -311,12 +320,24 @@ static void proj_capture(project_t *p)        /* what is playing now, as a proje
     p->drdly = (uint8_t)song.g[G_DRDLY];
     p->rsv[0] = CLIPPER_SYNTH ? CLIPPER_PROJ_MARK : 0u;   /* (Clipper 0.3: its bus, layer and modulation are set) */
     for (i = 0; i < NTRK; i++) {
-        memcpy(p->t[i].p, trk[i].p, sizeof trk[i].p);
+        uint32_t k;
+        for (k = 0; k < PROJ_E0; k++)
+            p->t[i].p[k] = trk[i].p[k];
+        for (k = 0; k < 8u; k++)
+            p->t[i].p[PROJ_E0 + k] = trk[i].p[P_E0 + k];
+        memcpy(p->t[i].lock, trk[i].lock, sizeof trk[i].lock);
+#if CLIPPER_SYNTH
+        if (i >= 2u && i < 4u)                         /* (Clipper 0.4: tracks 1 and 2's LFO 2, ENV 2, matrix) */
+            for (k = 0; k < PROJ_NX; k++)
+                p->t[i].p[k] = trk[i - 2u].p[PROJ_E0 + k];
+        for (k = 0; k < NLOCK; k++)                    /* (the locks' EDIT ids as stored) */
+            if (trk[i].lock[k].param >= P_E0)
+                p->t[i].lock[k].param = (uint8_t)(trk[i].lock[k].param - PROJ_NX);
+#endif
         p->t[i].engine = trk[i].eng_req;
         p->t[i].preset = trk[i].preset;
         memcpy(p->t[i].step, trk[i].step, sizeof trk[i].step);
         memcpy(p->t[i].micro, trk[i].micro, sizeof trk[i].micro);
-        memcpy(p->t[i].lock, trk[i].lock, sizeof trk[i].lock);
         memcpy(p->t[i].fill, trk[i].fill, sizeof trk[i].fill);
     }
     p->sum = proj_sum(p);
@@ -344,7 +365,14 @@ static void proj_apply(const project_t *p, int all)
         for (i = 0; i < P_COUNT; i++) {                 /* every value back inside its range */
             const param_desc_t *d = k == TRK_DRUM && i == P_E0 ? &DRUM_KIT_DESC :   /* the drum kit */
                                     i >= P_E0 && i <= P_E7 ? &ENGINES[e]->edit[i - P_E0] : &TP[i];
-            t->p[i] = (int16_t)clamp(s->p[i], d->min, d->max);
+            int32_t v = i < PROJ_E0 ? s->p[i] : i >= P_E0 ? s->p[PROJ_E0 + i - P_E0] : d->def;
+#if CLIPPER_SYNTH
+            if (i >= PROJ_E0 && i < P_E0 && k < 2u && p->rsv[0] == CLIPPER_PROJ_MARK)
+                v = p->t[k + 2u].p[i - PROJ_E0];        /* Clipper 0.4: tracks 1 and 2's, in 3 and 4 */
+            else if (i < PROJ_NX && k >= 2u && p->rsv[0] == CLIPPER_PROJ_MARK)
+                v = d->def;                             /* (tracks 3 and 4: theirs are not stored) */
+#endif
+            t->p[i] = (int16_t)clamp(v, d->min, d->max);
         }
         t->preset = (uint8_t)(ENGINES[e]->npresets ? (s->preset == 0xFFu ? 0u : s->preset) % ENGINES[e]->npresets : 0u);
         memcpy(t->step, s->step, sizeof t->step);
@@ -359,7 +387,7 @@ static void proj_apply(const project_t *p, int all)
         }
         for (i = 0; i < NLOCK; i++) {
             const plock_t *l = &s->lock[i];
-            uint32_t id = l->param;
+            uint32_t id = l->param >= PROJ_E0 ? l->param - PROJ_E0 + P_E0 : l->param;   /* (EDIT ids as stored) */
             if (l->step < NSTEP && id < P_COUNT && p_lockable(id)) {
                 const param_desc_t *d = k == TRK_DRUM && id == P_E0 ? &DRUM_KIT_DESC :
                                         id >= P_E0 && id <= P_E7 ? &ENGINES[e]->edit[id - P_E0] : &TP[id];
@@ -386,7 +414,7 @@ static void proj_apply(const project_t *p, int all)
         fm6_track_loaded(t);                            /* FM6: the project keeps PTCH, not the patch: its slot's */
     }
 #if CLIPPER_SYNTH
-    if (all && p->rsv[0] != CLIPPER_PROJ_MARK)          /* a SLOOP or Clipper 0.1 / 0.2 project: what its drum */
+    if (all && p->rsv[0] != CLIPPER_PROJ_MARK && p->rsv[0] != CLIPPER_PROJ_MARK_03)   /* a SLOOP or Clipper 0.1 / 0.2 project: what its drum */
         clipper_proj_neutral();                         /* globals and slicer slots held means nothing here */
 #endif
 }

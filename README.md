@@ -7,9 +7,17 @@ Free and open source (GPL-3.0). It grew out of <a href="https://github.com/isod8
 
 ---
 
-> **Status: 0.3, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
+> **Status: 0.4, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
 
 SLOOP is a groovebox. **Clipper is a synthesizer** with 17 engines and 308 sounds, one instrument like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine, no song mode and no built-in samples. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
+
+## New in 0.4: a modulation matrix on every engine, and MPE
+
+- **MATRIX** (LFO → MATRIX), on every engine: six slots, each a **SOURCE** → **DESTINATION** × **AMOUNT** (±). SLOT chooses the slot the other three knobs edit; the screen lists all six. Sources: **LFO1**, **LFO2**, **ENV1** (the amplitude envelope), **ENV2**, **VEL**, **KEY** (the note, around C4), **MW**, **AT** (channel or polyphonic), **RAND** (a new random value at each note), **SLIDE** (MPE). Destinations: **PITCH** (up to ±24 semitones, finer near 0), **CUT**, **SHAPE**, **AMP**, **PAN**, **LFO2** (its rate), and any of the engine's eight EDIT values by name (ANALOG's CUT, WAVE's POS, FM6's ratios...), per note. A slot at 0 costs nothing and changes nothing, bit for bit.
+- **LFO 2** (LFO → LFO 2): RATE, WAVE (SIN TRI SAW SQR S&H), MODE: **FREE** (one for the sound) or **KEY** (each note its own, restarted at the note).
+- **ENV 2** (ENV → ENV 2): a second ADSR, for the matrix.
+- **MPE** (HOME held → SYSTEM → MPE): OFF, or the member channels' bend range (48 ST, the MPE standard, or 2, 12, 24, 96). For Expressive E Osmose, ROLI, LinnStrument, Sensel and the rest: channel 1 is the master channel (the bend, wheel and pedal of every note), channels 2 to 16 each carry one note with **its own pitch bend**, **its own pressure** (the AT source and MOD AT>) and **its own slide** (CC 74: the SLIDE source; with no slot using it, it opens the note's filter).
+- **Kept with the sound**: projects keep LFO 2, ENV 2 and the matrix of both sounds (the layer too) in the room of tracks 3 and 4, which the synth never used; a project keeps its size, older ones load with the matrix empty. User presets grow from 192 to 232 bytes; the presets you saved with 0.3 are converted when the bank is read, nothing to do. RANDOM ALL also moves LFO 2, ENV 2 and the amounts of the slots in use; MORPH moves every one of them.
 
 ## New in 0.3: playing it like a big synth
 

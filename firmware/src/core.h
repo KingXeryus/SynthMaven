@@ -89,6 +89,16 @@ enum {                          /* per-track parameters */
     P_TFLT,                                    /* SLOOP 2.4: the track's filter, < 0 low-pass, > 0 high-pass (fx.c) */
     P_STRUM,                                   /* SLOOP 2.4: a chord's notes one after the other, ms each (> 0 down, < 0 up) */
     P_VLEAD,                                   /* SLOOP 2.4: chord mode, each chord voiced nearest the last (seq.c) */
+#if CLIPPER_SYNTH                              /* Clipper 0.4: per sound, every engine (voice.c mod_matrix) */
+    P_L2RATE, P_L2WAVE, P_L2MODE,              /* LFO 2: rate, wave, FREE (one per part) / KEY (per note, restarted) */
+    P_E2ATK, P_E2DEC, P_E2SUS, P_E2REL,        /* ENV 2: a second ADSR, a modulation source only */
+    P_M1SRC, P_M1DST, P_M1AMT,                 /* the matrix: 6 slots of source -> destination x amount (MS_*, MT_*) */
+    P_M2SRC, P_M2DST, P_M2AMT,
+    P_M3SRC, P_M3DST, P_M3AMT,
+    P_M4SRC, P_M4DST, P_M4AMT,
+    P_M5SRC, P_M5DST, P_M5AMT,
+    P_M6SRC, P_M6DST, P_M6AMT,
+#endif
     P_E0, P_E1, P_E2, P_E3, P_E4, P_E5, P_E6, P_E7,
     P_COUNT
 };
@@ -124,7 +134,13 @@ enum { MD_OFF, MD_VIB, MD_CUT, MD_SHP, MD_WAH, MD_TREM };
 #define P_LYSPLIT P_SGATE
 #define P_LYOCT P_SDIV
 enum { LY_OFF, LY_LAYER, LY_SPLIT };
-#define CLIPPER_PROJ_MARK 0xC3u  /* project_t.rsv[0]: written by Clipper 0.3 (else the bus, layer, mod reset) */
+/* Clipper 0.4: the matrix's sources and destinations (P_MnSRC, P_MnDST; voice.c mod_matrix) */
+#define MX_SLOTS 6u
+enum { MS_OFF, MS_LFO1, MS_LFO2, MS_ENV1, MS_ENV2, MS_VEL, MS_KEY, MS_MW, MS_AT, MS_RAND, MS_SLIDE, MS_NSRC };
+enum { MT_OFF, MT_PITCH, MT_CUT, MT_SHAPE, MT_AMP, MT_PAN, MT_L2RATE, MT_E1, MT_COUNT = MT_E1 + 8 };
+enum { L2_FREE, L2_KEY };
+#define CLIPPER_PROJ_MARK 0xC4u  /* project_t.rsv[0]: written by Clipper 0.4 (project.c: + LFO 2, ENV 2, the matrix) */
+#define CLIPPER_PROJ_MARK_03 0xC3u   /* by Clipper 0.3 (else the bus, layer, mod reset) */
 
 enum {                          /* global parameters */
     G_BPM, G_SWING, G_CLOCK, G_TUNE,
@@ -159,6 +175,13 @@ typedef struct {
     uint32_t ph[3];
     int32_t s[8];                /* engine state (filters, envs) */
     uint32_t age;
+#if CLIPPER_SYNTH                /* Clipper 0.4: the voice's own modulation (voice.c) */
+    uint32_t l2ph;               /* LFO 2 in KEY mode: its phase, from the note's start */
+    int32_t env2;                /* ENV 2, Q24 */
+    int16_t rnd, l2rnd;          /* a random value per note; LFO 2's S&H value */
+    uint8_t e2st;                /* ENV 2: 0 off, 1 attack, 2 decay / sustain, 3 release */
+    uint8_t ch;                  /* the MIDI channel its note came on (MPE: its own bend, pressure, slide) */
+#endif
 } voice_t;
 
 typedef struct {                 /* per-voice control-rate modulation, computed in voice.c */
@@ -334,6 +357,9 @@ typedef struct track {
 #if CLIPPER_SYNTH
     uint8_t xf_snd;              /* Clipper 0.3: the fade is a sound change (a preset, a SWAP...): the old sound */
     int16_t p_old[P_E0];         /* fades with all its own values (voice.c sound_fade_begin, fx.c mix_part) */
+    uint32_t l2ph;               /* Clipper 0.4: LFO 2 in FREE mode (one for the part) */
+    int16_t l2rnd;               /* its S&H value */
+    int16_t panmod;              /* the matrix's PAN, from the part's sources (fx.c mix_part) */
 #endif
 } track_t;
 

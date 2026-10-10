@@ -32,7 +32,11 @@ static const char *const N_SLDIV[] = {"1/8", "1/16", "1/32", "8T", "16T", "32T"}
 static const char *const N_CHORD[] = {"OFF", "TRIAD", "7TH", "9TH", "SUS4", "POWER"};   /* seq.c CHORD_DEG */
 static const char *const N_RTYPE[] = {"ROOM", "PLATE"};
 static const char *const N_MODDST[] = {"OFF", "VIB", "CUT", "SHP", "WAH", "TREM"};   /* MD_OFF .. MD_TREM */
-static const char *const N_LYMODE[] = {"OFF", "LAYER", "SPLIT"};       /* LY_OFF .. LY_SPLIT */                 /* G_RTYPE: RT_ROOM, RT_PLATE */
+static const char *const N_LYMODE[] = {"OFF", "LAYER", "SPLIT"};       /* LY_OFF .. LY_SPLIT */
+static const char *const N_L2MODE[] = {"FREE", "KEY"};                  /* L2_FREE, L2_KEY */
+static const char *const N_MSRC[] = {"OFF", "LFO1", "LFO2", "ENV1", "ENV2", "VEL", "KEY", "MW", "AT", "RAND", "SLIDE"};
+static const char *const N_MDST[] = {"OFF", "PITCH", "CUT", "SHAPE", "AMP", "PAN", "LFO2",
+                                     "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8"};   /* (track_desc: the engine's names) */                 /* G_RTYPE: RT_ROOM, RT_PLATE */
 static const char *const N_ROLL[] = {"1/8", "1/16", "1/32", "32T", "1/64"};   /* seq.c ROLL_DEN */
 static const char *const N_ENGNAME[] = {"ANALOG", "DIGITAL", "PHASE", "LOFI", "SAMPLE", "VOICE", "TRIO", "WHEEL", "GRAIN",
                                         "FM6", "PHYS", "NOISE", "HYBRID",
@@ -108,6 +112,19 @@ static const param_desc_t TP[P_COUNT] = {
     [P_TFLT] = PD("FILT", F_FILT, -64, 63, 0),
     [P_STRUM] = PD("STRUM", F_INT, -60, 60, 0),   /* ms a note: > 0 low to high (down), < 0 high to low */
     [P_VLEAD] = PE("VLEAD", N_ONOFF, 0),
+#if CLIPPER_SYNTH                                  /* Clipper 0.4: LFO 2, ENV 2, the matrix (voice.c) */
+    [P_L2RATE] = PD("RATE", F_LFOHZ, 0, 127, 60),
+    [P_L2WAVE] = PE("WAVE", N_LWAVE, 0),
+    [P_L2MODE] = PE("MODE", N_L2MODE, L2_FREE),
+    [P_E2ATK] = PD("ATK", F_TIME, 0, 127, 0),
+    [P_E2DEC] = PD("DEC", F_TIME, 0, 127, 70),
+    [P_E2SUS] = PD("SUS", F_PCT, 0, 127, 0),
+    [P_E2REL] = PD("REL", F_TIME, 0, 127, 60),
+#define MXP(n) [P_M##n##SRC] = PE("SRC", N_MSRC, MS_OFF), [P_M##n##DST] = PE("DST", N_MDST, MT_OFF), \
+               [P_M##n##AMT] = PD("AMT", F_BIPCT, -64, 63, 0)
+    MXP(1), MXP(2), MXP(3), MXP(4), MXP(5), MXP(6),
+#undef MXP
+#endif
 };
 #if CLIPPER_SYNTH
 /* a project that Clipper 0.3 did not write: its drum globals and slicer slots meant something else */
@@ -196,6 +213,21 @@ static const param_desc_t DRUM_KIT_DESC = PE("KIT", DRUM_KIT_NAMES, 0);
 static const param_desc_t *track_desc(const track_t *t, uint32_t id)
 {
     if(is_drum(t) && id==P_E0) return &DRUM_KIT_DESC;
+#if CLIPPER_SYNTH
+    if (id >= P_M1SRC && id <= P_M6AMT && (id - P_M1SRC) % 3u == 1u) {   /* a matrix DST: the engine's own names */
+        static const char *names[MT_COUNT];
+        static param_desc_t d;
+        const engine_t *e = ENGINES[t->eng_req % NENGINES];
+        uint32_t k;
+        for (k = 0; k < MT_COUNT; k++)
+            names[k] = k >= MT_E1 && e->edit[k - MT_E1].label && e->edit[k - MT_E1].label[0] &&
+                       e->edit[k - MT_E1].label[0] != '-' ?
+                       e->edit[k - MT_E1].label : N_MDST[k];
+        d = TP[id];
+        d.names = names;
+        return &d;
+    }
+#endif
     if (id >= P_E0 && id <= P_E7) {                   /* the engine asked for (t->engine follows after a fade) */
         const engine_t *e = ENGINES[t->eng_req % NENGINES];
         const param_desc_t *d = e->desc ? e->desc(t, id - P_E0) : 0;   /* a mode-dependent label / names */
@@ -366,7 +398,7 @@ enum { FAM_HOME, FAM_ENV, FAM_LFO, FAM_FX, FAM_SCL, FAM_EDIT, FAM_GLO, FAM_SAVE,
        FAM_COUNT };
 enum { SC_TRACK, SC_GLOBAL, SC_ENGINE, SC_STEP, SC_TRK, SC_SONG, SC_DRUM, SC_SYN };   /* SC_SYN: ui_synth.c */
 enum { GR_NONE, GR_ADSR, GR_LFO, GR_STEPS, GR_ARP, GR_SCALE, GR_FX, GR_ROLL, GR_BROWSE, GR_SLOTS, GR_USER, GR_TRK,
-       GR_SLCR, GR_LAYER, GR_MORPH };
+       GR_SLCR, GR_LAYER, GR_MORPH, GR_MATRIX };
 
 typedef struct {
     const char *title;
@@ -377,10 +409,15 @@ typedef struct {
 static const page_t PAGES[] = {
     {"ENV", FAM_ENV, SC_TRACK, GR_ADSR, {P_ATK, P_DEC, P_SUS, P_REL}},
     {"ENV DEST", FAM_ENV, SC_TRACK, GR_NONE, {P_ED_FLT, P_ED_PIT, P_ED_SHP, 0xFF}},   /* (P_ED_FX: the level trim, no page) */
+#if CLIPPER_SYNTH
+    {"ENV 2", FAM_ENV, SC_TRACK, GR_NONE, {P_E2ATK, P_E2DEC, P_E2SUS, P_E2REL}},   /* (a modulation source: MATRIX) */
+#endif
     {"LFO", FAM_LFO, SC_TRACK, GR_LFO, {P_LRATE, P_LWAVE, P_LPHASE, P_LFADE}},
     {"LFO DEST", FAM_LFO, SC_TRACK, GR_NONE, {P_LD_PIT, P_LD_FLT, P_LD_SHP, P_LD_AMP}},
 #if CLIPPER_SYNTH                                                        /* (velocity, mod wheel, aftertouch) */
     {"MOD", FAM_LFO, SC_TRACK, GR_NONE, {P_VELF, P_MWDST, P_ATDST, 0xFF}},
+    {"LFO 2", FAM_LFO, SC_TRACK, GR_NONE, {P_L2RATE, P_L2WAVE, P_L2MODE, 0xFF}},
+    {"MATRIX", FAM_LFO, SC_SYN, GR_MATRIX, {15, 16, 17, 18}},   /* X_MSLOT X_MSRC X_MDST X_MAMT (ui_synth.c) */
 #endif
     {"FX", FAM_FX, SC_TRACK, GR_FX, {P_DIST, P_CHOR, P_DLY, P_REV}},
 #if CLIPPER_SYNTH                                                        /* (the sound's filter model too) */

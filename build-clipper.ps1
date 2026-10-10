@@ -1,4 +1,4 @@
-# Clipper 0.3: build the firmware, then open the browser installer.
+# Clipper 0.4: build the firmware, then open the browser installer.
 # Uses the same tools as SLOOP (WSL MinUI-Build, the JieLi toolchain) and the three AC79 SDK files in
 # build\deps\ac79 (copied from the SLOOP folder the first time if they are not here yet).
 # Port 8767 (SLOOP uses 8766): a SLOOP window left open does not get mixed up with this one.
@@ -6,7 +6,7 @@ param([string]$Voices = "8")
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 Write-Host ""
-Write-Host "  C L I P P E R   0.3   ($Voices voices)" -ForegroundColor White
+Write-Host "  C L I P P E R   0.4   ($Voices voices)" -ForegroundColor White
 Write-Host "  ---- ---- ---- ----" -ForegroundColor DarkGray
 if ($Voices -notin @("8", "12", "16")) { throw "Voices: 8, 12 or 16" }
 $sdk = "build\deps\ac79"

@@ -1,4 +1,4 @@
-# Clipper — démarrage rapide (version de test 0.3)
+# Clipper — démarrage rapide (version de test 0.4)
 
 **Clipper** est un firmware de **synthétiseur** pour le M-VAVE FM-1 : un seul instrument, comme le firmware d'origine, Felucca ou Baudgirl. Ce n'est plus une groovebox : pas de pistes, pas de boîte à rythmes, pas de mode song, pas de samples intégrés. Il garde de SLOOP les 12 moteurs, les effets, l'arpégiateur, le séquenceur de pas, l'audio USB et le MIDI. Il ajoute **HYBRID**, une voix à 3 oscillateurs, 2 filtres et une matrice de modulation de 16 slots, avec 24 sons d'usine. Il ajoute aussi le pitch bend, la molette, l'aftertouch et la pédale de sustain sur tous les moteurs.
 
@@ -15,7 +15,7 @@ Clipper vit dans son propre dossier, **`CLIPPER`**, à côté de celui de SLOOP.
 | Adresse | http://localhost:**8766** | http://localhost:**8767** |
 | Écran de démarrage | voilier, « sloop » | trois-mâts, « clipper » |
 
-Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maintenu) → SYSTEM → ABOUT, qui affiche **CLIPPER 0.3**.
+Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maintenu) → SYSTEM → ABOUT, qui affiche **CLIPPER 0.4**.
 
 ## 1. Compiler et installer
 
@@ -23,6 +23,14 @@ Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maint
 2. Double-clique sur **`INSTALL-CLIPPER.bat`**. Il utilise les mêmes outils que SLOOP (WSL MinUI-Build, la chaîne JieLi). La première fois, il copie les trois fichiers du SDK depuis `..\SLOOP\build\deps\ac79`. S'il ne les trouve pas, copie ce dossier `build\deps\ac79` de SLOOP dans `CLIPPER\build\deps\`.
 3. La page d'installation s'ouvre sur http://localhost:8767/webapp/installer/ (Chrome ou Edge, FM-1 en USB). Clique sur **Install**.
 4. La FM-1 redémarre sur l'écran **clipper**. Tes projets, presets, samples et réglages de SLOOP sont toujours là.
+
+## Nouveau dans la 0.4 : une matrice de modulation sur tous les moteurs, et le MPE
+
+- **MATRIX** (LFO → MATRIX), sur tous les moteurs : six slots, chacun une **SOURCE** → une **DESTINATION** × une **QUANTITÉ** (±). SLOT choisit le slot que les trois autres knobs règlent ; l'écran montre les six. Sources : **LFO1**, **LFO2**, **ENV1** (l'enveloppe de volume), **ENV2**, **VEL**, **KEY** (la note, autour du Do 4), **MW** (molette), **AT** (aftertouch, canal ou polyphonique), **RAND** (une valeur au hasard à chaque note), **SLIDE** (MPE). Destinations : **PITCH** (jusqu'à ±24 demi-tons, plus fin près de 0), **CUT**, **SHAPE**, **AMP**, **PAN**, **LFO2** (sa vitesse) et n'importe lequel des huit réglages EDIT du moteur, par son nom (CUT d'ANALOG, POS de WAVE, les ratios de FM6…), note par note. Un slot à 0 ne coûte rien et ne change rien.
+- **LFO 2** (LFO → LFO 2) : RATE, WAVE (SIN TRI SAW SQR S&H), MODE : **FREE** (un pour le son) ou **KEY** (un par note, relancé à chaque note).
+- **ENV 2** (ENV → ENV 2) : une 2e enveloppe ADSR, pour la matrice.
+- **MPE** (HOME maintenu → SYSTEM → MPE) : OFF, ou la plage de bend des canaux de notes (48 ST, le standard MPE, ou 2, 12, 24, 96). Pour l'Osmose d'Expressive E, les ROLI, la LinnStrument, etc. : le canal 1 est le canal maître (bend, molette, pédale de toutes les notes), les canaux 2 à 16 portent chacun une note avec **son propre pitch bend**, **sa propre pression** (la source AT et MOD AT>) et **son propre slide** (CC 74 : la source SLIDE ; si aucun slot ne l'utilise, il ouvre le filtre de la note).
+- **Gardés avec le son** : les projets gardent LFO 2, ENV 2 et la matrice des deux sons (le layer aussi) dans la place des pistes 3 et 4, que le synthé n'utilisait pas ; un projet garde sa taille, les anciens se chargent avec la matrice vide. Les presets utilisateur passent de 192 à 232 octets ; ceux enregistrés en 0.3 sont convertis tout seuls. RANDOM ALL bouge aussi LFO 2, ENV 2 et les quantités des slots utilisés ; MORPH les fait tous glisser.
 
 ## Nouveau dans la 0.3 : jouer comme sur un grand synthé
 
@@ -90,6 +98,7 @@ C'est ce qui décide combien de voix Clipper peut jouer. La FM-1 doit être bran
 3. Tiens **8 notes** (les deux mains, ou un accord depuis un clavier MIDI) et note le chiffre.
 4. Refais la même chose avec **POLY PAD**, **TRANCE**, puis **HARMONIUM** (MACRO) et **ENSEMBLE** (STRINGS).
 5. Nouveau en 0.3 : mets **EQ+COMP** (FX) à LOW +3 et COMP 60, puis un **LAYER** (EDIT → LAYER : MODE LAYER, SOUND OMNI STR) sous CLIPPER, et tiens 8 notes.
+   Nouveau en 0.4 : sur CLIPPER, remplis les six slots de **MATRIX** (par exemple LFO2 → CUT, ENV2 → PITCH, KEY → AMP, RAND → PAN, VEL → un réglage EDIT, MW → SHAPE) et tiens 8 notes.
 6. Si tout reste sous ~70 %, ferme la fenêtre, puis lance **`INSTALL-CLIPPER.bat 12`**. Ça compile la version à **12 voix**. Réinstalle et refais la mesure avec 12 notes.
 
 Envoie-moi les chiffres. Signale aussi un son qui craque, une note qui reste coincée ou un écran bizarre.

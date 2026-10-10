@@ -746,8 +746,9 @@ const CMD = { INFO: 1, GET: 2, SET: 3, DUMP: 4, DESC: 5, STEP_GET: 6, STEP_SET: 
   DSYN_LIST: 72, DSYN_GET: 73, DSYN_PUT: 74, DSYN_STORE: 75, DSYN_PLAY: 76,   /* v10 (SLOOP 2.5): the SYN drum kits */
   HY_GET: 77, HY_PUT: 78 };                          /* v11 (Clipper): the HYBRID engine's patches */
 /* v7: the parameters a step can lock (firmware seq.c p_lockable: the sound, not the sequencer / arp / key / voice
-   mode); ids as core.h: LEVEL .. LFO dests, GATE, the sends, GLIDE, PAN, DETUNE, the SLICER, the engine's 8 */
-const lockable = (id) => id <= 16 || id === 32 || (id >= 33 && id <= 36) || id === 38 || id === 39 || id === 44 || (id >= 45 && id <= 48) || id === 50 || (id >= 53 && id <= 60);
+   mode); ids as core.h: LEVEL .. LFO dests, GATE, the sends, GLIDE, PAN, DETUNE, the SLICER, the engine's 8 (from pe0:
+   53, or 78 on Clipper 0.4, whose LFO 2, ENV 2 and matrix at 53..77 are not lockable) */
+const lockable = (id, pe0 = 53) => id <= 16 || id === 32 || (id >= 33 && id <= 36) || id === 38 || id === 39 || id === 44 || (id >= 45 && id <= 48) || id === 50 || (id >= pe0 && id <= pe0 + 7);
 const MICRO = { MIN: -32, MAX: 31 };                 /* a step's nudge in 1/64 of a step (- early, + late), sent + 64 */
 /* v8: a step's fill condition (firmware core.h FC_*): 0 normal, 1 plays only during a fill, 2 silent during one; 2 bits a
    step, 4 steps a byte (step i: byte i >> 2, bits 2 (i & 3)..), the 16 bytes sent pack7 */
@@ -4256,10 +4257,16 @@ const stepEdit = new Map(); /* index -> time of the last edit */
 
 /* parameter ids (firmware/src/core.h); used only when P_COUNT / G_COUNT match */
 const EXPECT = { pcount: 61, gcount: [32, 33], pe0: 53 };   /* gcount 33: 2.5's drum DLY (G_DRDLY) */
+/* Clipper 0.4: 25 parameters more just before P_E0 (core.h): LFO 2 (53..55), ENV 2 (56..59), the matrix (60..77) */
+const EXPECT_04 = { pcount: 86, pe0: 78 };
+const layoutKnown = (info) => EXPECT.gcount.includes(info.gcount) &&
+  ((info.pcount === EXPECT.pcount && info.pe0 === EXPECT.pe0) || (info.pcount === EXPECT_04.pcount && info.pe0 === EXPECT_04.pe0));
+const MX_PAGES = [1, 2, 3, 4, 5, 6].map((k) => ["MATRIX " + k, 0, [57 + 3 * k, 58 + 3 * k, 59 + 3 * k]]);
 const P = { LEVEL: 0, SLEN: 29, CHORD: 49 };
 const LAYOUT = (pe0) => [
-  { t: "ENV", pages: [["ENV", 0, [1, 2, 3, 4]], ["ENV DEST", 0, [5, 6, 7, 8]]] },
-  { t: "LFO", pages: [["LFO", 0, [9, 10, 11, 12]], ["LFO DEST", 0, [13, 14, 15, 16]]] },
+  { t: "ENV", pages: [["ENV", 0, [1, 2, 3, 4]], ["ENV DEST", 0, [5, 6, 7, 8]], ...(pe0 === 78 ? [["ENV 2", 0, [56, 57, 58, 59]]] : [])] },
+  { t: "LFO", pages: [["LFO", 0, [9, 10, 11, 12]], ["LFO DEST", 0, [13, 14, 15, 16]], ...(pe0 === 78 ? [["LFO 2", 0, [53, 54, 55]]] : [])] },
+  ...(pe0 === 78 ? [{ t: "LFO", title: "MATRIX", pages: MX_PAGES }] : []),
   { t: "EDIT", engine: true, pages: [["EDIT 1", 0, [pe0, pe0 + 1, pe0 + 2, pe0 + 3]], ["EDIT 2", 0, [pe0 + 4, pe0 + 5, pe0 + 6, pe0 + 7]]] },
   { t: "VOICE", pages: [["LEVEL", 0, [0]], ["VOICE", 0, [37, 38, 41, 42]], ["VOICE 2", 0, [43, 44, 39, 40]]] },
   { t: "FX", pages: [["FX", 0, [33, 34, 35, 36]], ["FILTER", 0, [50]], ["SLICER", 0, [45, 46, 47, 48]], ["DLY", 1, [4, 5, 6, 7]], ["REV/CHO", 1, [8, 9, 10, 11]]] },
@@ -4553,11 +4560,11 @@ function buildGroups() {
   /* Sound: the selected track's parameters; Sequencer: its pattern settings; Settings: globals and drums */
   const groups = { groups: [], seqgroups: [], setgroups: [] };
   const { info } = dev;
-  if (info.pcount === EXPECT.pcount && EXPECT.gcount.includes(info.gcount) && info.pe0 === EXPECT.pe0) {
+  if (layoutKnown(info)) {
     for (const g of LAYOUT(info.pe0)) {
       /* a card per button of the device (ENV, LFO, EDIT ...), its pages as rows of four knobs, one colour per knob */
       const div = el("div", { class: "group" }, el("h2", { ic: HEAD_IC[g.t] },
-        g.engine ? `EDIT ${info.engines[dev.dump.engine] || ""}` : g.t));
+        g.engine ? `EDIT ${info.engines[dev.dump.engine] || ""}` : g.title || g.t));
       let pages = 0;
       for (const [title, s, ids] of g.pages) {
         const rows = ids.map((id) => paramRow(s, id)).filter(Boolean);
@@ -5528,7 +5535,7 @@ function renderStepDetail() {
 /* the parameters a lock may hold on this track, by id (the device's DESC labels; the engine's 8 as their current names) */
 function lockableIds() {
   const ids = [];
-  for (let id = 0; id < dev.info.pcount; id++) if (lockable(id) && dev.pdesc[id] && dev.pdesc[id].max > dev.pdesc[id].min) ids.push(id);
+  for (let id = 0; id < dev.info.pcount; id++) if (lockable(id, dev.info.pe0) && dev.pdesc[id] && dev.pdesc[id].max > dev.pdesc[id].min) ids.push(id);
   return ids;
 }
 const lockName = (id) => { const d = dev.pdesc[id]; return d ? `${d.label}${id >= dev.info.pe0 ? " (E" + (id - dev.info.pe0 + 1) + ")" : ""}` : String(id); };

@@ -10,10 +10,11 @@
  *            the LFO, its destinations and the sends), RAND, BACK (the sound before the last RAND).
  * Track 2's settings are its own parameters (core.h P_LYMODE ..); the others live here (not in the project). */
 enum { X_LYMODE, X_LYSOUND, X_LYSPLIT, X_LYLEVEL, X_LYOCT, X_LYPAN, X_LYFILT, X_LYSWAP,
-       X_MORPH, X_SETA, X_SETB, X_RNDAMT, X_RNDWHAT, X_RNDGO, X_RNDBACK, X_COUNT };
+       X_MORPH, X_SETA, X_SETB, X_RNDAMT, X_RNDWHAT, X_RNDGO, X_RNDBACK,
+       X_MSLOT, X_MSRC, X_MDST, X_MAMT, X_COUNT };   /* (X_MSRC..X_MAMT: the slot's P_MnSRC..P_MnAMT) */
 static const char *const N_RNDWHAT[] = {"EDIT", "+ENV", "ALL"};
 static const char *const N_OCTS[] = {"-2", "-1", "0", "+1", "+2"};
-static int16_t xv[X_COUNT] = {[X_RNDAMT] = 40, [X_RNDWHAT] = 1};
+static int16_t xv[X_COUNT] = {[X_RNDAMT] = 40, [X_RNDWHAT] = 1, [X_MSLOT] = 1};
 static param_desc_t xd_sound = {"SOUND", F_INT, 0, 0, 0, 0, 0};   /* (its range: the list's length, syn_desc) */
 static const param_desc_t XD[X_COUNT] = {
     [X_LYMODE] = PE("MODE", N_LYMODE, LY_OFF),
@@ -30,6 +31,7 @@ static const param_desc_t XD[X_COUNT] = {
     [X_RNDWHAT] = PE("WHAT", N_RNDWHAT, 1),
     [X_RNDGO] = PE("RAND", N_GO, 0),
     [X_RNDBACK] = PE("BACK", N_GO, 0),
+    [X_MSLOT] = PD("SLOT", F_INT, 1, 6, 1),
 };
 
 /* ---- a sound (engine + every parameter) as a snapshot */
@@ -129,6 +131,11 @@ static void syn_rnd_range(uint32_t i, const param_desc_t *d, int32_t *lo, int32_
     case P_DIST: *hi = 70; break;
     default: break;
     }
+    if (i >= P_M1SRC && i <= P_M6AMT) {               /* a matrix slot's amount: moderate, the pitch finer */
+        int32_t r = trk[0].p[i - 1u] == MT_PITCH ? 6 : 40;
+        *lo = -r;
+        *hi = r;
+    }
     if (i >= P_E0 && d->names) {                      /* no empty user slot (WAVE's USR1..4 and the like) */
         while (*hi > *lo && d->names[*hi - d->min] && d->names[*hi - d->min][0] == 'U' && d->names[*hi - d->min][1] == 'S')
             (*hi)--;
@@ -142,6 +149,10 @@ static int syn_rnd_in(uint32_t i, uint32_t what)
         return 1;
     if (what >= 2u && ((i >= P_LRATE && i <= P_LD_AMP) || (i >= P_DIST && i <= P_REV) || i == P_VELF))
         return 1;
+    if (what >= 2u && ((i >= P_L2RATE && i <= P_L2MODE) || (i >= P_E2ATK && i <= P_E2REL)))
+        return 1;                                     /* (0.4: LFO 2, ENV 2, the amounts of the slots in use) */
+    if (what >= 2u && i >= P_M1SRC && i <= P_M6AMT && (i - P_M1SRC) % 3u == 2u)
+        return trk[0].p[i - 2u] != MS_OFF && trk[0].p[i - 1u] != MT_OFF;
     return 0;
 }
 static void syn_randomize(void)
@@ -242,6 +253,13 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
     case X_LYOCT: *valp = &l->p[P_LYOCT]; break;
     case X_LYPAN: *valp = &l->p[P_PAN]; break;
     case X_LYFILT: *valp = &l->p[P_TFLT]; break;
+    case X_MSRC:
+    case X_MDST:
+    case X_MAMT: {                                    /* the slot's own values, the selected sound's */
+        uint32_t pid = P_M1SRC + 3u * (uint32_t)(clamp(xv[X_MSLOT], 1, 6) - 1) + (id - X_MSRC);
+        *valp = &TSEL->p[pid];
+        return track_desc(TSEL, pid);
+    }
     case X_LYSOUND: {
         uint32_t total;
         xv[X_LYSOUND] = (int16_t)layer_pos(&total);
@@ -294,6 +312,9 @@ static void syn_changed(uint32_t id, int16_t *vp)
             xv[X_MORPH] = id == X_SETA ? 0 : 127;
             ui_message(id == X_SETA ? "A = THIS SOUND" : "B = THIS SOUND");
         }
+        break;
+    case X_MSLOT:
+        ui.force = 1;
         break;
     case X_RNDGO:
         if (*vp) {
@@ -377,10 +398,37 @@ static void graph_morph(void)
     cv_text(8, 56, &FONT_S, "A", C_DIM);
     cv_text(226, 56, &FONT_S, "B", C_DIM);
 }
+/* the graph of the MATRIX page: the six slots, source > destination and amount, the one turned lit */
+static void graph_matrix(void)
+{
+    const track_t *t = TSEL;
+    uint32_t k, sel = (uint32_t)clamp(xv[X_MSLOT], 1, 6) - 1u;
+    for (k = 0; k < MX_SLOTS; k++) {
+        uint32_t id = P_M1SRC + 3u * k;
+        int32_t sr = clamp(t->p[id], 0, MS_NSRC - 1), ds = clamp(t->p[id + 1u], 0, MT_COUNT - 1), a = t->p[id + 2u];
+        const param_desc_t *dd = track_desc(t, id + 1u);
+        int on = sr && ds && a;
+        uint16_t c = k == sel ? C_WHITE : on ? C_GRAY : C_DIM;
+        char nb[2] = {(char)('1' + k), 0}, val[12];
+        const char *unit = 0;
+        int32_t y = 2 + (int32_t)k * 14;
+        cv_text(8, y, &FONT_S, nb, k == sel ? C_HI : C_DIM);
+        cv_text(24, y, &FONT_S, N_MSRC[sr], c);
+        cv_text(84, y, &FONT_S, ">", C_DIM);
+        cv_text(98, y, &FONT_S, dd->names[ds], c);
+        param_format(&TP[id + 2u], a, val, &unit);
+        cv_text(176, y, &FONT_S, val, c);
+        if (on) {                                     /* the amount as a bar from the middle */
+            int32_t w = a * 24 / 64;
+            cv_rect(w < 0 ? 228 + w : 228, y + 4, w < 0 ? -w : (w ? w : 1), 3, k == sel ? C_HI : C_GRAY);
+        }
+        cv_rect(228, y + 2, 1, 7, C_LINE);
+    }
+}
 static uint32_t syn_sig(void)
 {
     const track_t *l = &trk[1];
     return (uint32_t)l->eng_req * 131u + l->preset * 7u + l->user * 3u + (uint32_t)l->p[P_LYMODE] * 17u +
            (uint32_t)l->p[P_LYSPLIT] * 257u + (uint32_t)xv[X_MORPH] * 65537u + syn_a.ok * 11u + syn_b.ok * 13u +
-           syn_a.eng * 101u + syn_b.eng * 103u + syn_a.preset * 107u + syn_b.preset * 109u;
+           syn_a.eng * 101u + syn_b.eng * 103u + syn_a.preset * 107u + syn_b.preset * 109u + (uint32_t)xv[X_MSLOT] * 6007u;
 }

@@ -788,6 +788,9 @@ static void draw_graph(void)
         case GR_MORPH:
             graph_morph();
             break;
+        case GR_MATRIX:
+            graph_matrix();
+            break;
 #endif
         default:
             if (big_page(pg)) {

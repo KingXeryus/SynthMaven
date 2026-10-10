@@ -716,10 +716,11 @@ async function editorV7() {
   const { m, rq, ev, done } = attachMock({ watchMs: 1000 });
   const info = E.parse[C.INFO](await rq(E.req.info()));
   ok(info.proto === 10, "v7: INFO ends with 10 (v10 includes v7)");
-  /* the lockable set == seq.c p_lockable (the ids as core.h names them) */
+  /* the lockable set == seq.c p_lockable (the ids as core.h names them, the groovebox's: Clipper 0.4's LFO 2, ENV 2 and
+     matrix, #if CLIPPER_SYNTH, move P_E0 to 78: lockable(id, 78)) */
   const sc = readFileSync(join(HERE, "../firmware/src/seq.c"), "utf8"), ch = readFileSync(join(HERE, "../firmware/src/core.h"), "utf8");
   const ids = {}; let n = 0;
-  for (const nm of (/enum \{\s*\/\* per-track parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) ids[nm] = n++;
+  for (const nm of (/enum \{\s*\/\* per-track parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/#if CLIPPER_SYNTH[\s\S]*?#endif/g, "").replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) ids[nm] = n++;
   const lockableC = (id) => id <= ids.P_LD_AMP || id === ids.P_SGATE || (id >= ids.P_DIST && id <= ids.P_REV) || id === ids.P_GLIDE || id === ids.P_PAN
     || id === ids.P_DETUNE || (id >= ids.P_SLCR && id <= ids.P_SLDEPTH) || (id >= ids.P_E0 && id <= ids.P_E7) || id === ids.P_TFLT;
   let same = ids.P_COUNT === 61;
@@ -727,6 +728,14 @@ async function editorV7() {
   ok(same && /id <= P_LD_AMP \|\| id == P_SGATE \|\| \(id >= P_DIST && id <= P_REV\) \|\| id == P_GLIDE \|\| id == P_PAN/.test(sc)
     && !E.lockable(ids.P_SLEN) && !E.lockable(ids.P_AMODE) && !E.lockable(ids.P_VOICE) && !E.lockable(ids.P_CHORD) && E.lockable(ids.P_E7),
     "v7: the lockable parameters (editor == seq.c p_lockable; LEN, ARP, VOICE, CHORD are not)");
+  {   /* Clipper 0.4 (core.h with CLIPPER_SYNTH): LFO 2 at 53, ENV 2 at 56, the matrix at 60, P_E0 78, P_COUNT 86 (editor
+         EXPECT_04, LAYOUT, MX_PAGES); its EDIT values lockable, the 25 new ones not (seq.c p_lockable) */
+    const sy = {}; let k = 0;
+    for (const nm of (/enum \{\s*\/\* per-track parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/#(if|endif)[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) sy[nm] = k++;
+    ok(sy.P_L2RATE === 53 && sy.P_E2ATK === 56 && sy.P_M1SRC === 60 && sy.P_M6AMT === 77 && sy.P_E0 === 78 && sy.P_COUNT === 86
+      && E.lockable(sy.P_E0, 78) && E.lockable(sy.P_E7, 78) && !E.lockable(sy.P_L2RATE, 78) && !E.lockable(sy.P_M6AMT, 78),
+      "v7: Clipper 0.4's layout (LFO 2 53, ENV 2 56, MATRIX 60, P_E0 78): its EDIT values lockable, the matrix not");
+  }
   /* MICRO: 64 bytes offset by 64; a set clamps to -32..31 */
   const mg = E.parse[C.MICRO_GET](await rq(E.req.microGet(0)));
   ok(mg.track === 0 && mg.micro.length === 64 && mg.micro.every((x) => x === 0), "v7: MICRO_GET: 64 nudges, all 0");
