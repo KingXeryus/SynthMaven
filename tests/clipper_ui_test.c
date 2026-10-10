@@ -84,6 +84,24 @@ int main(int argc, char **argv)
         check(preset_pos(&total) == p0, "on the ENV page PRESETS and ALGORITHM leave the sound alone");
         go_home(); frames(2);
     }
+    {   /* the preset list: every name found; every preset of Clipper's own engines (WAVE .. MACRO) there once */
+        uint32_t e, k, n, hits, ok = 1;
+        for (n = 0; n < NBANK; n++)
+            if (bank_pi[n] == 0xFF) {
+                printf("clipper: BANK %s: no such preset in engine %u\n", BANK[n].name, BANK[n].e);
+                ok = 0;
+            }
+        for (e = ENGI_WAVE; e <= ENGI_MACRO; e++)
+            for (k = 0; k < ENGINES[e]->npresets; k++) {
+                for (hits = 0, n = 0; n < NBANK; n++)
+                    hits += BANK[n].e == e && bank_pi[n] == k;
+                if (hits != 1) {
+                    printf("clipper: preset %s (engine %u) is %u times in BANK\n", ENGINES[e]->presets[k].name, e, hits);
+                    ok = 0;
+                }
+            }
+        check(ok, "the preset list: every name found, every WAVE / ACID / STRINGS / MACRO preset once");
+    }
     /* back to CLIPPER for the rest */
     set_engine_of(TSEL, ENGI_HYBRID); apply_preset_to(TSEL, 0); frames(3);
 

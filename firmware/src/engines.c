@@ -31,6 +31,9 @@ static inline int32_t soft_knee(int32_t y, int32_t k)   /* linear up to k, then 
 #include "eng_hybrid.c"         /* HYBRID: the Clipper voice (3 oscillators, 2 filters, the matrix) */
 #if CLIPPER_SYNTH
 #include "eng_wave.c"           /* WAVE: wavetables (Clipper 0.2) */
+#include "eng_acid.c"           /* ACID: a 303-style bass line */
+#include "eng_strings.c"        /* STRINGS: a string machine */
+#include "eng_macro.c"          /* MACRO: chords, swarm, additive, speech (after Plaits) */
 #endif
 
 typedef union {
@@ -75,10 +78,11 @@ static const engine_t *const ENGINES[NENGINES] = {&ENG_ANALOG, &ENG_DIGITAL, &EN
 #endif
 #if CLIPPER_SYNTH
                                                     &ENG_WAVE,   /* 13 (ENGI_WAVE) */
+                                                    &ENG_ACID, &ENG_STRINGS, &ENG_MACRO,   /* 14, 15, 16 */
 #endif
 };
 #if CLIPPER_SYNTH
-_Static_assert(ENGI_WAVE == 13u, "ENGINES[] order (Clipper)");
+_Static_assert(ENGI_WAVE == 13u && ENGI_ACID == 14u && ENGI_STRINGS == 15u && ENGI_MACRO == 16u, "ENGINES[] order (Clipper)");
 static int32_t wt_wanted(void)                       /* (eng_wave.c) the table of the instrument, track 1 */
 {
     return ENGINES[trk[0].eng_req % NENGINES] == &ENG_WAVE ? (int32_t)((uint32_t)trk[0].p[P_E0] % WT_NALL) : -1;

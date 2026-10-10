@@ -34,7 +34,7 @@ static const char *const N_ENGNAME[] = {"ANALOG", "DIGITAL", "PHASE", "LOFI", "S
                                              "SLICE",
 #endif
 #if CLIPPER_SYNTH
-                                        "WAVE",
+                                        "WAVE", "ACID", "STRINGS", "MACRO",
 #endif
 };
 

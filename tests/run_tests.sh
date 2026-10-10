@@ -121,6 +121,12 @@ $SYN -o "$OUT/wave_test" tests/wave_test.c -lm
 mkdir -p build/wave_demo
 run "Clipper 0.2 WAVE: band-limited tables (no aliasing), building, POS, DTN / SUB, user tables, bounded, demos" "$OUT/wave_test" build/wave_demo
 SYN_UB="${CC_UB:-cc} -DCLIPPER_SYNTH=1 -O1 -g -w -fsanitize=address,undefined -fno-sanitize=shift-base,signed-integer-overflow -fno-sanitize-recover=all -Ibuild/gen -Ifirmware/src -Ifirmware/hal"
+$SYN -o "$OUT/engines2_test" tests/engines2_test.c -lm
+mkdir -p build/eng2_demo
+run "Clipper 0.2 ACID (accent, sweep, slide), STRINGS (registers, ensemble), MACRO (chords, swarm, additive, speech, LPG)" "$OUT/engines2_test" build/eng2_demo
+if $SYN_UB -o "$OUT/engines2_asan" tests/engines2_test.c -lm 2>/dev/null; then
+    run "Clipper 0.2 new engines under ASan + UBSan" sh -c "'$OUT/engines2_asan' >/dev/null && echo clean"
+fi
 if $SYN_UB -o "$OUT/clipper_ui_asan" tests/clipper_ui_test.c -lm 2>/dev/null; then
     mkdir -p "$OUT/clipper_asan"
     run "Clipper synth: UI under ASan + UBSan" sh -c "'$OUT/clipper_ui_asan' '$OUT/clipper_asan' >/dev/null && echo clean"

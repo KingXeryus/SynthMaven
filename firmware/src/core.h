@@ -32,9 +32,12 @@ enum { V_POLY, V_MONO, V_LEGATO, V_UNISON };   /* P_VOICE */
 #if FELUCCA_SLICE
 #error "SLICE is a groovebox engine (CLIPPER_SYNTH 0)"
 #endif
-#define CLIPPER_NENG 1           /* WAVE */
+#define CLIPPER_NENG 4           /* WAVE ACID STRINGS MACRO */
 #define NENGINES (13 + CLIPPER_NENG)
 #define ENGI_WAVE 13u            /* Clipper 0.2: wavetables (eng_wave.c) */
+#define ENGI_ACID 14u            /*   a 303-style bass line (eng_acid.c) */
+#define ENGI_STRINGS 15u         /*   a string machine (eng_strings.c) */
+#define ENGI_MACRO 16u           /*   macro oscillators after Plaits (eng_macro.c) */
 #else
 #define NENGINES (13 + FELUCCA_SLICE)
 #endif
