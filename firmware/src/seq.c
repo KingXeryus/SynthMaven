@@ -115,11 +115,14 @@ static volatile uint8_t ly_lock = LY_PLAY;
 static uint32_t layer_buttons(void) { return fm1_in.buttons | (ly_lock != LY_PLAY ? ly_bit[ly_lock % LY_COUNT] : 0u); }
 /* the layer the keys are in: the held function button (FX, EDIT, ARP, SEQ, SEL, GLO in that order),
  * else the locked one */
+/* Clipper: the layers a synth keeps: SEQ (the steps) and SEL (key and chords). FX, EDIT, ARP, GLO and SAVE only
+ * open their pages; held, the keys still play */
+static int ly_on(uint32_t l) { return !CLIPPER_SYNTH || l == LY_STEP || l == LY_SCALE; }
 static uint32_t layer_now(void)
 {
     uint32_t b = layer_buttons(), l;
     for (l = LY_FX; l < LY_COUNT; l++)
-        if (b & ly_bit[l])
+        if ((b & ly_bit[l]) && ly_on(l))
             return l;
     return LY_PLAY;
 }
@@ -1994,6 +1997,8 @@ static void seq_tick(track_t *t, uint32_t adv)
 /* MIDI in: the track a channel plays (0..15) */
 static track_t *midi_track(uint32_t ch)
 {
+    if (CLIPPER_SYNTH)
+        return &trk[0];                               /* Clipper: the instrument, on every channel (omni) */
     if (song.g[G_DRCH] && ch + 1u == (uint32_t)song.g[G_DRCH])
         return TDRUM;
     return ch < NPART ? &trk[ch] : TSEL;
@@ -2005,6 +2010,8 @@ static uint8_t midi_sel_on[16][128];                  /* per channel and note: t
 static track_t *midi_route(uint32_t ch, uint32_t note, int on)
 {
     track_t *t = midi_track(ch);
+    if (CLIPPER_SYNTH)
+        return t;
     if (ch < NPART || (song.g[G_DRCH] && ch + 1u == (uint32_t)song.g[G_DRCH]))
         return t;                                     /* a part's own channel, or the drum channel */
     if (on)
@@ -2342,11 +2349,11 @@ static void events_block(uint32_t n)
             input_off(t, d1);
         }
     }
-    for (i = 0; i < NTRK; i++)
+    for (i = 0; i < (CLIPPER_SYNTH ? 1u : NTRK); i++)  /* (Clipper: the instrument's sequencer only) */
         seq_tick(&trk[i], adv);
     click_tick();
     roll_block(adv);
-    for (i = 0; i < NPART; i++)
+    for (i = 0; i < (CLIPPER_SYNTH ? 1u : NPART); i++)
         arp_tick(&trk[i], adv);
     if (song.playing) {
         song.tick++;

@@ -474,7 +474,7 @@
       <span>editor</span>
     </a>
     <nav class="tabs" id="tabs" role="tablist" aria-orientation="vertical">
-      <div class="navh" data-t="navTrack"></div>
+      <div class="navh" id="navtrack" data-t="navTrack"></div>
       <button role="tab" data-tab="sound" data-t="sound" data-ic="symbol_audio"></button>
       <button role="tab" data-tab="sequencer" data-t="tabSeq" data-ic="symbol_grid"></button>
       <button role="tab" data-tab="tracks" data-t="tabTracks" data-ic="ui_slider_vertical"></button>
@@ -3676,7 +3676,7 @@ const TEXT = {
     badEngine: "このファームウェアにないエンジンです: ", flashFail: "書き込みに失敗しました（rc {rc}）",
     installer: "Clipper インストーラー",
     tabSeq: "シーケンサー", tabTracks: "トラック", tabSettings: "設定",
-    navTrack: "トラック", navSounds: "サウンド", navDevice: "本体", tabKits: "ドラムキット", fm1: "FM-1",
+    navTrack: "トラック", navSynth: "シンセ", navSounds: "サウンド", navDevice: "本体", tabKits: "ドラムキット", fm1: "FM-1",
     stepList: "ステップ一覧（音名を入力）", stepsOf: "{n} ステップ", fontCredit: "フォント: Terminus（SIL OFL 1.1）",
     ctlDrag: "値を上下にドラッグでも変更できます。",
     kitTitle: "ドラムキット", kitHelp: "ドラムトラック用に 16 の音を作ります（白鍵 1 つに 1 音）。3 ステップ: 音を入れる → 置き場所を選ぶ → FM-1 に送る。",
@@ -3882,7 +3882,7 @@ const TEXT = {
     badEngine: "This firmware has no such engine: ", flashFail: "Write failed (rc {rc})",
     installer: "Clipper installer",
     tabSeq: "Sequencer", tabTracks: "Tracks", tabSettings: "Settings",
-    navTrack: "Track", navSounds: "Sounds", navDevice: "Device", tabKits: "Drum kit", fm1: "FM-1",
+    navTrack: "Track", navSynth: "Synth", navSounds: "Sounds", navDevice: "Device", tabKits: "Drum kit", fm1: "FM-1",
     stepList: "Step list (type note names)", stepsOf: "{n} steps", fontCredit: "Font: Terminus (SIL OFL 1.1)",
     ctlDrag: "You can also drag a value up or down.",
     kitTitle: "Drum kit", kitHelp: "Build 16 sounds for the drum track, one per white key. Three steps: put your sounds on the pads, choose where the kit goes, send it to the FM-1.",
@@ -4064,6 +4064,9 @@ let tab = (() => {
   return "sound";
 })();
 const hasTracks = () => !!dev && !!dev.info && !!dev.info.ntrk;
+/* Clipper (CLIPPER_SYNTH=1): one instrument like the original FM-1: no track bar, no Tracks / Song / drum pages */
+const synthOnly = () => !!dev && !!dev.info && /CLIPPER/.test(dev.info.version || "");
+const SYNTH_HIDE = new Set(["tracks", "song", "kits", "drumsynth"]);
 function showTab(name) {
   if (!TABS.includes(name)) name = "sound";
   const prev = tab;
@@ -4076,12 +4079,14 @@ function showTab(name) {
 function renderPanels() {
   /* the Tracks tab only with a four-track firmware */
   const tracksOk = !dev || hasTracks() || !dev.info;
-  const want = tab === "tracks" && dev && dev.info && !hasTracks() ? "sound" : tab;
+  const syn = synthOnly();
+  const want = (tab === "tracks" && dev && dev.info && !hasTracks()) || (syn && SYNTH_HIDE.has(tab)) ? "sound" : tab;
   for (const b of $("tabs").querySelectorAll("button[data-tab]")) {
     const on = b.dataset.tab === want;
     b.setAttribute("aria-selected", on ? "true" : "false");
     b.tabIndex = on ? 0 : -1;
     if (b.dataset.tab === "tracks") b.hidden = !tracksOk;
+    if (SYNTH_HIDE.has(b.dataset.tab)) b.hidden = syn || (b.dataset.tab === "tracks" && !tracksOk);
   }
   const ready = !!dev && !!dev.dump;
   let hint = "";
@@ -4094,7 +4099,8 @@ function renderPanels() {
   }
   $("hint").hidden = !hint;
   if (hint) $("hint").textContent = t(hint);
-  $("trackbar").hidden = !(ready && hasTracks() && TRACK_TABS.has(want));
+  $("trackbar").hidden = !(ready && hasTracks() && !syn && TRACK_TABS.has(want));
+  $("navtrack").textContent = t(syn ? "navSynth" : "navTrack");
   const nb = $("tabs").querySelector(`button[data-tab="${want}"]`);   /* the page's title: its name in the side bar */
   $("pagetitle").textContent = nb ? t(nb.dataset.t) : "";
   if (want === "kits") renderKits();

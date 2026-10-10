@@ -26,7 +26,10 @@ export AC79_SDK="${AC79_SDK:-$HOME/fw-AC79_AIoT_SDK}"
 cd "$(dirname "$0")/.."
 OUT=build/host
 mkdir -p "$OUT"
-CC="${CC:-cc} -O1 -Wall -Wno-unused-function"
+# SLOOP's groovebox tests (four tracks, drums, song) build with CLIPPER_SYNTH=0; Clipper's own synth mode
+# (CLIPPER_SYNTH=1, the firmware's default) has its tests in the section "Clipper synth" below
+CCS="${CC:-cc} -O1 -Wall -Wno-unused-function"
+CC="$CCS -DCLIPPER_SYNTH=0"
 fail=0
 run() { echo "== $1"; shift; "$@" || fail=1; }
 
@@ -76,7 +79,7 @@ $CC -O2 -w -Ibuild/gen -Ifirmware/src -Ifirmware/hal -o "$OUT/ui_pages_test" tes
 run "live UI: pages, layers (punch, steps, erase, roll, key, mix), holds, drums, REC, fuzz" "$OUT/ui_pages_test" "$OUT"
 # no divide by 0 (the FM-1 runs with the div0 trap off, hal/fm1_irq.h: a real one would give a wrong value
 # silently): the UI fuzz, the sequencer, the projects and a minute of random live use, with UBSan
-UBSAN="${CC_UB:-cc} -O1 -w -fsanitize=integer-divide-by-zero -fno-sanitize-recover=integer-divide-by-zero -Ibuild/gen -Ifirmware/src -Ifirmware/hal"
+UBSAN="${CC_UB:-cc} -DCLIPPER_SYNTH=0 -O1 -w -fsanitize=integer-divide-by-zero -fno-sanitize-recover=integer-divide-by-zero -Ibuild/gen -Ifirmware/src -Ifirmware/hal"
 $UBSAN -o "$OUT/ui_pages_ub" tests/ui_pages_test.c -lm && $UBSAN -o "$OUT/seq2_ub" tests/seq2_test.c -lm &&
     $UBSAN -o "$OUT/project_ub" tests/project_test.c -lm && $UBSAN -o "$OUT/soak_ub" tests/soak_test.c -lm || fail=1
 mkdir -p "$OUT/ub"
@@ -89,11 +92,26 @@ $CC -O2 -w -Ibuild/gen -Ifirmware/src -Ifirmware/hal -o "$OUT/stress_test" tests
 run "stress (2.4): FONT_L = FONT_S at 2x, hard random use of every 2.4 addition, clean stop" "$OUT/stress_test" "${STRESS_FRAMES:-40000}"
 # the same under AddressSanitizer + UBSan: any read or write out of bounds stops it (left shifts of negative values
 # and the FM6 phase's wrap-around are left out: the DSP's two's complement idioms, as every compiler builds them)
-ASAN="${CC_UB:-cc} -O1 -g -w -fsanitize=address,undefined -fno-sanitize=shift-base,signed-integer-overflow -fno-sanitize-recover=all -Ibuild/gen -Ifirmware/src -Ifirmware/hal"
+ASAN="${CC_UB:-cc} -DCLIPPER_SYNTH=0 -O1 -g -w -fsanitize=address,undefined -fno-sanitize=shift-base,signed-integer-overflow -fno-sanitize-recover=all -Ibuild/gen -Ifirmware/src -Ifirmware/hal"
 if $ASAN -o "$OUT/stress_asan" tests/stress_test.c -lm 2>/dev/null; then
     run "stress under ASan + UBSan (no access out of bounds)" "$OUT/stress_asan" "${STRESS_ASAN_FRAMES:-15000}" 7
 else
     echo "(stress under ASan: this compiler has no AddressSanitizer, skipped)"
+fi
+
+# Clipper synth (CLIPPER_SYNTH=1, what the FM-1 runs): one instrument, HOME = the sound, no tracks / drums / song
+SYN="$CCS -O2 -w -DCLIPPER_SYNTH=1 -Ibuild/gen -Ifirmware/src -Ifirmware/hal"
+mkdir -p "$OUT/clipper"
+$SYN -o "$OUT/clipper_ui_test" tests/clipper_ui_test.c -lm
+run "Clipper synth: HOME, presets, keys, pages, one track, MIDI omni, no drums / song" "$OUT/clipper_ui_test" "$OUT/clipper"
+$SYN -o "$OUT/clipper_stress" tests/stress_test.c -lm
+run "Clipper synth: stress (hard random use, clean stop)" "$OUT/clipper_stress" "${STRESS_FRAMES:-40000}"
+$SYN -o "$OUT/clipper_soak" tests/soak_test.c -lm
+run "Clipper synth: soak, ${SOAK_MIN:-10} minutes of random live use" "$OUT/clipper_soak" "${SOAK_MIN:-10}"
+SYN_UB="${CC_UB:-cc} -DCLIPPER_SYNTH=1 -O1 -g -w -fsanitize=address,undefined -fno-sanitize=shift-base,signed-integer-overflow -fno-sanitize-recover=all -Ibuild/gen -Ifirmware/src -Ifirmware/hal"
+if $SYN_UB -o "$OUT/clipper_ui_asan" tests/clipper_ui_test.c -lm 2>/dev/null; then
+    mkdir -p "$OUT/clipper_asan"
+    run "Clipper synth: UI under ASan + UBSan" sh -c "'$OUT/clipper_ui_asan' '$OUT/clipper_asan' >/dev/null && echo clean"
 fi
 
 $CC -o "$OUT/upreset_test" tests/upreset_test.c

@@ -44,6 +44,7 @@ static void draw_head(void)
     int32_t x;
     uint32_t rec = (song.rec >> song.sel) & 1u ? 2u : song.rec != 0u;   /* 2 the selected track armed, 1 another */
     uint32_t sig = (uint32_t)song.playing * 3u + rec * 5u + (uint32_t)(song.octave + 8) * 11u + song.sel * 13131u +
+                   (uint32_t)TSEL->p[P_AMODE] * 7u + (uint32_t)TSEL->p[P_AHOLD] * 17u +
                    (ui.msg_t ? str_hash(7u, ui.msg) : 0u) + (uint32_t)song.g[G_BPM] * 101u + (ui.bpm_t != 0) * 31u +
                    (uint32_t)batt_shown() * 7777u + (usb.config && !usb.suspended) * 99991u;
     if (!ui.force && sig == ui.head_sig)
@@ -76,7 +77,10 @@ static void draw_head(void)
         cv_text(x + 12, 1, &FONT_S, "OCT", C_GRAY);
         cv_text(x + 40, 1, &FONT_S, b, C_HI);
     }
-    if (FELUCCA_ICONS) {                              /* the selected track: tape + number */
+    if (CLIPPER_SYNTH) {                              /* Clipper: no tracks; the arpeggiator when it runs */
+        if (TSEL->p[P_AMODE])
+            cv_text(150, 1, &FONT_S, TSEL->p[P_AHOLD] ? "ARP H" : "ARP", C_HI);
+    } else if (FELUCCA_ICONS) {                       /* the selected track: tape + number */
         cv_icon(156, 2, ICON_TAPE, C_GRAY);
         b[0] = (char)('1' + song.sel);
         b[1] = 0;
@@ -638,6 +642,53 @@ static void graph_scope(uint16_t c)
     }
 }
 
+/* Clipper: HOME, the instrument: the sound's name large, its kind and place in the list, its engine; the
+ * scope under it (from the top of the graph strip: cv_oy 0) */
+static uint32_t preset_pos(uint32_t *total);
+static const char *preset_kind(uint32_t n);
+static void graph_home(uint16_t c)
+{
+    static int16_t snap[SCOPE_N];
+    char name[24], b[24];
+    uint32_t total = 0, cur = preset_pos(&total), w = scope_w, i, trig = 0;
+    const engine_t *e = ENGINES[TSEL->eng_req % NENGINES];
+    const felucca_font_t *f = &FONT_L;
+    int32_t x, py = 90, peak = 1500;
+    name[0] = 0;
+    if (user_of(TSEL) < UP_SLOTS)
+        up_name(user_of(TSEL), name);
+    else if (e->npresets)
+        str_cpy(name, e->presets[TSEL->preset % e->npresets].name, sizeof name);
+    if (text_w(f, name) > 236)
+        f = &FONT_S;
+    cv_text((240 - text_w(f, name)) / 2, f == &FONT_L ? 0 : 8, f, name, C_WHITE);
+    x = cv_text(4, 36, &FONT_S, preset_kind(cur), c);
+    fmt_int(b, (int32_t)cur + 1);
+    str_cpy(b + str_len(b), "/", 4);
+    fmt_int(b + str_len(b), (int32_t)total);
+    cv_text(x + 8, 36, &FONT_S, b, C_GRAY);
+    cv_text(236 - text_w(&FONT_S, e->name), 36, &FONT_S, e->name, C_HI);
+    for (i = 0; i < SCOPE_N; i++) {                  /* the scope, auto-scaled, triggered on a rising zero */
+        snap[i] = scope_buf[(w + i) & (SCOPE_N - 1u)];
+        if (snap[i] > peak)
+            peak = snap[i];
+        else if (-snap[i] > peak)
+            peak = -snap[i];
+    }
+    for (i = 1; i < SCOPE_N - 240u; i++)
+        if (snap[i - 1] < 0 && snap[i] >= 0) {
+            trig = i;
+            break;
+        }
+    cv_line(0, 90, 239, 90, C_LINE);
+    for (x = 0; x < 240; x++) {
+        int32_t y = 90 - snap[trig + (uint32_t)x] * 30 / peak;
+        if (x)
+            cv_line(x - 1, py, x, y, c);
+        py = y;
+    }
+}
+
 /* SLOOP 2.4: a page without a graph (EDIT, VOICE, the DEST pages, GLOBAL, MASTER, SYSTEM...): its values
  * large in the empty space, 2 x 2 as the knobs (KNOB 1 2 / KNOB 3 4), the one turned in white; one value
  * alone (FILTER) across the width. The columns (draw_columns, drawn first) fill ui.big_* */
@@ -682,7 +733,10 @@ static void draw_graph(void)
     ui.graph_sig = sig;
     cv_begin(240, H_GRAPH, C_BLACK);
     cv_oy = G_OY;
-    if (ui.home) {
+    if (ui.home && CLIPPER_SYNTH) {
+        cv_oy = 0;
+        graph_home(c);
+    } else if (ui.home) {
         graph_scope(c);
     } else if (drum_note) {                          /* a page the drum track has no use for */
         static const char *const L[2] = {"DRUM TRACK", "SEQ  TRACKS  GLO DRUMS"};
@@ -731,8 +785,8 @@ static void draw_graph(void)
             break;
         }
     }
-    top = !ui.home && !drum_note && (pg->graph == GR_BROWSE || pg->graph == GR_SLOTS || pg->graph == GR_USER ||
-                                     big_page(pg));   /* these draw from the top */
+    top = (ui.home && CLIPPER_SYNTH) || (!ui.home && !drum_note && (pg->graph == GR_BROWSE || pg->graph == GR_SLOTS || pg->graph == GR_USER ||
+                                     big_page(pg)));   /* these draw from the top */
     cv_oy = 0;
     if (ui.hot_t && settings.zoom && !(top && big_page(pg) && !drum_note)) {   /* (the big values show it already) */                 /* focus (menu ZOOM): the touched value, large and white */
         int32_t x;

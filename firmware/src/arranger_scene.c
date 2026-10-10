@@ -63,7 +63,7 @@ static void song_restore(void)                 /* (audio ISR: seq_stop) */
         trk[i].nheld = trk[i].arp_phys = trk[i].arp_note = 0;
     }
     proj_apply(&song_keep, 1);
-    song.sel = (uint8_t)(song_keep.sel < NTRK ? song_keep.sel : 0u);
+    song.sel = (uint8_t)(song_keep.sel < NTRK && !CLIPPER_SYNTH ? song_keep.sel : 0u);
     sync_reload = 1;
     ui.force = 1;
 }

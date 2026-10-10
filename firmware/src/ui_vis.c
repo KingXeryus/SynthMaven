@@ -35,7 +35,10 @@ static struct {
 static const uint8_t VIS_EDGE[33] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 25, 29, 35,
                                      41, 49, 58, 69, 82, 98, 116, 138, 164, 195, 232};
 
-static int vis_shown(void) { return vis_on && !ui.home && !ui.menu && cur_page()->scope == SC_TRK; }
+static int vis_shown(void)   /* (over the TRACKS screen; Clipper: over HOME) */
+{
+    return vis_on && !ui.menu && (CLIPPER_SYNTH ? ui.home : !ui.home && cur_page()->scope == SC_TRK);
+}
 static void vis_open(void)
 {
     vis_on = 1;

@@ -432,7 +432,7 @@ static void project_apply(const project_t *p)
     panic_req = (1u << NTRK) - 1u;
     fm1_irq_off();                                      /* the audio ISR must not see half a project */
     proj_apply(p, 1);
-    song.sel = (uint8_t)(p->sel < NTRK ? p->sel : 0u);
+    song.sel = (uint8_t)(p->sel < NTRK && !CLIPPER_SYNTH ? p->sel : 0u);
     fm1_irq_on();
     for (k = 0; k < NPART; k++)                         /* a format 1 project: the default sounds of tracks 2, 3 */
         if (p->t[k].preset == 0xFFu) {
@@ -512,7 +512,7 @@ static void autosave_resume(void)              /* power-on: the project as it wa
         return;
     autosave_hash = q->sum;
     proj_apply(q, 1);
-    song.sel = (uint8_t)(q->sel < NTRK ? q->sel : 0u);
+    song.sel = (uint8_t)(q->sel < NTRK && !CLIPPER_SYNTH ? q->sel : 0u);
     for (n = 0; n < NPART; n++)
         trk[n].engine = trk[n].eng_req;        /* (nothing sounds yet: no fade) */
 #endif

@@ -231,7 +231,7 @@ static int page_walk(int32_t s)
 
 static void go_home(void)
 {
-#if FELUCCA_ARRANGER
+#if FELUCCA_ARRANGER && !CLIPPER_SYNTH
     ui.home = 0;
     ui.page = (uint8_t)page_first(FAM_TRK);
 #else
@@ -248,7 +248,11 @@ static void go_home(void)
  * writes the sequencer: every pattern is the one the player records or enters. */
 
 /* the parts' sounds at power-on (engine, preset): bass, pad, lead */
+#if CLIPPER_SYNTH                  /* Clipper: the instrument plays CLIPPER (HYBRID's first patch) */
+static const uint8_t TRK_DEF[NPART][2] = {{ENGI_HYBRID, 0}, {1, 0}, {4, 5}};
+#else
 static const uint8_t TRK_DEF[NPART][2] = {{0, 0}, {1, 0}, {4, 5}};   /* ANALOG 808 BOOM, DIGITAL RHODES, SAMPLE LOFI FLUTE */
+#endif
 static uint32_t trk_def_engine(uint32_t i) { return i < NPART ? TRK_DEF[i][0] : 0u; }
 
 static int seq_is_empty(const track_t *t) { return track_empty(t); }
@@ -464,6 +468,32 @@ static void preset_go(uint32_t n)                    /* load list index n into t
     ui.force = 1;
 }
 
+/* Clipper: ALGORITHM, the kind of sound: the first sound of the next kind (BASS, KEYS, ORGN, PAD, LEAD, PLCK,
+ * STAB, FX, then the user presets), or of the previous one; round */
+static uint32_t kind_at(uint32_t n) { return n < NBANK ? BANK[n].kind : 0xFFu; }
+static void preset_kind_jump(int32_t s)
+{
+    uint32_t total, cur = preset_pos(&total), n = cur, k;
+    if (is_drum(TSEL) || total < 2u)
+        return;
+    while (n && kind_at(n - 1u) == kind_at(cur))        /* the start of the kind shown */
+        n--;
+    if (s > 0) {
+        k = kind_at(cur);
+        while (n < total && kind_at(n) == k)
+            n++;
+        if (n >= total)
+            n = 0;
+    } else {
+        n = n ? n - 1u : total - 1u;                   /* into the kind before, then to its start */
+        k = kind_at(n);
+        while (n && kind_at(n - 1u) == k)
+            n--;
+    }
+    preset_go(n);
+    ui_message(preset_kind(n));
+}
+
 /* HOME: what KNOB k edits: the engine's four main parameters; on the drum track
  * LEVEL and REV (GLO > DRUMS), PAN and LEN */
 static const param_desc_t *home_param(uint32_t k, int16_t **vp)
@@ -487,7 +517,7 @@ static const param_desc_t *home_param(uint32_t k, int16_t **vp)
 /* select track i (KNOB 1 on TRACKS, the editor): its sound, pages and pattern from now on */
 static void track_select(uint32_t i)
 {
-    if (i >= NTRK || i == song.sel)
+    if (i >= NTRK || i == song.sel || CLIPPER_SYNTH)   /* (Clipper: one instrument) */
         return;
     song.sel = (uint8_t)i;
     rec_follow(i);                                   /* LIVE: recording follows the selected track */

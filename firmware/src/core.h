@@ -6,6 +6,12 @@
  * pattern and the pattern parameters of its track_t). The parts share one budget of
  * NVOICE sounding voices (voice.c). */
 #include <stdint.h>
+/* Clipper: a synthesizer, one instrument (track 1: song.sel is always 0). Tracks 2..4 and the drum machine stay in
+ * the data (the project formats are SLOOP's) but are silent, never selected, their sequencers stopped; MIDI plays the
+ * instrument on every channel. 0 = SLOOP's four-track groovebox (the host tests of the shared code build it). */
+#ifndef CLIPPER_SYNTH
+#define CLIPPER_SYNTH 1
+#endif
 #ifndef NVOICE
 #define NVOICE 8                 /* voices per part, and the budget shared by all parts (Clipper: -DNVOICE=12 / 16) */
 #endif
@@ -332,6 +338,8 @@ static int is_drum(const track_t *t) { return t == TDRUM; }
 static int trk_silent(const track_t *t)
 {
     uint32_t i = (uint32_t)(t - trk);
+    if (CLIPPER_SYNTH && i)
+        return 1;                /* Clipper: only the instrument (track 1) sounds */
     return t->p[P_MUTE] || (song.solo && !((song.solo >> i) & 1u));
 }
 #define RING_PUBLISH() __asm__ volatile("" ::: "memory")   /* slot store before the index update */

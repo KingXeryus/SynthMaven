@@ -582,7 +582,7 @@ static uint8_t rec_shown;
 static void rec_rows(uint32_t rt, uint32_t take, uint32_t y0, uint32_t *cache)
 {
     uint32_t sig = rt * 3u + rec_wait + take * 5u + drum_kit() * 977u + y0, i, j;
-    for (i = 0; i < NTRK; i++) {
+    for (i = 0; i < (CLIPPER_SYNTH ? 1u : NTRK); i++) {   /* (Clipper: the instrument alone) */
         char b[16];
         if (i == TRK_DRUM) str_cpy(b, DRUM_KIT_NAMES[drum_kit()], sizeof b);
         else trk_short_name(i, b);
@@ -593,7 +593,7 @@ static void rec_rows(uint32_t rt, uint32_t take, uint32_t y0, uint32_t *cache)
         return;
     *cache = sig;
     cv_begin(240, 76, C_BLACK);
-    for (i = 0; i < NTRK; i++) {
+    for (i = 0; i < (CLIPPER_SYNTH ? 1u : NTRK); i++) {
         const track_t *t = &trk[i];
         uint32_t len = (uint32_t)clamp(t->p[P_SLEN], 1, 64), armed = i == rt;
         int32_t y = (int32_t)i * 19;

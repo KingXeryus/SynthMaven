@@ -9,7 +9,21 @@ Free and open source (GPL-3.0). It grew out of <a href="https://github.com/isod8
 
 > **Status: 0.1, first test build.** It has not run on a device yet. Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
 
-SLOOP is a groovebox. Clipper is the synthesizer. It keeps SLOOP's 12 engines, tracks, sequencer, effects, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
+SLOOP is a groovebox. **Clipper is a synthesizer**, one instrument like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine and no song mode. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
+
+## On the FM-1
+
+| | |
+| --- | --- |
+| **HOME** | The synth screen: the sound's name, its family, its number in the list, the engine and a live scope. The four knobs play the sound's main controls (for HYBRID: CUT, RES, M1, M2). Press HOME again for the full-screen visualiser. |
+| **PRESETS** | Every sound, one by one, factory and user presets. |
+| **ALGORITHM** | Jumps to the next family: PAD, BASS, LEAD, PLCK, KEYS, STAB, FX and the rest. |
+| **FX, EDIT, ARP, GLO, SAVE** | A tap opens the pages. While one of them is held, the keys still play, so you can hold EDIT and play. |
+| **SEQ, SEL** | Held, they are the two layers a synth needs: SEQ shows the 16 steps on the keys, SEL the key and the chords. A tap opens their pages. |
+| **REC** | Records what you play into the pattern. Hold REC to clear the pattern. |
+| **MIDI** | Omni: every channel plays the synth. |
+
+A SLOOP project loads with only its first track playing. The four-track groovebox is still in the code: building with `CLIPPER_SYNTH=0` gives it back, and the tests use it.
 
 ## HYBRID, the Clipper voice
 
@@ -18,7 +32,7 @@ SLOOP is a groovebox. Clipper is the synthesizer. It keeps SLOOP's 12 engines, t
 | **3 oscillators** | Each one is SAW, PULSE (width), TRI, SINE (with feedback), MORPH (sine → tri → saw → square), SUPER (seven detuned saws), FM (phase-modulated by the oscillator before it), SYNC (hard sync to osc 1), FOLD (wavefolder) or NOISE (with colour). Each has coarse ±48 semitones, fine, level and shape, and can restart at each note or keep a fixed pitch. |
 | **Mix** | Ring modulation of osc 1 × osc 2, analog drift (per voice and per oscillator), drive. |
 | **2 filters** | LP12, LP24, BP, HP, NOTCH, PEAK. They run in series, in parallel (with a balance) or split (osc 1 into F1, osc 2 and 3 into F2). Each has an envelope amount, keyboard tracking and velocity. |
-| **Modulation** | Per voice: ENV2 and ENV3 (ADSR) and LFO2 and LFO3 (6 waves, free or key-synced, tempo-synced from 1/32 to 8 bars, fade-in), on top of the track's amplitude ADSR and LFO1. |
+| **Modulation** | Per voice: ENV2 and ENV3 (ADSR) and LFO2 and LFO3 (6 waves, free or key-synced, tempo-synced from 1/32 to 8 bars, fade-in), on top of the sound's amplitude ADSR and LFO1. |
 | **Matrix** | 16 slots of *source × via × amount → destination*. Sources: ENV2, ENV3, AENV, LFO1-3, velocity, key, mod wheel, aftertouch (channel or per note), bend, expression, a random value per note, the macros M1-M4. Destinations: pitch (all or per oscillator), shapes, levels, ring, cutoff (both or each), resonances, drive, amplitude, the LFO rates, filter balance. |
 | **On the FM-1** | EDIT shows CUT, RES and FENV (offsets on both filters), PTCH (the factory patch), and M1-M4: four macros whose effect each patch decides. |
 | **In the editor** | Every value above, live while you play. Patches export and import as `.clipper.json`. |
@@ -32,7 +46,7 @@ Pitch bend (±2 semitones, or the HYBRID patch's own range up to ±24), mod whee
 
 On Windows, see **[DEMARRAGE-RAPIDE-FR.md](DEMARRAGE-RAPIDE-FR.md)**: `INSTALL-CLIPPER.bat` builds the firmware and opens the installer at `http://localhost:8767` (SLOOP uses 8766, so the two never get mixed up). Elsewhere, see [BUILDING.md](BUILDING.md).
 
-Projects, user presets, samples and settings stay in the same flash places as SLOOP's. Going from SLOOP to Clipper keeps them; a track on HYBRID plays another engine if you go back to SLOOP.
+Projects, user presets, samples and settings stay in the same flash places as SLOOP's. Going from SLOOP to Clipper keeps them; a sound on HYBRID plays another engine if you go back to SLOOP.
 
 ## Polyphony
 
@@ -40,7 +54,7 @@ The voices are a build option: 8 (the default, as SLOOP), 12 or 16 (`INSTALL-CLI
 
 ## Tests
 
-`HOST_ONLY=1 tests/run_tests.sh` runs everything that does not need the JieLi toolchain: the HYBRID tests (the pitch of every oscillator, the filters, the matrix, the controllers, 300 random patches, the cost per voice), the editor's commands, golden renders of every sound, ASan and UBSan, a soak test, and the web pages.
+`HOST_ONLY=1 tests/run_tests.sh` runs everything that does not need the JieLi toolchain: the synth mode (HOME, presets, keys, pages, one instrument, MIDI omni), the HYBRID tests (the pitch of every oscillator, the filters, the matrix, the controllers, 300 random patches, the cost per voice), the editor's commands, golden renders of every sound, ASan and UBSan, a soak test, and the web pages.
 
 ## Credits
 

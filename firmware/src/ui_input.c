@@ -564,7 +564,9 @@ static void layer_tap(uint32_t layer)
         open_family(FAM_GLO);
         break;
     case LY_SONG:                                         /* SAVE tapped: TRACKS -> the song, else the SAVE pages */
-        if (on_song_page())
+        if (CLIPPER_SYNTH)
+            open_family(FAM_SAVE);                        /* (Clipper: no song: the SAVE pages) */
+        else if (on_song_page())
             arrangement_save();
         else if (!ui.home && cur_page()->scope == SC_TRK)
             studio_open(SC_SONG);
@@ -625,12 +627,13 @@ static int layers_input(uint32_t note_edges, uint32_t *pressed, uint32_t home)
         }
         if (d && note_edges)
             used[l] = 1;                                  /* a key while held: not a tap */
-        if (!d && down[l] && !used[l] && now - t0[l] < TAP_MS && !ui.menu && !ui.confirm)
-            layer_tap(l);
+        if (!d && down[l] && !used[l] && (now - t0[l] < TAP_MS || !ly_on(l)) && !ui.menu && !ui.confirm)
+            layer_tap(l);                                 /* (Clipper: a button with no layer opens its pages
+                                                           * on release however long it was held) */
         if (!d && down[l] && l == LY_SONG)
             chain_release();                              /* SAVE let go: the section taps of the hold (ui_layers.c) */
         down[l] = (uint8_t)d;
-        if (d && held == LY_PLAY)
+        if (d && held == LY_PLAY && ly_on(l))
             held = l;
     }
     if (held != LY_PLAY && home == BT_TAP && !home_eat) {  /* held + HOME: locked open */
@@ -778,13 +781,16 @@ static void holds_input(uint32_t pressed, uint32_t now_ms)
         track_t *t = &trk[ui.hold_trk % NTRK];
         char b[12] = "1 CLEARED";
         undo_mark(t, (undo_sess += 4u) | 3u);
+        if (CLIPPER_SYNTH)
+            str_cpy(b, "CLEARED", sizeof b);
         fm1_irq_off();
         track_defaults_steps(t);
         t->nheld = 0;                                     /* and the latched arp chord */
         t->arp_phys = 0;
         fm1_irq_on();
-        b[0] = (char)('1' + ui.hold_trk);
-        ui_say("TRACK ", b);
+        if (!CLIPPER_SYNTH)
+            b[0] = (char)('1' + ui.hold_trk);
+        ui_say(CLIPPER_SYNTH ? "PATTERN " : "TRACK ", b);
         ui.hold_kind = 0;
         rec_on = 0;                                       /* (until REC is up: nothing more) */
         ui.force = 1;
@@ -805,6 +811,8 @@ static void ui_input(void)
     uint32_t home = btn_hold(&ui.home_t0, B_HOME, now, 1);
     int32_t s;
     int layered;
+    if (CLIPPER_SYNTH && song.sel)                      /* Clipper: one instrument (an editor, an old project) */
+        song.sel = 0;
     enc_hold = 0;                                       /* (panel.c: every knob readable again this pass) */
     if (pressed || notes)
         ui_input_ms = fm1_ms;
@@ -876,7 +884,7 @@ static void ui_input(void)
     }
 #endif
     if (home == BT_TAP) {                               /* HOME acts on release: a hold opens the menu */
-        if (!ui.home && cur_page()->scope == SC_TRK && !vis_on)
+        if ((CLIPPER_SYNTH ? ui.home : !ui.home && cur_page()->scope == SC_TRK) && !vis_on)
             vis_open();                                 /* HOME on HOME: the visualiser (ui_vis.c) */
         else {
             vis_on = 0;                                 /* (HOME again: back to the TRACKS screen) */
@@ -933,8 +941,13 @@ static void ui_input(void)
         else if (total)
             preset_go((uint32_t)(((int32_t)cur + s % (int32_t)total + (int32_t)total) % (int32_t)total));
     }
+#if CLIPPER_SYNTH
+    if ((s = panel_enc(EN_ALGO)) != 0 && (ui.home || cur_page()->graph == GR_BROWSE))
+        preset_kind_jump(s);                            /* Clipper: ALGORITHM, the kind of sound (BASS, KEYS, PAD...) */
+#else
     if ((s = panel_enc(EN_ALGO)) != 0 && !ft_on)     /* ALGORITHM: the selected track, on every page (not in a take) */
         track_select((uint32_t)clamp((int32_t)song.sel + (s > 0 ? 1 : -1), 0, NTRK - 1));
+#endif
     if (vis_shown() && !rec_wait && !ft_on) {           /* the visualiser: SELECT its style; KNOB 1..4 (the TRACKS
                                                          * screen's, out of sight) do nothing */
         if ((s = panel_enc(EN_SELECT)) != 0)

@@ -652,6 +652,8 @@ static void layer_screen_draw(void)
     str_cpy(sub, "track ", sizeof sub);
     sub[6] = (char)('1' + sel);
     sub[7] = 0;
+    if (CLIPPER_SYNTH)                                  /* Clipper: the sound, not a track */
+        trk_short_name(0, sub);
     switch (layer) {
     case LY_FX:                                         /* the 16 punch-in effects */
         col = TE_DRUM;
@@ -982,8 +984,9 @@ static void hold_screen_draw(void)
     cv_blit(0, 20);
     cv_begin(240, 60, C_BLACK);
     if (ui.hold_kind == 1u) {
-        str_cpy(b, "track 1", sizeof b);
-        b[6] = (char)('1' + ui.hold_trk);
+        str_cpy(b, CLIPPER_SYNTH ? "the pattern" : "track 1", sizeof b);
+        if (!CLIPPER_SYNTH)
+            b[6] = (char)('1' + ui.hold_trk);
     } else {
         str_cpy(b, "project in slot 1", sizeof b);
         b[16] = (char)('0' + clamp(song.g[G_SLOT], 1, 4));
