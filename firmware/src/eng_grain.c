@@ -419,6 +419,11 @@ static void grain_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const
     v->s[2] = y;
 }
 
+#if CLIPPER_SYNTH                         /* Clipper: no built-in samples: a cloud of the user's slot 1 */
+static const preset_t GRAIN_PRESETS[] = {
+    {"USER GRAIN", {0, 40, 100, 90, 0, 30, 12, 80}, {70, 100, 120, 95}, 0, 0, FX(0, 50, 20, 75)},
+};
+#else
 static const preset_t GRAIN_PRESETS[] = {
     /* name, {SRC, POS, SIZE, DENS, PTCH, SPRD, RAND, TONE}, {A D S R}, fenv, mono.
      * SRC: the SAMPLE sets (0 PIANO, 2 VIBES, 5 FLUTE...: tools/gen_samples.py CC0_SETS) */
@@ -432,6 +437,7 @@ static const preset_t GRAIN_PRESETS[] = {
     {"PNO FREEZE", {0, 40, 127, 127, 0, 5, 0, 100}, {80, 100, 127, 100}, 0, 0, FX(0, 30, 20, 75)},
     {"HORN CLOUD", {3, 30, 100, 90, 0, 30, 15, 90}, {70, 100, 120, 95}, 0, 0, FX(0, 40, 20, 70)},
 };
+#endif
 
 static const engine_t ENG_GRAIN = {
     "GRAIN", {"GRAN", "SPRY"},

@@ -442,6 +442,28 @@ def input_key(have_cc0):
     return h.hexdigest()
 
 
+CLIPPER_EMPTY = """
+/* Clipper (CLIPPER_SYNTH): no built-in samples (~300 KB of flash for synthesis): SAMPLE and GRAIN play the user's
+ * slots USR1..4 (sent from the editor). The groovebox (CLIPPER_SYNTH 0, the tests) keeps the sets above. */
+static const uint8_t SMP_DATA[4] = {0, 0, 0, 0};
+static const smp_zone_t SMP_ZONES[] = {{0, 0, 0, 0, 65536, 960, 0, 0, 0, 127, 0}};
+static const smp_set_t SMP_SETS[] = {{"NONE", 0, 1}};
+#define SMP_NSETS 0
+static const preset_t SMP_PRESET_TABLE[] = {
+    {"USER SMP", {0, 0, 0, 1, 127, 0, 0, 0}, {0, 110, 110, 40}, 0, 0, FX(0, 10, 12, 24)},
+};
+#define SMP_SET_NAMES_INIT
+static const char *const SMP_SET_NAMES[] = {"NONE"};
+#define SLC_BREAK_INIT {0}
+"""
+
+
+def clipper_wrap(text):
+    """the sets for the groovebox; none for the Clipper synth (CLIPPER_SYNTH, core.h, defined before this header)"""
+    head, sep, body = text.partition("#include <stdint.h>\n")
+    return head + sep + "#if !CLIPPER_SYNTH\n" + body + "#else" + CLIPPER_EMPTY + "#endif\n"
+
+
 def main(out):
     subprocess.run([sys.executable, str(Path(__file__).with_name("gen_waves.py")), str(GENDIR)], check=True)
     have_cc0 = CC0.exists() and any(CC0.glob("*/*.wav"))
@@ -451,7 +473,7 @@ def main(out):
     try:
         ck, summary, text = CACHE.read_text().split("\n", 2)
         if ck == key:
-            Path(out).write_text(text)
+            Path(out).write_text(clipper_wrap(text))
             print(summary + " (cached)")
             return
     except (OSError, ValueError):
@@ -465,7 +487,7 @@ def main(out):
     if os.environ.get("FELUCCA_SLICE") == "1":       # SLICE's BREAK: only when that engine is built
         b.slice_break()                             # last: the sets' offsets stay as they were
     text = b.header()
-    Path(out).write_text(text)
+    Path(out).write_text(clipper_wrap(text))
     CACHE.parent.mkdir(parents=True, exist_ok=True)
     CACHE.write_text(f"{key}\n{b.summary()}\n{text}")
     print(b.summary())
