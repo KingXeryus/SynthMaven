@@ -28,7 +28,16 @@ enum { V_POLY, V_MONO, V_LEGATO, V_UNISON };   /* P_VOICE */
 /* SLOOP 2.4: FM6 (eng_fm6.c) is engine 9 in every build; SLICE, when built, comes last (10). Projects and user
  * presets store the engine index as a byte, and no shipped SLOOP was built with SLICE, so its number is stored
  * nowhere: FM6 may take 9 and SLICE moves up (engines.c ENGINES[], params.c N_ENGNAME follow this order) */
+#if CLIPPER_SYNTH                /* Clipper: its own engines after HYBRID (SLICE is the groovebox's) */
+#if FELUCCA_SLICE
+#error "SLICE is a groovebox engine (CLIPPER_SYNTH 0)"
+#endif
+#define CLIPPER_NENG 1           /* WAVE */
+#define NENGINES (13 + CLIPPER_NENG)
+#define ENGI_WAVE 13u            /* Clipper 0.2: wavetables (eng_wave.c) */
+#else
 #define NENGINES (13 + FELUCCA_SLICE)
+#endif
 #define ENGI_GRAIN 8u            /* GRAIN, PHYS, NOISE (SLOOP 2.5, appended after FM6: the stores keep the numbers) */
 #define ENGI_PHYS 10u
 #define ENGI_NOISE 11u

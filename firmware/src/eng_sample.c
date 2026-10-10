@@ -81,11 +81,17 @@ static int smp_zone_ok(const smp_zone_t *z, uint32_t data_len)
     return z->off <= data_len && z->n <= 2u * SMP_USER_SIZE && z->off + (z->n + 1u) / 2u <= data_len &&
            z->idx <= 88u && z->rate && z->rate <= 4u << 16 && z->ls <= z->le && z->le < z->n && z->lo <= z->hi;
 }
+#if CLIPPER_SYNTH
+static void wt_user_scan(uint32_t k);               /* eng_wave.c: a wavetable in the slot (WAVE's USR1..4) */
+#endif
 static void smp_user_scan(uint32_t k)
 {
     const smp_user_hdr_t *h = (const smp_user_hdr_t *)smp_user_xip(k);
     static smp_zone_t zs[16];
     uint32_t i, base;
+#if CLIPPER_SYNTH
+    wt_user_scan(k);
+#endif
     smp_user_gen++;
     usr_nz[k] = 0;                                  /* (from here no new voice takes the slot) */
     slc_user_scan(k, 0);

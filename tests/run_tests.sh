@@ -47,6 +47,7 @@ fi
 mkdir -p build/gen
 [ build/gen/felucca_tables.h -nt tools/gen_tables.py ] || python3 tools/gen_tables.py build/gen/felucca_tables.h
 [ build/gen/felucca_fm6.h -nt tools/gen_fm6_patches.py ] || python3 tools/gen_fm6_patches.py build/gen/felucca_fm6.h
+python3 tools/gen_wavetables.py build/gen/felucca_wavetables.h >/dev/null   # (cached: only when the script changed)
 
 $CC -o "$OUT/storage_test" tests/storage_test.c
 run "flash storage (A/B, torn writes)" "$OUT/storage_test"
@@ -116,6 +117,9 @@ $SYN -o "$OUT/alias_test" tests/alias_test.c -lm
 run "Clipper 0.2 anti-aliasing: every oscillator's folded partials below 15 kHz (TRI, SYNC, FOLD, FM, feedback)" "$OUT/alias_test"
 $SYN -o "$OUT/reverb_test" tests/reverb_test.c -lm
 run "Clipper 0.2 plate reverb: decay, damping, width, level, pre-delay, stable, type switch" "$OUT/reverb_test" "$OUT/clipper/reverbs.wav"
+$SYN -o "$OUT/wave_test" tests/wave_test.c -lm
+mkdir -p build/wave_demo
+run "Clipper 0.2 WAVE: band-limited tables (no aliasing), building, POS, DTN / SUB, user tables, bounded, demos" "$OUT/wave_test" build/wave_demo
 SYN_UB="${CC_UB:-cc} -DCLIPPER_SYNTH=1 -O1 -g -w -fsanitize=address,undefined -fno-sanitize=shift-base,signed-integer-overflow -fno-sanitize-recover=all -Ibuild/gen -Ifirmware/src -Ifirmware/hal"
 if $SYN_UB -o "$OUT/clipper_ui_asan" tests/clipper_ui_test.c -lm 2>/dev/null; then
     mkdir -p "$OUT/clipper_asan"

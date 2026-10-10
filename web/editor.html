@@ -1317,6 +1317,63 @@ function parseWav(buf) {
   return { sr, x };
 }
 
+/* Clipper 0.2: a wavetable for WAVE (firmware eng_wave.c): a WAV of single cycles one after the other (Serum's 2048
+   points a frame, its "clm " chunk says so; else 2048, 1024 or 256 by the length; a short file is one cycle), 16 frames
+   picked evenly, each one's harmonics 1..128 (a DFT: the cosine and sine terms, Q15), normalised to a peak of 0.9 over
+   the band-limited copies the firmware builds (as tools/gen_wavetables.py). Sent to a user slot as a sample is
+   (SMP_BEGIN, SMP_WRITE at +512, SMP_END) with an "FWTB" header; SMP_INFO shows it as 127 zones. */
+const WT = {
+  NF: 16, NH: 128, LEN: 16 * 128 * 2 * 2, MAGIC: 0x42545746, ZONES: 127,
+  frameLen(n, bytes) {
+    const txt = bytes ? new TextDecoder("latin1").decode(bytes.subarray(0, Math.min(bytes.length, 4096))) : "";
+    const m = txt.match(/<!>(\d{2,5})/);                         /* (Serum: "clm " ... "<!>2048 ...") */
+    if (m && +m[1] >= 32 && n % +m[1] === 0) return +m[1];
+    if (n % 2048 === 0) return 2048;                               /* (Serum's frames; 2048 points: one) */
+    if (n <= 4096) return n;                                       /* one cycle */
+    for (const k of [1024, 512, 256]) if (n % k === 0) return k;
+    throw new Error("not a wavetable (frames of 256 .. 2048 points)");
+  },
+  /* {sr, x} (parseWav) -> {spec: Int16Array(NF NH 2), nsrc, len, frames (16 Float64Array, for the picture)} */
+  fromWave(w, bytes) {
+    const x = w.x, len = WT.frameLen(x.length, bytes), nsrc = Math.floor(x.length / len);
+    if (len < 16) throw new Error("too short");
+    const spec = new Int16Array(WT.NF * WT.NH * 2), frames = [];
+    const H = Math.min(WT.NH, Math.floor(len / 2) - 1);
+    for (let f = 0; f < WT.NF; f++) {
+      const src = Math.round(f * (nsrc - 1) / (WT.NF - 1)), o = src * len;
+      const a = new Float64Array(WT.NH + 1), b = new Float64Array(WT.NH + 1);
+      for (let h = 1; h <= H; h++) {
+        let c = 0, s = 0;
+        const k = 2 * Math.PI * h / len;
+        for (let n = 0; n < len; n++) { c += x[o + n] * Math.cos(k * n); s += x[o + n] * Math.sin(k * n); }
+        a[h] = c * 2 / len; b[h] = s * 2 / len;
+      }
+      let pk = 0;                                                  /* the highest peak of its copies (1..128 .. 1..2) */
+      for (let hm = 128; hm >= 2; hm >>= 1)
+        for (let n = 0; n < 512; n++) {
+          let v = 0;
+          for (let h = 1; h <= Math.min(hm, H); h++) v += a[h] * Math.cos(2 * Math.PI * h * n / 512) + b[h] * Math.sin(2 * Math.PI * h * n / 512);
+          pk = Math.max(pk, Math.abs(v));
+        }
+      const g = pk > 1e-9 ? 0.9 / pk : 0;
+      for (let h = 1; h <= WT.NH; h++) {
+        spec[(f * WT.NH + h - 1) * 2] = Math.max(-32767, Math.min(32767, Math.round(a[h] * g * 32767)));
+        spec[(f * WT.NH + h - 1) * 2 + 1] = Math.max(-32767, Math.min(32767, Math.round(b[h] * g * 32767)));
+      }
+      frames.push(Float64Array.from(x.subarray(o, o + len), (v) => v * g));
+    }
+    return { spec, nsrc, len, frames };
+  },
+  data(spec) { const d = new Uint8Array(WT.LEN), v = new DataView(d.buffer); spec.forEach((s, i) => v.setInt16(i * 2, s, true)); return d; },
+  header(name, data) {
+    const h = new Uint8Array(SMP.HDR_LEN), v = new DataView(h.buffer);
+    v.setUint32(0, WT.MAGIC, true); v.setUint16(4, 1, true); h[6] = WT.NF; h[7] = WT.NH;
+    for (let i = 0; i < 8; i++) h[8 + i] = i < name.length ? name.charCodeAt(i) & 0x7F : 0;
+    v.setUint32(16, WT.LEN, true); v.setUint32(20, crc32(data), true);
+    return h;
+  },
+};
+
 /* gen_samples.resample: moving average over the ratio, then linear interpolation */
 function resample(x, sr, to) {
   if (sr === to) return Array.from(x);
@@ -2309,6 +2366,15 @@ function makeMockDevice(opt = {}) {
       presets: HY.MOCK_NAMES.map((n, i) => P(n, [0, 0, 0, i, 64, 0, 0, 0], [2, 90, 110, 70], 0)) });
     const ge = GP.find((d) => d.label === "ENG");
     ge.names = [...ge.names, "HYBRID"];
+    if (opt.clipper !== "0.1") {                     /* Clipper 0.2: WAVE (eng_wave.c), the tables and USR1..USR4 */
+      const TB = ["BASIC", "PWM", "HARMON", "ODD", "VOCAL", "RESO", "SYNC", "FM", "FM 2:3", "FOLD", "PD", "DIGITL", "BELL",
+        "ORGAN", "CHIP", "COMB", "USR1", "USR2", "USR3", "USR4"];
+      ENG.push({ name: "WAVE", titles: ["WAVE", "FLT"], edit: [E("TABL", TB, 0), D("POS", F.PCT, 0, 127, 0),
+        D("DTN", F.INT, 0, 50, 0), D("SUB", F.PCT, 0, 127, 0), D("CUT", F.CUTOFF, 0, 127, 110), D("RES", F.PCT, 0, 127, 10),
+        D("DRV", F.PCT, 0, 127, 0), D("KTR", F.PCT, 0, 127, 64)],
+        presets: ["WT BASIC", "WT SWEEP", "PPG PAD", "USER WT"].map((n, i) => P(n, [[0, 11, 11, 16][i], 40, 0, 0, 110, 10, 0, 64], [0, 80, 110, 40], 0)) });
+      ge.names = [...ge.names, "WAVE"];
+    }
     ge.max = ge.names.length - 1;
   }
   const HY_E = ENG.findIndex((e) => e.name === "HYBRID");
@@ -2710,6 +2776,18 @@ function makeMockDevice(opt = {}) {
         if (a.length < 2 || a[0] >= st.smp.length) return null;
         const u = st.smp[a[0]], hd = unpack7(a.slice(1)), dv = new DataView(hd.buffer);
         let rc = 0;
+        if (hd.length >= SMP.HDR_LEN && dv.getUint32(0, true) === WT.MAGIC) {      /* Clipper: a wavetable (eng_wave.c) */
+          const len = dv.getUint32(16, true);
+          if (dv.getUint16(4, true) !== 1 || hd[6] !== WT.NF || hd[7] !== WT.NH || len !== WT.LEN) rc = 2;
+          else if (crc32(u.flash.subarray(SMP.DATA_OFF, SMP.DATA_OFF + len)) !== dv.getUint32(20, true)) rc = 3;
+          else {
+            u.flash.set(hd, 0);
+            u.zones = 127; u.len = len;
+            u.name = String.fromCharCode(...hd.slice(8, 16)).replace(/\0.*$/, "");
+          }
+          b(a[0]); b(rc);
+          break;
+        }
         if (hd.length < SMP.HDR_LEN || dv.getUint32(0, true) !== 0x504D5346 || dv.getUint16(4, true) !== 1) rc = 2;
         else if (!hd[6] || hd[6] > 16) rc = 5;
         else {
@@ -3762,6 +3840,9 @@ const TEXT = {
     smpStep3: "FM-1 に送って鳴らす",
     smpModeFiles: "ファイルから（1 ファイル = 1 音）",
     smpModeChop: "録音を切り分ける（CHOP）",
+    smpModeWave: "ウェーブテーブル", wtDrop: "ウェーブテーブルの WAV を開くかドロップ", wtDropHint: "Serum 形式（2048 点 × フレーム）、または 1 周期",
+    wtHelp: "WAVE エンジン用のウェーブテーブル。16 フレームを均等に選び、各フレームの倍音 1〜128 にして送ります（本体で帯域制限されるので折り返しません）。\n下の 3 で送信し、「トラック 1」で WAVE の TABL = USR に。",
+    wtInfo: "{n} フレーム（{len} 点）を読みました：16 フレームを送ります", wtNone: "ファイルがまだありません", wtTable: "ウェーブテーブル", wtBad: "ウェーブテーブルではありません: ",
     smpFilesHelp: "楽器用: 各ファイルが自分の音程で鳴り、間の鍵盤は近いファイルを音程を変えて鳴らします。\nピアノ、ベース、パッド、声、数個のワンショットに。ファイル名に音名を入れる（PIANO_C4.wav）か、下で設定。1 スロット 16 ファイルまで、合計約 7 秒。",
     smpChopHelp: "1 つの録音（ループ、ブレイク、フレーズ）を切って、1 キーに 1 片。\n① 録音を開くかドロップ ② 切る位置を決める: 再生中に TAP（スペースキー）、ヒット検出、グリッド、等分 ③ 要らない片のチェックを外し、長すぎたら短く ④ 下の 3 で送信。",
     smpDrop: "WAV ファイルをここにドロップ",
@@ -3968,6 +4049,9 @@ const TEXT = {
     smpStep3: "Send it and play it",
     smpModeFiles: "From files (one note per file)",
     smpModeChop: "Chop a recording",
+    smpModeWave: "Wavetable", wtDrop: "Open or drop a wavetable WAV", wtDropHint: "Serum-style (frames of 2048 points), or one cycle",
+    wtHelp: "A wavetable for the WAVE engine. 16 frames are picked evenly and sent as their harmonics 1..128 (the FM-1 band-limits them: no aliasing).\nSend it in step 3, then Track 1: WAVE with TABL = this slot.",
+    wtInfo: "{n} frames of {len} points read: 16 frames will be sent", wtNone: "No file yet", wtTable: "wavetable", wtBad: "Not a wavetable: ",
     smpFilesHelp: "For an instrument: each file plays at its own note, and the keys in between play the nearest file, pitched.\nGood for a piano, a bass, a pad, a voice, or a few one-shots. Put the note in the file name (PIANO_C4.wav) or set it below. Up to 16 files, about 7 s in all.",
     smpChopHelp: "Cut one recording (a loop, a break, a phrase) into pieces, one per key.\n① Open or drop it. ② Mark the cuts: TAP while it plays (or the space bar), Find hits, Grid or Equal parts. ③ Untick the pieces you don't want, shorten them if it is too long. ④ Send it in step 3 below.",
     smpDrop: "Drop WAV files here",
@@ -5699,8 +5783,10 @@ function renderSamples() {
   if (!dev || !dev.smp) { box.replaceChildren(); return; }
   const P = smpPage, n = dev.smp.nslots;
   if (P.slot >= n) P.slot = 0;
-  if (!P.ui || P.ui.lang !== lang || P.ui.n !== n) {
-    const u = P.ui = { lang, n };
+  const hasWave = !!dev.info && dev.info.engines.includes("WAVE");   /* (Clipper 0.2: wavetables into the slots) */
+  if (!hasWave && P.mode === "wave") P.mode = "files";
+  if (!P.ui || P.ui.lang !== lang || P.ui.n !== n || P.ui.hasWave !== hasWave) {
+    const u = P.ui = { lang, n, hasWave };
     const step = (k, title, ...kids) => el("section", { class: "kstep" }, el("h3", {}, el("span", { class: "num", text: String(k) }), title), ...kids);
     /* 1: the slots */
     u.slots = el("div", { class: "dest slots4", role: "radiogroup", "aria-label": t("smpStep1") }, ...Array.from({ length: n }, (_, k) => {
@@ -5711,7 +5797,8 @@ function renderSamples() {
     u.erase = el("button", { class: "warn", ic: "symbol_trash", onclick: () => smpErase(P.slot) });
     u.slotNote = el("p", { class: "destnote" });
     /* 2: files or CHOP */
-    u.modes = el("div", { class: "seg modes", role: "tablist" }, ...[["files", "smpModeFiles"], ["chop", "smpModeChop"]].map(([m, k]) =>
+    u.modes = el("div", { class: "seg modes", role: "tablist" }, ...[["files", "smpModeFiles"], ["chop", "smpModeChop"],
+      ...(hasWave ? [["wave", "smpModeWave"]] : [])].map(([m, k]) =>
       el("button", { type: "button", role: "tab", "data-m": m, onclick: () => { P.mode = m; renderSamples(); } }, t(k))));
     u.modeHelp = el("div", { class: "modehelp" });
     u.file = el("input", { type: "file", accept: ".wav,audio/wav,audio/x-wav,audio/*", multiple: true, hidden: true });
@@ -5734,6 +5821,18 @@ function renderSamples() {
       el("div", { class: "kithead" }, el("div", { class: "bar", style: "margin:0" }, el("span", { class: "dim", text: t("smpKeymap") })), u.meterBox),
       u.keymap, u.list, el("p", { class: "bar" }, u.clear));
     u.chopPane = el("div", { class: "pane" });
+    /* Clipper: a wavetable (WT) */
+    u.wtFile = el("input", { type: "file", accept: ".wav,audio/wav,audio/x-wav", hidden: true });
+    u.wtFile.addEventListener("change", () => { if (u.wtFile.files[0]) wtOpen(u.wtFile.files[0]); u.wtFile.value = ""; });
+    u.wtDrop = el("div", { class: "dropzone", tabindex: "0", role: "button", onclick: () => u.wtFile.click(),
+      onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); u.wtFile.click(); } } },
+      el("b", { text: t("wtDrop") }), el("span", { class: "dim", text: t("wtDropHint") }));
+    u.wtDrop.addEventListener("dragover", (e) => { e.preventDefault(); u.wtDrop.classList.add("over"); });
+    u.wtDrop.addEventListener("dragleave", () => u.wtDrop.classList.remove("over"));
+    u.wtDrop.addEventListener("drop", (e) => { e.preventDefault(); u.wtDrop.classList.remove("over"); if (!smpBusy && e.dataTransfer.files[0]) wtOpen(e.dataTransfer.files[0]); });
+    u.wtInfo = el("p", { class: "dim" });
+    u.wtCanvas = el("canvas", { class: "keymap", style: "height:160px" });
+    u.wavePane = el("div", { class: "pane" }, u.wtDrop, u.wtFile, u.wtInfo, u.wtCanvas);
     const chop = $("chop");
     chop.hidden = false;
     u.chopPane.append(chop);                          /* (the CHOP tool, as before, inside step 2) */
@@ -5742,7 +5841,7 @@ function renderSamples() {
       oninput: () => {
         const v = u.name.value.toUpperCase().replace(/[^\x20-\x7E]/g, "").slice(0, 8);
         if (v !== u.name.value) u.name.value = v;
-        if (P.mode === "chop") CH.name = v; else P.draft.name = v;
+        if (P.mode === "chop") CH.name = v; else if (P.mode === "wave") P.wtName = v; else P.draft.name = v;
         smpButtons();
       } });
     u.prog = el("progress", { max: 1, value: 0, hidden: true });
@@ -5754,7 +5853,7 @@ function renderSamples() {
       el("h2", { ic: "symbol_waves" }, t("samples")),
       el("p", { class: "dim", text: t("smpIntro") }),
       step(1, t("smpStep1"), u.slots, el("div", { class: "bar" }, u.erase), u.slotNote),
-      step(2, t("smpStep2"), u.modes, u.modeHelp, u.filesPane, u.chopPane),
+      step(2, t("smpStep2"), u.modes, u.modeHelp, u.filesPane, u.chopPane, u.wavePane),
       step(3, t("smpStep3"), el("div", { class: "bar" }, el("span", { class: "dim", text: t("smpName") }), u.name, u.send, u.prog),
         el("div", { class: "bar" }, el("span", { class: "dim", text: t("smpPlayOn") }), u.play), u.where)));
   }
@@ -5764,7 +5863,7 @@ function renderSamples() {
     const k = +b.dataset.k, x = dev.smp.slots[k];
     b.setAttribute("aria-checked", k === P.slot ? "true" : "false");
     b.classList.toggle("full", !!x.zones);
-    b.querySelector(".now").textContent = x.zones ? `${x.name || "—"} · ${x.zones} ${t("zones")}` : t("empty");
+    b.querySelector(".now").textContent = x.zones === WT.ZONES ? `${x.name || "—"} · ${t("wtTable")}` : x.zones ? `${x.name || "—"} · ${x.zones} ${t("zones")}` : t("empty");
     const pg = b.querySelector("progress");
     pg.max = dev.smp.slotKiB; pg.value = x.kib;
     b.querySelector(".cap").textContent = `${x.kib} / ${dev.smp.slotKiB} KiB` + (k === 3 ? " · 2.4" : "");
@@ -5778,7 +5877,9 @@ function renderSamples() {
   for (const b of u.modes.children) b.setAttribute("aria-selected", b.dataset.m === P.mode ? "true" : "false");
   u.filesPane.hidden = P.mode !== "files";
   u.chopPane.hidden = P.mode !== "chop";
-  u.modeHelp.replaceChildren(...t(P.mode === "files" ? "smpFilesHelp" : "smpChopHelp").split("\n").map((x) => el("p", { text: x })));
+  u.wavePane.hidden = P.mode !== "wave";
+  u.modeHelp.replaceChildren(...t(P.mode === "files" ? "smpFilesHelp" : P.mode === "wave" ? "wtHelp" : "smpChopHelp").split("\n").map((x) => el("p", { text: x })));
+  if (P.mode === "wave") wtDraw();
   const d = P.draft, keys = splitKeys(d.files), bytes = draftBytes(d);
   u.meter.value = Math.min(bytes, SMP.MAX_DATA);
   u.meterBox.classList.toggle("over", bytes > SMP.MAX_DATA);
@@ -5804,7 +5905,7 @@ function renderSamples() {
     }));
   if (d.files.length) requestAnimationFrame(() => drawKeymap(u.keymap, d.files, keys));
   /* 3 */
-  if (document.activeElement !== u.name) u.name.value = P.mode === "chop" ? CH.name || "" : d.name;
+  if (document.activeElement !== u.name) u.name.value = P.mode === "chop" ? CH.name || "" : P.mode === "wave" ? P.wtName || "" : d.name;
   smpButtons();
 }
 function smpButtons() {
@@ -5814,20 +5915,106 @@ function smpButtons() {
   setLabel(u.send, t("smpSendTo").replace("{n}", k + 1));
   let ready;
   if (P.mode === "files") ready = P.draft.files.length && draftBytes(P.draft) <= SMP.MAX_DATA && P.draft.name;
+  else if (P.mode === "wave") ready = P.wt && P.wtName;
   else { const U = chopUsed(), over = U.use.reduce((a, q) => a + ((q.end - q.start + 1) >> 1), 0) > SMP.MAX_DATA; ready = CH.x && U.use.length && !over && CH.name; }
   u.send.disabled = smpBusy || !ready;
-  for (const b of u.play.children) b.disabled = smpBusy || !x.zones || !hasTracks();
+  for (const b of u.play.children) {
+    b.disabled = smpBusy || !x.zones || !hasTracks() || (P.mode === "wave") !== (x.zones === WT.ZONES);
+    b.hidden = synthOnly() && +b.dataset.i > 0;     /* (Clipper: one instrument) */
+  }
   u.where.textContent = t("smpWhere").replace(/\{n\}/g, k + 1);
 }
 async function smpSendPage() {
   const P = smpPage, k = P.slot;
   if (P.mode === "chop") { await chopSend(k, P.ui.prog); }
+  else if (P.mode === "wave") { if (await wtUpload(k, P.ui.prog)) sayK("smpDone", `${k + 1}`); }
   else if (await smpUpload(k, P.ui.prog, true, P.draft)) sayK("smpDone", `${k + 1}`);
   P.ui.prog.hidden = true;
   renderSamples();
 }
+/* Clipper: a WAV of wavetable frames -> smpPage.wt (WT.fromWave), its name, the picture */
+async function wtOpen(file) {
+  const P = smpPage;
+  try {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    P.wt = WT.fromWave(parseWav(bytes.buffer), bytes);
+    P.wtName = file.name.replace(/\.[^.]*$/, "").toUpperCase().replace(/[^\x20-\x7E]/g, "").slice(0, 8);
+    if (P.ui && P.ui.name) P.ui.name.value = P.wtName;
+  } catch (e) { P.wt = null; sayK("wtBad", `${file.name} (${e.message})`); }
+  renderSamples();
+}
+/* the 16 frames, one above the other (a little to the right each: a table seen from the side) */
+function wtDraw() {
+  const P = smpPage, u = P.ui;
+  if (!u || !u.wtCanvas) return;
+  const cv = u.wtCanvas, w = cv.width = Math.max(300, cv.clientWidth || 600), h = cv.height = 160, g = cv.getContext("2d");
+  g.clearRect(0, 0, w, h);
+  u.wtInfo.textContent = P.wt ? t("wtInfo").replace("{n}", P.wt.nsrc).replace("{len}", P.wt.len) : t("wtNone");
+  if (!P.wt) return;
+  const cs = getComputedStyle(document.documentElement), col = cs.getPropertyValue("--t1").trim() || "#4af";
+  P.wt.frames.forEach((fr, f) => {
+    const ox = f * (w * 0.3) / 15, oy = 30 + f * 7, fw = w * 0.68;
+    g.strokeStyle = col; g.globalAlpha = 0.25 + 0.75 * (f / 15); g.beginPath();
+    for (let i = 0; i <= 128; i++) {
+      const v = fr[Math.min(fr.length - 1, Math.floor(i * fr.length / 128))];
+      const x = ox + i * fw / 128, y = oy - v * 24;
+      if (i) g.lineTo(x, y); else g.moveTo(x, y);
+    }
+    g.stroke();
+  });
+  g.globalAlpha = 1;
+}
+/* send smpPage.wt to slot k (SMP_BEGIN, the spectra at +512, SMP_END with the FWTB header) */
+async function wtUpload(k, prog) {
+  const P = smpPage;
+  if (!P.wt || !confirm(t("confirmUpload").replace("{n}", k + 1))) return false;
+  const data = WT.data(P.wt.spec), hdr = WT.header(P.wtName || "WAVE", data);
+  let done = false;
+  busy++;
+  smpBusy = true;
+  renderSamples();
+  prog.hidden = false;
+  try {
+    let r = parse[CMD.SMP_BEGIN](await rq(req.smpBegin(k), { timeout: 1000, retries: 0 }));
+    if (r.rc) throw new Error("begin rc " + r.rc);
+    for (let off = 0; off < data.length; off += 256) {
+      const w = parse[CMD.SMP_WRITE](await rq(req.smpWrite(k, SMP.DATA_OFF + off, data.subarray(off, off + 256)), { timeout: 1000, retries: 1 }));
+      if (w.rc) throw new Error(`write rc ${w.rc}`);
+      prog.value = (off + 256) / data.length;
+    }
+    r = parse[CMD.SMP_END](await rq(req.smpEnd(k, hdr), { timeout: 2000, retries: 0 }));
+    if (r.rc) throw new Error(`end rc ${r.rc}`);
+    done = true;
+  } catch (e) {
+    if (e.message !== "closed") sayK("smpFail", e.message);
+  } finally {
+    try { if (dev) await smpInfo(); } catch (e) { /* shown by the next action */ }
+    smpBusy = false;
+    busy--;
+    renderSamples();
+  }
+  return done;
+}
+/* Clipper: the instrument plays the wavetable in slot k: WAVE, its USER WT preset, TABL = USRk */
+function wtUseOn(i, k) {
+  if (!dev || !hasTracks()) return;
+  op(async () => {
+    if (dev.sel !== i) { dev.sel = parse[CMD.TRACK](await rq(req.track(i))).sel; await afterSoundChange(); }
+    const e = dev.info.engines.indexOf("WAVE");
+    if (e < 0) { sayK("smpNoEngine"); return; }
+    if (dev.dump.engine !== e) {
+      const pi = Math.max(0, (dev.names[e] || []).indexOf("USER WT"));
+      selfLoad(); parse[CMD.PRESET](await rq(req.preset(e, pi))); await afterSoundChange();
+    }
+    const d = dev.pdesc[dev.info.pe0], v = d && d.names ? d.names.indexOf(`USR${k + 1}`) : -1;
+    if (v < 0) { sayK("smpNoEngine"); return; }
+    userSet(0, dev.info.pe0, v + d.min, true);
+    sayK("smpPlaying", ` ${i + 1}: WAVE, TABL = USR${k + 1}`);
+  });
+}
 /* track i plays slot k: the track selected, engine SAMPLE (its first preset), SET = USRk */
 function smpUseOn(i, k) {
+  if (smpPage.mode === "wave") return wtUseOn(i, k);
   if (!dev || !hasTracks()) return;
   op(async () => {
     if (dev.sel !== i) { dev.sel = parse[CMD.TRACK](await rq(req.track(i))).sel; await afterSoundChange(); }

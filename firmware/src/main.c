@@ -225,6 +225,9 @@ static void fm1_main(void)
                 fm1_enter_uboot();
             }
         }
+#if CLIPPER_SYNTH
+        wt_service();                                   /* WAVE: the selected wavetable's band-limited copies */
+#endif
 #if FELUCCA_OTA
         ed_service();                                   /* web editor SysEx */
         ota_service();                                  /* M-UPGRADE handshake */

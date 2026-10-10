@@ -9,7 +9,7 @@ Free and open source (GPL-3.0). It grew out of <a href="https://github.com/isod8
 
 > **Status: 0.2, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
 
-SLOOP is a groovebox. **Clipper is a synthesizer**, one instrument like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine, no song mode and no built-in samples. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
+SLOOP is a groovebox. **Clipper is a synthesizer** with 14 engines, one instrument like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine, no song mode and no built-in samples. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
 
 ## New in 0.2: the sound
 
@@ -17,7 +17,8 @@ SLOOP is a groovebox. **Clipper is a synthesizer**, one instrument like the orig
 - **Soft resonance**: HYBRID's state-variable filters saturate softly instead of clipping.
 - **Anti-aliasing**: triangles are band-limited (polyBLAMP), the hard sync gets a BLEP at each reset, and FM, sine feedback and the wavefolder are held below 20 kHz on high notes. Measured by `tests/alias_test.c`: folded partials stay under -40 dB (triangles -62 dB, the folder -66 dB), against -7 dB before for a full fold.
 - **Plate reverb** (after Jon Dattorro): FX → REVERB has TYPE (ROOM / PLATE), SIZE, DAMP and PRE (pre-delay, ms). The chorus moved to its own CHORUS page.
-- **No built-in samples**: 300 KB of flash go to synthesis. SAMPLE and GRAIN play your own samples (the editor's Samples tab, four slots). 165 factory sounds (five new ones on the ladder: MOOG BASS, MOOG LEAD, LADDER PAD, MINI BASS, MINI LEAD).
+- **WAVE, wavetables**: 16 tables of 16 frames (classic shapes, PWM, sync, FM, fold, formants, PPG-style sweeps, organ, chip, comb...), POS morphs through them (the envelope and the LFO move it through ENV DEST / LFO DEST SHP), DTN adds a second oscillator, SUB a sine an octave down, then ANALOG's filter (SVF or MOOG) and drive. The tables are stored as spectra and band-limited per octave in RAM, read with a cubic: aliasing stays below -60 dBFS at 2.4 kHz (`tests/wave_test.c`). Your own tables (a Serum-style WAV) go to a user slot from the editor's Samples tab, WAVETABLE mode; TABL = USR1..USR4 plays them.
+- **No built-in samples**: 300 KB of flash go to synthesis. SAMPLE and GRAIN play your own samples (the editor's Samples tab, four slots). 181 factory sounds: five new ones on the ladder (MOOG BASS, MOOG LEAD, LADDER PAD, MINI BASS, MINI LEAD) and sixteen on WAVE. 14 engines.
 
 ## On the FM-1
 

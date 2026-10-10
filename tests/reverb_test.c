@@ -8,6 +8,7 @@
  * 4. the level of ROOM's at the default settings (within 4 dB, the same send)
  * 5. PRE: the first output comes PRE ms after the input
  * 6. ROOM -> PLATE -> ROOM with a tail running: no burst (the other one starts from silence)
+ * 7. the delay line (Clipper: at half rate): an echo at the delay time, the repeats decaying
  * WAV: the impulse response of ROOM and PLATE, one after the other (to listen). Exit status: failed checks. */
 #define main hostsim_main
 #include "hostsim.c"
@@ -184,6 +185,36 @@ int main(int argc, char **argv)
         }
         snprintf(w, sizeof w, "ROOM -> PLATE -> ROOM under a tail: nothing louder after (%d) than before (%d)", after, before);
         check(w, after <= before);
+    }
+    {   /* 7. the delay line at half rate (Clipper): the echo at the delay time, the repeats decaying */
+        static int32_t zero[CTL], din[CTL], wl[CTL], wr[CTL];
+        static int32_t y[FS * 3];
+        uint32_t i, k, dl, first = 0, second = 0;
+        int32_t p1 = 0, p2 = 0;
+        setup(RT_ROOM, 90, 60, 0);
+        song.g[G_DMIX] = 127, song.g[G_DFDBK] = 70, song.g[G_DCOLOR] = 127, song.g[G_BPM] = 100;
+        dl = delay_samples();
+        memset(dly_buf, 0, sizeof dly_buf);
+        for (i = 0; i < FS * 3u; i += CTL) {
+            for (k = 0; k < CTL; k++)
+                din[k] = i + k < 8 ? 40000 : 0;
+            fx_buses(zero, din, zero, wl, wr, CTL);
+            for (k = 0; k < CTL; k++)
+                y[i + k] = wl[k];
+        }
+        for (i = 1; i < FS * 3u; i++) {
+            if (!first && abs(y[i]) > 2000)
+                first = i;
+            if (first && i > first + dl / 2 && !second && abs(y[i]) > 300)
+                second = i;
+        }
+        for (i = first; i < first + 32 && i < FS * 3u; i++)
+            p1 = abs(y[i]) > p1 ? abs(y[i]) : p1;
+        for (i = second; i < second + 32 && i < FS * 3u; i++)
+            p2 = abs(y[i]) > p2 ? abs(y[i]) : p2;
+        snprintf(w, sizeof w, "DLY at half rate: the echo after %u samples (the time: %u), the next %u later, quieter (%d -> %d)",
+                 first, dl, second - first, p1, p2);
+        check(w, abs((int)first - (int)dl) <= 2 && abs((int)(second - first) - (int)dl) <= 2 && p2 < p1 && p2 > p1 / 10);
     }
     if (argc > 1) {                                  /* the two impulse responses, to listen */
         static int16_t pcm[FS * 8 * 2];

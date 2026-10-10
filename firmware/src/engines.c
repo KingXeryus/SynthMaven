@@ -29,6 +29,9 @@ static inline int32_t soft_knee(int32_t y, int32_t k)   /* linear up to k, then 
 #include "eng_phys.c"           /* PHYS: physical models, from Felucca 1.0 (DaisySP, Rings: MIT); SLOOP 2.5 */
 #include "eng_noise.c"          /* NOISE: from Felucca 1.0; SLOOP 2.5 */
 #include "eng_hybrid.c"         /* HYBRID: the Clipper voice (3 oscillators, 2 filters, the matrix) */
+#if CLIPPER_SYNTH
+#include "eng_wave.c"           /* WAVE: wavetables (Clipper 0.2) */
+#endif
 
 typedef union {
     gr_part_t grain;
@@ -70,16 +73,33 @@ static const engine_t *const ENGINES[NENGINES] = {&ENG_ANALOG, &ENG_DIGITAL, &EN
 #if FELUCCA_SLICE
                                                     &ENG_SLICE,
 #endif
+#if CLIPPER_SYNTH
+                                                    &ENG_WAVE,   /* 13 (ENGI_WAVE) */
+#endif
 };
+#if CLIPPER_SYNTH
+_Static_assert(ENGI_WAVE == 13u, "ENGINES[] order (Clipper)");
+static int32_t wt_wanted(void)                       /* (eng_wave.c) the table of the instrument, track 1 */
+{
+    return ENGINES[trk[0].eng_req % NENGINES] == &ENG_WAVE ? (int32_t)((uint32_t)trk[0].p[P_E0] % WT_NALL) : -1;
+}
+#endif
 _Static_assert(ENGI_FM6 == 9u, "ENGINES[ENGI_FM6] is FM6");
 _Static_assert(ENGI_GRAIN == 8u && ENGI_PHYS == 10u && ENGI_NOISE == 11u && ENGI_HYBRID == 12u && ENGI_SLICE == 13u, "ENGINES[] order");
 
 /* every factory sound as loud as the others: a level trim per preset, 1/2 dB, measured on a phrase
  * that fits the sound (tools/level_presets.py writes preset_trim.h); a track keeps it in P_ED_FX */
 #include "preset_trim.h"
+#if CLIPPER_SYNTH
+#include "preset_trim_clipper.h"
+#endif
 static int16_t preset_trim(uint32_t e, uint32_t pi)
 {
     if (CLIPPER_SYNTH && (ENGINES[e % NENGINES] == &ENG_SAMPLE || ENGINES[e % NENGINES] == &ENG_GRAIN))
         return 0;                                    /* (Clipper: the user's own samples, no factory level) */
+#if CLIPPER_SYNTH
+    if (e >= PTC_FIRST)                              /* Clipper's own engines: their table (preset_trim_clipper.h) */
+        return e - PTC_FIRST < PTC_ENGINES && pi < PTC_MAX ? PRESET_TRIM_CL[e - PTC_FIRST][pi] : 0;
+#endif
     return e < PT_ENGINES && pi < PT_MAX ? PRESET_TRIM[e][pi] : 0;
 }

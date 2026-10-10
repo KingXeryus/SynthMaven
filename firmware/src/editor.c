@@ -113,6 +113,11 @@ static int ed_smp_erase(uint32_t k, uint32_t all)  /* header sector, or the whol
     usr_nz[k] = 0;
     for (i = 0; i < 16u; i++)
         usr_zone[k][i].n = 0;                     /* a sounding voice ends instead of reading 0xFF */
+#if CLIPPER_SYNTH
+    wt_user_ok[k] = 0;                            /* (a wavetable there: WAVE stops reading it, its copies go) */
+    if (wt_have == (int16_t)(WT_NFACTORY + k))
+        wt_have = -1;
+#endif
     for (i = 0; i < (all ? SMP_USER_SIZE / 0x1000u : 1u) && !rc; i++) {
         rc = fl_erase4k_quiet(ed_smp_slot(k) + i * 0x1000u, &took);
         fm1_wdt_feed();
@@ -128,6 +133,22 @@ static int ed_smp_end(uint32_t k, const uint8_t *a, uint32_t na)
         return 6;                                  /* no BEGIN first (a header over a header: flash ANDs them) */
     if (ed_unpack7(a, na, ed_smp_buf, sizeof(smp_user_hdr_t)) != sizeof(smp_user_hdr_t))
         return 1;
+#if CLIPPER_SYNTH
+    if (h->magic == WT_USER_MAGIC) {               /* Clipper: a wavetable for WAVE (eng_wave.c), its spectra at +512 */
+        const wt_user_hdr_t *w = (const wt_user_hdr_t *)ed_smp_buf;
+        if (!wt_user_hdr_ok(w))
+            return 2;
+        ed_smp_open[k] = 0;
+        ed_smp_inval(k);
+        if (st_crc32(smp_user_xip(k) + SMP_USER_DATA, w->data_len) != w->crc)
+            return 3;
+        if (fl_write(ed_smp_slot(k), ed_smp_buf, sizeof(smp_user_hdr_t)))
+            return 4;
+        ed_smp_inval(k);
+        smp_user_scan(k);                          /* (wt_user_scan) */
+        return wt_user_ok[k] ? 0 : 5;
+    }
+#endif
     if (h->magic != SMP_USER_MAGIC || h->version != 1 || !h->nz || h->nz > 16u ||
         h->data_len > SMP_USER_SIZE - SMP_USER_DATA)
         return 2;
@@ -785,11 +806,17 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
             const smp_user_hdr_t *h = (const smp_user_hdr_t *)smp_user_xip(i);
             char nm[9] = {0};
             uint32_t j;
+#if CLIPPER_SYNTH
+            uint32_t used = usr_nz[i] || wt_user_ok[i];
+            ed_b(wt_user_ok[i] ? 127u : usr_nz[i]);        /* (Clipper: 127 zones = a wavetable for WAVE) */
+#else
+            uint32_t used = usr_nz[i];
             ed_b(usr_nz[i]);
-            for (j = 0; usr_nz[i] && j < 8u; j++)
+#endif
+            for (j = 0; used && j < 8u; j++)
                 nm[j] = h->name[j] >= 32 && h->name[j] < 127 ? h->name[j] : 0;
             ed_str(nm, 8);
-            ed_b(usr_nz[i] ? (h->data_len + 1023u) / 1024u : 0u);
+            ed_b(used ? (h->data_len + 1023u) / 1024u : 0u);
         }
         break;
     case ED_UP_LIST: {                                     /* start, count -> start, count, total, per slot: used, engine, name */

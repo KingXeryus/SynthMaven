@@ -2,7 +2,14 @@
  * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
 /* Effects: per-track DIST insert, then sends into three shared buses (chorus, tempo delay, reverb).
  * Stereo dry mix; the chorus and the reverb come back in stereo, the delay in the middle. */
+#if CLIPPER_SYNTH                /* Clipper: the line at half the rate (22.05 kHz, its repeats are low-passed anyway):
+                                  * the same 1.49 s in half the memory (64 KB for the wavetables) */
+#define DLY_LEN 32768u
+#define DLY_SPAN (2u * DLY_LEN)  /* samples the line holds */
+#else
 #define DLY_LEN 65536u           /* 1.49 s: 1/4 down to 41 BPM, 1/8 dotted down to 31 (clamped below) */
+#define DLY_SPAN DLY_LEN
+#endif
 #define CHO_LEN 2048u
 static int16_t dly_buf[DLY_LEN] __attribute__((section(".pool")));
 static int16_t cho_buf[CHO_LEN] __attribute__((section(".pool")));
@@ -16,7 +23,7 @@ static int16_t rev_line[1559 + 1931 + 2389 + 2791 + REV_MOD + 2];   /* (.bss: th
 static int16_t rev_ap[556 + 441] __attribute__((section(".pool")));
 static struct {
     uint32_t dly_w, cho_w, cho_ph, rev_ph;
-    int32_t dly_lp;
+    int32_t dly_lp, dly_acc;
     uint16_t line_i[4], ap_i[2];
     int32_t line_lp[4];
 } fx;
@@ -162,7 +169,7 @@ static inline void master_out(int32_t *l, int32_t *r)
 static uint32_t delay_samples(void)
 {
     uint32_t s = dly_samples((uint32_t)song.g[G_DTIME]);
-    return s < 16u ? 16u : s >= DLY_LEN ? DLY_LEN - 1u : s;
+    return s < 16u ? 16u : s >= DLY_SPAN - 4u ? DLY_SPAN - 4u : s;
 }
 
 #if CLIPPER_SYNTH
@@ -339,10 +346,25 @@ static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t
         }
         fx.cho_w++;
         /* delay with a low-passed feedback (in the middle) */
+#if CLIPPER_SYNTH
+        {   /* half rate: an entry is the mean of two samples (entry e ~ sample 2e); an odd position reads between
+             * two entries */
+            uint32_t p = fx.dly_w - dl, e = p >> 1;
+            int32_t a = dly_buf[e & (DLY_LEN - 1u)], v;
+            x = (p & 1u) ? (a + dly_buf[(e + 1u) & (DLY_LEN - 1u)]) >> 1 : a;
+            fx.dly_lp += mulq15(x - fx.dly_lp, col);
+            v = (dly_in[i] >> 1) + mulq15(fx.dly_lp, fb);
+            if (fx.dly_w & 1u)
+                dly_buf[(fx.dly_w >> 1) & (DLY_LEN - 1u)] = (int16_t)clamp((fx.dly_acc + v) >> 1, -32768, 32767);
+            else
+                fx.dly_acc = v;
+        }
+#else
         x = dly_buf[(fx.dly_w - dl) & (DLY_LEN - 1u)];
         fx.dly_lp += mulq15(x - fx.dly_lp, col);
         dly_buf[fx.dly_w & (DLY_LEN - 1u)] =
             (int16_t)clamp((dly_in[i] >> 1) + mulq15(fx.dly_lp, fb), -32768, 32767);
+#endif
         fx.dly_w++;
         x = mulq15(x << 1, dmix);
         yl += x;

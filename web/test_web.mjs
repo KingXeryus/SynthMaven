@@ -34,7 +34,7 @@ const E = vm.runInNewContext(proto + `
    CHOP, chopNovelty, chopHits, chopSnap, chopGrid, chopEqual, chopList, chopPick, chopFit, chopZones, wavFile, zipStore, crc32,
    UP, bank, capturePatch, auditionPatch, startWatch, libraryFile, readLibraryFile, paramKeys, patternFromSteps, stepsFromPattern, upName,
    mixer, GM_DRUM, drumName, parseNotes, fmtValue, F, DRUM_LANES, LV_NAMES, emptyDrum, lockable, MICRO, FC, fillGet, fillSet, pack7, unpack7,
-   backupCapture, backupRestore, backupObjects, b64enc, b64dec, FM6, KIT, kitPad, kitZones, kitLen, kitBytes, kitFit, kitSplit, kitLaneOf, kitPlace, zipRead, ROLL, SMF, ARR, mockSettings, fm6CartWrite, fm6CartPreset, fm6CartSlots, fm6CartPresets, DSYN, DSYN_MOCK_NAMES, DSYN_MOCK_KITS, HY })`,
+   backupCapture, backupRestore, backupObjects, b64enc, b64dec, FM6, KIT, kitPad, kitZones, kitLen, kitBytes, kitFit, kitSplit, kitLaneOf, kitPlace, zipRead, ROLL, SMF, ARR, mockSettings, fm6CartWrite, fm6CartPreset, fm6CartSlots, fm6CartPresets, DSYN, DSYN_MOCK_NAMES, DSYN_MOCK_KITS, HY, WT })`,
 { setTimeout, clearTimeout, setInterval, clearInterval, console, TextEncoder, TextDecoder, Blob, Response, DecompressionStream });
 
 async function editorMock() {
@@ -555,6 +555,48 @@ async function editorBackup() {
   old.done();
 }
 
+
+/* ------------------------------------------- Clipper 0.2: a wavetable for WAVE (editor.html WT) --- */
+async function wavetables() {
+  /* a Serum-style WAV: two frames of 2048 points, a sine then a saw (16-bit PCM) */
+  const N = 2048, x = new Int16Array(2 * N);
+  for (let n = 0; n < N; n++) {
+    x[n] = Math.round(16000 * Math.sin(2 * Math.PI * n / N));
+    let s = 0;
+    for (let h = 1; h <= 200; h++) s += Math.sin(2 * Math.PI * h * n / N) / h;
+    x[N + n] = Math.round(12000 * s * 2 / Math.PI);
+  }
+  const body = new Uint8Array(x.buffer), wav = new Uint8Array(44 + body.length), v = new DataView(wav.buffer);
+  wav.set([..."RIFF"].map((c) => c.charCodeAt(0)), 0); v.setUint32(4, 36 + body.length, true);
+  wav.set([..."WAVEfmt "].map((c) => c.charCodeAt(0)), 8); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, 44100, true); v.setUint32(28, 88200, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  wav.set([..."data"].map((c) => c.charCodeAt(0)), 36); v.setUint32(40, body.length, true); wav.set(body, 44);
+  const wt = E.WT.fromWave(E.parseWav(wav.buffer), wav);
+  const at = (f, h, k) => wt.spec[(f * E.WT.NH + h - 1) * 2 + k];
+  ok(wt.nsrc === 2 && wt.len === 2048, "WT: a Serum-style WAV read as 2 frames of 2048 points");
+  ok(Math.abs(at(0, 1, 1) - Math.round(0.9 * 32767)) < 40 && Math.abs(at(0, 2, 1)) < 20 && Math.abs(at(0, 1, 0)) < 20,
+    "WT: frame 1 (the sine) is its first harmonic alone, at 0.9");
+  ok(Math.abs(at(15, 2, 1) / at(15, 1, 1) - 0.5) < 0.02 && Math.abs(at(15, 3, 1) / at(15, 1, 1) - 1 / 3) < 0.02,
+    "WT: frame 16 (the saw): harmonics at 1 / h");
+  const data = E.WT.data(wt.spec), hdr = E.WT.header("MYTABLE", data), hv = new DataView(hdr.buffer);
+  ok(data.length === 8192 && hdr.length === E.SMP.HDR_LEN && hv.getUint32(0, true) === 0x42545746 && hdr[6] === 16 && hdr[7] === 128 &&
+    hv.getUint32(16, true) === 8192 && hv.getUint32(20, true) === E.crc32(data), "WT: the FWTB header (16 x 128, 8192 bytes, CRC)");
+  /* through the mock: BEGIN, WRITE x 32, END -> SMP_INFO says 127 zones (a wavetable) and its name */
+  const m = E.makeMockDevice({ clipper: true });
+  const inp = [...m.access.inputs.values()][0], out = [...m.access.outputs.values()][0];
+  const link = new E.Link((d) => out.send(d), { timeout: 2000 });
+  inp.onmidimessage = (e) => link.receive(e.data);
+  const rq = async (r, o) => link.request(r, o);
+  let r = E.parse[E.CMD.SMP_BEGIN](await rq(E.req.smpBegin(1)));
+  for (let off = 0; off < data.length && !r.rc; off += 256) r = E.parse[E.CMD.SMP_WRITE](await rq(E.req.smpWrite(1, E.SMP.DATA_OFF + off, data.subarray(off, off + 256))));
+  const end = E.parse[E.CMD.SMP_END](await rq(E.req.smpEnd(1, hdr)));
+  const info = E.parse[E.CMD.SMP_INFO](await rq(E.req.smpInfo()));
+  ok(!r.rc && !end.rc && info.slots[1].zones === E.WT.ZONES && info.slots[1].name === "MYTABLE", "WT: sent to USR2 (the mock): 127 zones, MYTABLE");
+  const bad = E.WT.header("X", data); bad[7] = 64;
+  E.parse[E.CMD.SMP_BEGIN](await rq(E.req.smpBegin(2)));
+  const e2 = E.parse[E.CMD.SMP_END](await rq(E.req.smpEnd(2, bad)));
+  ok(e2.rc === 2, "WT: a wrong header refused (rc 2)");
+}
 
 /* ------------------------------------- Clipper: the HYBRID patch (v11), editor.html HY --- */
 function hybridPatch() {
@@ -1390,6 +1432,7 @@ await editorMixer();
 await editorTrackParam();
 await editorV5();
 hybridPatch();
+await wavetables();
 await editorV7();
 await editorV8();
 await editorV9();

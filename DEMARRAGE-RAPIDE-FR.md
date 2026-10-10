@@ -30,7 +30,8 @@ Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maint
 - **Résonance douce** : les filtres SVF d'HYBRID saturent en douceur au lieu d'écrêter.
 - **Anti-aliasing** : triangles à bande limitée, hard sync corrigé à chaque reset, FM, feedback et wavefolder tenus sous 20 kHz dans les aigus.
 - **Réverb plate** (d'après Dattorro) : FX → REVERB : TYPE (ROOM ou PLATE), SIZE, DAMP et PRE (pré-délai en ms). Le chorus a sa propre page CHORUS.
-- **Plus de samples intégrés** : 300 Ko de flash libérés pour la synthèse. SAMPLE et GRAIN jouent tes propres samples (onglet Samples de l'éditeur, 4 emplacements). 165 sons d'usine, dont cinq nouveaux sur le ladder : MOOG BASS, MOOG LEAD, LADDER PAD, MINI BASS, MINI LEAD.
+- **WAVE, tables d'ondes** : 16 tables de 16 frames (formes classiques, PWM, sync, FM, fold, formants, balayages façon PPG, orgue, chip, comb…). POS les parcourt, et l'enveloppe et le LFO le font bouger (ENV DEST et LFO DEST → SHP). DTN ajoute un 2e oscillateur, SUB un sinus à l'octave du dessous, puis le filtre d'ANALOG (SVF ou MOOG). Sans repliement. Tes propres tables (WAV façon Serum) s'envoient dans un emplacement USR depuis l'onglet Samples de l'éditeur, mode WAVETABLE ; TABL = USR1 à USR4 les joue.
+- **Plus de samples intégrés** : 300 Ko de flash libérés pour la synthèse. SAMPLE et GRAIN jouent tes propres samples (onglet Samples de l'éditeur, 4 emplacements). 181 sons d'usine : cinq nouveaux sur le ladder (MOOG BASS, MOOG LEAD, LADDER PAD, MINI BASS, MINI LEAD) et seize sur WAVE. 14 moteurs.
 
 ## 2. Sur la FM-1
 

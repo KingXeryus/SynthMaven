@@ -414,6 +414,14 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
 #if CLIPPER_SYNTH                                    /* (no built-in samples: the user's own, slot 1) */
     {BK_KEYS, 4, "USER SMP"}, {BK_PAD, ENGI_GRAIN, "USER GRAIN"},
 #endif
+#if CLIPPER_SYNTH                                    /* Clipper 0.2: WAVE, the wavetables */
+    {BK_PAD, ENGI_WAVE, "PPG PAD"}, {BK_PAD, ENGI_WAVE, "WT SWEEP"}, {BK_PAD, ENGI_WAVE, "VOCAL WT"},
+    {BK_PAD, ENGI_WAVE, "HARMONICS"}, {BK_PAD, ENGI_WAVE, "COMB PAD"}, {BK_PAD, ENGI_WAVE, "PWM STR"},
+    {BK_BASS, ENGI_WAVE, "SYNC BASS"}, {BK_BASS, ENGI_WAVE, "FM GROWL"}, {BK_LEAD, ENGI_WAVE, "WT BASIC"},
+    {BK_LEAD, ENGI_WAVE, "RESO SWP"}, {BK_LEAD, ENGI_WAVE, "FOLD LEAD"}, {BK_LEAD, ENGI_WAVE, "CHIP WT"},
+    {BK_PLUCK, ENGI_WAVE, "DIGI BELL"}, {BK_KEYS, ENGI_WAVE, "CZ WAVE"}, {BK_ORGAN, ENGI_WAVE, "ORGAN WT"},
+    {BK_FX, ENGI_WAVE, "USER WT"},
+#endif
     /* Clipper 0.2: the MOOG ladder */
     {BK_BASS, ENGI_HYBRID, "MOOG BASS"}, {BK_BASS, 0, "MINI BASS"}, {BK_LEAD, ENGI_HYBRID, "MOOG LEAD"},
     {BK_LEAD, 0, "MINI LEAD"}, {BK_PAD, ENGI_HYBRID, "LADDER PAD"},
