@@ -155,7 +155,7 @@ static void bus_comp(int32_t *l, int32_t *r, uint32_t n)
         g1 = g0 + ((16384 - g0) >> 3) + (g0 < 16384 ? 1 : g0 > 16384 ? -1 : 0);   /* switched off: back to unity */
     } else {
         /* in log2 (Q16, 0 = full scale): the threshold -6 .. -30 dB, the ratio 2 .. 4, a 6 dB knee */
-        int32_t lv = bus.env > 256 ? bus_log2((uint32_t)bus.env >> 8 ? (uint32_t)bus.env >> 8 : 1u) : -16 << 16;
+        int32_t lv = bus.env > 256 ? bus_log2((uint32_t)bus.env >> 8 ? (uint32_t)bus.env >> 8 : 1u) : -(16 << 16);
         int32_t th = -65536 - amt * 4 * 65536 / 127;      /* -1 .. -5 octaves (6 dB each) */
         int32_t sl = 32768 + amt * 16384 / 127;           /* 1 - 1 / ratio, Q16: 0.5 .. 0.75 */
         int32_t kn = 32768, over = lv - th, gr, mk, gl;   /* half the knee: 3 dB */
