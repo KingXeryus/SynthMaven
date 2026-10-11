@@ -2399,7 +2399,17 @@ function makeMockDevice(opt = {}) {
         D("RES", F.PCT, 0, 127, 10), D("DEC", F.PCT, 0, 127, 60), D("LPG", F.PCT, 0, 127, 90)],
         presets: ["CHORD STAB", "MAJ7 KEYS", "M9 PAD", "SWARM", "SWARM SUB", "ADDITIVE", "HARMONIUM", "BELL TONE", "PING", "YEAH",
           "WOW BASS", "VOWELS"].map((n, i) => P(n, [[0, 0, 0, 1, 1, 2, 2, 2, 0, 3, 3, 3][i], 50, 20, 20, 100, 10, 60, 90], [0, 90, 100, 40], 0)) });
-      ge.names = [...ge.names, "ACID", "STRINGS", "MACRO"];
+      ENG.push({ name: "VPS", titles: ["VECTOR", "TONE"], edit: [D("D", F.PCT, 0, 127, 50), D("V", F.INT, 0, 127, 32),
+        D("VENV", F.BIPCT, -64, 63, 0), D("OSC2", F.PCT, 0, 127, 0), D("CUT", F.CUTOFF, 0, 127, 110), D("RES", F.PCT, 0, 127, 10),
+        D("DTN", F.PCT, 0, 127, 20), D("SUB", F.PCT, 0, 127, 0)],
+        presets: ["VPS LEAD", "FORMANT PAD", "VPS BASS", "SYNC SWEEP", "VOX PLUCK", "HOLLOW KEYS", "DIGI BRASS", "VPS BELL",
+          "WOBBLE VPS", "VPS CHOIR"].map((n) => P(n, [40, 40, 0, 0, 112, 10, 0, 0], [0, 80, 110, 40], 0)) });   /* (Clipper 0.5) */
+      ENG.push({ name: "TERRAIN", titles: ["ORBIT", "MOTION"], edit: [E("TERR", ["WAVES", "RIPPL", "CRYST", "BUMPS", "SADDL",
+        "FOLDS", "TWIST", "CHAOS"], 0), D("RAD", F.PCT, 0, 127, 50), D("X", F.PCT, 0, 127, 0), D("Y", F.PCT, 0, 127, 0),
+        D("ORB", F.PCT, 0, 127, 64), D("DRIFT", F.PCT, 0, 127, 20), D("CUT", F.CUTOFF, 0, 127, 110), D("RES", F.PCT, 0, 127, 0)],
+        presets: ["TERRAIN", "RIPPLE PAD", "CRYSTAL", "BUMPY BASS", "SADDLE LEAD", "FOLD DRONE", "TWISTER", "CHAOS FX",
+          "ORBIT KEYS", "TERRA PLUCK"].map((n, i) => P(n, [[0, 1, 2, 3, 4, 5, 6, 7, 2, 1][i], 50, 0, 0, 64, 20, 110, 0], [60, 100, 120, 90], 0)) });
+      ge.names = [...ge.names, "ACID", "STRINGS", "MACRO", "VPS", "TERRAIN"];
     }
     ge.max = ge.names.length - 1;
   }

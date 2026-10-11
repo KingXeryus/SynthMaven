@@ -33,12 +33,14 @@ static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /*
 #if FELUCCA_SLICE
 #error "SLICE is a groovebox engine (CLIPPER_SYNTH 0)"
 #endif
-#define CLIPPER_NENG 4           /* WAVE ACID STRINGS MACRO */
+#define CLIPPER_NENG 6           /* WAVE ACID STRINGS MACRO VPS TERRAIN */
 #define NENGINES (13 + CLIPPER_NENG)
 #define ENGI_WAVE 13u            /* Clipper 0.2: wavetables (eng_wave.c) */
 #define ENGI_ACID 14u            /*   a 303-style bass line (eng_acid.c) */
 #define ENGI_STRINGS 15u         /*   a string machine (eng_strings.c) */
 #define ENGI_MACRO 16u           /*   macro oscillators after Plaits (eng_macro.c) */
+#define ENGI_VPS 17u             /* Clipper 0.5: vector phaseshaping (eng_vps.c, Felucca discussion #145) */
+#define ENGI_TERRAIN 18u         /*   wave terrain, lite (eng_terrain.c, Felucca discussion #146) */
 #else
 #define NENGINES (13 + FELUCCA_SLICE)
 #endif

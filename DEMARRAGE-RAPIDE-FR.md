@@ -1,4 +1,4 @@
-# Clipper — démarrage rapide (version de test 0.4.1)
+# Clipper — démarrage rapide (version de test 0.5)
 
 **Clipper** est un firmware de **synthétiseur** pour le M-VAVE FM-1 : un seul instrument, comme le firmware d'origine, Felucca ou Baudgirl. Ce n'est plus une groovebox : pas de pistes, pas de boîte à rythmes, pas de mode song, pas de samples intégrés. Il garde de SLOOP les 12 moteurs, les effets, l'arpégiateur, le séquenceur de pas, l'audio USB et le MIDI. Il ajoute **HYBRID**, une voix à 3 oscillateurs, 2 filtres et une matrice de modulation de 16 slots, avec 24 sons d'usine. Il ajoute aussi le pitch bend, la molette, l'aftertouch et la pédale de sustain sur tous les moteurs.
 
@@ -15,7 +15,7 @@ Clipper vit dans son propre dossier, **`CLIPPER`**, à côté de celui de SLOOP.
 | Adresse | http://localhost:**8766** | http://localhost:**8767** |
 | Écran de démarrage | voilier, « sloop » | trois-mâts, « clipper » |
 
-Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maintenu) → SYSTEM → ABOUT, qui affiche **CLIPPER 0.4.1**.
+Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maintenu) → SYSTEM → ABOUT, qui affiche **CLIPPER 0.5**.
 
 ## 1. Compiler et installer
 
@@ -23,6 +23,14 @@ Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maint
 2. Double-clique sur **`INSTALL-CLIPPER.bat`**. Il utilise les mêmes outils que SLOOP (WSL MinUI-Build, la chaîne JieLi). La première fois, il copie les trois fichiers du SDK depuis `..\SLOOP\build\deps\ac79`. S'il ne les trouve pas, copie ce dossier `build\deps\ac79` de SLOOP dans `CLIPPER\build\deps\`.
 3. La page d'installation s'ouvre sur http://localhost:8767/webapp/installer/ (Chrome ou Edge, FM-1 en USB). Clique sur **Install**.
 4. La FM-1 redémarre sur l'écran **clipper**. Tes projets, presets, samples et réglages de SLOOP sont toujours là.
+
+## Nouveau dans la 0.5 : deux moteurs de plus, VPS et TERRAIN
+
+Tous deux proposés dans les discussions de Felucca (#145, #146) comme des façons légères d'obtenir des sons qu'aucun oscillateur ne fait ; chacun coûte à peu près ce que coûte ANALOG (un tiers de HYBRID).
+
+- **VPS**, la synthèse par « vector phaseshaping » (d'après Kleimola, Lazzarini, Timoney et Välimäki, DAFx 2011) : un sinus lu à travers une phase pliée. Le pli est un point : **D** (où dans la période) et **V** (combien de cycles à ce moment-là). V sous 1 : des ondes à distorsion de phase, façon CZ ; V au-dessus de 1 : V cycles serrés dans le début de la période, un formant à V fois la note, comme un hard sync ou un balayage de voyelle. Uniquement des cycles entiers (entre deux entiers, V fond les deux) : pas de pointe, pas de repliement. **VENV** balaie V avec l'enveloppe à chaque note, **OSC2** ajoute un 2e oscillateur au D inversé et désaccordé (**DTN**), **SUB** un sinus à l'octave du dessous, puis CUT et RES. La modulation SHAPE (LFO, enveloppe, molette, matrice) déplace D. EDIT : D V VENV OSC2 / CUT RES DTN SUB. 10 sons.
+- **TERRAIN**, la synthèse par « wave terrain », version légère : une orbite tourne au-dessus d'une surface, et la hauteur de la surface sous elle est le son. Un tour est une période : le son a une hauteur juste ; la position de l'orbite (**X**, **Y**) et sa largeur (**RAD**) choisissent les harmoniques ; **ORB** l'aplatit ou en fait un huit ; **DRIFT** la déplace lentement, chaque note à sa façon, pour des timbres qui évoluent sans cesse. Huit surfaces de 32 × 32 (**TERR** : WAVES, RIPPLE, CRYSTAL, BUMPS, SADDLE, FOLDS, TWIST, CHAOS), périodiques dans les deux sens et à bande limitée ; l'orbite se resserre dans les aigus. EDIT : TERR RAD X Y / ORB DRIFT CUT RES. 10 sons.
+- **328 sons, 19 moteurs.** Chaque réglage EDIT des deux est une destination de la matrice (X et Y bougés par LFO 2 ou par la position de la touche, par exemple).
 
 ## Nouveau dans la 0.4.1 : les correctifs de SLOOP 2.6, et la cohabitation avec SLOOP 2.6
 

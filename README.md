@@ -7,9 +7,17 @@ Free and open source (GPL-3.0). It grew out of <a href="https://github.com/isod8
 
 ---
 
-> **Status: 0.4.1, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
+> **Status: 0.5, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
 
-SLOOP is a groovebox. **Clipper is a synthesizer** with 17 engines and 308 sounds, one instrument like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine, no song mode and no built-in samples. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
+SLOOP is a groovebox. **Clipper is a synthesizer** with 19 engines and 328 sounds, one instrument like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine, no song mode and no built-in samples. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
+
+## New in 0.5: two more engines, VPS and TERRAIN
+
+Both suggested in the Felucca discussions ([#145](https://github.com/hugelton/Felucca/discussions/145), [#146](https://github.com/hugelton/Felucca/discussions/146)) as light ways to sounds no oscillator makes; both cost about what ANALOG costs (a third of HYBRID).
+
+- **VPS**, vector phaseshaping (after Kleimola, Lazzarini, Timoney and Välimäki, DAFx 2011): a sine read through a bent phase. The bend is one point, **D** (where in the period) and **V** (how many cycles by then). V under 1: phase-distorted waves, CZ style; V above 1: V cycles squeezed into the first part of the period, a formant at V × the note, as a hard sync or a vowel sweep. Whole cycles only (V between two integers crossfades them): no spike, no aliasing. **VENV** sweeps V with the envelope at each note, **OSC2** adds a second one with D mirrored and detuned (**DTN**), **SUB** a sine an octave down, then CUT and RES. SHAPE modulation (LFO, envelope, wheel, matrix) moves D. EDIT: D V VENV OSC2 / CUT RES DTN SUB. 10 sounds.
+- **TERRAIN**, wave terrain synthesis, lite: an orbit circles over a surface and the surface's height under it is the sound. One turn is one period, so it is pitched; where the orbit lies (**X**, **Y**) and how wide it is (**RAD**) choose the harmonics; **ORB** squeezes it flat or turns it into a figure eight; **DRIFT** moves it slowly, each note its own way, for timbres that keep evolving. Eight surfaces of 32 × 32 (**TERR**: WAVES, RIPPLE, CRYSTAL, BUMPS, SADDLE, FOLDS, TWIST, CHAOS), periodic in both directions and band-limited; the orbit narrows on high notes. EDIT: TERR RAD X Y / ORB DRIFT CUT RES. 10 sounds.
+- **328 sounds, 19 engines.** Every EDIT value of both is a matrix destination (X and Y moved by LFO 2 or the keys, say).
 
 ## New in 0.4.1: SLOOP 2.6's fixes, and living next to SLOOP 2.6
 

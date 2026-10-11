@@ -3,7 +3,7 @@
 /* Felucca user interface. Four columns map to KNOB 1..4. Rendering is lazy:
  * every element remembers what it last drew and is redrawn only on change. */
 #ifndef FELUCCA_VERSION
-#define FELUCCA_VERSION "CLIPPER 0.4.1"  /* the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
+#define FELUCCA_VERSION "CLIPPER 0.5"  /* the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
 #endif
 static void project_save(uint32_t slot);
 static void arrangement_save(void);
@@ -468,6 +468,15 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     {BK_STAB, ENGI_MACRO, "POWER CHRD"}, {BK_PAD, ENGI_MACRO, "M11 PAD"}, {BK_PAD, ENGI_MACRO, "SWARM PAD"},
     {BK_LEAD, ENGI_MACRO, "SWARM LEAD"}, {BK_ORGAN, ENGI_MACRO, "ORGAN ADD"}, {BK_PLUCK, ENGI_MACRO, "ADD BELL"},
     {BK_BASS, ENGI_MACRO, "TALK BASS"}, {BK_FX, ENGI_MACRO, "MAMA"}, {BK_LEAD, ENGI_MACRO, "OI LEAD"},
+    /* Clipper 0.5: VPS and TERRAIN (Felucca discussions #145, #146) */
+    {BK_LEAD, ENGI_VPS, "VPS LEAD"}, {BK_PAD, ENGI_VPS, "FORMANT PAD"}, {BK_BASS, ENGI_VPS, "VPS BASS"},
+    {BK_LEAD, ENGI_VPS, "SYNC SWEEP"}, {BK_PLUCK, ENGI_VPS, "VOX PLUCK"}, {BK_KEYS, ENGI_VPS, "HOLLOW KEYS"},
+    {BK_STAB, ENGI_VPS, "DIGI BRASS"}, {BK_PLUCK, ENGI_VPS, "VPS BELL"}, {BK_BASS, ENGI_VPS, "WOBBLE VPS"},
+    {BK_PAD, ENGI_VPS, "VPS CHOIR"},
+    {BK_PAD, ENGI_TERRAIN, "TERRAIN"}, {BK_PAD, ENGI_TERRAIN, "RIPPLE PAD"}, {BK_KEYS, ENGI_TERRAIN, "CRYSTAL"},
+    {BK_BASS, ENGI_TERRAIN, "BUMPY BASS"}, {BK_LEAD, ENGI_TERRAIN, "SADDLE LEAD"}, {BK_FX, ENGI_TERRAIN, "FOLD DRONE"},
+    {BK_LEAD, ENGI_TERRAIN, "TWISTER"}, {BK_FX, ENGI_TERRAIN, "CHAOS FX"}, {BK_KEYS, ENGI_TERRAIN, "ORBIT KEYS"},
+    {BK_PLUCK, ENGI_TERRAIN, "TERRA PLUCK"},
 #endif
     /* Clipper 0.2: the MOOG ladder */
     {BK_BASS, ENGI_HYBRID, "MOOG BASS"}, {BK_BASS, 0, "MINI BASS"}, {BK_LEAD, ENGI_HYBRID, "MOOG LEAD"},

@@ -136,6 +136,12 @@ run "Clipper 0.4: the matrix on every engine (LFO 2, ENV 2, VEL, KEY, RAND, MW, 
 if $SYN_UB -o "$OUT/synth4_ub" tests/synth4_test.c -lm 2>/dev/null; then
     run "Clipper 0.4 under ASan + UBSan" sh -c "'$OUT/synth4_ub' >/dev/null && echo clean"
 fi
+mkdir -p build/eng3_demo
+$SYN -o "$OUT/engines3_test" tests/engines3_test.c -lm
+run "Clipper 0.5 VPS (vector phaseshaping: pitch, formant, D, no DC, no aliasing, no step) and TERRAIN (every surface pitched, RAD, DRIFT, no aliasing), bounded, cost" "$OUT/engines3_test" build/eng3_demo
+if $SYN_UB -o "$OUT/engines3_ub" tests/engines3_test.c -lm 2>/dev/null; then
+    run "Clipper 0.5 engines under ASan + UBSan" sh -c "'$OUT/engines3_ub' >/dev/null && echo clean"
+fi
 $SYN -o "$OUT/sloop26_fixes" tests/sloop26_fixes_test.c -lm
 run "Clipper 0.4.1: SLOOP 2.6's fixes (look-ahead limiter, filter start, FM6 patch after the fade, arp #191, wheels)" "$OUT/sloop26_fixes"
 if $SYN_UB -o "$OUT/sloop26_ub" tests/sloop26_fixes_test.c -lm 2>/dev/null; then
