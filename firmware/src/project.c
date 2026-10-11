@@ -33,14 +33,45 @@
                                                 * so the format and its size do not change */
 _Static_assert(G_DRDLY == PROJ_NG && G_COUNT == PROJ_NG + 1u, "the globals a project holds, then G_DRDLY");
 /* the parameters a track holds: P_COUNT of SLOOP 2.4 / 2.5 (P_E0 was 53). Clipper 0.4 added PROJ_NX before P_E0
- * (LFO 2, ENV 2, the matrix: core.h); the synth never uses tracks 3 and 4, so the first PROJ_NX values of their
- * p[] hold those of tracks 1 and 2 (marked CLIPPER_PROJ_MARK: proj_capture, proj_apply). The format and its size
- * do not change: older firmware reads a Clipper 0.4 project as before, without them */
+ * (LFO 2, ENV 2, the matrix: core.h); the synth never uses tracks 3 and 4, so tracks 1 and 2's are kept in track 3's
+ * lock slots: free ones (step LOCK_FREE), which SLOOP (and any firmware) passes over, a byte a value in their param
+ * and val bytes (marked CLIPPER_PROJ_MARK: proj_capture, proj_apply). The format and its size do not change: SLOOP
+ * reads a Clipper project as before, tracks 3 and 4 as they are. (Clipper 0.4's first build, CLIPPER_PROJ_MARK_04,
+ * put them in tracks 3 and 4's p[], where SLOOP took them for their sounds: read too) */
 #define PROJ_NP 61u
 #define PROJ_E0 53u
 #define PROJ_NX (P_E0 - PROJ_E0)
-_Static_assert(P_COUNT == PROJ_NP || (CLIPPER_SYNTH && P_COUNT == PROJ_NP + PROJ_NX && PROJ_NX <= PROJ_E0 && NTRK == 4),
-               "a track's parameters as stored (Clipper: tracks 3 and 4 hold the rest)");
+_Static_assert(P_COUNT == PROJ_NP || (CLIPPER_SYNTH && P_COUNT == PROJ_NP + PROJ_NX && PROJ_NX <= PROJ_E0 && NTRK == 4 &&
+               2u * PROJ_NX + 1u <= 3u * NLOCK), "a track's parameters as stored (Clipper: track 3's lock slots hold the rest)");
+#if CLIPPER_SYNTH
+/* tracks 1 and 2's LFO 2, ENV 2 and matrix <-> bytes in the free lock slots of track 3 (lk): 3 bytes a slot (param, val
+ * low, val high), value - its minimum (every range fits a byte), then a check byte */
+static void proj_ext_put(plock_t *lk)
+{
+    uint8_t b[3u * NLOCK];
+    uint32_t j, k;
+    memset(b, 0, sizeof b);
+    for (j = 0; j < 2u; j++)
+        for (k = 0; k < PROJ_NX; k++)
+            b[j * PROJ_NX + k] = (uint8_t)clamp(trk[j].p[PROJ_E0 + k] - TP[PROJ_E0 + k].min, 0, 255);
+    b[2u * PROJ_NX] = CLIPPER_PROJ_MARK;
+    for (k = 0; k < NLOCK; k++) {
+        lk[k].step = LOCK_FREE;
+        lk[k].param = b[3u * k];
+        lk[k].val = (int16_t)(b[3u * k + 1u] | b[3u * k + 2u] << 8);
+    }
+}
+static int proj_ext_get(const plock_t *lk, uint32_t j, uint32_t k)   /* track j's value k, or -1 (none) */
+{
+    uint32_t n = j * PROJ_NX + k, c = 2u * PROJ_NX, i;
+    for (i = 0; i < NLOCK; i++)
+        if (lk[i].step != LOCK_FREE)
+            return -1;
+    if ((c % 3u ? ((uint16_t)lk[c / 3u].val >> (8u * (c % 3u - 1u))) & 255u : lk[c / 3u].param) != CLIPPER_PROJ_MARK)
+        return -1;
+    return (int)(n % 3u ? ((uint16_t)lk[n / 3u].val >> (8u * (n % 3u - 1u))) & 255u : lk[n / 3u].param);
+}
+#endif
 typedef struct {                               /* one track; the drum track ignores engine / preset */
     int16_t p[PROJ_NP];
     uint8_t engine, preset;
@@ -105,6 +136,32 @@ typedef struct {                               /* format 1 (until 0.5 beta), rea
     proj_trk_v2_t t;
     uint32_t sum;
 } project_v1_t;
+/* format 6 ("FUN6", SLOOP 2.6), read only: format 5 with SLOOP 2.6's ten parameters (P_ITYPE .. P_LPOL, its INSERT,
+ * ANALOG filter TYPE, ENV SYNC, LFO 2 SYNC / TRIG / POL: none of them Clipper's) in a byte each before P_E0, and each
+ * step's nudge and fill condition in one byte. Read so a project of SLOOP 2.6 on this FM-1 loads here (and is not shown
+ * as an empty slot to be saved over): its own ten values are left out */
+#define PROJ_MAGIC_V6 0x46554E36u
+#define PROJ_NX_V6 10u
+typedef struct {
+    int16_t p[PROJ_E0];                        /* P_LEVEL .. P_VLEAD */
+    int16_t e[8];                              /* P_E0 .. P_E7 */
+    uint8_t x[PROJ_NX_V6];                     /* SLOOP 2.6's (P_ITYPE .. P_LPOL there: ids 53..62, P_E0 63) */
+    uint8_t engine, preset;
+    union {
+        step_t step[NSTEP];
+        dstep_t dstep[NSTEP];
+    };
+    uint8_t mf[NSTEP];                         /* each step's nudge (6 bits, signed) | its fill condition << 6 */
+    plock_t lock[NLOCK];
+} proj_trk_v6_t;
+typedef struct {
+    uint32_t magic, size;
+    int16_t g[PROJ_NG];
+    uint8_t sel, drdly, rsv[2];
+    proj_trk_v6_t t[NTRK];
+    uint32_t sum;
+} project_v6_t;
+_Static_assert(sizeof(project_v6_t) == 3816u, "format 6 as SLOOP 2.6 stores it");
 _Static_assert(sizeof(project_v2_t) == 2552u && sizeof(project_v1_t) == 688u && sizeof(project_v3_t) == 2584u &&
                sizeof(project_v4_t) == 3112u, "formats 1 / 2 / 3 / 4 as they were stored");
 _Static_assert(sizeof(project_t) <= 3840u, "format 5 fits one flash object (storage.c ST_PAYLOAD_MAX)");
@@ -227,6 +284,52 @@ static int proj_from_v4(project_t *q, const project_v4_t *v4, int n)
     return 1;
 }
 
+/* a format 6 project (SLOOP 2.6; n bytes in *v6) -> slot q as format 5 (no Clipper mark: proj_apply sets what it held
+ * as neutral); a lock on one of 2.6's own ten parameters is dropped, one on P_E0.. moves with it */
+static int proj_from_v6(project_t *q, const project_v6_t *v6, int n)
+{
+    uint32_t i, k;
+    if (n != (int)sizeof *v6 || v6->magic != PROJ_MAGIC_V6 || v6->size != sizeof *v6 ||
+        v6->sum != proj_hash(v6, sizeof *v6 - 4u))
+        return 0;
+    memset(q, 0, sizeof *q);
+    q->magic = PROJ_MAGIC;
+    q->size = sizeof *q;
+    memcpy(q->g, v6->g, sizeof q->g);
+    q->sel = v6->sel;
+    q->drdly = v6->drdly;
+    for (i = 0; i < NTRK; i++) {
+        const proj_trk_v6_t *s = &v6->t[i];
+        proj_trk_t *d = &q->t[i];
+        for (k = 0; k < PROJ_E0; k++)
+            d->p[k] = s->p[k];
+        for (k = 0; k < 8u; k++)
+            d->p[PROJ_E0 + k] = s->e[k];
+        d->engine = s->engine;
+        d->preset = s->preset;
+        memcpy(d->step, s->step, sizeof d->step);
+        memset(d->fill, 0, sizeof d->fill);
+        for (k = 0; k < NSTEP; k++) {
+            int32_t m = s->mf[k] & 63;
+            d->micro[k] = (int8_t)(m >= 32 ? m - 64 : m);
+            d->fill[k >> 2] |= (uint8_t)(((uint32_t)s->mf[k] >> 6) << (2u * (k & 3u)));
+        }
+        for (k = 0; k < NLOCK; k++) {
+            uint32_t id = s->lock[k].param;
+            d->lock[k] = s->lock[k];
+            if (s->lock[k].step == LOCK_FREE || (id >= PROJ_E0 && id < PROJ_E0 + PROJ_NX_V6) || id >= PROJ_E0 + PROJ_NX_V6 + 8u) {
+                d->lock[k].step = LOCK_FREE;
+                d->lock[k].param = 0;
+                d->lock[k].val = 0;
+            } else if (id >= PROJ_E0 + PROJ_NX_V6) {
+                d->lock[k].param = (uint8_t)(id - PROJ_NX_V6);   /* P_E0.. as stored here */
+            }
+        }
+    }
+    q->sum = proj_sum(q);
+    return 1;
+}
+
 /* a format 3 project -> slot q as format 5 */
 static void proj_from_v3_ok(project_t *q, const project_v3_t *v3)
 {
@@ -303,7 +406,8 @@ static int proj_import(project_t *q, const void *b, int n)
         memcpy(q, b, sizeof *q);
         return 1;
     }
-    return proj_from_v4(q, (const project_v4_t *)b, n) || proj_from_v3(q, (const project_v3_t *)b, n) ||
+    return proj_from_v6(q, (const project_v6_t *)b, n) || proj_from_v4(q, (const project_v4_t *)b, n) ||
+           proj_from_v3(q, (const project_v3_t *)b, n) ||
            proj_from_v2(q, (const project_v2_t *)b, n) || proj_from_v1(q, (const project_v1_t *)b, n);
 }
 
@@ -327,12 +431,11 @@ static void proj_capture(project_t *p)        /* what is playing now, as a proje
             p->t[i].p[PROJ_E0 + k] = trk[i].p[P_E0 + k];
         memcpy(p->t[i].lock, trk[i].lock, sizeof trk[i].lock);
 #if CLIPPER_SYNTH
-        if (i >= 2u && i < 4u)                         /* (Clipper 0.4: tracks 1 and 2's LFO 2, ENV 2, matrix) */
-            for (k = 0; k < PROJ_NX; k++)
-                p->t[i].p[k] = trk[i - 2u].p[PROJ_E0 + k];
         for (k = 0; k < NLOCK; k++)                    /* (the locks' EDIT ids as stored) */
             if (trk[i].lock[k].param >= P_E0)
                 p->t[i].lock[k].param = (uint8_t)(trk[i].lock[k].param - PROJ_NX);
+        if (i == 2u)                                   /* (Clipper 0.4: tracks 1 and 2's LFO 2, ENV 2, matrix) */
+            proj_ext_put(p->t[2].lock);
 #endif
         p->t[i].engine = trk[i].eng_req;
         p->t[i].preset = trk[i].preset;
@@ -367,10 +470,14 @@ static void proj_apply(const project_t *p, int all)
                                     i >= P_E0 && i <= P_E7 ? &ENGINES[e]->edit[i - P_E0] : &TP[i];
             int32_t v = i < PROJ_E0 ? s->p[i] : i >= P_E0 ? s->p[PROJ_E0 + i - P_E0] : d->def;
 #if CLIPPER_SYNTH
-            if (i >= PROJ_E0 && i < P_E0 && k < 2u && p->rsv[0] == CLIPPER_PROJ_MARK)
-                v = p->t[k + 2u].p[i - PROJ_E0];        /* Clipper 0.4: tracks 1 and 2's, in 3 and 4 */
-            else if (i < PROJ_NX && k >= 2u && p->rsv[0] == CLIPPER_PROJ_MARK)
-                v = d->def;                             /* (tracks 3 and 4: theirs are not stored) */
+            if (i >= PROJ_E0 && i < P_E0 && k < 2u && p->rsv[0] == CLIPPER_PROJ_MARK) {
+                int x = proj_ext_get(p->t[2].lock, k, i - PROJ_E0);   /* Clipper: tracks 1 and 2's, in track 3 */
+                v = x < 0 ? d->def : x + d->min;
+            } else if (i >= PROJ_E0 && i < P_E0 && k < 2u && p->rsv[0] == CLIPPER_PROJ_MARK_04) {
+                v = p->t[k + 2u].p[i - PROJ_E0];        /* (0.4's first build: in tracks 3 and 4's p[]) */
+            } else if (i < PROJ_NX && k >= 2u && p->rsv[0] == CLIPPER_PROJ_MARK_04) {
+                v = d->def;                             /* (there, theirs were not stored) */
+            }
 #endif
             t->p[i] = (int16_t)clamp(v, d->min, d->max);
         }
@@ -414,7 +521,7 @@ static void proj_apply(const project_t *p, int all)
         fm6_track_loaded(t);                            /* FM6: the project keeps PTCH, not the patch: its slot's */
     }
 #if CLIPPER_SYNTH
-    if (all && p->rsv[0] != CLIPPER_PROJ_MARK && p->rsv[0] != CLIPPER_PROJ_MARK_03)   /* a SLOOP or Clipper 0.1 / 0.2 project: what its drum */
+    if (all && p->rsv[0] != CLIPPER_PROJ_MARK && p->rsv[0] != CLIPPER_PROJ_MARK_04 && p->rsv[0] != CLIPPER_PROJ_MARK_03)   /* a SLOOP or Clipper 0.1 / 0.2 project: what its drum */
         clipper_proj_neutral();                         /* globals and slicer slots held means nothing here */
 #endif
 }
@@ -428,6 +535,7 @@ static uint8_t sec_dirty, song_dirty;           /* live sections / the song: in 
 /* slot from flash into RAM (format 5, or an old one converted) */
 static union {
     project_t v5;
+    project_v6_t v6;
     project_v4_t v4;
     project_v3_t v3;
     project_v2_t v2;
@@ -467,6 +575,7 @@ static void project_apply(const project_t *p)
     panic_req = (1u << NTRK) - 1u;
     fm1_irq_off();                                      /* the audio ISR must not see half a project */
     proj_apply(p, 1);
+    part_ctl_reset();                                   /* (the wheels back to the middle, the pedal up) */
     song.sel = (uint8_t)(p->sel < NTRK && !CLIPPER_SYNTH ? p->sel : 0u);
     fm1_irq_on();
     for (k = 0; k < NPART; k++)                         /* a format 1 project: the default sounds of tracks 2, 3 */
@@ -661,11 +770,18 @@ static int project_used(uint32_t slot) { return proj_ok(&proj_slot[slot & 3u]); 
 #if FELUCCA_FLASH
 /* SLOOP 2.5: the settings object holds the SYN kits after persist_t (drum_synth.c dsu): firmware before 2.5 reads
  * its persist_t and leaves the rest (st_load cuts at its size); its own next save drops them */
+/* what another firmware keeps in the settings object after the SYN kits (SLOOP 2.6: its MIDI LEARN map and GLO > MIDI
+ * channels): read at power-on, written back as it was with every save, so going back to it finds them (it was dropped:
+ * there they came back at their defaults, and a SLOOP 2.6 object without them reads as 2.5's) */
+#define SET_TAIL_MAX 64u
+static uint8_t set_tail[SET_TAIL_MAX];
+static uint32_t set_tail_n;
+_Static_assert(sizeof(persist_t) + sizeof(dsu_bank_t) + SET_TAIL_MAX <= ST_PAYLOAD_MAX, "the settings object");
 static int settings_write(const persist_t *p)
 {
     if (!dsu_valid(&dsu))
         dsu_defaults();
-    if (st_save2(OBJ_SETTINGS, p, sizeof *p, &dsu, sizeof dsu))
+    if (st_save3(OBJ_SETTINGS, p, sizeof *p, &dsu, sizeof dsu, set_tail, set_tail_n))
         return -1;
     dsu_dirty = 0;
     return 0;
@@ -674,12 +790,16 @@ static void dsu_boot(void)                          /* the SYN kits from the set
 {
     st_hdr_t h;
     dsu_defaults();
-    if (st_current(OBJ_SETTINGS, &h) >= 0 && h.len == sizeof(persist_t) + sizeof(dsu_bank_t) &&
+    set_tail_n = 0;
+    if (st_current(OBJ_SETTINGS, &h) >= 0 && h.len >= sizeof(persist_t) + sizeof(dsu_bank_t) &&
+        h.len <= sizeof(persist_t) + sizeof(dsu_bank_t) + SET_TAIL_MAX &&
         dsu_valid((const dsu_bank_t *)(st_buf + sizeof(persist_t)))) {
         uint32_t k;
         memcpy(&dsu, st_buf + sizeof(persist_t), sizeof dsu);
         for (k = 0; k < DSU_N; k++)
             dsu_fix_kit(&dsu.k[k]);
+        set_tail_n = h.len - sizeof(persist_t) - sizeof(dsu_bank_t);   /* (SLOOP 2.6's MIDI part: kept) */
+        memcpy(set_tail, st_buf + sizeof(persist_t) + sizeof(dsu_bank_t), set_tail_n);
     }
     dsu_dirty = 0;
 }

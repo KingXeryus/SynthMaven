@@ -8,9 +8,11 @@
  *             bounded, finite
  *   MPE       a member channel's bend moves its own note only (48 semitones), the master channel's every note; its
  *             pressure (AT > CUT) and its CC 74 (SLIDE, to the cutoff) its own note; MPE OFF: as before (omni)
- *   PROJECT   LFO 2, ENV 2 and the matrix of tracks 1 and 2 kept in tracks 3 and 4 (the size unchanged), the EDIT
- *             values and locks where they were; a Clipper 0.3 project: their defaults, the rest as it was
- *   PRESETS   a Clipper 0.3 user preset bank (192-byte records) read as today's (232), every record as it was */
+ *   PROJECT   LFO 2, ENV 2 and the matrix of tracks 1 and 2 kept in track 3's free lock slots (the size unchanged, SLOOP
+ *             sees tracks 3 and 4 as they are), the EDIT values and locks where they were; 0.4's first build's projects
+ *             and Clipper 0.3's read; a SLOOP 2.6 project (FUN6) read
+ *   PRESETS   one bank for SLOOP and Clipper: 192-byte records, LFO 2 / ENV 2 / matrix packed in the spare values; a
+ *             SLOOP 2.6 record read; Clipper 0.4's first bank (232-byte records) converted */
 #define main hostsim_main
 #include <stddef.h>
 #include "hostsim.c"
@@ -357,44 +359,69 @@ static void t_mpe(void)
 }
 
 static project_t pj;
+/* a value for track j's parameter k of LFO 2 / ENV 2 / the matrix, in its range */
+static int16_t xval(uint32_t j, uint32_t k)
+{
+    const param_desc_t *d = &TP[PROJ_E0 + k];
+    return (int16_t)(d->min + (int32_t)(k * (j ? 5u : 7u) + (j ? 1u : 3u)) % (d->max - d->min + 1));
+}
 static void t_project(void)
 {
     track_t *a = &trk[0], *b = &trk[1];
-    uint32_t k, same = 1, e_ok = 1;
-    int16_t ea[8];
+    uint32_t k, same = 1, e_ok = 1, free3 = 1;
+    int16_t ea[8], t3[PROJ_E0];
     quiet();
     host_preset(a, 0u, 2);
     host_preset(b, ENGI_WAVE, 1);
-    for (k = 0; k < PROJ_NX; k++) {                    /* every LFO 2, ENV 2 and matrix value, in its range */
-        const param_desc_t *d = &TP[PROJ_E0 + k];
-        a->p[PROJ_E0 + k] = (int16_t)(d->min + (int32_t)(k * 7u + 3u) % (d->max - d->min + 1));
-        b->p[PROJ_E0 + k] = (int16_t)(d->min + (int32_t)(k * 5u + 1u) % (d->max - d->min + 1));
-    }
+    for (k = 0; k < PROJ_NX; k++)                      /* every LFO 2, ENV 2 and matrix value, in its range */
+        a->p[PROJ_E0 + k] = xval(0, k), b->p[PROJ_E0 + k] = xval(1, k);
     for (k = 0; k < 8u; k++)
         ea[k] = a->p[P_E0 + k];
+    for (k = 0; k < PROJ_E0; k++)
+        t3[k] = trk[2].p[k];
     for (k = 0; k < NLOCK; k++)
         a->lock[k].step = LOCK_FREE;
     a->lock[0].step = 3, a->lock[0].param = P_E0 + 4u, a->lock[0].val = 77;
     a->lock[1].step = 5, a->lock[1].param = P_LD_FLT, a->lock[1].val = -20;
     proj_capture(&pj);
-    ok(sizeof pj == 3840u && pj.rsv[0] == 0xC4 && pj.t[2].p[0] == a->p[P_L2RATE] && pj.t[3].p[PROJ_NX - 1u] == b->p[P_M6AMT] &&
-       pj.t[0].p[PROJ_E0 + 4u] == a->p[P_E4] && pj.t[0].lock[0].param == PROJ_E0 + 4u,
-       "project: tracks 1 and 2's LFO 2 / ENV 2 / matrix in tracks 3 and 4, EDIT at 53.., the size as ever");
+    for (k = 0; k < NLOCK; k++)
+        free3 &= pj.t[2].lock[k].step == LOCK_FREE;
+    for (k = 0; k < PROJ_E0; k++)
+        same &= pj.t[2].p[k] == t3[k];
+    ok(sizeof pj == 3840u && pj.rsv[0] == CLIPPER_PROJ_MARK && free3 && same && pj.t[0].p[PROJ_E0 + 4u] == a->p[P_E4] &&
+       pj.t[0].lock[0].param == PROJ_E0 + 4u,
+       "project: LFO 2 / ENV 2 / matrix in track 3's free lock slots (SLOOP passes them over), its sound as it is");
     for (k = 0; k < PROJ_NX; k++)
         a->p[PROJ_E0 + k] = TP[PROJ_E0 + k].def, b->p[PROJ_E0 + k] = TP[PROJ_E0 + k].def;
     for (k = 0; k < 8u; k++)
         a->p[P_E0 + k] = 0;
     proj_apply(&pj, 1);
-    for (k = 0; k < PROJ_NX; k++) {
-        const param_desc_t *d = &TP[PROJ_E0 + k];
-        same &= a->p[PROJ_E0 + k] == (int16_t)(d->min + (int32_t)(k * 7u + 3u) % (d->max - d->min + 1));
-        same &= b->p[PROJ_E0 + k] == (int16_t)(d->min + (int32_t)(k * 5u + 1u) % (d->max - d->min + 1));
-    }
+    for (k = 0, same = 1; k < PROJ_NX; k++)
+        same &= a->p[PROJ_E0 + k] == xval(0, k) && b->p[PROJ_E0 + k] == xval(1, k);
     for (k = 0; k < 8u; k++)
         e_ok &= a->p[P_E0 + k] == ea[k];
     ok(same && e_ok && a->lock[0].param == P_E0 + 4u && a->lock[0].val == 77 && a->lock[1].param == P_LD_FLT,
        "project: back as they were (LFO 2, ENV 2, matrix, EDIT values, an EDIT lock, a common lock)");
-    ok(trk[2].p[P_LEVEL] == TP[P_LEVEL].def && trk[3].p[0] == TP[0].def, "project: tracks 3 and 4 keep their own defaults");
+    for (k = 0, free3 = 1; k < NLOCK; k++)
+        free3 &= trk[2].lock[k].step == LOCK_FREE;
+    ok(free3 && trk[2].p[P_LEVEL] == t3[P_LEVEL] && trk[3].p[0] == TP[0].def, "project: tracks 3 and 4 as they were, no lock");
+    {   /* as SLOOP reads it (format 5, every lock checked as proj_apply does): track 3 has no lock, its sound its own */
+        uint32_t used = 0;
+        for (k = 0; k < NLOCK; k++)
+            used += pj.t[2].lock[k].step < NSTEP;
+        ok(!used && pj.t[2].p[P_LEVEL] == t3[P_LEVEL], "project in SLOOP: track 3 with no lock, its own LEVEL");
+    }
+    {   /* the first 0.4 build's projects (0xC4: in tracks 3 and 4's p[]) */
+        proj_capture(&pj);
+        pj.rsv[0] = CLIPPER_PROJ_MARK_04;
+        for (k = 0; k < PROJ_NX; k++)
+            pj.t[2].p[k] = xval(1, k), pj.t[3].p[k] = xval(0, k);   /* (swapped: tell them apart) */
+        proj_apply(&pj, 1);
+        for (k = 0, same = 1; k < PROJ_NX; k++)
+            same &= a->p[PROJ_E0 + k] == xval(1, k) && b->p[PROJ_E0 + k] == xval(0, k);
+        ok(same && trk[2].p[0] == TP[0].def, "a project of 0.4's first build (tracks 3 and 4's p[]): read as it was");
+    }
+    proj_capture(&pj);
     pj.rsv[0] = 0xC3;                                  /* as Clipper 0.3 wrote it: tracks 3 and 4 its own values */
     for (k = 0; k < PROJ_NX; k++)
         pj.t[2].p[k] = TP[k].max, pj.t[3].p[k] = TP[k].min;
@@ -407,34 +434,114 @@ static void t_project(void)
        "a Clipper 0.3 project: no LFO 2 / ENV 2 / matrix (defaults), its EDIT values and tracks 3, 4 as they were");
 }
 
+/* a SLOOP 2.6 project (format 6, 3816 bytes) as SLOOP 2.6 writes it */
+static project_v6_t p6;
+static void t_fun6(void)
+{
+    project_t *q = &proj_slot[0];
+    uint32_t i, k, good = 1;
+    memset(&p6, 0, sizeof p6);
+    p6.magic = PROJ_MAGIC_V6, p6.size = sizeof p6;
+    for (i = 0; i < PROJ_NG; i++)
+        p6.g[i] = GP[i].def;
+    p6.g[G_BPM] = 133, p6.sel = 2, p6.drdly = 9;
+    for (i = 0; i < NTRK; i++) {
+        proj_trk_v6_t *t = &p6.t[i];
+        for (k = 0; k < PROJ_E0; k++)
+            t->p[k] = TP[k].def;
+        t->p[P_ATK] = (int16_t)(10 + i), t->p[P_SLEN] = 16;
+        for (k = 0; k < 8u; k++)
+            t->e[k] = (int16_t)(i * 10u + k);
+        for (k = 0; k < PROJ_NX_V6; k++)
+            t->x[k] = 99;                                /* (2.6's INSERT and the like: not Clipper's) */
+        t->engine = (uint8_t)i, t->preset = 1;
+        t->step[3].time = ST_NOTE, t->step[3].n = 1, t->step[3].note[0] = (uint8_t)(60 + i);
+        t->mf[3] = (uint8_t)((uint32_t)(-5 & 63) | 2u << 6);   /* a nudge of -5, the condition 2 */
+        for (k = 0; k < NLOCK; k++)
+            t->lock[k].step = LOCK_FREE;
+        t->lock[0].step = 3, t->lock[0].param = 63u + 2u, t->lock[0].val = 40;   /* on E2 (2.6's P_E0 is 63) */
+        t->lock[1].step = 4, t->lock[1].param = 54u, t->lock[1].val = 50;        /* on 2.6's INSERT A */
+        t->lock[2].step = 5, t->lock[2].param = P_DIST, t->lock[2].val = 70;
+    }
+    p6.sum = proj_hash(&p6, sizeof p6 - 4u);
+    good = proj_import(q, &p6, (int)sizeof p6) && proj_ok(q) && q->g[G_BPM] == 133 && q->sel == 2 && q->drdly == 9;
+    for (i = 0; i < NTRK && good; i++) {
+        const proj_trk_t *t = &q->t[i];
+        good &= t->p[P_ATK] == (int16_t)(10 + i) && t->p[PROJ_E0 + 7u] == (int16_t)(i * 10u + 7u) && t->engine == i &&
+                t->step[3].note[0] == 60u + i && t->micro[3] == -5 && ((t->fill[0] >> 6) & 3u) == 2u &&
+                t->lock[0].param == PROJ_E0 + 2u && t->lock[0].val == 40 && t->lock[1].step == LOCK_FREE &&
+                t->lock[2].param == P_DIST;
+    }
+    ok(good, "a SLOOP 2.6 project (FUN6): read (every value at its place, nudges, conditions, locks; 2.6's own left out)");
+    p6.sum ^= 1u;
+    ok(!proj_import(q, &p6, (int)sizeof p6), "a damaged FUN6: refused");
+}
+
+/* user presets: one bank SLOOP and Clipper both read */
 static void t_userbank(void)
 {
-    static uint8_t raw[8u + UP_PER_BANK * sizeof(up_rec_v1_t)];
+    static uint8_t raw[8u + UP_PER_BANK * UP_RSIZE_04];
     up_bank_t *bk = &up_bank[0];
     uint32_t k, i, good = 1;
-    int16_t def[P_COUNT], out[P_COUNT];
+    int16_t def[P_COUNT], out[P_COUNT], v[P_COUNT];
     for (i = 0; i < P_COUNT; i++)
         def[i] = i >= P_E0 ? 0 : TP[i].def;
+    {   /* a record round trip: every LFO 2 / ENV 2 / matrix value at its extremes and between */
+        up_rec_t r;
+        uint32_t pass, same = 1;
+        for (pass = 0; pass < 3u; pass++) {
+            memset(&r, 0, sizeof r);
+            for (i = 0; i < P_COUNT; i++)
+                v[i] = (int16_t)(i < P_E0 ? (pass == 0 ? TP[i].min : pass == 1 ? TP[i].max : xval(0, i - PROJ_E0)) : 40 + i);
+            for (i = 0; i < PROJ_E0; i++)
+                v[i] = (int16_t)(i * 3);
+            r.used = UP_USED, r.ver = UP_VER, r.name[0] = 'X';
+            up_rec_set(&r, v);
+            up_params(&r, out, def);
+            for (i = 0; i < P_COUNT; i++)
+                same &= out[i] == v[i];
+        }
+        ok(same && sizeof(up_rec_t) == 192u && r.np == 61u && up_valid(&r),
+           "user presets: a record SLOOP reads (192 bytes, np 61), LFO 2 / ENV 2 / matrix packed in it, back exactly");
+        /* as SLOOP 2.5 / 2.6 maps it: the first np - 8 by place, the last 8 its engine's */
+        ok(r.p[0] == 0 && r.p[52] == 156 && r.p[53] == 40 + P_E0 && r.p[60] == 47 + P_E0,
+           "user presets: SLOOP sees its sound as it was (common values, the engine's 8)");
+    }
+    {   /* a SLOOP 2.6 record (np 71: its ten new values before P_E0 at 63) */
+        up_rec_t r;
+        memset(&r, 0, sizeof r);
+        r.used = UP_USED, r.ver = UP_VER, r.np = 71, r.name[0] = 'S';
+        for (i = 0; i < 71u; i++)
+            r.p[i] = (int16_t)(i < 53u ? i : i < 63u ? 99 : 200 + i);
+        up_params(&r, out, def);
+        for (i = 0; i < 53u; i++)
+            good &= out[i] == (int16_t)i;
+        for (i = 53u; i < P_E0; i++)
+            good &= out[i] == def[i];
+        for (i = 0; i < 8u; i++)
+            good &= out[P_E0 + i] == (int16_t)(263 + i);
+        ok(good, "user presets: a SLOOP 2.6 record: its sound, 2.6's own values left out, the matrix at its defaults");
+    }
+    /* Clipper 0.4's first bank (232-byte records, np 86) */
     memset(raw, 0, sizeof raw);
     {
         uint32_t m = UP_BANK_MAGIC;
-        uint16_t rs = sizeof(up_rec_v1_t), ns = UP_PER_BANK;
+        uint16_t rs = UP_RSIZE_04, ns = UP_PER_BANK;
         memcpy(raw, &m, 4), memcpy(raw + 4, &rs, 2), memcpy(raw + 6, &ns, 2);
     }
     for (k = 0; k < UP_PER_BANK; k++) {
-        up_rec_v1_t o;
-        memset(&o, 0, sizeof o);
-        o.used = k % 3u ? UP_USED : 0u, o.ver = UP_VER, o.engine = (uint8_t)(k % NENGINES), o.np = 61;
-        snprintf(o.name, sizeof o.name, "OLD %u", k);
-        for (i = 0; i < 61u; i++)
-            o.p[i] = (int16_t)(k * 100u + i);
+        uint8_t *o = raw + 8u + k * UP_RSIZE_04;
+        int16_t p[92];
+        memset(p, 0, sizeof p);
+        o[0] = k % 3u ? UP_USED : 0u, o[1] = UP_VER, o[2] = (uint8_t)(k % NENGINES), o[3] = P_COUNT;
+        snprintf((char *)o + 4, 12, "OLD %u", k);
+        for (i = 0; i < P_COUNT; i++)
+            p[i] = (int16_t)(i < PROJ_E0 ? k * 100u + i : i < P_E0 ? xval(k & 1u, i - PROJ_E0) : k * 100u + i);
+        memcpy(o + 16, p, sizeof p);
         for (i = 0; i < 16u; i++)
-            o.note[i] = (uint8_t)(40u + k + i), o.flags[i] = (uint8_t)(i & 7u);
-        memcpy(raw + 8u + k * sizeof o, &o, sizeof o);
+            o[16 + 184 + i] = (uint8_t)(40u + k + i), o[32 + 184 + i] = (uint8_t)(i & 7u);
     }
-    memset(bk, 0x55, sizeof *bk);
-    memcpy(bk, raw, sizeof raw);
-    up_bank_check(0, (int)sizeof raw);
+    good = up_bank_import(0, raw, (int)sizeof raw) && bk->rsize == 192u;
     for (k = 0; k < UP_PER_BANK; k++) {
         const up_rec_t *r = &bk->r[k];
         good &= (r->used == UP_USED) == (k % 3u != 0u);
@@ -442,20 +549,18 @@ static void t_userbank(void)
             continue;
         good &= up_valid(r) && r->np == 61 && r->engine == k % NENGINES && r->note[5] == 45u + k && r->flags[7] == 7u;
         up_params(r, out, def);
-        for (i = 0; i < PROJ_E0; i++)
-            good &= out[i] == (int16_t)(k * 100u + i);
-        for (i = PROJ_E0; i < P_E0; i++)
-            good &= out[i] == def[i];
-        for (i = 0; i < 8u; i++)
-            good &= out[P_E0 + i] == (int16_t)(k * 100u + PROJ_E0 + i);
+        for (i = 0; i < P_COUNT; i++)
+            good &= out[i] == (int16_t)(i < PROJ_E0 ? k * 100u + i : i < P_E0 ? xval(k & 1u, i - PROJ_E0) : k * 100u + i);
         {
             char nm[13];
             snprintf(nm, sizeof nm, "OLD %u", k);
             good &= !strncmp(r->name, nm, 12);
         }
     }
-    ok(good && bk->rsize == sizeof(up_rec_t) && sizeof(up_rec_t) == 232u,
-       "user presets: a Clipper 0.3 bank (192-byte records) read as today's (232), every record as it was");
+    ok(good, "user presets: Clipper 0.4's first bank (232-byte records) made the shared one, every record as it was");
+    memset(raw, 0, sizeof raw);
+    memcpy(raw, bk, sizeof *bk);
+    ok(!up_bank_import(1, raw, (int)sizeof *bk) && !memcmp(&up_bank[1], bk, sizeof *bk), "user presets: a shared bank read as it is");
 }
 
 int main(void)
@@ -469,6 +574,7 @@ int main(void)
     t_matrix();
     t_mpe();
     t_project();
+    t_fun6();
     t_userbank();
     printf(fails ? "synth4: %d FAILED\n" : "synth4: all passed\n", fails);
     return fails;

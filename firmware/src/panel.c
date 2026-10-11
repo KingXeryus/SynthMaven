@@ -86,14 +86,18 @@ static const uint16_t LIGHTS_NS[LIGHTS_N] = {0u, 500u, 1000u, 2000u};   /* the b
                                                 * LED ~95 us, the glow (landmarks) 4 us (fm1_input.h) */
 static uint8_t usb_serial;                      /* menu USB SERIAL: 1 = the serial console presented (usb.c) */
 static uint8_t vis_style;                       /* the visualiser's style, 0..11 (ui_vis.c) */
+/* the bits of the settings word another firmware on this FM-1 keeps there and this one does not know (SLOOP 2.6: GLO >
+ * SYSTEM > IN = CH n in bits 21..25): kept as they were, so going back there finds its settings */
+#define LIGHTS_FOREIGN 0x8FE00000u                   /* bits 21..27 and 31 (Clipper's MPE: 28..30) */
+static uint32_t lights_keep;
 static uint32_t lights_word(void)
 {
     return (uint32_t)lights_lvl | (uint32_t)lights_keys << 4 | (uint32_t)(lights_notes != 0u) << 8 |
            (uint32_t)(rec_tempo != 0u) << 9 | (uint32_t)(rec_count != 0u) << 10 | (uint32_t)(usb_full != 0u) << 11 |
            (uint32_t)(lights_sync % 3u) << 12 | (uint32_t)(lights_mout != 0u) << 14 | (uint32_t)(lights_min != 0u) << 15 |
-           (uint32_t)(usb_serial != 0u) << 16 | (uint32_t)(vis_style % 12u) << 17
+           (uint32_t)(usb_serial != 0u) << 16 | (uint32_t)(vis_style % 12u) << 17 | lights_keep
 #if CLIPPER_SYNTH
-           | (uint32_t)(mpe_mode % MPE_MODES) << 21          /* Clipper 0.4: MPE (voice.c) */
+           | (uint32_t)(mpe_mode % MPE_MODES) << 28          /* Clipper 0.4: MPE (voice.c) */
 #endif
         ;
 }
@@ -110,8 +114,9 @@ static void lights_from_word(uint32_t w)
     lights_min = (uint8_t)((w >> 15) & 1u);     /* GLO > SYSTEM > IN (seq.c) */
     usb_serial = (uint8_t)((w >> 16) & 1u);
     vis_style = (uint8_t)(((w >> 17) & 15u) % 12u);
+    lights_keep = w & LIGHTS_FOREIGN;
 #if CLIPPER_SYNTH
-    mpe_mode = (uint8_t)(((w >> 21) & 7u) % MPE_MODES);
+    mpe_mode = (uint8_t)(((w >> 28) & 7u) % MPE_MODES);   /* (bits 21..25 are SLOOP 2.6's MIDI IN channel) */
 #endif   /* the visualiser (ui_vis.c); 0 in 2.3 = OSCILLOSCOPE */     /* menu USB SERIAL (usb.c usb_cdc_on, at the next start); 0 in 2.3 = OFF */
 }
 

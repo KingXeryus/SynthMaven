@@ -487,6 +487,14 @@ static uint32_t ed_bk_commit(void)
         const up_bank_t *b = (const up_bank_t *)raw;
         if (ed_flash_busy())
             return 3;
+#if CLIPPER_SYNTH
+        if (n == 8u + UP_PER_BANK * UP_RSIZE_04 && b->magic == UP_BANK_MAGIC && b->rsize == UP_RSIZE_04 &&
+            b->nslot == UP_PER_BANK) {                    /* a Clipper 0.4 backup's bank: made today's, then stored */
+            up_bank_import(id - 6u, raw, (int)n);
+            up_gen++;
+            return !flash_ok || st_save(OBJ_UPRESET0 + id - 6u, &up_bank[id - 6u], sizeof up_bank[0]) ? 4u : 0u;
+        }
+#endif
         if (n && (n != sizeof *b || b->magic != UP_BANK_MAGIC || b->rsize != sizeof(up_rec_t) || b->nslot != UP_PER_BANK))
             return 2;
         if (!flash_ok || st_save(OBJ_UPRESET0 + id - 6u, raw, n))

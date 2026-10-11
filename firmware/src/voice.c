@@ -780,6 +780,9 @@ static void engine_block(track_t *t)
             v->stage = 0;
             v->env = v->env_out = 0;
         }
+        if (t->eng_req == ENGI_FM6 && ((fm6_pend >> ((uint32_t)(t - trk) % NPART)) & 1u))
+            return;                                     /* (SLOOP 2.6) FM6: the new notes wait for the new sound's patch
+                                                         * (eng_fm6.c fm6_poll, main loop): not a note of the old one */
         t->engine = t->eng_req % NENGINES;
         t->xf_on = 0;
 #if CLIPPER_SYNTH

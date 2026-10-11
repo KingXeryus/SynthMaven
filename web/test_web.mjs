@@ -34,7 +34,7 @@ const E = vm.runInNewContext(proto + `
    CHOP, chopNovelty, chopHits, chopSnap, chopGrid, chopEqual, chopList, chopPick, chopFit, chopZones, wavFile, zipStore, crc32,
    UP, bank, capturePatch, auditionPatch, startWatch, libraryFile, readLibraryFile, paramKeys, patternFromSteps, stepsFromPattern, upName,
    mixer, GM_DRUM, drumName, parseNotes, fmtValue, F, DRUM_LANES, LV_NAMES, emptyDrum, lockable, MICRO, FC, fillGet, fillSet, pack7, unpack7,
-   backupCapture, backupRestore, backupObjects, b64enc, b64dec, FM6, KIT, kitPad, kitZones, kitLen, kitBytes, kitFit, kitSplit, kitLaneOf, kitPlace, zipRead, ROLL, SMF, ARR, mockSettings, fm6CartWrite, fm6CartPreset, fm6CartSlots, fm6CartPresets, DSYN, DSYN_MOCK_NAMES, DSYN_MOCK_KITS, HY, WT })`,
+   backupCapture, backupRestore, backupObjects, b64enc, b64dec, FM6, KIT, kitPad, kitZones, kitLen, kitBytes, kitFit, kitSplit, kitLaneOf, kitPlace, zipRead, ROLL, SMF, ARR, mockSettings, fm6CartWrite, fm6CartPreset, fm6CartSlots, fm6CartPresets, DSYN, DSYN_MOCK_NAMES, DSYN_MOCK_KITS, HY, WT, SetGate, patchByCount, bkProjFormat, bkDevFormat, bkFwAtLeast })`,
 { setTimeout, clearTimeout, setInterval, clearInterval, console, TextEncoder, TextDecoder, Blob, Response, DecompressionStream });
 
 async function editorMock() {
@@ -735,6 +735,30 @@ async function editorV7() {
     ok(sy.P_L2RATE === 53 && sy.P_E2ATK === 56 && sy.P_M1SRC === 60 && sy.P_M6AMT === 77 && sy.P_E0 === 78 && sy.P_COUNT === 86
       && E.lockable(sy.P_E0, 78) && E.lockable(sy.P_E7, 78) && !E.lockable(sy.P_L2RATE, 78) && !E.lockable(sy.P_M6AMT, 78),
       "v7: Clipper 0.4's layout (LFO 2 53, ENV 2 56, MATRIX 60, P_E0 78): its EDIT values lockable, the matrix not");
+  }
+  {   /* (after SLOOP 2.6) SetGate: a value set again is sent once the last request is answered */
+    const g = new E.SetGate();
+    const a = g.user("0:30", 6, false, 1), b = g.user("0:30", 6, false, 2);
+    g.get("0:30").sent = 6;
+    const c = g.user("0:30", 6, true, 3), d = g.user("0:30", 7, true, 4), e = g.user("0:30", 6, false, 5);
+    g.clear();
+    ok(a && b && !c && d && e && g.get("0:30") === undefined,
+      "SetGate: the same value skipped only while its request is pending; answered, sent again; clear() forgets");
+  }
+  {   /* patchByCount: SLOOP 2.6 (71, pE0 63) / 2.5 (61, 53) / Clipper 0.4 (86, 78) */
+    const s26 = Array.from({ length: 71 }, (_, i) => i), c04 = Array.from({ length: 86 }, (_, i) => 1000 + i);
+    const a = E.patchByCount(s26, 63, 86, 78), b = E.patchByCount(c04, 78, 71, 63), c = E.patchByCount(c04, 78, 86, 78);
+    const d = E.patchByCount(s26.slice(0, 61), undefined, 86, 78);
+    ok(a[52] === 52 && a[53] === null && a[77] === null && a[78] === 63 && a[85] === 70
+      && b[52] === 1052 && b[53] === null && b[63] === 1078 && b[70] === 1085 && c[60] === 1060 && d[78] === 53 && d[77] === null,
+      "patchByCount: the 53 shared values by place, the engine's 8 by theirs; SLOOP 2.6's and Clipper's own left out");
+  }
+  {   /* the backup check: a SLOOP 2.6 project (FUN6) into Clipper 0.4 stops before writing; 0.4.1 reads it */
+    const f6 = Uint8Array.of(0x36, 0x4E, 0x55, 0x46), f5 = Uint8Array.of(0x35, 0x4E, 0x55, 0x46);
+    ok(E.bkProjFormat(f6) === 6 && E.bkProjFormat(f5) === 5 && E.bkProjFormat(Uint8Array.of(1, 2, 3, 4)) === 0
+      && E.bkDevFormat({ version: "CLIPPER 0.4", pcount: 86 }) === 5 && E.bkDevFormat({ version: "CLIPPER 0.4.1", pcount: 86 }) === 6
+      && E.bkDevFormat({ version: "SLOOP 2.6", pcount: 71 }) === 6 && E.bkDevFormat({ version: "FELUCCA SLOOP 2.5", pcount: 61 }) === 5,
+      "backup: the project format each firmware reads (Clipper 0.4.1 reads SLOOP 2.6's FUN6)");
   }
   /* MICRO: 64 bytes offset by 64; a set clamps to -32..31 */
   const mg = E.parse[C.MICRO_GET](await rq(E.req.microGet(0)));

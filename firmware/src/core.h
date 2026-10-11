@@ -139,7 +139,9 @@ enum { LY_OFF, LY_LAYER, LY_SPLIT };
 enum { MS_OFF, MS_LFO1, MS_LFO2, MS_ENV1, MS_ENV2, MS_VEL, MS_KEY, MS_MW, MS_AT, MS_RAND, MS_SLIDE, MS_NSRC };
 enum { MT_OFF, MT_PITCH, MT_CUT, MT_SHAPE, MT_AMP, MT_PAN, MT_L2RATE, MT_E1, MT_COUNT = MT_E1 + 8 };
 enum { L2_FREE, L2_KEY };
-#define CLIPPER_PROJ_MARK 0xC4u  /* project_t.rsv[0]: written by Clipper 0.4 (project.c: + LFO 2, ENV 2, the matrix) */
+#define CLIPPER_PROJ_MARK 0xC5u  /* project_t.rsv[0]: written by Clipper (project.c: + LFO 2, ENV 2, the matrix in track 3's
+                                  * free lock slots, SLOOP sees nothing of them) */
+#define CLIPPER_PROJ_MARK_04 0xC4u   /* by Clipper 0.4's first build (the same, in tracks 3 and 4's p[]) */
 #define CLIPPER_PROJ_MARK_03 0xC3u   /* by Clipper 0.3 (else the bus, layer, mod reset) */
 
 enum {                          /* global parameters */

@@ -5,7 +5,7 @@
  * records each, mirrored in RAM so browsing never reads flash. A record:
  * engine, name, the instrument parameters, a 16-step pattern.
  *
- * A bank whose magic, record size or slot count differ reads as empty; so
+ * A bank whose magic, record size or slot count differ reads as empty (Clipper: but its own 0.4 bank, converted); so
  * does a record with another UP_VER. A record keeps np = the P_COUNT it was
  * stored with; when that differs it is mapped by count: its last 8 values
  * are P_E0..P_E7, the first np - 8 are P_LEVEL.. in order, missing ones take
@@ -15,12 +15,7 @@
  * With -DUP_HOST (host test) only the part above #ifndef UP_HOST is built;
  * it needs nothing but core.h. */
 #define UP_PER_BANK 16u
-#if CLIPPER_SYNTH
-#define UP_PMAX 92u                              /* Clipper 0.4: + LFO 2, ENV 2, the matrix (a 232-byte record) */
-#else
 #define UP_PMAX 72u                              /* room for P_COUNT to grow */
-#endif
-#define UP_PMAX_V1 72u                           /* the record of SLOOP and Clipper 0.1 .. 0.3 (192 bytes) */
 #define UP_USED 0xA5u
 #define UP_VER 1u
 #define UP_BANK_MAGIC 0x31425055u                /* "UPB1" */
@@ -35,18 +30,51 @@ typedef struct {
     uint16_t rsize, nslot;
     up_rec_t r[UP_PER_BANK];
 } up_bank_t;
-typedef struct {                                 /* that record (Clipper: read, then made today's) */
-    uint8_t used, ver, engine, np;
-    char name[12];
-    int16_t p[UP_PMAX_V1];
-    uint8_t note[16], flags[16];
-} up_rec_v1_t;
-_Static_assert(sizeof(up_rec_t) == (CLIPPER_SYNTH ? 232 : 192) && sizeof(up_rec_v1_t) == 192, "user preset record layout");
-_Static_assert(8u + UP_PER_BANK * sizeof(up_rec_t) <= 3840u, "a bank fits one flash object (storage.c ST_PAYLOAD_MAX)");
-_Static_assert(P_COUNT <= UP_PMAX && P_COUNT < 128, "user preset record: P_COUNT");
+_Static_assert(sizeof(up_rec_t) == 192, "user preset record layout (SLOOP's and Clipper's: one bank for both)");
+_Static_assert(P_COUNT < 128, "user preset record: P_COUNT");
 #if CLIPPER_SYNTH
-static up_bank_t up_bank[UP_SLOTS / UP_PER_BANK] __attribute__((section(".pool")));   /* (Clipper 0.4: 7.4 KB out of .bss) */
+/* Clipper: the record SLOOP reads (the banks are shared when the FM-1 goes from one firmware to the other: a bank of
+ * another shape reads as empty there, and a save there writes over it). A Clipper record holds SLOOP 2.5's layout
+ * (np = UP_NP: the 53 common parameters, then P_E0..P_E7), and its 25 parameters SLOOP has not (LFO 2, ENV 2, the
+ * matrix: P_L2RATE .. P_M6AMT) packed in the record's spare values p[UP_NP .. UP_NP + 9] (129 bits), marked
+ * UP_XMAGIC in p[71] (SLOOP leaves them 0: up_store clears the record). SLOOP maps it by count (its own new values
+ * at their defaults); a SLOOP record (np 61, or 71 from 2.6) here: the common ones by place, the engine's 8 last, the
+ * rest (2.6's INSERT and the like, which Clipper has not) dropped, LFO 2 / ENV 2 / the matrix at their defaults.
+ * Clipper 0.4's own bank (232-byte records, np 86) is read and made this one (up_bank_check) */
+#define UP_E0V 53u                               /* P_E0 of SLOOP 2.4 / 2.5 and of the stored layout */
+#define UP_NP (UP_E0V + 8u)
+#define UP_NX ((uint32_t)P_E0 - UP_E0V)          /* the Clipper parameters packed */
+#define UP_XMAGIC 0x434C                         /* "CL" */
+#define UP_RSIZE_04 232u                         /* Clipper 0.4's record (92 values) */
+static const uint8_t UP_XW[UP_NX] = {7, 3, 1, 7, 7, 7, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7};   /* bits */
+_Static_assert(UP_NX == 25u && P_L2RATE == UP_E0V && P_M6AMT == P_E0 - 1, "the packed parameters, in order");
+static void up_xpack(int16_t *dst, const int16_t *x)   /* x: P_L2RATE .. P_M6AMT -> dst[0..9] */
+{
+    uint32_t i, j, bit = 0;
+    for (i = 0; i < 10u; i++)
+        dst[i] = 0;
+    for (i = 0; i < UP_NX; i++) {
+        uint32_t v = (uint32_t)clamp(x[i] - TP[UP_E0V + i].min, 0, (1 << UP_XW[i]) - 1);
+        for (j = 0; j < UP_XW[i]; j++, bit++)
+            if ((v >> j) & 1u)
+                dst[bit >> 4] = (int16_t)((uint16_t)dst[bit >> 4] | (uint16_t)(1u << (bit & 15u)));
+    }
+}
+static void up_xunpack(const int16_t *src, int16_t *x)
+{
+    uint32_t i, j, bit = 0;
+    for (i = 0; i < UP_NX; i++) {
+        uint32_t v = 0;
+        for (j = 0; j < UP_XW[i]; j++, bit++)
+            v |= (((uint32_t)(uint16_t)src[bit >> 4] >> (bit & 15u)) & 1u) << j;
+        x[i] = (int16_t)((int32_t)v + TP[UP_E0V + i].min);
+    }
+}
+static int up_xrec(const up_rec_t *r) { return r->np == UP_NP && r->p[UP_PMAX - 1u] == UP_XMAGIC; }
+static uint8_t up_ld[8u + UP_PER_BANK * UP_RSIZE_04] __attribute__((section(".pool")));   /* (a 0.4 bank, loading) */
+static up_bank_t up_bank[UP_SLOTS / UP_PER_BANK] __attribute__((section(".pool")));
 #else
+#define UP_E0V ((uint32_t)P_E0)
 static up_bank_t up_bank[UP_SLOTS / UP_PER_BANK];
 #endif
 
@@ -60,42 +88,84 @@ static int up_valid(const up_rec_t *r)
 
 static int up_used(uint32_t k) { return k < UP_SLOTS && up_valid(up_rec(k)); }
 
+/* today's values v (P_COUNT) into record r (np, p[]) */
+static void up_rec_set(up_rec_t *r, const int16_t *v)
+{
+    uint32_t i;
+#if CLIPPER_SYNTH
+    r->np = UP_NP;
+    for (i = 0; i < UP_E0V; i++)
+        r->p[i] = v[i];
+    for (i = 0; i < 8u; i++)
+        r->p[UP_E0V + i] = v[P_E0 + i];
+    up_xpack(&r->p[UP_NP], &v[UP_E0V]);
+    r->p[UP_PMAX - 1u] = UP_XMAGIC;
+#else
+    r->np = P_COUNT;
+    for (i = 0; i < P_COUNT; i++)
+        r->p[i] = v[i];
+#endif
+}
+
+/* the record's values in today's P_* order (mapped by count, see the top); def = the defaults */
+static void up_params(const up_rec_t *r, int16_t *out, const int16_t *def)
+{
+    uint32_t i, nc = r->np - 8u, ncm = nc < UP_E0V ? nc : UP_E0V;   /* (the common ones it has, by place) */
+    for (i = 0; i < P_E0; i++)
+        out[i] = i < ncm ? r->p[i] : def[i];
+    for (i = 0; i < 8u; i++)
+        out[P_E0 + i] = r->p[nc + i];
+#if CLIPPER_SYNTH
+    if (up_xrec(r))                                     /* Clipper's own: LFO 2, ENV 2, the matrix */
+        up_xunpack(&r->p[UP_NP], &out[UP_E0V]);
+#endif
+}
+
 static void up_bank_check(uint32_t b, int len)  /* after loading bank b (len bytes, -1 = none): wrong shape -> empty */
 {
     up_bank_t *bk = &up_bank[b];
-#if CLIPPER_SYNTH
-    if (len == (int)(8u + UP_PER_BANK * sizeof(up_rec_v1_t)) && bk->magic == UP_BANK_MAGIC &&
-        bk->rsize == sizeof(up_rec_v1_t) && bk->nslot == UP_PER_BANK) {   /* Clipper 0.3's bank: today's records */
-        uint32_t k = UP_PER_BANK;
-        while (k--) {                                /* (from the last: each moves up, over what was read) */
-            up_rec_v1_t o;
-            up_rec_t *r = &bk->r[k];
-            memcpy(&o, (const uint8_t *)bk->r + k * sizeof o, sizeof o);
-            memset(r, 0, sizeof *r);
-            r->used = o.used, r->ver = o.ver, r->engine = o.engine, r->np = o.np;
-            memcpy(r->name, o.name, sizeof r->name);
-            memcpy(r->p, o.p, sizeof o.p);            /* (np values: mapped by count, up_params) */
-            memcpy(r->note, o.note, sizeof r->note);
-            memcpy(r->flags, o.flags, sizeof r->flags);
-        }
-        bk->rsize = sizeof(up_rec_t);
-        return;
-    }
-#endif
     if (len != (int)sizeof *bk || bk->magic != UP_BANK_MAGIC || bk->rsize != sizeof(up_rec_t) ||
         bk->nslot != UP_PER_BANK)
         memset(bk, 0, sizeof *bk);
 }
-
-/* the record's values in today's P_* order (mapped by count, see above); def = the defaults */
-static void up_params(const up_rec_t *r, int16_t *out, const int16_t *def)
+#if CLIPPER_SYNTH
+/* a stored bank (len bytes of src, -1 = none) into bank b: today's as it is, Clipper 0.4's (232-byte records, np 86,
+ * P_E0 at 78) made today's record by record. 1: it was 0.4's (to be written back, so SLOOP reads it too) */
+static int up_bank_import(uint32_t b, const uint8_t *src, int len)
 {
-    uint32_t i, nc = r->np - 8u;
-    for (i = 0; i < P_E0; i++)
-        out[i] = i < nc ? r->p[i] : def[i];
-    for (i = 0; i < 8u; i++)
-        out[P_E0 + i] = r->p[nc + i];
+    up_bank_t *bk = &up_bank[b];
+    const up_bank_t *h = (const up_bank_t *)src;
+    if (len == (int)(8u + UP_PER_BANK * UP_RSIZE_04) && h->magic == UP_BANK_MAGIC && h->rsize == UP_RSIZE_04 &&
+        h->nslot == UP_PER_BANK) {
+        uint32_t k, i;
+        memset(bk, 0, sizeof *bk);
+        bk->magic = UP_BANK_MAGIC;
+        bk->rsize = sizeof(up_rec_t);
+        bk->nslot = UP_PER_BANK;
+        for (k = 0; k < UP_PER_BANK; k++) {
+            const uint8_t *o = src + 8u + k * UP_RSIZE_04;   /* used ver engine np, name[12], p[92], note, flags */
+            up_rec_t *r = &bk->r[k];
+            int16_t v[P_COUNT], op[92];
+            memcpy(op, o + 16, sizeof op);
+            if (o[0] != UP_USED || o[1] != UP_VER || o[3] != P_COUNT)
+                continue;                                /* (0.4 wrote np = P_COUNT: anything else stays empty) */
+            r->used = o[0], r->ver = o[1], r->engine = o[2];
+            memcpy(r->name, o + 4, sizeof r->name);
+            for (i = 0; i < P_COUNT; i++)
+                v[i] = op[i];                            /* (0.4's layout is today's) */
+            up_rec_set(r, v);
+            memcpy(r->note, o + 16 + sizeof op, 16);
+            memcpy(r->flags, o + 32 + sizeof op, 16);
+        }
+        return 1;
+    }
+    memset(bk, 0, sizeof *bk);
+    if (len > 0 && len <= (int)sizeof *bk)
+        memcpy(bk, src, (uint32_t)len);
+    up_bank_check(b, len);
+    return 0;
 }
+#endif
 
 static int up_name_ok(const uint8_t *s, uint32_t n)   /* 1..12 printable ASCII */
 {
@@ -165,11 +235,14 @@ static int up_parse(const uint8_t *a, uint32_t na, up_rec_t *r, uint32_t *slot)
     r->used = UP_USED;
     r->ver = UP_VER;
     r->engine = a[1];
-    r->np = P_COUNT;
     for (i = 0; i < n; i++)
         r->name[i] = (char)a[2 + i];
-    for (i = 0; i < P_COUNT; i++, k += 2u)
-        r->p[i] = (int16_t)((int32_t)((a[k] & 127u) | (a[k + 1] & 127u) << 7) - 8192);
+    {
+        int16_t v[P_COUNT];
+        for (i = 0; i < P_COUNT; i++, k += 2u)
+            v[i] = (int16_t)((int32_t)((a[k] & 127u) | (a[k + 1] & 127u) << 7) - 8192);
+        up_rec_set(r, v);
+    }
     for (i = 0; i < 16u; i++, k += 2u) {
         r->note[i] = a[k];
         r->flags[i] = a[k + 1];
@@ -200,7 +273,12 @@ static void up_boot(void)                      /* persist_boot: the banks from f
 #if FELUCCA_FLASH
     uint32_t b;
     for (b = 0; b < UP_SLOTS / UP_PER_BANK; b++)
+#if CLIPPER_SYNTH
+        if (up_bank_import(b, up_ld, flash_ok ? st_load(OBJ_UPRESET0 + b, up_ld, sizeof up_ld) : -1))
+            st_save(OBJ_UPRESET0 + b, &up_bank[b], sizeof up_bank[b]);   /* (a 0.4 bank: written back as SLOOP reads it) */
+#else
         up_bank_check(b, flash_ok ? st_load(OBJ_UPRESET0 + b, &up_bank[b], sizeof up_bank[b]) : -1);
+#endif
 #endif
 }
 
@@ -249,7 +327,6 @@ static int up_store(uint32_t k, const char *name)
     r.used = UP_USED;
     r.ver = UP_VER;
     r.engine = TSEL->eng_req;
-    r.np = P_COUNT;
     if (name && name[0]) {
         for (i = 0; i < 12u && name[i]; i++)
             r.name[i] = name[i];
@@ -262,8 +339,7 @@ static int up_store(uint32_t k, const char *name)
         for (i = 0; i < 12u && b[i]; i++)
             r.name[i] = b[i];
     }
-    for (i = 0; i < P_COUNT; i++)
-        r.p[i] = TSEL->p[i];
+    up_rec_set(&r, TSEL->p);
     up_pat_from(&r, TSEL->step);
     return up_put(k, &r);
 }

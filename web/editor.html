@@ -1727,7 +1727,7 @@ function readLibraryFile(obj, ctx) {
     const e = engIndex(obj.engineName, obj.engine);
     if (e < 0) return { patches: [], skipped: 1, keys: null };
     return { patches: [cleanPatch({ name: obj.presetName || obj.engineName || "PATCH", engine: e, engineName: obj.engineName,
-      p: obj.p.slice(0, ctx.keys ? ctx.keys.length : obj.p.length), pattern: Array.isArray(obj.steps) ? patternFromSteps(obj.steps) : null, tags: ["file"] })],
+      p: ctx.keys ? patchByCount(obj.p, obj.pE0, ctx.keys.length, ctx.pe0 ?? ctx.keys.length - 8) : obj.p.slice(), pattern: Array.isArray(obj.steps) ? patternFromSteps(obj.steps) : null, tags: ["file"] })],
       skipped: 0, keys: null };
   }
   if (obj.format !== LIB.FORMAT) throw new Error("unknown format");
@@ -1835,6 +1835,12 @@ function backupObjects(file) {
 /* write it back: banks, projects, the working project, the settings, then the samples */
 async function backupRestore(rq, file, progress = () => {}) {
   const m = backupObjects(file);
+  {   /* projects newer than the device reads: stop before anything is written (it stopped at the first project, the
+         preset banks already replaced) */
+    const info = parse[CMD.INFO](await rq(req.info(), { timeout: 1000, retries: 2 }));
+    const newest = Math.max(0, ...[0, 2, 3, 4, 5].filter((id) => m.has(id)).map((id) => bkProjFormat(m.get(id))));
+    if (newest > bkDevFormat(info)) throw new BackupError("bkNewer", `${file.firmware || "?"} > ${info.version}`);
+  }
   const total = [...m.values()].reduce((s, d) => s + d.length, 0) || 1;
   let done = 0;
   for (const id of BK.RESTORE) {
@@ -3656,6 +3662,46 @@ const DSYN = {
 const DSYN_MOCK_NAMES = ["808", "909", "606", "80S", "VINTAGE", "TRAP", "DRILL", "BOOMBAP", "LO-FI", "PHONK", "HOUSE", "D.HOUSE", "TECHNO", "MINIMAL", "ELECTRO", "DISCO", "GARAGE", "JUNGLE", "DUBSTEP", "DEMBOW", "AMAPIANO", "AFRO", "LATIN", "TRIBAL", "SYNTHWV", "CHIP", "ARCADE", "GLITCH", "INDUSTR", "HYPER", "AMBIENT", "JAZZ"];
 const DSYN_MOCK_KITS = "AAEAHwYMIwRhfAAAGgAALAB/AAAACIgBATYAAxQAPGA5XBZkAEMjUgAAAAB7ABErBgAaADkAAAAAegBJYkoAPQAAsQACNwwAGgA5AAAACnYAKGp0AG0AAM4AAjcMABoAOQAAAAByClJicwBsAAC4AQErAAYvBVR2MCgQEgAiGVUAAAAAfwEBMgAGLwVRdDAoEBIAIhlaAAAAAH0AAzcMABoAOQAAAABsBXA7ZgAAAAB/AAI8AAAaADkAAAAMaABqmmgAXQAAkgABKwYAGgA5AAAAAGAGLkpvAAAAAIcBAD4PAx8CSXQwHhgAACwAfwAAAAB/AgFcBgAAABxcL0YoKAADZloAAAAAnQUASAkAAANNbAAAAAAALIZaAAAAAJUBAGMBAAAAK2wAAAwAACwAfwAAAACHAQAcBQcvI298AAAOAAAsAH8AAAAifgIBOwMEDQAyVDA8HmAAPEpoAAAAAJUAAQEgAB4eB1B8AABAKAADGWcAAAAkgAIBNgcHFQA7XDNGHnQASBtHAAAAFocAESsGABoAOQAAAAB8AE1qTABAAACrAAM5DAAaADkAAAAMcgAuQ3EAbgAArgADOQwAGgA5AAAAAG4KVkNwAG4AAJMBAS0ACigFT3YwJBYaACIZXQAAAACBAQE0AAooBUx0MCQWGgAiGWEAAAAAgAADOwMAGgA5AAAAAG4FcTNnAAAAAH4AAz4GABoAOQAAAA5sAGxybABjAACOAAErBgAaADkAAAAAYAYuSm8AAAAAhgEAPg8DHwJJdDAeGAAALAB/AAAAAH8CAV4FAgAAGGAvPDA8AANmXQAAAACUBQBICQAAA01sAAAAAAAshloAAAAAlQEAYwEAAAArbAAADAAALAB/AAAAAIcBACEKJBgESHwAAFQAACwAfwAAAEh/AgE5DAYNADJWMzwobgA/SmwAAAAAkwABACIIEh8DRnwAACIAACwAfwAAAAqJAgE5AAMNADJQNjIYaAA8K1kAAAAAjAARKwYAGgA5AAAAAHoASWJKAD0AALQAAjsOABoAOQAAAAh0ACJydQByAADSAAI7DgAaADkAAAAAbgVHcnUAcQAAxAEAMgYEIgNFcgAADAAALAB/AAAAAIkBADkABCIDQ3AAAAwAACwAfwAAAACIAAI+BgAaADkAAAAAaABjS2sAAAAAnQACPAAAGgA5AAAADGgAappoAF0AAJIAASsGABoAOQAAAABgBi5KbwAAAACHAQA+DwMfAkl0MB4YAAAsAH8AAAAAfwIBXAYAAAAcXC9GKCgAA2ZaAAAAAJgFAEgJAAADTWwAAAAAACyGWgAAAACVAQBjAQAAACtsAAAMAAAsAH8AAAAAhwEAIAAOIgVPfAAAGAAALAB/AAAAFIcCATsDBA0AMlQwPB5gADxKaAAAAACTAAEBIQ8UHAVLfAAAOCgAAxllAAAAFocCATcGBhUDPlg0RiRwBUwrRQAAAB58ABErBgAaADkAAAAAfABPck4APQAApgADOggAGgA5AAAACmoAKEtxAG4AALIAAzoIABoAOQAAAABmCk9LcABuAACYAQEpCAw1B1h4MCgYFgAoGVkAAAAAegEBMQMMNQdVdjAoGBYAKBldAAAAAHkAAzcMABoAOQAAAABsBXA7ZgAAAAB/AAI8AAAaADkAAAAMaABqmmgAXQAAkgABKwYAGgA5AAAAAGAGLkpvAAAAAIkBAD4PAx8CSXQwHhgAACwAfwAAAAB/AgFcBgAAABxcL0YoKAADZloAAAAAmQUASAkAAANNbAAAAAAALIZaAAAAAJUBAGMBAAAAK2wAAAwAACwAfwAAAACHAQAfBhAfB1J8AAAoAAAsAH8AAAAeggIBOQAGEQA3VDQ8KHAARkpnAAAAAJEAAQAjDggaAkN4AAAKAAAsNVMAAAAAiAEBOggCDQAvSjMyCkwAOEpeAAAAAJEAASsGABoAOQAAAABcBD9abABjAAC/AAI9AwAaADkAAAAAagAfgnYAcwAA0QACPQMAGgA5AAAAAGQDQoJ1AHIAAMkBADUIAhoCQ3AAAAgAACwAfwAAAACKAQA7DgIaAkFuAAAIAAAsAH8AAAAAigADNwwAGgA5AAAAAGwFcDtmAAAAAH0AAjwAABoAOQAAAAxoAGqaaABdAACQAAErBgAaADkAAAAAXAMiWnEAAAAAkAEAQwYCFQI+cAAADgAALAB/AAAAAIYBAFsGAAAAImQwMh4AACwAfwAAAACFBQBPBgAAAkJoAAAAAAAshl0AAAAAlwEAYwEAAAArbAAADAAALAB/AAAAAIUBACEPBhoCSngAAAgAACw1TgAAAACIAQE+BgIJAChGMCgMRgAvSmQAAAAAkwABACAAEh8FWHwAADIAACwAfwAAAB6AAgE4AwYNADdQNjwodANBM1gAAAAahwARKwYAGgA5AAAAAH4AQ2JPAEkAAKsAAjcMABoAOQAAAAp2AB9ydgBzAADQAAI3DAAaADkAAAAAcgpLYnMAbAAAuwEBKwAGLwVUdjAoEBIAIhlVAAAAAH8BATIABi8FUXQwKBASACIZWgAAAAB9AAM3DAAaADkAAAAAbAVwO2YAAAAAgAACPAAAGgA5AAAADGgAappoAF0AAJIAASsGABoAOQAAAABgBi5KbwAAAACIAQA+DwMfAkl0MB4YAAAsAH8AAAAAfwIBXAYAAAAcXC9GKCgAA2ZaAAAAAJ0FAEgJAAADTWwAAAAAACyGWgAAAACVAQBjAQAAACtsAAAMAAAsAH8AAAAAhwEAHQ8MKChxfAAAFAAALAB/AAAAMHoCATsDBA0AMlQwPB5gADxKaAAAAACRAAEAHwYOIgRSfAAALAAALAB/AAAAGoUCATwJCAkAL1QzPC5sAjtDWgAAAB6HABErBgAaADkAAAAAegBJYkoAPQAApgACNwwAGgA5AAAACnYAIYJ1AHIAAMsAAjcMABoAOQAAAAByClJicwBsAAC4AQErAAYvBVR2MCgQEgAiGVUAAAAAfwEBMgAGLwVRdDAoEBIAIhlaAAAAAH0AAzcMABoAOQAAAABsBXA7ZgAAAAB/AAI8AAAaADkAAAAMaABqmmgAXQAAkgABKwYAGgA5AAAAAGAGLkpvAAAAAIcBAD4PAx8CSXQwHhgAACwAfwAAAAB/AgFfAwAAACJoL0YoKAADZloAAAAAkgUASAkAAANNbAAAAAAALIZaAAAAAJUBAGMBAAAAK2wAAAwAACwAfwAAAACHAQAdAgxIFHF8AAAQAAAsAH8AAAAseQIBQAAGAwAoUDAyMmQANWJpAAAAAJcTAQEhBQ4cBkx8AAAoRgANKV0AAABGfQIBNQEFFQQ/YDZGInAFRkJeAAAAMoIAESsGABoAOQAAAAB8AE1qTABAAACuAAM5DAAaADkAAAAMcgAoWm4AawAAwQADOQwAGgA5AAAAAG4KS1puAGkAAKYBAS0ACigFT3YwJBYaACIZXQAAAACBAQE0AAooBUx0MCQWGgAiGWEAAAAAgAADOwMAGgA5AAAAAG4FcTNnAAAAAIAAAz4GABoAOQAAAA5sAGxybABjAACPAAErBgAaADkAAAAAYAYuSm8AAAAAiAEAPg8DHwJJdDAeGAAALAB/AAAAAH8CAV4FAgAAGGAvPDA8AANmXQAAAACXBQBICQAAA01sAAAAAAAshloAAAAAlgEAYwEAAAArbAAADAAALAB/AAAAAIcBAB8GCh8IUXwAAB4AACwdUwAAAFB7AgE3BgURADdaNjweaAA/SloAAAAohzQBACALCiIFVHgAABIAACwtTAAAABiDAQE2AAMUADxgOVwKZABCQlkAAAAAhQARKwYAGgA5AAAAAHoASUpHAD0AALQAAjcMABoAOQAAAApgAChKaABiAADLAAI3DAAaADkAAAAAXApSSmcAYQAAtAEBKwAGLwVUdjAoEBIAIhlVAAAAAH8BATIABi8FUXQwKBASACIZWgAAAAB9AAM3DAAaADkAAAAAWAVwMmMAAAAAmgACPAAAGgA5AAAADFAAaoJkAFwAAJ4AASsGABoAOQAAAABgBi5KbwAAAACKAQA+DwMfAkl0MB4YAAAsAH8AAAAAfwIBXAYAAAAcXC9GKCgAA2ZaAAAAAJ0FAEgJAAADTWwAAAAAACyGWgAAAACWAQBjAQAAACtsAAAMAAAsAH8AAAAAhwEAHgoIIgdaeAAACgAALC1FAAAAHoECATsDBA0AMlQwPB5gADxKUwAAAACTAgEAIAAUHgVXfAAAPAAALAB/AAAAWnkCATkMCA0ANVQzPCx0Az9DVQAAADx9ABErBgAaADkAAAAAfgBBYkoASwAAuAACNwwAGgA5AAAACnYAImp0AG0AANEAAjcMABoAOQAAAAByCkhicwBsAAC8AQErAAYvBVR2MCgQEgAiGVUAAAAAfwEBMgAGLwVRdDAoEBIAIhlaAAAAAH0AAzcMABoAOQAAAABsBXA7ZgAAAAB/AAI8AAAaADkAAAAMaABqmmgAXQAAkgABKwYAGgA5AAAAAGAGLkpvAAAAAIgBAD4PAx8CSXQwHhgAACwAfwAAAAB/AgFcBgAAABxcL0YoKAADZloAAAAAmwUASQMAAA9YdAAAAAAALI5ZAAAAKGYBAGMBAAAAK2wAAAwAACwAfwAAAACHAQAdCAwsHm58AAAeAAAsAH8AAABueAIBOwMEDQAyVDA8HmAAPEpoAAAAAJQAAQEgAB4eCVJ8AABAKAADGWcAAAAegAIBNgcHFQA7XDNGHnQASBtHAAAAFocAESsGABoAOQAAAAB+AFBqTABAAACpAAM5DAAaADkAAAAMcgAuQ3EAbgAArwADOQwAGgA5AAAAAHAKT0NwAG4AAJYBAS0ACigFT3YwJBYaACIZXQAAAACBAQE0AAooBUx0MCQWGgAiGWEAAAAAgAADOwMAGgA5AAAAAG4FcTNnAAAAAH8AAz4GABoAOQAAAA5sAGxybABjAACOAAErBgAaADkAAAAAYgYySm8AAAAAhgEAPg8DHwJJdDAeGAAALAB/AAAAAH8CAV4FAgAAGGAvPDA8AANmXQAAAACZBQBICQAAA01sAAAAAAAshloAAAAAlQEAYwEAAAArbAAADAAALAB/AAAAAIcBACEKJBgESHwAAFQAACwAfwAAAEh/AgE5DAYNADJWMzwobgA/SmwAAAAAkwABAB8GFh8KVnwAACQAACwdXQAAABKDAgE2BwcVADtQM0YQdABESlcAAAAWiQARKwYAGgA5AAAAAHYAVGJJAEAAALUAAzkMABoAOQAAAAxkACtycABsAADBAAM5DAAaADkAAAAAZApOcm8AawAApgEBLQAKKAVPdjAkFhoAIhldAAAAAIEBATQACigFTHQwJBYaACIZYQAAAACAAAM7AwAaADkAAAAAbgVxM2cAAAAAfwADPgYAGgA5AAAADmwAbHJsAGMAAI4AASsGABoAOQAAAABkBjVKawAAAACFAQA+DwMfAkl0MB4YAAAsAH8AAAAAfwIBXgUCAAAYYC88MDwAA4ZXAAAAAJIFAEgJAAADTWwAAAAAACyGWgAAAACVAQBjAQAAACtsAAAMAAAsAH8AAAAAhwEAIQokGARIfAAAVAAALAB/AAAASH8CATkMBg0AMlYzPChuAD9KbAAAAACUAAEBHwYcHAlUfAAARjIACTFjAAAAYHkCATYHBxUAO1wzRh50AEgbRwAAABaHABErBgAaADkAAAAAfABHclQAQAAAogADOQwAGgA5AAAADHIAJEt0AHMAALsAAzkMABoAOQAAAABuCkxLcwBuAACYAQEtAAooBU92MCQWGgAiGV0AAAAAgQEBNAAKKAVMdDAkFhoAIhlhAAAAAIAAAzsDABoAOQAAAABuBXEzZwAAAAB/AAM+BgAaADkAAAAOZABjcmwAYwAAlgABKwYAGgA5AAAAAGAGLkpvAAAAAIcBAD4PAx8CSXQwHhgAACwAfwAAAAB/AgFeBQIAABhgLzwwPAADZl0AAAAohwUASAkAAANNbAAAAAAALIZaAAAAAJUBAGMBAAAAK2wAAAwAACwAfwAAAACHAQAdDxIiD2N8AAAoAAAsTUUAAABueAIBOQwGDQAyVjM8KG4AP0psAAAAAI8AAQAhDxIRA0J8AAAsAAAsAH8AAAAMiAIBVA4AAAAYWjAyKDwAH0tdAAAAAIsAESsGABoAOQAAAAB6ADdiSgA9AACyAAI3DAAaADkAAAAKdgAYS3UAdAAAwgACNwwAGgA5AAAAAHIKPGJzAGwAAMABASsABi8FVHYwKBASACIZVQAAAAB/AQEyAAYvBVF0MCgQEgAiGVoAAAAAfQADNwwAGgA5AAAAAGwFcDtmAAAAAIAAAjwAABoAOQAAAAxoAGqaaABdAACSAAErBgAaADkAAAAAYAYuSm8AAAAAhwEARAMDHwI3dDAeGAAALAB/AAAAAIECAVwGAAAAEVwvRigoAANmWgAAAACeBQBICQAAA01sAAAAAAAshloAAAAAlQEAYwEAAAArbAAADAAALAB/AAAAAIcBACAAChQESnwAAB4AACwAfwAAAACHAgE7AwQNADJUMDweYAA8SmgAAAAAkwABACAAGDIFWHwAACgAACwAfwAAABh/AQE2AAMUADxgOVwkZAA8M1UAAAAAegARKwYAGgA5AAAAAHoASWJKAD0AALYAAjsOABoAOQAAAAh0ACJydQByAADRAAI7DgAaADkAAAAAbgVHcnUAcQAAxAQALw4ePARKcAAAAAAALAB/AAAAAIIEADkAHjwERm4AAAAAACwAfwAAAAB/AAM3DAAaADkAAAAAbAVwO2YAAAAAgAACPAAAGgA5AAAADGgAappoAF0AAJIAASsGABoAOQAAAABgBi5KbwAAAACHAQA+DwMfAkl0MB4YAAAsAH8AAAAAfwIBXAYAAAAcXC9GKCgAA2ZaAAAAAJsFAEgJAAADTWwAAAAAACyGWgAAAACVAQBjAQAAACtsAAAMAAAsAH8AAAAAhwEAHAUHLyNvfAAADgAALAB/AAAAIn4CATsDBA0AMlQwPB5gADxKaAAAAACSAAEBIAAeHgdLfAAAQCgAAxlnAAAAFIcCATYHBxUAO1wzRh50AEgbRwAAABaHABErBgAaADkAAAAAfABNakwAQAAArQADOQwAGgA5AAAADHIALkNxAG4AAK8AAzkMABoAOQAAAAByClhDcABuAACSAQAuCBhOBVt2MB4AAAAsAH8AAAAAeQEANQgYTgVYdDAeAAAALAB/AAAAAHgAAzsDABoAOQAAAABuBXEzZwAAAACAAAM+BgAaADkAAAAObABscmwAYwAAjgABKwYAGgA5AAAAAGAGLkpvAAAAAIgBAD4PAx8CSXQwHhgAACwAfwAAAAB/AgFeBQIAABhgLzwwPAADZl0AAAAAlQUASAkAAANNbAAAAAAALIZaAAAAAJUBAGMBAAAAK2wAAAwAACwAfwAAAACHAQAhCiQYBEh8AABUAAAsAH8AAABIfwIBOQwGDQAyVjM8KG4AP0psAAAAAJAAAQAgCxoaBUt8AAA8AAAsAH8AAAAogwIBOggIDQA1WDM8MnACPENXAAAAGIcAESsGABoAOQAAAAB8AE1qTABAAACkAAM5DAAaADkAAAAMcgAmS3QAbgAAtQADOQwAGgA5AAAAAG4KVkNwAG4AAJQBAS0ACigFT3YwJBYaACIZXQAAAACBAQE0AAooBUx0MCQWGgAiGWEAAAAAgAADOwMAGgA5AAAAAG4FcTNnAAAAAH8AAz4GABoAOQAAAA5sAGxybABjAACOAAErBgAaADkAAAAAZAYvSm8AAAAAhQEAPg8DHwJJdDAeGAAALAB/AAAAAH8CAWABAgAAHmAvPDA8AANmXQAAAACUBQBICQAAA01sAAAAAAAshloAAAAAlQEAYwEAAAArbAAADAAALAB/AAAAAIcBACEKJBgESHwAAFQAACwAfwAAAEh/AgE9AwYJACxUMDIyZAA1YmsAAAAAkAABACEPEBgDRnwAADgAACwAfwAAADKFAgE7DgkNAjleM0YycgNDQ08AAAAofwARKwYAGgA5AAAAAHwATWpMAEAAAKsAAzkMABoAOQAAAAxyACJDcQBuAACyAAM5DAAaADkAAAAAbgpWQ3AAbgAAkwEBLQAKKAVPdjAkFhoAIhldAAAAAIEBATQACigFTHQwJBYaACIZYQAAAACAAAM7AwAaADkAAAAAbgVxM2cAAAAAfwADPgYAGgA5AAAADmQAbHJsAGMAAJEAASsGABoAOQAAAABgBi5KbwAAAACHAQA+DwMfAkl0MB4YAAAsAH8AAAAAfwIBXgUCAAAYYC88MDwAA2ZdAAAAAJcFAEgJAAADTWwAAAAAACyGWgAAAACVAQBjAQAAACtsAAAMAAAsAH8AAAAAhwEAIQokGARIfAAAVAAALAB/AAAASH8CAT4GBwkAL1ozPDJqADtaZwAAAB6HAAEAHgoaHghUfAAARgAALAB/AAAAQHwCATQJCBoFQ2I2RjJ6D1QzPQAAAEBnABErBgAaADkAAAAAfABSakwAQAAAqgADOQwAGgA5AAAADHIALkNxAG4AAKwAAzkMABoAOQAAAABuCk5DcABuAACXAQEtAAooBU92MCQWGgAiGV0AAAAAgQEBNAAKKAVMdDAkFhoAIhlhAAAAAIAAAzsDABoAOQAAAABuBXEzZwAAAAB/AAM+BgAaADkAAAAObABscmwAYwAAjwABKwYAGgA5AAAAAGAGLkpvAAAAAIcBAD4PAx8CSXQwHhgAACwAfwAAAAB/AgFeBQIAABhgLzwwPAADZl0AAAAAmgUASAkAAANNbAAAAAAALIZaAAAAAJUBAGMBAAAAK2wAAAwAACwAfwAAAACHAQAhCiQYBEh8AABUAAAsAH8AAABIfwIBOQwGDQAyVjM8KG4AP0psAAAAAJIAAQAfBgwjBFh8AAAoAAAsAH8AAAAUhAIBOQwFDQA1VDY8JGQCPjNTAAAAFIcAESsGABoAOQAAAAB6AEJiSgA9AACtAAI3DAAaADkAAAAKdgAoanQAbQAA0gACNwwAGgA5AAAAAHIKUmJzAGwAALgBASsABi8FVHYwKBASACIZVQAAAAB/AQEyAAYvBVF0MCgQEgAiGVoAAAAAfQADNwwAGgA5AAAAAGwFcDtmAAAAAIAAAjwAABoAOQAAAAxoAGqaaABdAACSAAErBgAaADkAAAAAYgYySm8AAAAAhQEAPg8DHwJJdDAeGAAALAB/AAAAAH8CAVwGAAAAHGgvRigoAANmWgAAAACWBQBICQAAA01sAAAAAAAshloAAAAAlQEAYwEAAAArbAAADAAALAB/AAAAAIcBABwFBy8jb3wAAA4AACwAfwAAACJ+AgE7AwQNADJUMDweYAA8SmgAAAAAlAABACALDhoETnwAACgAACwAfwAAABCHAQE2AAMUADxgOVwWZABDI1IAAAAAfgARKwYAGgA5AAAAAHoAS2JKAD0AAKsAAjcMABoAOQAAAAp2AChqdABtAADPAAI3DAAaADkAAAAAcgpSYnMAbAAAuAEBKwAGLwVUdjAoEBIAIhlVAAAAAH8BATIABi8FUXQwKBASACIZWgAAAAB9AAM3DAAaADkAAAAAbAVwO2YAAAAAgAACPAAAGgA5AAAADGgAappoAF0AAJIAASsGABoAOQAAAABoCDJabQAAAAB+AQA+DwMfAkt0MB4YAAAsAH8AAAAAfgIBXAYAAAAcXC9GKCgAA2ZaAAAAAJsFAFEGAAADQmwAAAAAACyGWgAAAACVAQBjAQAAACtsAAAMAAAsAH8AAAAAhwEAIQAYPApefEAyHgAALIVOFQAAOHcCATsDBA0AMlQwPB5gADxKaAAAAACTAAEAIggKIgNLeAAAFAAALB1VAAAAAIgCAUAAAw0AL1wwMh5GAC9KZwAAAACTABErBgAaADkAAAAAegBJYkoAPQAAqQACNwwAGgA5AAAACnYAKGp0AG0AANIAAjcMABoAOQAAAAByClJicwBsAAC4AQAzCAIaA0tyAAAUAAAsAH8AAAAAhgEAOQwCGgNIcAAAFAAALAB/AAAAAIYAAzcMABoAOQAAAABsBXA7ZgAAAACAAAI8AAAaADkAAAAMaABqmmgAXQAAkgABKwYAGgA5AAAAAGQGNUpvAAAAAIMBAD4PAh8CS3QwHhgAACwAfwAAAAB+AgFcBgAAABxcL0YoKAADZloAAAAAmAUAUQYAAANEbAAAAAAALIZaAAAAAJUBAGMBAAAAK2wAAAwAACwAfwAAAACHAQAcBQcvI298AAAOAAAsAH8AAAAifgIBOwMEDQAyVDA8HmAAPEpoAAAAAJgAAQAjAQYaA0l0AAAQAAAsHVMAAAAAiQEBOggCDQAvSjMyCkwAOEpeAAAAAJEAASsGABoAOQAAAABcBD9abABjAADCAAI9AwAaADkAAAAAagAfgnYAcwAA0QACPQMAGgA5AAAAAGQDQoJ1AHIAAMkBATcGAxUCRnIzKCgaABVKYwAAAACDAQE+BgMVAkRyMygoGgAVSmUAAAAAgwADNwwAGgA5AAAAAGwFcDtmAAAAAH4AAjwAABoAOQAAAAxoAGqaaABdAACQAAErBgAaADkAAAAAXAMiWnEAAAAAjwEAQAACFQJKcAAAHgAALAB/AAAAAH4BAFsGAAAAImQwMh4AACwAfwAAAACHBQBLDAAAAkpoAAAAAAAshl0AAAAAmQEAYgYAAAAubAAADAAALAB/AAAAAIMBACEPBhoCSngAAAgAACw1TgAAAACIAQE+BgIJAChGMCgMRgAvSmQAAAAAkQABASAADi8FW3wAAB4eAA0xTwAAAACHAQEzCAYiA0twMzIeKAAvMV0AAAAAggARKwYAGgA5AAAAAHoASWJKAD0AAKwAASsGABoAOQAAAABaAChKawBnAAC7AAErBgAaADkAAAAAXAVCSmcAYwAApwEBJgYINwVbeDAoHhoAIjFPAAAAAH0BAS0MCDcFWHYwKB4aACIxVQAAAAB5AAM3DAAaADkAAAAAbAVwO2YAAAAAgAACPAAAGgA5AAAADGgAappoAF0AAJIAASsGABoAOQAAAABgBi5KbwAAAACIAQA+DwMfAk90MB4YAAAsAH8AAAAAewIBXAYAAAAcXC9GKCgAA2ZaAAAAAJkFAEgJAAADTWwAAAAAACyGWgAAAACVAQBjAQAAACtsAAAMAAAsAH8AAAAAhwEAHAUHLyNvfAAADgAALAB/AAAAIn4CATsDBA0AMlQwPB5gADxKaAAAAACUAAEBIQ8UHAVLfAAAOCgAAxllAAAAFocCATcGBhUFPlg0RiR4BVErRQAAADJxABErBgAaADkAAAAAfABPck4APQAArAADOggAGgA5AAAACmoAKEtxAG4AALUAAzoIABoAOQAAAABmCk9LcABuAACYAQEoCRJCB1t4MCgYGAAsGVkAAAAAeQEBLw4SQgdYdjAoGBgALBldAAAAAHYAAzcMABoAOQAAAABsBXA7ZgAAAAB/AAI8AAAaADkAAAAMaABqmmgAXQAAkgABKwYAGgA5AAAAAGAGLkpvAAAAAIYBAD4PAx8CSXQwHhgAACwAfwAAAAB/AgFcBgAAABxcL0YoKAADZloAAAAAmgUASAkAAANNbAAAAAAALIZaAAAAAJUBAGMBAAAAK2wAAAwAACwAfwAAAACHAQAfBhAfB1J8AAAoAAAsAH8AAAAeggIBOQAGEQA3VDQ8KHAARkpnAAAAAI0EAwAlAx4oAj5oAAAAAAAsAH8AAAAAmAMEOQAMGgAoPAAAAGoDPgB/AABcAIwABCsGABoAOQAAAABsBTsAfwAAZQCKAAQrBgAaADkAAAAAYAAiAH8AAH0AegAEKwYAGgA5AAAAAFwFSAB/AAB7AF8DAC0ADjUCQmQAAAAAACwAfwAAAACQAwA0AA41Aj9kAAAAAAAsAH8AAAAAjwAEKwYAGgA5AAAAAGAKYwB/AABsAFUDBFoEAAAATjIAAAA8AEYAfwAAfwBmAAQrBgAaADkAAAAAVAAqAH8AAH8AcAIAQAAFIgI8bgAAAAAALAB/AAAAAIsDAFYGAAAAH1oAAAAAACwAfwAAAACdAwBNAQAAAkFaAAAAAAAsAH8AAAAAhAMAXwMAAAAlWgAAAAAALAB/AAAAAJICACIIJCwFSHQAAAAAACwAfwAAAACJAAQrBgAaADkAAAAAbAI3AH8AAGkAkAIEACEAKCIESHgAAB4AACwAfwAAAB6DBAE3BhIaADdaAAAAWgA/SmMAAAAAjQARKwYAGgA5AAAAAHYARGJPAEcAAK8EAWwBAAAAIkYAAABGACIzcQAAAAB6BAFsAQAAAEhAAAAAQABIM24AAAAAawQALggePANLbgAAAAAALAB/AAAAAIQEADcGHjwDSGwAAAAAACwAfwAAAACBBANRBgAAAGgyAAAAWgBqM2MAAAAAagQCVwwAAABjPAAAADIAXoJrAAAAAF0AASsGABoAOQAAAABQBCxKbgAAAACTBABAAAwoAkJsAAAAAAAsAH8AAAAAggQAWgQEAAAfYAAAHgAALAB/AAAAAIwEAEoGAAACRmAAAAAAACwAfwAAAAB+BABhCgAAAChkAAAAAAAsAH8AAAAAjgQAHgoeKApUeAAAAAAALAB/AAAAMngEAUAADA0AL1oAAABQADdLXQAAAACJJQQAIQAoEQQ8eAAAHgAALAB/AAAAHocABCsGABoAOQAAAABwADIAfwAAWACcABErBgAaADkAAAAAdgA1Yk8ARwAArwAEKwYAGgA5AAAAAGQAFQB/AAB/AH8ABCsGABoAOQAAAABgADcAfwAAfQB0BAAuCB4oAzxuAAAAAAAsAH8AAAAAiwQANwYeKAM5bAAAAAAALAB/AAAAAIoEA1EGAAAAaDIAAABaAGozYwAAAABrBAJXDAAAAGM8AAAAMgBegmsAAAAAXQABKwYAGgA5AAAAAFAELEpuAAAAAJMEAEAADCgCQmwAAAAAACwAfwAAAACCBABaBAQAAB9gAAAeAAAsAH8AAAAAjgQASgYAAAJGYAAAAAAALAB/AAAAAH4EAGEKAAAAKGQAAAAAACwAfwAAAACOBAAeCh4oClR4AAAAAAAsAH8AAAAyeAQBQAAMDQAvWgAAAFAAN0tdAAAAAIUCAQEgAB4eB1J8AABaKAADGWcAAAB/eAIBNgcHFQA7XDNGHnQASxtHAAAAbm8AESsGABoAOQAAAAB/AExqTABAAACrAAI5DAAaADkAAAAMcgAvQ3EAbgAAxQACOQwAGgA5AAAAAG4KV0NwAG4AALAEACkIGEYFU3YAAAAAACwAfwAAAGRkBAAxAxhGBVB0AAAAAAAsAH8AAABkYQACOwMAGgA5AAAAAHYFdDNnAAAAAJIAAz4GABoAOQAAAA5sAGxybABjAACPAAErBgAaADkAAAAAYAYuSm8AAAAAhwEAPg8DHwJJdDAeGAAALAB/AAAAAH8CAV4FAgAAGGAvPDA8AANmXQAAAACVBQBICQAAA01sAAAAAAAshloAAAAAlQEAYwEAAAArbAAADAAALAB/AAAAAIcBACEKJBgESHwAAFQAACwAfwAAAEh/AgE5DAYNADJWMzwobgA/SmwAAAAAkQABACALKBoFUnwAAFoAACwAfwAAAG54AgE+BgoNADdkMzw8egNES1UAAABQdQARKwYAGgA5AAAAAH8ASmpMAEwAAKUAAzkMABoAOQAAAAxyACJLdQBuAAC2AAM5DAAaADkAAAAAbgpWS3QAbgAAlQEBLQAKKAVPdjAkFhoAIhldAAAAAIEBATQACigFTHQwJBYaACIZYQAAAACAAAM7AwAaADkAAAAAbgVxM2cAAAAAfgADPgYAGgA5AAAADmwAbHJsAGMAAI8AASsGABoAOQAAAABgBi5KbwAAAACHAQA+DwMfAkl0MB4YAAAsAH8AAAAAfwIBXgUCAAAYYC88MDwAA2ZdAAAAAJcFAEgJAAADTWwAAAAAACyGWgAAAACVAQBjAQAAACtsAAAMAAAsAH8AAAAAhwEAIQokGARIfAAAVAAALAB/AAAASH8CATkMBg0AMlYzPChuAD9KbAAAAACSAAEAHgoIKAVjaAAAAAAALB1AAAAAAI0BATYAAxQAPDw5XABGAFQxYAAAAACXABErBgAaADkAAAAAWgBXSkUAPQAAvwACNwwAGgA5AAAACkgAMkpuAGsAANUAAjcMABoAOQAAAABICmNicwBsAAC8AQErAAYvBVR2MCgQEgAiGVUAAAAAeQEBMgAGLwVRdDAoEBIAIhlaAAAAAHcAAzcMABoAOQAAAABUBXw7ZgAAAACBAAI8AAAaADkAAAAMQAB2gmsAXQAAoAABKwYAGgA5AAAAAGAGLkpvAAAAAIABAD4PAx8CSXQwHhgAACwAfwAAAAB5AgFcBgAAABxcL0YoKAADZloAAAAAmgUASAkAAANNbAAAAAAALIZaAAAAAJQBAGMBAAAAK2wAAAwAACwAfwAAAACBAQAcBQcvI298AAAOAAAsAH8AAAAieAIBOwMEDQAyVDA8HmAAPEpoAAAAAJIAAQEjAQgaAklkAAAYHgAJGUsAAAAAjgIBOAMCDQAvKAAAAFwPTzJgAAAAAKkAESsGABoAOQAAAAB6AEliSgA9AACrAAM+BgAaADkAAAAAUgAvSnEAZwAAuwADPgYAGgA5AAAAAFIFV0pwAGUAAKQBAS0AAyIDU2owKBQQACgZVQAAAAB/AQEzCAMiA1BoMCgUEAAoGVkAAAAAfgADNwwAGgA5AAAAAGwFcDtmAAAAAHoAAz8IABoAOQAAABBaAHVabQBgAACOAAErBgAaADkAAAAAYAYuSm8AAAAAgAEAPg8DHwJJdDAeGAAALAB/AAAAAHkCAVwGAAAAHFwvRigoAANmWgAAAACYBQBICQAAA01sAAAAAAAshloAAAAAlAEAYwEAAAArbAAADAAALAB/AAAAAIEBASUDBhYCQmAAAB4eAAMZTgAAAACQAgE5AAMNADdQMzIoZABBQlwAAAAAlw==";
 
+/* (after SLOOP 2.6) the editor's SET per control: the last value asked for, and when the user last moved it. A value is
+   skipped only while the request carrying it is still queued or in flight; once answered the same value is sent again
+   (it was skipped for good: a value set on one track, then the same on another, or set again after a knob moved it on
+   the FM-1, never reached the device). clear(): another track, sound or FM-1 under the controls */
+class SetGate {
+  constructor() { this.m = new Map(); }
+  get(k) { return this.m.get(k); }
+  user(k, v, pending, now) {
+    let st = this.m.get(k);
+    if (!st) this.m.set(k, (st = { last: 0, sent: null }));
+    st.last = now;
+    return !(pending && v === st.sent);
+  }
+  clear() { this.m.clear(); }
+}
+/* (after SLOOP 2.6) a sound's values p (common parameters, then the engine's 8 from pe0) in a layout of n values with the
+   engine's 8 from ne0: the same layout as it is; else the engine's 8 by their place, and the common ones by position up
+   to the layout both share (SLOOP 2.4 / 2.5: P_E0 53; what SLOOP 2.6 or Clipper added before P_E0 differs): null for
+   the rest (left as the device has them) */
+function patchByCount(p, pe0, n, ne0 = n - 8) {
+  const src = Number.isInteger(pe0) && pe0 >= 0 && pe0 + 8 <= p.length ? pe0 : p.length - 8;
+  if (!(n > 8) || src < 0 || (p.length === n && src === ne0)) return p.slice(0, n);
+  const out = new Array(n).fill(null), nc = Math.min(src, ne0, 53);
+  for (let i = 0; i < nc; i++) out[i] = p[i] ?? null;
+  for (let k = 0; k < 8; k++) out[ne0 + k] = p[src + k] ?? null;
+  return out;
+}
+/* (after SLOOP 2.6) a backup's projects in a format the device cannot read stop the restore before anything is written:
+   the format of a stored project ("FUN6" low byte first: 6), and the newest a device reads (SLOOP 2.6: 6, 2.4 .. 2.5: 5,
+   older 4; Clipper from 0.4.1: 6, before 5) */
+const bkProjFormat = (d) => (d && d.length >= 4 && d[1] === 0x4E && d[2] === 0x55 && d[3] === 0x46 ? d[0] - 0x30 : 0);
+const bkFwAtLeast = (v, want) => {
+  const m = /(\d+)\.(\d+)(?:\.(\d+))?/.exec(String(v || ""));
+  if (!m) return false;
+  const a = [+m[1], +m[2], +(m[3] || 0)];
+  for (let i = 0; i < 3; i++) if (a[i] !== want[i]) return a[i] > want[i];
+  return true;
+};
+const bkDevFormat = (info) => (/clipper/i.test(info.version || "") ? (bkFwAtLeast(info.version, [0, 4, 1]) ? 6 : 5)
+  : info.pcount >= 71 ? 6 : info.pcount >= 61 ? 5 : 4);
 /*PROTO-END*/
 
 /* ===================================================================== UI === */
@@ -3804,7 +3850,7 @@ const TEXT = {
     bkSave: "バックアップを保存", bkLoad: "ファイルから復元", bkSaving: "バックアップ中 ", bkSaved: "バックアップを保存しました",
     bkRestoring: "復元中 ", bkRestored: "復元しました", bkConfirm: "FM-1 の今の内容をすべてこのバックアップで置き換えます。続けますか？",
     bkBad: "Clipper のバックアップファイルではないか、壊れています: ", bkStop: "FM-1 の再生を止めてから、もう一度復元してください。",
-    bkStale: "本体の内容が途中で変わりました。もう一度バックアップしてください: ", bkRead: "読み取りエラー: ", bkWrite: "書き込みエラー: ", bkRc4: "フラッシュがありません",
+    bkStale: "本体の内容が途中で変わりました。もう一度バックアップしてください: ", bkRead: "読み取りエラー: ", bkWrite: "書き込みエラー: ", bkRc4: "フラッシュがありません", bkNewer: "この FM-1 のファームウェアより新しい形式のプロジェクトを含むバックアップです。先にアップデートしてから復元してください（何も変更していません）: ",
     system: "システム", firmware: "ファームウェア", sync: "同期", tracksN: "トラック", stepsN: "ステップ数", enginesL: "エンジン",
     smpSlots: "サンプルスロット", userBank: "ユーザープリセット", none: "なし",
     fm6Title: "FM6 の音色（6 オペレーター）", fm6Help: "FM6 エンジンの音色をまるごと編集します。本体のノブ（EDIT の 8 つ）はこの音色の上にかかるマクロです。トラックへ送るとすぐ鳴り、PTCH を回すか別の音を読み込むまでそのトラックの音色になります（プロジェクトは PTCH だけを保存します）。バンク（B1〜B27）に保存すると PTCH で呼び出せます（本体を停止してから）。",
@@ -4013,7 +4059,7 @@ const TEXT = {
     bkSave: "Save a backup", bkLoad: "Restore from a file", bkSaving: "Backing up ", bkSaved: "Backup saved",
     bkRestoring: "Restoring ", bkRestored: "Restored", bkConfirm: "Replace everything on the FM-1 with this backup?",
     bkBad: "Not a Clipper backup, or damaged: ", bkStop: "Stop the FM-1 (PLAY), then restore again.",
-    bkStale: "The FM-1 changed during the backup; back up again: ", bkRead: "Read error: ", bkWrite: "Write error: ", bkRc4: "No flash",
+    bkStale: "The FM-1 changed during the backup; back up again: ", bkRead: "Read error: ", bkWrite: "Write error: ", bkRc4: "No flash", bkNewer: "This backup holds projects in a newer format than this firmware reads: update the FM-1 first, then restore. Nothing was changed: ",
     system: "System", firmware: "Firmware", sync: "Sync", tracksN: "Tracks", stepsN: "Steps", enginesL: "Engines",
     smpSlots: "Sample slots", userBank: "User presets", none: "none",
     fm6Title: "FM6 patch (six operators)", fm6Help: "Edit the whole patch of the FM6 engine. The device's knobs (the eight EDIT values) are macros on top of it. Sent to a track it plays at once and stays that track's patch until PTCH turns or another sound loads (a project keeps PTCH only); stored in the bank (B1..B27) it is a PTCH value (stop the device first).",
@@ -4241,7 +4287,7 @@ let busy = 0;          /* multi-request operations in progress: no polling */
 let dragging = null;   /* key of the slider being dragged */
 let wantConnected = false;
 const ctl = new Map(); /* key "s:id" -> {input, out, desc, scope, id, row} */
-const sets = new Map(); /* key -> {last: time of the user's last change, sent: the value last requested} */
+const sets = new SetGate(); /* key -> {last: time of the user's last change, sent: the value last requested} */
 let needReload = false; /* a RELOAD push came: re-read DESC, DUMP and steps when free */
 let lastDump = 0;      /* Date.now() of the last DUMP */
 /* the device also pushes RELOAD after loads the editor asked for (SET of G_ENGSEL, PRESET, PROJECT load,
@@ -4318,6 +4364,7 @@ async function connect() {
     });
     input.onmidimessage = (e) => link.receive(e.data);
     if (input.open) await input.open().catch(() => {});
+    sets.clear();                                    /* (another FM-1, maybe) */
     dev = { link, input, output, info: null, pdesc: [], gdesc: [], names: [], dump: null, steps: [], slotUsed: [null, null, null, null],
       keys: null, watch: false, bank: null };
     setLabel($("connect"), t("disconnect"));
@@ -4685,8 +4732,10 @@ function touched(k) {
   if (dragging === k) return true;
   if (c && c.input.tagName === "SELECT" && document.activeElement === c.input) return true;
   if (st && performance.now() - st.last < 600) return true;
-  return !!dev && (dev.link.hasQueued(k) || (!!dev.link.cur && dev.link.cur.key === k));
+  return pendingSet(k);
 }
+/* a SET of this control queued or in flight */
+function pendingSet(k) { return !!dev && (dev.link.hasQueued(k) || (!!dev.link.cur && dev.link.cur.key === k)); }
 
 window.addEventListener("pointerup", () => { if (dragging) { const k = dragging; dragging = null; const c = ctl.get(k); if (c) userSet(c.scope, c.id, +c.input.value, true); } });
 window.addEventListener("pointercancel", () => { dragging = null; });
@@ -4700,10 +4749,7 @@ function userSet(s, id, v, final) {
   showValue(k, v, false);
   mixFromDump();
   if (!s && id === pSlen()) lenChanged();            /* (2.5: the grid follows LEN at once) */
-  let st = sets.get(k);
-  if (!st) sets.set(k, (st = { last: 0, sent: null }));
-  st.last = performance.now();
-  if (v === st.sent) return;                        /* the last request already carries it */
+  if (!sets.user(k, v, pendingSet(k), performance.now())) return;   /* the pending request already carries it */
   sendSet(s, id, k);
 }
 async function sendSet(s, id, k) {
@@ -4738,6 +4784,8 @@ async function choosePreset(e, p) {
 }
 async function afterSoundChange(msg = "ready") {
   needReload = false;                               /* this re-reads everything a RELOAD asks for */
+  sets.clear();                                     /* another track / sound under the controls: a value equal to the one
+                                                       sent before is sent again */
   dev.dump = await getDump();
   await rereadEngineDesc();
   updateBrowser();
@@ -7156,6 +7204,7 @@ $("savefile").addEventListener("click", () => {
   if (!dev) return;
   const engine = dev.dump.engine, preset = dev.dump.preset;
   const data = { format: "felucca-patch", version: 1, firmware: dev.info.version,
+    pCount: dev.info.pcount, pE0: dev.info.pe0,      /* (read by count on another version: patchByCount) */
     engineName: dev.info.engines[engine], presetName: (dev.names[engine] || [])[preset],
     engine, preset, p: dev.dump.p.slice(), g: dev.dump.g.slice(),
     steps: dev.steps.map((s) => ({ n: s.n, notes: s.notes.slice(), time: s.time, flags: s.flags, vel: s.vel })) };
@@ -7177,12 +7226,12 @@ $("file").addEventListener("change", async () => {
     await rq(req.preset(data.engine, data.preset));
     dev.dump = await getDump();
     await rereadEngineDesc();
-    const n = Math.min(data.p.length, dev.info.pcount);
+    const pv = patchByCount(data.p, data.pE0, dev.info.pcount, dev.info.pe0), n = pv.length;   /* (a file of another version) */
     for (let i = 0; i < n; i++) {
       const d = dev.pdesc[i];
-      if (!visible(d) || !Number.isFinite(data.p[i])) continue;
+      if (!visible(d) || !Number.isFinite(pv[i])) continue;
       if (i % 8 === 0) sayK("applying", `${i}/${n}`);
-      await rq(req.set(0, i, data.p[i]));
+      await rq(req.set(0, i, pv[i]));
     }
     if (Array.isArray(data.steps)) {
       const m = Math.min(data.steps.length, dev.info.nstep);

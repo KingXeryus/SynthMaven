@@ -1,4 +1,4 @@
-# Clipper — démarrage rapide (version de test 0.4)
+# Clipper — démarrage rapide (version de test 0.4.1)
 
 **Clipper** est un firmware de **synthétiseur** pour le M-VAVE FM-1 : un seul instrument, comme le firmware d'origine, Felucca ou Baudgirl. Ce n'est plus une groovebox : pas de pistes, pas de boîte à rythmes, pas de mode song, pas de samples intégrés. Il garde de SLOOP les 12 moteurs, les effets, l'arpégiateur, le séquenceur de pas, l'audio USB et le MIDI. Il ajoute **HYBRID**, une voix à 3 oscillateurs, 2 filtres et une matrice de modulation de 16 slots, avec 24 sons d'usine. Il ajoute aussi le pitch bend, la molette, l'aftertouch et la pédale de sustain sur tous les moteurs.
 
@@ -15,7 +15,7 @@ Clipper vit dans son propre dossier, **`CLIPPER`**, à côté de celui de SLOOP.
 | Adresse | http://localhost:**8766** | http://localhost:**8767** |
 | Écran de démarrage | voilier, « sloop » | trois-mâts, « clipper » |
 
-Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maintenu) → SYSTEM → ABOUT, qui affiche **CLIPPER 0.4**.
+Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maintenu) → SYSTEM → ABOUT, qui affiche **CLIPPER 0.4.1**.
 
 ## 1. Compiler et installer
 
@@ -24,13 +24,24 @@ Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maint
 3. La page d'installation s'ouvre sur http://localhost:8767/webapp/installer/ (Chrome ou Edge, FM-1 en USB). Clique sur **Install**.
 4. La FM-1 redémarre sur l'écran **clipper**. Tes projets, presets, samples et réglages de SLOOP sont toujours là.
 
+## Nouveau dans la 0.4.1 : les correctifs de SLOOP 2.6, et la cohabitation avec SLOOP 2.6
+
+- **Une sortie plus propre** : le limiteur du master regarde un bloc (0,7 ms) en avance : une attaque forte est déjà baissée quand elle arrive, au lieu que ses premiers échantillons passent dans l'écrêteur doux de la sortie (un craquement avec MASTER fort, surtout au casque) ; une basse forte tenue garde un seul gain (plus de sifflement). D'après SLOOP 2.6.
+- **Plus de clic quand un filtre commence à se fermer** : le FILTER du son et le FILT du master démarrent leur passe-bas là où est le signal (il partait du silence sous le son : un craquement).
+- **FM6** : un son changé pendant que des notes tiennent les fait disparaître avec leur propre patch ; le nouveau patch vient après (elles le prenaient tout de suite : un clic).
+- **Arpégiateur** (#191, d'après Felucca 1.5) : un arpège verrouillé suit TRN, ROOT, SCALE et QNT changés après l'appui sur ses touches.
+- **Charger un projet ou NEW** remet le pitch bend au milieu, la pression à 0 et relève la pédale de sustain (ses notes s'arrêtent) ; les bends MPE de chaque note aussi.
+- **Éditeur web** : une valeur remise (la même sur un autre son, ou après qu'un knob l'a bougée sur la FM-1) est renvoyée (elle était ignorée pour de bon) ; un fichier de son d'une autre version se charge selon sa disposition ; une sauvegarde avec des projets plus récents que le firmware s'arrête avant d'écrire quoi que ce soit.
+- **Installateur** : il trouve une FM-1 qui tourne sous SLOOP (passer de SLOOP à CLIPPER ne s'arrête plus sur *FM-1 introuvable*) ; sinon, le message liste les ports MIDI vus.
+- **Passer de SLOOP 2.6 à CLIPPER sur la même FM-1** : CLIPPER lit les projets de SLOOP 2.6 (ils apparaissaient comme des emplacements vides, et sauvegarder dessus les écrasait) ; il garde les réglages MIDI et le MIDI LEARN de SLOOP 2.6, et les kits SYN de SLOOP ; son réglage MPE n'est plus rangé là où SLOOP 2.6 garde GLO > SYSTEM > IN. Les presets utilisateur redeviennent une seule banque pour les deux (enregistrements de 192 octets : la première version 0.4 les passait à 232, que SLOOP lisait comme vides ; ils sont convertis à l'allumage) : la matrice, LFO 2 et ENV 2 sont rangés dans les valeurs libres de l'enregistrement, SLOOP voit le son tel quel. Un projet garde LFO 2, ENV 2 et la matrice dans les emplacements de lock libres de la piste 3, que SLOOP ignore (la première 0.4 les mettait dans les réglages des pistes 3 et 4 ; toujours lus).
+
 ## Nouveau dans la 0.4 : une matrice de modulation sur tous les moteurs, et le MPE
 
 - **MATRIX** (LFO → MATRIX), sur tous les moteurs : six slots, chacun une **SOURCE** → une **DESTINATION** × une **QUANTITÉ** (±). SLOT choisit le slot que les trois autres knobs règlent ; l'écran montre les six. Sources : **LFO1**, **LFO2**, **ENV1** (l'enveloppe de volume), **ENV2**, **VEL**, **KEY** (la note, autour du Do 4), **MW** (molette), **AT** (aftertouch, canal ou polyphonique), **RAND** (une valeur au hasard à chaque note), **SLIDE** (MPE). Destinations : **PITCH** (jusqu'à ±24 demi-tons, plus fin près de 0), **CUT**, **SHAPE**, **AMP**, **PAN**, **LFO2** (sa vitesse) et n'importe lequel des huit réglages EDIT du moteur, par son nom (CUT d'ANALOG, POS de WAVE, les ratios de FM6…), note par note. Un slot à 0 ne coûte rien et ne change rien.
 - **LFO 2** (LFO → LFO 2) : RATE, WAVE (SIN TRI SAW SQR S&H), MODE : **FREE** (un pour le son) ou **KEY** (un par note, relancé à chaque note).
 - **ENV 2** (ENV → ENV 2) : une 2e enveloppe ADSR, pour la matrice.
 - **MPE** (HOME maintenu → SYSTEM → MPE) : OFF, ou la plage de bend des canaux de notes (48 ST, le standard MPE, ou 2, 12, 24, 96). Pour l'Osmose d'Expressive E, les ROLI, la LinnStrument, etc. : le canal 1 est le canal maître (bend, molette, pédale de toutes les notes), les canaux 2 à 16 portent chacun une note avec **son propre pitch bend**, **sa propre pression** (la source AT et MOD AT>) et **son propre slide** (CC 74 : la source SLIDE ; si aucun slot ne l'utilise, il ouvre le filtre de la note).
-- **Gardés avec le son** : les projets gardent LFO 2, ENV 2 et la matrice des deux sons (le layer aussi) dans la place des pistes 3 et 4, que le synthé n'utilisait pas ; un projet garde sa taille, les anciens se chargent avec la matrice vide. Les presets utilisateur passent de 192 à 232 octets ; ceux enregistrés en 0.3 sont convertis tout seuls. RANDOM ALL bouge aussi LFO 2, ENV 2 et les quantités des slots utilisés ; MORPH les fait tous glisser.
+- **Gardés avec le son** : les projets gardent LFO 2, ENV 2 et la matrice des deux sons (le layer aussi) dans une place que le synthé n'utilisait pas (0.4.1 : les emplacements de lock libres de la piste 3) ; un projet garde sa taille, les anciens se chargent avec la matrice vide. Les presets utilisateur les gardent aussi (0.4.1 : dans l'enregistrement que SLOOP lit). RANDOM ALL bouge aussi LFO 2, ENV 2 et les quantités des slots utilisés ; MORPH les fait tous glisser.
 
 ## Nouveau dans la 0.3 : jouer comme sur un grand synthé
 

@@ -7,9 +7,20 @@ Free and open source (GPL-3.0). It grew out of <a href="https://github.com/isod8
 
 ---
 
-> **Status: 0.4, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
+> **Status: 0.4.1, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
 
 SLOOP is a groovebox. **Clipper is a synthesizer** with 17 engines and 308 sounds, one instrument like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine, no song mode and no built-in samples. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
+
+## New in 0.4.1: SLOOP 2.6's fixes, and living next to SLOOP 2.6
+
+- **A cleaner output**: the master limiter looks one block (0.7 ms) ahead, so a loud attack is already turned down when it comes instead of its first samples going through the output's soft clipper (a crackle with MASTER up, in headphones most); a held loud bass keeps one gain (no whistle). After SLOOP 2.6.
+- **No click when a filter starts to close**: the sound's FILTER and the master FILT start their low-pass where the signal is (it started from silence under the sound: a crack).
+- **FM6**: a sound changed under held notes fades them out with their own patch; the new patch comes after (they took it at once: a click).
+- **Arpeggiator** (#191, after Felucca 1.5): a latched arp follows TRN, ROOT, SCALE and QNT changed after its keys were pressed.
+- **A project load or NEW** puts the pitch wheel back to the middle, the pressure to 0 and the sustain pedal up (its notes let go); MPE's per-note bends too.
+- **Web editor**: a value set again (the same value on another sound, or after a knob moved it on the FM-1) is sent again (it was skipped for good); a sound file from another version loads by layout; a backup with projects newer than the firmware reads stops before writing anything.
+- **Installer**: an FM-1 running SLOOP is found (going from SLOOP to CLIPPER no longer stops at *FM-1 not found*); when none is, the message lists the MIDI ports it saw.
+- **Going between SLOOP 2.6 and CLIPPER on the same FM-1**: CLIPPER reads SLOOP 2.6's projects (they were shown as empty slots, and saving there wrote over them); it keeps SLOOP 2.6's MIDI settings and MIDI LEARN in the settings, and SLOOP's SYN kits; its MPE setting no longer sits where SLOOP 2.6 keeps GLO > SYSTEM > IN. User presets are one bank again for both (192-byte records: 0.4's first build made them 232, which SLOOP read as empty; they are converted at power-on): the matrix, LFO 2 and ENV 2 ride in the record's spare values, SLOOP sees the sound as it is. A project keeps LFO 2, ENV 2 and the matrix in track 3's free lock slots, which SLOOP passes over (0.4's first build put them in tracks 3 and 4's own values; still read).
 
 ## New in 0.4: a modulation matrix on every engine, and MPE
 
@@ -17,7 +28,7 @@ SLOOP is a groovebox. **Clipper is a synthesizer** with 17 engines and 308 sound
 - **LFO 2** (LFO → LFO 2): RATE, WAVE (SIN TRI SAW SQR S&H), MODE: **FREE** (one for the sound) or **KEY** (each note its own, restarted at the note).
 - **ENV 2** (ENV → ENV 2): a second ADSR, for the matrix.
 - **MPE** (HOME held → SYSTEM → MPE): OFF, or the member channels' bend range (48 ST, the MPE standard, or 2, 12, 24, 96). For Expressive E Osmose, ROLI, LinnStrument, Sensel and the rest: channel 1 is the master channel (the bend, wheel and pedal of every note), channels 2 to 16 each carry one note with **its own pitch bend**, **its own pressure** (the AT source and MOD AT>) and **its own slide** (CC 74: the SLIDE source; with no slot using it, it opens the note's filter).
-- **Kept with the sound**: projects keep LFO 2, ENV 2 and the matrix of both sounds (the layer too) in the room of tracks 3 and 4, which the synth never used; a project keeps its size, older ones load with the matrix empty. User presets grow from 192 to 232 bytes; the presets you saved with 0.3 are converted when the bank is read, nothing to do. RANDOM ALL also moves LFO 2, ENV 2 and the amounts of the slots in use; MORPH moves every one of them.
+- **Kept with the sound**: projects keep LFO 2, ENV 2 and the matrix of both sounds (the layer too) in room the synth never used (0.4.1: track 3's free lock slots); a project keeps its size, older ones load with the matrix empty. User presets keep them too (0.4.1: in the record SLOOP reads). RANDOM ALL also moves LFO 2, ENV 2 and the amounts of the slots in use; MORPH moves every one of them.
 
 ## New in 0.3: playing it like a big synth
 

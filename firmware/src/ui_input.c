@@ -350,6 +350,7 @@ static void project_new(void)
             song.g[i] = GP[i].def;
     song.solo = 0;
     song.octave = 0;
+    part_ctl_reset();                                   /* (the wheels back to the middle, the pedal up) */
     sync_reload = 1;
     ui.force = 1;
 }
