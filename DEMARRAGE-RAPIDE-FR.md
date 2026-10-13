@@ -24,6 +24,10 @@ Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maint
 3. La page d'installation s'ouvre sur http://localhost:8767/webapp/installer/ (Chrome ou Edge, FM-1 en USB). Clique sur **Install**.
 4. La FM-1 redémarre sur l'écran **clipper**. Tes projets, presets, samples et réglages de SLOOP sont toujours là.
 
+## Nouveau dans la 0.5.1 : un relevé du temps audio (la chasse aux craquements)
+
+GLO > SYSTEM, la colonne CPU alterne maintenant toutes les 1,5 s : **CPU** (ou l'état USB), **LATE** (les tampons audio calculés trop tard depuis l'allumage : chacun est un clic) et **PEAK** (le tampon le plus lent des dernières secondes, en % du temps dont il dispose ; au-dessus de 100, il est en retard). Si tu entends des craquements, regarde si LATE monte pendant qu'ils se produisent.
+
 ## Nouveau dans la 0.5 : deux moteurs de plus, VPS et TERRAIN
 
 Tous deux proposés dans les discussions de Felucca (#145, #146) comme des façons légères d'obtenir des sons qu'aucun oscillateur ne fait ; chacun coûte à peu près ce que coûte ANALOG (un tiers de HYBRID).

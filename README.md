@@ -7,9 +7,13 @@ Free and open source (GPL-3.0). It grew out of <a href="https://github.com/isod8
 
 ---
 
-> **Status: 0.5, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
+> **Status: 0.5.1, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
 
 SLOOP is a groovebox. **Clipper is a synthesizer** with 19 engines and 328 sounds, one instrument like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine, no song mode and no built-in samples. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
+
+## New in 0.5.1: an audio timing readout (the crackle hunt)
+
+GLO > SYSTEM, the CPU column now turns every 1.5 s: **CPU** (or the USB status), **LATE** (audio buffers rendered too late since power-on: each one a click) and **PEAK** (the slowest buffer of the last few seconds, % of the time it has; over 100 means late). If you hear crackles, note whether LATE climbs while they happen.
 
 ## New in 0.5: two more engines, VPS and TERRAIN
 

@@ -76,6 +76,11 @@ void fm1_alnk0_irq(void)                       /* via isr_alnk0 (hal/fm1_isr.S) 
             uint32_t all = fm1_ticks() - t0;
             us = (all - t5_nested_ticks) / FM1_TICKS_PER_US;
             shed_over = (uint8_t)(shed_over << 1 | (all / FM1_TICKS_PER_US * 100u > (HALF_FRAMES * 1000000u / FS) * 85u));
+            {
+                uint32_t pct = all / FM1_TICKS_PER_US * 100u / (HALF_FRAMES * 1000000u / FS);
+                if (pct > diag_peak)
+                    diag_peak = pct;
+            }
         }
         if (us > audio_max_us)
             audio_max_us = us;
@@ -83,7 +88,7 @@ void fm1_alnk0_irq(void)                       /* via isr_alnk0 (hal/fm1_isr.S) 
             shed_req = 1;                               /* two in a row */
         song.cpu_q8 = (song.cpu_q8 * 15u + (us * 256u) / (HALF_FRAMES * 1000000u / FS)) / 16u;
         if (fm1_audio_free_half() != half)
-            felucca_dbg.late++;                         /* the DMA moved on while we rendered */
+            felucca_dbg.late++, diag_late++;            /* the DMA moved on while we rendered */
         felucca_dbg.halves++;
         felucca_dbg.last_us = us;
         if (us > felucca_dbg.max_us)

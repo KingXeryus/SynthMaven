@@ -12,6 +12,10 @@
 #ifndef CLIPPER_SYNTH
 #define CLIPPER_SYNTH 1
 #endif
+/* Clipper 0.5.1 (the crackle hunt): written by the audio interrupt (audio.c), shown in GLO > SYSTEM's CPU column
+ * (ui_draw.c) */
+static volatile uint32_t diag_late;      /* halves the DMA had already moved past: since power-on */
+static volatile uint32_t diag_peak;      /* the worst half (render + TIMER5 in it), % of its deadline, since shown */
 #ifndef NVOICE
 #define NVOICE 8                 /* voices per part, and the budget shared by all parts (Clipper: -DNVOICE=12 / 16) */
 #endif

@@ -996,6 +996,24 @@ static void draw_columns(void)
             draw_column(c, "", "", "", C_HI, -1, ICON_AUTO);
             continue;
         }
+        if (cur_page()->id[c] == G_INFO && cur_page()->scope == SC_GLOBAL && (fm1_ms / 1500u) % 3u) {
+            /* 0.5.1, the crackle hunt: the column turns CPU (or USB) -> LATE -> PEAK every 1.5 s. LATE: audio halves
+             * rendered too late since power-on (each one a click); PEAK: the worst half of the last 4.5 s, % of its
+             * time (render + the USB audio nested in it; over 100: late) */
+            static uint8_t peak_shown;
+            if ((fm1_ms / 1500u) % 3u == 1u) {
+                fmt_int(val, (int32_t)diag_late);
+                draw_column(c, "LATE", val, "", diag_late ? C_HI : VAL(c), -1, ICON_AUTO);
+                peak_shown = 0;
+            } else {
+                static uint32_t pk;
+                if (!peak_shown)
+                    pk = diag_peak, diag_peak = 0, peak_shown = 1;   /* (one window's worth, then afresh) */
+                fmt_int(val, (int32_t)pk);
+                draw_column(c, "PEAK", val, "%", VAL(c), -1, ICON_AUTO);
+            }
+            continue;
+        }
         if (cur_page()->id[c] == G_INFO && cur_page()->scope == SC_GLOBAL && !usb.config) {   /* not connected: the
                                                        * USB status instead of the CPU (2.4: MIDI is MIDI OUT, ROUT is IN) */
             str_cpy(val, !usb.up ? "OFF" : usb.config ? "MIDI" : usb.setups ? "ENUM" : usb.sof_seen ? "BUS" : "WAIT", 12);
