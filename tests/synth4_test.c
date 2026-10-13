@@ -417,8 +417,9 @@ static void t_project(void)
         for (k = 0; k < PROJ_NX; k++)
             pj.t[2].p[k] = xval(1, k), pj.t[3].p[k] = xval(0, k);   /* (swapped: tell them apart) */
         proj_apply(&pj, 1);
-        for (k = 0, same = 1; k < PROJ_NX; k++)
-            same &= a->p[PROJ_E0 + k] == xval(1, k) && b->p[PROJ_E0 + k] == xval(0, k);
+        for (k = 0, same = 1; k < PROJ_NX; k++)       /* (0.6's INSERT: not in them, at its defaults) */
+            same &= k < P_ITYPE - PROJ_E0 ? a->p[PROJ_E0 + k] == xval(1, k) && b->p[PROJ_E0 + k] == xval(0, k)
+                                          : a->p[PROJ_E0 + k] == TP[PROJ_E0 + k].def && b->p[PROJ_E0 + k] == TP[PROJ_E0 + k].def;
         ok(same && trk[2].p[0] == TP[0].def, "a project of 0.4's first build (tracks 3 and 4's p[]): read as it was");
     }
     proj_capture(&pj);
@@ -516,11 +517,11 @@ static void t_userbank(void)
         up_params(&r, out, def);
         for (i = 0; i < 53u; i++)
             good &= out[i] == (int16_t)i;
-        for (i = 53u; i < P_E0; i++)
-            good &= out[i] == def[i];
+        for (i = 53u; i < P_E0; i++)                 /* (0.6: its INSERT, the same values: 99) */
+            good &= out[i] == (i >= P_ITYPE ? 99 : def[i]);
         for (i = 0; i < 8u; i++)
             good &= out[P_E0 + i] == (int16_t)(263 + i);
-        ok(good, "user presets: a SLOOP 2.6 record: its sound, 2.6's own values left out, the matrix at its defaults");
+        ok(good, "user presets: a SLOOP 2.6 record: its sound and its INSERT, 2.6's others left out, the matrix at defaults");
     }
     /* Clipper 0.4's first bank (232-byte records, np 86) */
     memset(raw, 0, sizeof raw);
@@ -533,10 +534,10 @@ static void t_userbank(void)
         uint8_t *o = raw + 8u + k * UP_RSIZE_04;
         int16_t p[92];
         memset(p, 0, sizeof p);
-        o[0] = k % 3u ? UP_USED : 0u, o[1] = UP_VER, o[2] = (uint8_t)(k % NENGINES), o[3] = P_COUNT;
-        snprintf((char *)o + 4, 12, "OLD %u", k);
-        for (i = 0; i < P_COUNT; i++)
-            p[i] = (int16_t)(i < PROJ_E0 ? k * 100u + i : i < P_E0 ? xval(k & 1u, i - PROJ_E0) : k * 100u + i);
+        o[0] = k % 3u ? UP_USED : 0u, o[1] = UP_VER, o[2] = (uint8_t)(k % NENGINES), o[3] = 86u;   /* (0.4: P_COUNT 86, */
+        snprintf((char *)o + 4, 12, "OLD %u", k);                                                /* P_E0 78) */
+        for (i = 0; i < 86u; i++)
+            p[i] = (int16_t)(i < PROJ_E0 ? k * 100u + i : i < 78u ? xval(k & 1u, i - PROJ_E0) : k * 100u + i - 78u + P_E0);
         memcpy(o + 16, p, sizeof p);
         for (i = 0; i < 16u; i++)
             o[16 + 184 + i] = (uint8_t)(40u + k + i), o[32 + 184 + i] = (uint8_t)(i & 7u);
@@ -550,7 +551,8 @@ static void t_userbank(void)
         good &= up_valid(r) && r->np == 61 && r->engine == k % NENGINES && r->note[5] == 45u + k && r->flags[7] == 7u;
         up_params(r, out, def);
         for (i = 0; i < P_COUNT; i++)
-            good &= out[i] == (int16_t)(i < PROJ_E0 ? k * 100u + i : i < P_E0 ? xval(k & 1u, i - PROJ_E0) : k * 100u + i);
+            good &= out[i] == (int16_t)(i < PROJ_E0 ? k * 100u + i : i < P_ITYPE ? xval(k & 1u, i - PROJ_E0) :
+                                        i < P_E0 ? TP[i].def : k * 100u + i);
         {
             char nm[13];
             snprintf(nm, sizeof nm, "OLD %u", k);

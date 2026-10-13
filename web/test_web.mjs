@@ -34,7 +34,7 @@ const E = vm.runInNewContext(proto + `
    CHOP, chopNovelty, chopHits, chopSnap, chopGrid, chopEqual, chopList, chopPick, chopFit, chopZones, wavFile, zipStore, crc32,
    UP, bank, capturePatch, auditionPatch, startWatch, libraryFile, readLibraryFile, paramKeys, patternFromSteps, stepsFromPattern, upName,
    mixer, GM_DRUM, drumName, parseNotes, fmtValue, F, DRUM_LANES, LV_NAMES, emptyDrum, lockable, MICRO, FC, fillGet, fillSet, pack7, unpack7,
-   backupCapture, backupRestore, backupObjects, b64enc, b64dec, FM6, KIT, kitPad, kitZones, kitLen, kitBytes, kitFit, kitSplit, kitLaneOf, kitPlace, zipRead, ROLL, SMF, ARR, mockSettings, fm6CartWrite, fm6CartPreset, fm6CartSlots, fm6CartPresets, DSYN, DSYN_MOCK_NAMES, DSYN_MOCK_KITS, HY, WT, SetGate, patchByCount, bkProjFormat, bkDevFormat, bkFwAtLeast })`,
+   backupCapture, backupRestore, backupObjects, b64enc, b64dec, FM6, KIT, kitPad, kitZones, kitLen, kitBytes, kitFit, kitSplit, kitLaneOf, kitPlace, zipRead, ROLL, SMF, ARR, mockSettings, fm6CartWrite, fm6CartPreset, fm6CartSlots, fm6CartPresets, DSYN, DSYN_MOCK_NAMES, DSYN_MOCK_KITS, HY, FX, WT, SetGate, patchByCount, bkProjFormat, bkDevFormat, bkFwAtLeast })`,
 { setTimeout, clearTimeout, setInterval, clearInterval, console, TextEncoder, TextDecoder, Blob, Response, DecompressionStream });
 
 async function editorMock() {
@@ -628,6 +628,43 @@ function hybridPatch() {
     "HYBRID: readable values (cutoff, times, a synced rate)");
 }
 
+/* ------------------------------------- Clipper 0.6: the FMX patch (v12), editor.html FX --- */
+async function fmxPatch() {
+  const X = E.FX;
+  const fp = join(HERE, "../build/host/fmx_factory.json");
+  if (!existsSync(fp)) { console.log("FMX: skipped (run tests/fmx_test first)"); return; }
+  const fx = JSON.parse(readFileSync(fp, "utf8"));
+  ok(fx.size === X.SIZE && fx.factory.length === X.NFACTORY && eq(fx.waves, X.WAVE), "FMX: 128 bytes a patch, 16 factory patches, the waves as eng_fmx.c names them");
+  ok(fx.alg.length === X.ALG.length && fx.alg.every((r, i) => eq(r, X.ALG[i])), "FMX: the 40 templates == fmx_tables.h");
+  ok(fx.factory.every((b) => eq(Array.from(X.pack(X.unpack(Uint8Array.from(b)))), b)), "FMX: every factory patch unpacks and packs back byte for byte");
+  const ep = X.unpack(Uint8Array.from(fx.factory[0])), kick = X.unpack(Uint8Array.from(fx.factory[10]));
+  ok(ep.name === "FMX EP" && ep.op[1].coarse === 14 && ep.mod[0][1] === 100 && ep.out[0] === 100 && ep.alg === 5 && kick.peg === 112
+    && X.unpack(Uint8Array.from(fx.factory[5])).op[0].mode === 2, "FMX: FMX EP, FM KICK and RING BELLS read as eng_fmx.c writes them");
+  const a = X.applyAlg(X.init(), 1);
+  ok(a.mod[0][1] === 100 && a.mod[5][5] === 60 && a.mod[2][3] === 100 && a.out[0] === 110 && a.out[2] === 100 && !a.out[1] && a.alg === 1,
+    "FMX: template 1 fills the routing (2 > 1, 6 > 5 > 4 > 3, 6's feedback; carriers 1 and 3, an output level there kept)");
+  const j = X.unpack(X.pack({ op: [{ wave: 99, mode: 7, coarse: 99, fine: 500, dtn: 40 }], mod: [[300]], out: [-5], alg: 77, name: "toolongname!" }));
+  ok(j.op[0].wave === X.WAVE.length - 1 && j.op[0].mode === 2 && j.op[0].coarse === 31 && j.op[0].fine === 99 && j.op[0].dtn === 14
+    && j.mod[0][0] === 127 && j.out[0] === 0 && j.alg === 40 && j.name === "toolongnam", "FMX: values out of range are put into range");
+  const r = E.req.fmxStore(4, X.pack(ep));
+  ok(r[0] === E.CMD.FMX_STORE && r[1][0] === 4 && r[1].every((x) => x < 128) && eq(Array.from(E.unpack7(Uint8Array.from(r[1].slice(1)))).slice(0, 128), fx.factory[0]),
+    "FMX: FMX_STORE is the slot then pack7 of the 128 bytes, 7-bit clean");
+  /* through the mock (Clipper 0.6: protocol 12): put, get back, store, read the slot */
+  const m = E.makeMockDevice({ clipper: true });
+  const inp = [...m.access.inputs.values()][0], out = [...m.access.outputs.values()][0];
+  const link = new E.Link((d) => out.send(d), { timeout: 2000 });
+  inp.onmidimessage = (e) => link.receive(e.data);
+  const rq = async (q) => link.request(q);
+  const info = E.parse[E.CMD.INFO](await rq(E.req.info()));
+  const put = E.parse[E.CMD.FMX_PUT](await rq(E.req.fmxPut(0, X.pack(ep))));
+  const got = E.parse[E.CMD.FMX_GET](await rq(E.req.fmxGet(0, 0)));
+  const empty = E.parse[E.CMD.FMX_GET](await rq(E.req.fmxGet(2, 6)));
+  const st = E.parse[E.CMD.FMX_STORE](await rq(E.req.fmxStore(6, X.pack(kick))));
+  const back = E.parse[E.CMD.FMX_GET](await rq(E.req.fmxGet(2, 6)));
+  ok(info.proto === 12 && info.engines.includes("FMX") && !put.rc && eq(Array.from(got.bytes), fx.factory[0]) && empty.rc === 2 && !st.rc
+    && eq(Array.from(back.bytes), fx.factory[10]), "FMX: through the mock: PUT, GET back, an empty slot (rc 2), STORE, the slot read");
+}
+
 /* ------------------------------------- editor v5 (SLOOP 2.0): lanes, levels, ratchets --- */
 async function editorV5() {
   const C = E.CMD;
@@ -644,7 +681,9 @@ async function editorV5() {
     && names.indexOf("ED_MICRO_GET") + 1 === C.MICRO_GET && names.indexOf("ED_MICRO_SET") + 1 === C.MICRO_SET
     && names.indexOf("ED_FILL_GET") + 1 === C.FILL_GET && names.indexOf("ED_FILL_SET") + 1 === C.FILL_SET
     && /ED_FM6_GET = 68, ED_FM6_PUT, ED_FM6_LIST, ED_FM6_ERASE/.test(ec) && C.FM6_GET === 68 && C.FM6_ERASE === 71
-    && /#define ED_PROTO 11u/.test(ec) && /ed_b\(ED_PROTO\);/.test(ec)
+    && /#define ED_PROTO \(CLIPPER_SYNTH \? 12u : 11u\)/.test(ec) && /ed_b\(ED_PROTO\);/.test(ec)
+    && /enum \{ ED_FMX_GET = 90, ED_FMX_PUT, ED_FMX_STORE \};/.test(readFileSync(join(HERE, "../firmware/src/editor_fmx.c"), "utf8"))
+    && C.FMX_GET === 90 && C.FMX_STORE === 92
     && /enum \{ ED_HY_GET = 77, ED_HY_PUT \};/.test(readFileSync(join(HERE, "../firmware/src/editor_hybrid.c"), "utf8")) && C.HY_GET === 77 && C.HY_PUT === 78
     && /enum \{ ED_DSYN_LIST = 72, ED_DSYN_GET, ED_DSYN_PUT, ED_DSYN_STORE, ED_DSYN_PLAY \};/.test(readFileSync(join(HERE, "../firmware/src/editor_dsyn.c"), "utf8"))
     && C.DSYN_LIST === 72 && C.DSYN_PLAY === 76, "v5..v11: command numbers and INFO == editor.c / editor_dsyn.c / editor_hybrid.c");
@@ -732,9 +771,11 @@ async function editorV7() {
          EXPECT_04, LAYOUT, MX_PAGES); its EDIT values lockable, the 25 new ones not (seq.c p_lockable) */
     const sy = {}; let k = 0;
     for (const nm of (/enum \{\s*\/\* per-track parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/#(if|endif)[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) sy[nm] = k++;
-    ok(sy.P_L2RATE === 53 && sy.P_E2ATK === 56 && sy.P_M1SRC === 60 && sy.P_M6AMT === 77 && sy.P_E0 === 78 && sy.P_COUNT === 86
-      && E.lockable(sy.P_E0, 78) && E.lockable(sy.P_E7, 78) && !E.lockable(sy.P_L2RATE, 78) && !E.lockable(sy.P_M6AMT, 78),
-      "v7: Clipper 0.4's layout (LFO 2 53, ENV 2 56, MATRIX 60, P_E0 78): its EDIT values lockable, the matrix not");
+    ok(sy.P_L2RATE === 53 && sy.P_E2ATK === 56 && sy.P_M1SRC === 60 && sy.P_M6AMT === 77 && sy.P_ITYPE === 78 && sy.P_IMIX === 82
+      && sy.P_E0 === 83 && sy.P_COUNT === 91
+      && E.lockable(sy.P_E0, 83) && E.lockable(sy.P_E7, 83) && !E.lockable(sy.P_L2RATE, 83) && !E.lockable(sy.P_M6AMT, 83)
+      && !E.lockable(sy.P_ITYPE, 83) && !E.lockable(sy.P_IMIX, 83),
+      "v7: Clipper's layout (LFO 2 53, ENV 2 56, MATRIX 60, 0.6's INSERT 78, P_E0 83): its EDIT values lockable, the rest not");
   }
   {   /* (after SLOOP 2.6) SetGate: a value set again is sent once the last request is answered */
     const g = new E.SetGate();
@@ -752,6 +793,10 @@ async function editorV7() {
     ok(a[52] === 52 && a[53] === null && a[77] === null && a[78] === 63 && a[85] === 70
       && b[52] === 1052 && b[53] === null && b[63] === 1078 && b[70] === 1085 && c[60] === 1060 && d[78] === 53 && d[77] === null,
       "patchByCount: the 53 shared values by place, the engine's 8 by theirs; SLOOP 2.6's and Clipper's own left out");
+    const e = E.patchByCount(c04, 78, 91, 83), f = E.patchByCount(Array.from({ length: 91 }, (_, i) => 2000 + i), 83, 86, 78);
+    ok(e[77] === 1077 && e[78] === null && e[82] === null && e[83] === 1078 && e[90] === 1085
+      && f[77] === 2077 && f[78] === 2083 && f[85] === 2090,
+      "patchByCount: Clipper 0.4 / 0.5 <-> 0.6: LFO 2, ENV 2, the matrix by place, 0.6's INSERT left as the device has it");
   }
   {   /* the backup check: a SLOOP 2.6 project (FUN6) into Clipper 0.4 stops before writing; 0.4.1 reads it */
     const f6 = Uint8Array.of(0x36, 0x4E, 0x55, 0x46), f5 = Uint8Array.of(0x35, 0x4E, 0x55, 0x46);
@@ -1465,6 +1510,7 @@ await editorMixer();
 await editorTrackParam();
 await editorV5();
 hybridPatch();
+await fmxPatch();
 await wavetables();
 await editorV7();
 await editorV8();

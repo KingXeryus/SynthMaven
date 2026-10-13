@@ -44,33 +44,64 @@ _Static_assert(P_COUNT < 128, "user preset record: P_COUNT");
 #define UP_E0V 53u                               /* P_E0 of SLOOP 2.4 / 2.5 and of the stored layout */
 #define UP_NP (UP_E0V + 8u)
 #define UP_NX ((uint32_t)P_E0 - UP_E0V)          /* the Clipper parameters packed */
-#define UP_XMAGIC 0x434C                         /* "CL" */
+#define UP_NX4 25u                               /* .. by 0.4 / 0.5 (LFO 2, ENV 2, the matrix) */
+#define UP_XMAGIC 0x434C                         /* "CL": a 0.4 / 0.5 record (p[71]) */
+#define UP_XMAGIC6 0x4Du                         /* 0.6: p[71]'s low byte; its high byte the stream's bits 160..167 */
 #define UP_RSIZE_04 232u                         /* Clipper 0.4's record (92 values) */
-static const uint8_t UP_XW[UP_NX] = {7, 3, 1, 7, 7, 7, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7};   /* bits */
-_Static_assert(UP_NX == 25u && P_L2RATE == UP_E0V && P_M6AMT == P_E0 - 1, "the packed parameters, in order");
-static void up_xpack(int16_t *dst, const int16_t *x)   /* x: P_L2RATE .. P_M6AMT -> dst[0..9] */
+#define UP_NP_V26 71u
+#define UP_P04 86u                               /* Clipper 0.4's P_COUNT, and its P_E0 */
+#define UP_E004 78u                            /* SLOOP 2.6's records: its INSERT at p[53..57] */
+static const uint8_t UP_XW[UP_NX] = {7, 3, 1, 7, 7, 7, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7,
+                                     4, 7, 7, 7, 7};   /* bits (0.6: + the INSERT's TYPE, A, B, C, MIX) */
+_Static_assert(UP_NX == 30u && P_L2RATE == UP_E0V && P_ITYPE == UP_E0V + UP_NX4 && P_IMIX == P_E0 - 1,
+               "the packed parameters, in order");
+/* bit k of the packed stream: the record's p[UP_NP + k / 16] for k < 160, then p[71]'s high byte */
+static int16_t *up_xword(int16_t *p, uint32_t k, uint32_t *sh)
 {
-    uint32_t i, j, bit = 0;
+    if (k < 160u) {
+        *sh = k & 15u;
+        return &p[UP_NP + (k >> 4)];
+    }
+    *sh = 8u + (k - 160u);
+    return &p[UP_PMAX - 1u];
+}
+static void up_xpack(int16_t *p, const int16_t *x)   /* x: P_L2RATE .. P_IMIX -> the record's p */
+{
+    uint32_t i, j, bit = 0, sh;
     for (i = 0; i < 10u; i++)
-        dst[i] = 0;
+        p[UP_NP + i] = 0;
+    p[UP_PMAX - 1u] = UP_XMAGIC6;
     for (i = 0; i < UP_NX; i++) {
         uint32_t v = (uint32_t)clamp(x[i] - TP[UP_E0V + i].min, 0, (1 << UP_XW[i]) - 1);
         for (j = 0; j < UP_XW[i]; j++, bit++)
-            if ((v >> j) & 1u)
-                dst[bit >> 4] = (int16_t)((uint16_t)dst[bit >> 4] | (uint16_t)(1u << (bit & 15u)));
+            if ((v >> j) & 1u) {
+                int16_t *w = up_xword(p, bit, &sh);
+                *w = (int16_t)((uint16_t)*w | (uint16_t)(1u << sh));
+            }
     }
 }
-static void up_xunpack(const int16_t *src, int16_t *x)
+static void up_xunpack(const int16_t *p, int16_t *x, uint32_t nx)   /* the first nx of them */
 {
-    uint32_t i, j, bit = 0;
-    for (i = 0; i < UP_NX; i++) {
+    uint32_t i, j, bit = 0, sh;
+    for (i = 0; i < nx; i++) {
         uint32_t v = 0;
-        for (j = 0; j < UP_XW[i]; j++, bit++)
-            v |= (((uint32_t)(uint16_t)src[bit >> 4] >> (bit & 15u)) & 1u) << j;
+        for (j = 0; j < UP_XW[i]; j++, bit++) {
+            const int16_t *w = up_xword((int16_t *)p, bit, &sh);
+            v |= (((uint32_t)(uint16_t)*w >> sh) & 1u) << j;
+        }
         x[i] = (int16_t)((int32_t)v + TP[UP_E0V + i].min);
     }
 }
-static int up_xrec(const up_rec_t *r) { return r->np == UP_NP && r->p[UP_PMAX - 1u] == UP_XMAGIC; }
+_Static_assert(160u + 8u >= 129u + 32u, "the packed parameters fit the record's spare values");
+/* Clipper's own record: 0 none, 4 of 0.4 / 0.5 (25 packed), 6 of 0.6 (30) */
+static int up_xrec(const up_rec_t *r)
+{
+    if (r->np != UP_NP)
+        return 0;
+    if (r->p[UP_PMAX - 1u] == UP_XMAGIC)
+        return 4;
+    return ((uint16_t)r->p[UP_PMAX - 1u] & 0xFFu) == UP_XMAGIC6 ? 6 : 0;
+}
 static uint8_t up_ld[8u + UP_PER_BANK * UP_RSIZE_04] __attribute__((section(".pool")));   /* (a 0.4 bank, loading) */
 static up_bank_t up_bank[UP_SLOTS / UP_PER_BANK] __attribute__((section(".pool")));
 #else
@@ -98,8 +129,7 @@ static void up_rec_set(up_rec_t *r, const int16_t *v)
         r->p[i] = v[i];
     for (i = 0; i < 8u; i++)
         r->p[UP_E0V + i] = v[P_E0 + i];
-    up_xpack(&r->p[UP_NP], &v[UP_E0V]);
-    r->p[UP_PMAX - 1u] = UP_XMAGIC;
+    up_xpack(r->p, &v[UP_E0V]);
 #else
     r->np = P_COUNT;
     for (i = 0; i < P_COUNT; i++)
@@ -116,8 +146,11 @@ static void up_params(const up_rec_t *r, int16_t *out, const int16_t *def)
     for (i = 0; i < 8u; i++)
         out[P_E0 + i] = r->p[nc + i];
 #if CLIPPER_SYNTH
-    if (up_xrec(r))                                     /* Clipper's own: LFO 2, ENV 2, the matrix */
-        up_xunpack(&r->p[UP_NP], &out[UP_E0V]);
+    if (up_xrec(r))                                     /* Clipper's own: LFO 2, ENV 2, the matrix (0.6: the INSERT) */
+        up_xunpack(r->p, &out[UP_E0V], up_xrec(r) == 6 ? UP_NX : UP_NX4);
+    else if (r->np == UP_NP_V26)                        /* SLOOP 2.6's: its INSERT, the same types and values */
+        for (i = 0; i < 5u; i++)
+            out[P_ITYPE + i] = r->p[UP_E0V + i];
 #endif
 }
 
@@ -147,12 +180,12 @@ static int up_bank_import(uint32_t b, const uint8_t *src, int len)
             up_rec_t *r = &bk->r[k];
             int16_t v[P_COUNT], op[92];
             memcpy(op, o + 16, sizeof op);
-            if (o[0] != UP_USED || o[1] != UP_VER || o[3] != P_COUNT)
-                continue;                                /* (0.4 wrote np = P_COUNT: anything else stays empty) */
+            if (o[0] != UP_USED || o[1] != UP_VER || o[3] != UP_P04)
+                continue;                                /* (0.4 wrote np = its P_COUNT: anything else stays empty) */
             r->used = o[0], r->ver = o[1], r->engine = o[2];
             memcpy(r->name, o + 4, sizeof r->name);
-            for (i = 0; i < P_COUNT; i++)
-                v[i] = op[i];                            /* (0.4's layout is today's) */
+            for (i = 0; i < P_COUNT; i++)                /* (0.4's layout: today's but the INSERT) */
+                v[i] = i < P_ITYPE ? op[i] : i < P_E0 ? TP[i].def : op[i - P_E0 + UP_E004];
             up_rec_set(r, v);
             memcpy(r->note, o + 16 + sizeof op, 16);
             memcpy(r->flags, o + 32 + sizeof op, 16);

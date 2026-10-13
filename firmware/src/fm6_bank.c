@@ -14,7 +14,7 @@ typedef struct {
     uint32_t magic;
     uint16_t ver, nslot;                         /* 1, FM6_BANK_N */
     uint32_t used;                               /* bit k: slot k holds a patch */
-    uint32_t rsv;
+    uint32_t rsv;                                /* (Clipper 0.6: bit k, slot k's patch is FMX's: fm6_bank_fmx) */
     uint8_t v[FM6_BANK_N][FM6_PACKED];
 } fm6_bank_t;
 _Static_assert(sizeof(fm6_bank_t) == 3472u, "FM6 bank layout");
@@ -56,14 +56,26 @@ static void fm6_bank_scan(void)
     int c = flash_ok ? st_current(OBJ_FM6BANK, &h) : -1;
     fm6_bank_cur = -1;
     fm6_bank_used = 0;
+    fm6_bank_fmx = 0;
     if (c >= 0 && h.len == sizeof(fm6_bank_t) && fm6_bank_valid((const fm6_bank_t *)st_buf)) {
         fm6_bank_cur = (int8_t)c;
         fm6_bank_used = ((const fm6_bank_t *)st_buf)->used;
+        fm6_bank_fmx = ((const fm6_bank_t *)st_buf)->rsv & fm6_bank_used;
     }
     fm6_bank_read = fm6_bank_get;
 }
 
-static void fm6_bank_boot(void) { fm6_bank_scan(); }   /* persist_boot */
+#if CLIPPER_SYNTH
+static int fm6_bank_write(uint32_t k, const uint8_t *pk, int fmx);
+static int fmx_store(uint32_t k, const uint8_t *pk) { return fm6_bank_write(k, pk, 1); }   /* (eng_fmx.c STORE) */
+#endif
+static void fm6_bank_boot(void)                  /* persist_boot */
+{
+    fm6_bank_scan();
+#if CLIPPER_SYNTH
+    fmx_bank_store = fmx_store;
+#endif
+}
 
 /* the parts on a bank slot hear the bank as it is now (fm6_poll reloads them); a factory patch, or the
  * track's own, stays */
@@ -78,7 +90,7 @@ static void fm6_bank_changed(void)
 /* slot k = the packed record pk (0: erase), then the bank to flash: 0 ok, 1 bad slot, 2 flash error (the
  * bank is as it was). The record is stored through unpack / pack: every value in range. Main loop, the song
  * stopped (the caller checks: a sector erase silences the audio) */
-static int fm6_bank_put(uint32_t k, const uint8_t *pk)
+static int fm6_bank_write(uint32_t k, const uint8_t *pk, int fmx)
 {
     fm6_bank_t *b = (fm6_bank_t *)&proj_tmp;
     uint8_t v[FP_SIZE + 1u];
@@ -93,8 +105,14 @@ static int fm6_bank_put(uint32_t k, const uint8_t *pk)
     b->magic = FM6_BANK_MAGIC;
     b->ver = 1;
     b->nslot = FM6_BANK_N;
-    b->rsv = 0;
-    if (pk) {
+    b->rsv &= b->used & ~(1u << k);                  /* (the other slots' FMX bits kept) */
+    if (pk && fmx) {                                 /* an FMX patch (eng_fmx.c), every byte 0..127 */
+        uint32_t i;
+        for (i = 0; i < FM6_PACKED; i++)
+            b->v[k][i] = pk[i] & 0x7Fu;
+        b->used |= 1u << k;
+        b->rsv |= 1u << k;
+    } else if (pk) {
         fm6_unpack(pk, v);
         fm6_pack(v, b->v[k]);
         b->used |= 1u << k;
@@ -108,5 +126,14 @@ static int fm6_bank_put(uint32_t k, const uint8_t *pk)
     }
     fm6_bank_scan();
     fm6_bank_changed();
+#if CLIPPER_SYNTH
+    {
+        uint32_t t;
+        for (t = 0; t < NPART; t++)                  /* (FMX on a bank slot: reloaded too) */
+            if (fmx_slot_seen[t] > (int16_t)FMX_NFACTORY)
+                fmx_slot_seen[t] = 0;
+    }
+#endif
     return 0;
 }
+static int fm6_bank_put(uint32_t k, const uint8_t *pk) { return fm6_bank_write(k, pk, 0); }

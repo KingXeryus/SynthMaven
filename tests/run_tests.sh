@@ -137,6 +137,23 @@ if $SYN_UB -o "$OUT/synth4_ub" tests/synth4_test.c -lm 2>/dev/null; then
     run "Clipper 0.4 under ASan + UBSan" sh -c "'$OUT/synth4_ub' >/dev/null && echo clean"
 fi
 mkdir -p build/eng3_demo
+$SYN -o "$OUT/synth6_test" tests/synth6_test.c -lm
+run "Clipper 0.6: an INSERT per sound (bypass bit for bit, every type, fades, tail, the layer's own, projects, user presets, SLOOP 2.6's), MULTI (the layer on its own channel)" "$OUT/synth6_test"
+if $SYN_UB -o "$OUT/synth6_ub" tests/synth6_test.c -lm 2>/dev/null; then
+    run "Clipper 0.6 under ASan + UBSan" sh -c "'$OUT/synth6_ub' >/dev/null && echo clean"
+fi
+$SYN -o "$OUT/fmx_test" tests/fmx_test.c -lm
+mkdir -p build/fmx_demo
+run "Clipper 0.6 FMX: presets in tune, waves, PM / FM / RING, routing, 40 templates, PEG, bank (FMX and DX7 slots), DX7 converted" "$OUT/fmx_test" build/fmx_demo
+if $SYN_UB -o "$OUT/fmx_ub" tests/fmx_test.c -lm 2>/dev/null; then
+    run "Clipper 0.6 FMX under ASan + UBSan" sh -c "'$OUT/fmx_ub' >/dev/null && echo clean"
+fi
+$SYN -o "$OUT/wseq_test" tests/wseq_test.c -lm
+mkdir -p build/wseq_demo
+run "Clipper 0.6 WSEQ: steps at the tempo and their pitches, FWD / BACK / PING / ONCE, PITCH, START, XFADE, no click at a cut" "$OUT/wseq_test" build/wseq_demo
+mkdir -p "$OUT/fmx_ui"
+$SYN -o "$OUT/fmx_ui_test" tests/fmx_ui_test.c -lm
+run "Clipper 0.6 FMX on the FM-1: its pages on FMX only, OP / ROUTE / templates / a sound loaded" "$OUT/fmx_ui_test" "$OUT/fmx_ui"
 $SYN -o "$OUT/engines3_test" tests/engines3_test.c -lm
 run "Clipper 0.5 VPS (vector phaseshaping: pitch, formant, D, no DC, no aliasing, no step) and TERRAIN (every surface pitched, RAD, DRIFT, no aliasing), bounded, cost" "$OUT/engines3_test" build/eng3_demo
 if $SYN_UB -o "$OUT/engines3_ub" tests/engines3_test.c -lm 2>/dev/null; then

@@ -788,6 +788,9 @@ static void draw_graph(void)
         case GR_MORPH:
             graph_morph();
             break;
+        case GR_FMX:
+            graph_fmx();
+            break;
         case GR_MATRIX:
             graph_matrix();
             break;
@@ -838,7 +841,7 @@ static void draw_foot(void)
         uint32_t i, n = 0, k = 0;
         const char *pt = pg->scope == SC_ENGINE ? e->page_title[pg->id[0] != P_E0] : 0;   /* EDIT: the engine's */
         for (i = 0; i < NPAGES; i++)
-            if (PAGES[i].fam == pg->fam) {
+            if (PAGES[i].fam == pg->fam && !page_hidden(i)) {
                 n++;
                 if (i == ui.page)
                     k = n;
@@ -1053,6 +1056,10 @@ static uint8_t vis_on, vis_shown_last, vis_name_t;   /* the visualiser (ui_vis.c
 static void ui_draw(void)
 {
     ui.frame++;
+    if (!ui.home && page_hidden(ui.page)) {            /* (0.6: the sound left FMX on one of its pages) */
+        ui.page = (uint8_t)page_first(PAGES[ui.page].fam);
+        page_entered();
+    }
     pads_tick();
     if (rec_go) {                                       /* the take started: say so */
         rec_go = 0;

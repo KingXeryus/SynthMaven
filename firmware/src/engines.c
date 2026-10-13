@@ -36,6 +36,8 @@ static inline int32_t soft_knee(int32_t y, int32_t k)   /* linear up to k, then 
 #include "eng_macro.c"          /* MACRO: chords, swarm, additive, speech (after Plaits) */
 #include "eng_vps.c"            /* VPS: vector phaseshaping (Clipper 0.5) */
 #include "eng_terrain.c"        /* TERRAIN: wave terrain, lite (Clipper 0.5) */
+#include "eng_fmx.c"            /* FMX: six operators, waves, PM / FM / RING, any routing (Clipper 0.6) */
+#include "eng_wseq.c"           /* WSEQ: wave sequencing (Clipper 0.6) */
 #endif
 
 typedef union {
@@ -43,6 +45,9 @@ typedef union {
     fm6_note_t fm6[FM6_POLY];
     uint32_t phys[PHYS_ARENA / 4u];      /* eng_phys.c: two SYMP slots or three small ones */
     hy_part_t hybrid;                    /* eng_hybrid.c: the voices */
+#if CLIPPER_SYNTH
+    fmx_part_t fmx;                      /* eng_fmx.c: the voices */
+#endif
 } eng_arena_t;
 static eng_arena_t eng_arena[NPART] __attribute__((section(".pool")));
 static uint8_t eng_arena_own[NPART];            /* the engine + 1 whose state is in it, 0 = none */
@@ -82,11 +87,12 @@ static const engine_t *const ENGINES[NENGINES] = {&ENG_ANALOG, &ENG_DIGITAL, &EN
                                                     &ENG_WAVE,   /* 13 (ENGI_WAVE) */
                                                     &ENG_ACID, &ENG_STRINGS, &ENG_MACRO,   /* 14, 15, 16 */
                                                     &ENG_VPS, &ENG_TERRAIN,                /* 17, 18 */
+                                                    &ENG_FMX, &ENG_WSEQ,                   /* 19, 20 */
 #endif
 };
 #if CLIPPER_SYNTH
 _Static_assert(ENGI_WAVE == 13u && ENGI_ACID == 14u && ENGI_STRINGS == 15u && ENGI_MACRO == 16u && ENGI_VPS == 17u &&
-               ENGI_TERRAIN == 18u, "ENGINES[] order (Clipper)");
+               ENGI_TERRAIN == 18u && ENGI_FMX == 19u && ENGI_WSEQ == 20u, "ENGINES[] order (Clipper)");
 /* (eng_wave.c) the table of the instrument: track 1's, else its layer's (one table in RAM: two WAVE sounds share
  * track 1's); while a sound fades out after a change (voice.c sound_fade_begin) its table stays */
 static int32_t wt_wanted(void)
@@ -94,7 +100,7 @@ static int32_t wt_wanted(void)
     uint32_t k;
     for (k = 0; k < 2u; k++) {
         const track_t *t = &trk[k];
-        if (k && (t->p[P_LYMODE] != LY_LAYER && t->p[P_LYMODE] != LY_SPLIT))
+        if (k && (t->p[P_LYMODE] != LY_LAYER && t->p[P_LYMODE] != LY_SPLIT && t->p[P_LYMODE] != LY_MULTI))
             break;
         if (t->xf_on && ENGINES[t->engine % NENGINES] == &ENG_WAVE)
             return wt_have;

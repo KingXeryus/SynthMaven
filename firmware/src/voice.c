@@ -596,7 +596,7 @@ static void trk_note_off1(track_t *t, uint32_t note)
     for (i = 0; i < NVOICE; i++)                        /* POLY voices (also ones left from another mode: */
         if (t->v[i].note == note && t->v[i].gate &&     /* VOICE changed while they were held) */
             (voice_poly((int)mode) || i >= (mode == V_UNISON ? trk_nvoice(t) : 1u) || t->mono_note != note)) {
-            if (voice_poly((int)mode) && part_ctl[CLIPPER_SYNTH ? 0u : (uint32_t)(t - trk) % NPART].sus) {
+            if (voice_poly((int)mode) && part_ctl[CLIPPER_SYNTH ? ctl_part(t) : (uint32_t)(t - trk) % NPART].sus) {
                 t->v[i].sus = 1;                        /* Clipper: the sustain pedal holds it */
                 continue;
             }
@@ -644,7 +644,7 @@ static uint8_t ly_route[128], ly_note[128];           /* per note: bit 0 track 1
 static uint32_t layer_mode(void)
 {
     int32_t m = trk[1].p[P_LYMODE];
-    return m == LY_LAYER || m == LY_SPLIT ? (uint32_t)m : LY_OFF;
+    return m == LY_LAYER || m == LY_SPLIT || m == LY_MULTI ? (uint32_t)m : LY_OFF;
 }
 static void trk_note_on(track_t *t, uint32_t note, uint32_t vel)
 {
@@ -653,7 +653,7 @@ static void trk_note_on(track_t *t, uint32_t note, uint32_t vel)
         trk_note_on1(t, note, vel);
         return;
     }
-    m = layer_mode();
+    m = layer_mode();                                   /* (MULTI: the layer comes by its own channel only) */
     if (m == LY_LAYER)
         r = 3;
     else if (m == LY_SPLIT)
@@ -685,7 +685,7 @@ static void trk_note_off(track_t *t, uint32_t note)
 static void trk_sustain_up(track_t *t)
 {
     trk_sustain_up1(t);
-    if (t == &trk[0])
+    if (t == &trk[0] && !layer_multi())                /* (MULTI: the layer has its own pedal) */
         trk_sustain_up1(&trk[1]);
 }
 static void trk_all_off(track_t *t)
@@ -947,7 +947,8 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
     uint32_t i;
     int32_t lfo = mulq15(t->lfo_val, t->lfo_fade);
     /* Clipper: the pitch bend (MIDI En), in 1/4096 semitone: the HYBRID patch's range, else +-2 semitones */
-    uint32_t pc = CLIPPER_SYNTH ? 0u : (uint32_t)(t - trk) % NPART;   /* (Clipper: the layer plays part 1's controls) */
+    uint32_t pc = CLIPPER_SYNTH ? ctl_part(t) : (uint32_t)(t - trk) % NPART;   /* (Clipper: the layer plays part 1's
+                                                         * controls; in MULTI its own) */
     int32_t bend = (uint32_t)(t - trk) < NPART ?
                    (part_ctl[pc].bend * (e == &ENG_HYBRID ? (int32_t)hy_cur[t - trk].bend : 2)) >> 3 : 0;
 #if CLIPPER_SYNTH

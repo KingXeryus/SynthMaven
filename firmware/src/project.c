@@ -44,8 +44,19 @@ _Static_assert(G_DRDLY == PROJ_NG && G_COUNT == PROJ_NG + 1u, "the globals a pro
 _Static_assert(P_COUNT == PROJ_NP || (CLIPPER_SYNTH && P_COUNT == PROJ_NP + PROJ_NX && PROJ_NX <= PROJ_E0 && NTRK == 4 &&
                2u * PROJ_NX + 1u <= 3u * NLOCK), "a track's parameters as stored (Clipper: track 3's lock slots hold the rest)");
 #if CLIPPER_SYNTH
-/* tracks 1 and 2's LFO 2, ENV 2 and matrix <-> bytes in the free lock slots of track 3 (lk): 3 bytes a slot (param, val
- * low, val high), value - its minimum (every range fits a byte), then a check byte */
+/* tracks 1 and 2's LFO 2, ENV 2 and matrix (0.4: PROJ_XA values each) and INSERT (0.6: PROJ_XI each) <-> bytes in the
+ * free lock slots of track 3 (lk): 3 bytes a slot (param, val low, val high), value - its minimum (every range fits a
+ * byte). The 0.4 part first, as 0.4 / 0.5 wrote it (2 x PROJ_XA bytes, then CLIPPER_PROJ_MARK), then 0.6's (2 x PROJ_XI
+ * bytes, then CLIPPER_PROJ_MARK_06): a project of 0.4 / 0.5 loads its matrix, its INSERT off */
+#define PROJ_XA ((uint32_t)(P_ITYPE - PROJ_E0))       /* P_L2RATE .. P_M6AMT */
+#define PROJ_XI ((uint32_t)(P_E0 - P_ITYPE))          /* P_ITYPE .. P_IMIX */
+#define PROJ_XM1 (2u * PROJ_XA)                       /* the byte of CLIPPER_PROJ_MARK */
+#define PROJ_XM2 (PROJ_XM1 + 1u + 2u * PROJ_XI)       /* the byte of CLIPPER_PROJ_MARK_06 */
+_Static_assert(PROJ_XA == 25u && PROJ_XI == 5u && PROJ_XM2 < 3u * NLOCK, "the project's Clipper bytes in track 3's lock slots");
+static uint32_t proj_ext_at(uint32_t j, uint32_t k)   /* the byte of track j's value k (P_E0 - PROJ_E0 of them) */
+{
+    return k < PROJ_XA ? j * PROJ_XA + k : PROJ_XM1 + 1u + j * PROJ_XI + (k - PROJ_XA);
+}
 static void proj_ext_put(plock_t *lk)
 {
     uint8_t b[3u * NLOCK];
@@ -53,23 +64,30 @@ static void proj_ext_put(plock_t *lk)
     memset(b, 0, sizeof b);
     for (j = 0; j < 2u; j++)
         for (k = 0; k < PROJ_NX; k++)
-            b[j * PROJ_NX + k] = (uint8_t)clamp(trk[j].p[PROJ_E0 + k] - TP[PROJ_E0 + k].min, 0, 255);
-    b[2u * PROJ_NX] = CLIPPER_PROJ_MARK;
+            b[proj_ext_at(j, k)] = (uint8_t)clamp(trk[j].p[PROJ_E0 + k] - TP[PROJ_E0 + k].min, 0, 255);
+    b[PROJ_XM1] = CLIPPER_PROJ_MARK;
+    b[PROJ_XM2] = CLIPPER_PROJ_MARK_06;
     for (k = 0; k < NLOCK; k++) {
         lk[k].step = LOCK_FREE;
         lk[k].param = b[3u * k];
         lk[k].val = (int16_t)(b[3u * k + 1u] | b[3u * k + 2u] << 8);
     }
 }
+static uint32_t proj_ext_byte(const plock_t *lk, uint32_t n)
+{
+    return n % 3u ? ((uint16_t)lk[n / 3u].val >> (8u * (n % 3u - 1u))) & 255u : lk[n / 3u].param;
+}
 static int proj_ext_get(const plock_t *lk, uint32_t j, uint32_t k)   /* track j's value k, or -1 (none) */
 {
-    uint32_t n = j * PROJ_NX + k, c = 2u * PROJ_NX, i;
+    uint32_t i;
     for (i = 0; i < NLOCK; i++)
         if (lk[i].step != LOCK_FREE)
             return -1;
-    if ((c % 3u ? ((uint16_t)lk[c / 3u].val >> (8u * (c % 3u - 1u))) & 255u : lk[c / 3u].param) != CLIPPER_PROJ_MARK)
+    if (proj_ext_byte(lk, PROJ_XM1) != CLIPPER_PROJ_MARK)
         return -1;
-    return (int)(n % 3u ? ((uint16_t)lk[n / 3u].val >> (8u * (n % 3u - 1u))) & 255u : lk[n / 3u].param);
+    if (k >= PROJ_XA && proj_ext_byte(lk, PROJ_XM2) != CLIPPER_PROJ_MARK_06)
+        return -1;                                     /* (0.4 / 0.5: no INSERT) */
+    return (int)proj_ext_byte(lk, proj_ext_at(j, k));
 }
 #endif
 typedef struct {                               /* one track; the drum track ignores engine / preset */
@@ -286,12 +304,27 @@ static int proj_from_v4(project_t *q, const project_v4_t *v4, int n)
 
 /* a format 6 project (SLOOP 2.6; n bytes in *v6) -> slot q as format 5 (no Clipper mark: proj_apply sets what it held
  * as neutral); a lock on one of 2.6's own ten parameters is dropped, one on P_E0.. moves with it */
+/* Clipper 0.6: a SLOOP 2.6 project read (proj_from_v6): its track 1's INSERT, kept beside the project_t it became (that
+ * has no room for it: SLOOP's tracks 3 and 4 are its own), per slot (0..3: proj_slot, 4: any other), for proj_apply */
+static int16_t proj_v6_ins[5][5];
+static uint8_t proj_v6_ins_ok[5];
+static uint32_t proj_v6_at(const project_t *q)
+{
+    uint32_t i;
+    for (i = 0; i < 4u; i++)
+        if (q == &proj_slot[i])
+            return i;
+    return 4u;
+}
 static int proj_from_v6(project_t *q, const project_v6_t *v6, int n)
 {
     uint32_t i, k;
     if (n != (int)sizeof *v6 || v6->magic != PROJ_MAGIC_V6 || v6->size != sizeof *v6 ||
         v6->sum != proj_hash(v6, sizeof *v6 - 4u))
         return 0;
+    for (k = 0; k < 5u; k++)                           /* (SLOOP 2.6: x[0..4] = P_ITYPE .. P_IMIX there) */
+        proj_v6_ins[proj_v6_at(q)][k] = (int16_t)v6->t[0].x[k];
+    proj_v6_ins_ok[proj_v6_at(q)] = 1;
     memset(q, 0, sizeof *q);
     q->magic = PROJ_MAGIC;
     q->size = sizeof *q;
@@ -402,6 +435,7 @@ static int proj_from_v1(project_t *q, const project_v1_t *v1, int n)
 /* n bytes of a stored project (any format) -> slot q as format 5; 0 = not a project */
 static int proj_import(project_t *q, const void *b, int n)
 {
+    proj_v6_ins_ok[proj_v6_at(q)] = 0;                 /* (proj_from_v6 sets it again) */
     if (n == (int)sizeof *q && proj_ok((const project_t *)b)) {
         memcpy(q, b, sizeof *q);
         return 1;
@@ -473,8 +507,10 @@ static void proj_apply(const project_t *p, int all)
             if (i >= PROJ_E0 && i < P_E0 && k < 2u && p->rsv[0] == CLIPPER_PROJ_MARK) {
                 int x = proj_ext_get(p->t[2].lock, k, i - PROJ_E0);   /* Clipper: tracks 1 and 2's, in track 3 */
                 v = x < 0 ? d->def : x + d->min;
-            } else if (i >= PROJ_E0 && i < P_E0 && k < 2u && p->rsv[0] == CLIPPER_PROJ_MARK_04) {
+            } else if (i >= PROJ_E0 && i < P_ITYPE && k < 2u && p->rsv[0] == CLIPPER_PROJ_MARK_04) {
                 v = p->t[k + 2u].p[i - PROJ_E0];        /* (0.4's first build: in tracks 3 and 4's p[]) */
+            } else if (i >= P_ITYPE && i < P_E0 && k == 0u && p->rsv[0] != CLIPPER_PROJ_MARK && proj_v6_ins_ok[proj_v6_at(p)]) {
+                v = proj_v6_ins[proj_v6_at(p)][i - P_ITYPE];   /* (a SLOOP 2.6 project: its track 1's INSERT) */
             } else if (i < PROJ_NX && k >= 2u && p->rsv[0] == CLIPPER_PROJ_MARK_04) {
                 v = d->def;                             /* (there, theirs were not stored) */
             }
@@ -912,6 +948,8 @@ static uint32_t project_restore(uint32_t slot, const void *raw, uint32_t n)
     if (!flash_ok || st_save(OBJ_PROJECT0 + slot, &autosave_buf, sizeof autosave_buf))
         return 4;
     memcpy(&proj_slot[slot], &autosave_buf, sizeof proj_slot[slot]);
+    proj_v6_ins_ok[slot] = proj_v6_ins_ok[4];           /* (a SLOOP 2.6 project's INSERT goes with it) */
+    memcpy(proj_v6_ins[slot], proj_v6_ins[4], sizeof proj_v6_ins[slot]);
     sec_dirty &= (uint8_t)~(1u << slot);
     return 0;
 }

@@ -2055,8 +2055,11 @@ static void seq_tick(track_t *t, uint32_t adv)
 /* MIDI in: the track a channel plays (0..15) */
 static track_t *midi_track(uint32_t ch)
 {
-    if (CLIPPER_SYNTH)
-        return &trk[0];                               /* Clipper: the instrument, on every channel (omni) */
+#if CLIPPER_SYNTH
+    if (layer_multi() && ch + 1u == layer_ch())
+        return &trk[1];                               /* 0.6, MULTI: the layer's own channel */
+    return &trk[0];                                   /* Clipper: the instrument, on every channel (omni) */
+#endif
     if (song.g[G_DRCH] && ch + 1u == (uint32_t)song.g[G_DRCH])
         return TDRUM;
     return ch < NPART ? &trk[ch] : TSEL;
@@ -2408,6 +2411,7 @@ static void events_block(uint32_t n)
         }
 #if CLIPPER_SYNTH
         if (mpe_mode && ch && !song.g[G_ROUTE] &&     /* Clipper 0.4: MPE, a member channel's own controls */
+            !(layer_multi() && ch + 1u == layer_ch()) &&   /* (0.6: not the MULTI layer's channel) */
             (st == 0xE0u || st == 0xD0u || (st == 0xB0u && d1 == 74u))) {
             if (st == 0xE0u)
                 mpe_bend[ch] = (int16_t)((((int32_t)d2 << 7 | (int32_t)d1) - 8192) * 4);
@@ -2437,6 +2441,13 @@ static void events_block(uint32_t n)
         if (is_drum(t)) {
             if (st == 0x90u && d2)
                 drum_input(lane_of_note(d1), vel_lvl(d2), 0, 1);
+#if CLIPPER_SYNTH
+        } else if (t == &trk[1]) {                    /* 0.6, MULTI: the layer's channel plays it, nothing else */
+            if (st == 0x90u && d2)
+                trk_note_on1(t, d1, d2);
+            else
+                trk_note_off1(t, d1);
+#endif
         } else if (st == 0x90u && d2) {
 #if CLIPPER_SYNTH
             mpe_cur_ch = (uint8_t)(mpe_mode ? ch : 0u);  /* (voice.c voice_start: the voice's channel) */

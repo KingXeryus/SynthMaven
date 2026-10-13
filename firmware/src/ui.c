@@ -3,7 +3,7 @@
 /* Felucca user interface. Four columns map to KNOB 1..4. Rendering is lazy:
  * every element remembers what it last drew and is redrawn only on change. */
 #ifndef FELUCCA_VERSION
-#define FELUCCA_VERSION "CLIPPER 0.5.1"  /* the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
+#define FELUCCA_VERSION "CLIPPER 0.6"  /* the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
 #endif
 static void project_save(uint32_t slot);
 static void arrangement_save(void);
@@ -98,7 +98,7 @@ static uint32_t page_first(uint32_t fam)
 {
     uint32_t i;
     for (i = 0; i < NPAGES; i++)
-        if (PAGES[i].fam == fam)
+        if (PAGES[i].fam == fam && !page_hidden(i))
             return i;
     return 0;
 }
@@ -189,12 +189,14 @@ static void open_family(uint32_t fam)
 {
     if (!ui.home && cur_page()->fam == fam) {          /* same button again: next page */
         uint32_t i = ui.page + 1u;
+        while (i < NPAGES && PAGES[i].fam == fam && page_hidden(i))   /* (0.6: FMX's pages on FMX only) */
+            i++;
         if (i >= NPAGES || PAGES[i].fam != fam)
             i = page_first(fam);
         ui.page = (uint8_t)i;
     } else {
-        ui.page = ui.fam_last[fam] && PAGES[ui.fam_last[fam]].fam == fam ? ui.fam_last[fam]
-                                                                          : (uint8_t)page_first(fam);
+        ui.page = ui.fam_last[fam] && PAGES[ui.fam_last[fam]].fam == fam && !page_hidden(ui.fam_last[fam]) ?
+                  ui.fam_last[fam] : (uint8_t)page_first(fam);
     }
     ui.fam_last[fam] = ui.page;
     ui.home = 0;
@@ -209,11 +211,11 @@ static int page_walk(int32_t s)
     const page_t *pg = cur_page();
     uint32_t i, fam = pg->fam, n = 0;
     int32_t cur = -1, to;
-    uint8_t idx[8];
+    uint8_t idx[16];
     if (ui.home || pg->scope == SC_SONG || pg->scope == SC_DRUM)
         return 0;
-    for (i = 0; i < NPAGES && n < 8u; i++) {
-        if (PAGES[i].fam != fam || PAGES[i].scope == SC_SONG || PAGES[i].scope == SC_DRUM)
+    for (i = 0; i < NPAGES && n < 16u; i++) {
+        if (PAGES[i].fam != fam || PAGES[i].scope == SC_SONG || PAGES[i].scope == SC_DRUM || page_hidden(i))
             continue;
         if (i == ui.page)
             cur = (int32_t)n;
@@ -473,6 +475,18 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     {BK_LEAD, ENGI_VPS, "SYNC SWEEP"}, {BK_PLUCK, ENGI_VPS, "VOX PLUCK"}, {BK_KEYS, ENGI_VPS, "HOLLOW KEYS"},
     {BK_STAB, ENGI_VPS, "DIGI BRASS"}, {BK_PLUCK, ENGI_VPS, "VPS BELL"}, {BK_BASS, ENGI_VPS, "WOBBLE VPS"},
     {BK_PAD, ENGI_VPS, "VPS CHOIR"},
+    {BK_KEYS, ENGI_FMX, "FMX EP"}, {BK_PLUCK, ENGI_FMX, "FMX BELL"}, {BK_BASS, ENGI_FMX, "SAW FM BASS"},
+    {BK_STAB, ENGI_FMX, "FMX BRASS"}, {BK_ORGAN, ENGI_FMX, "FMX ORGAN"}, {BK_PLUCK, ENGI_FMX, "RING BELLS"},
+    {BK_BASS, ENGI_FMX, "TRUE FM GRWL"}, {BK_LEAD, ENGI_FMX, "CHIP FM LEAD"}, {BK_KEYS, ENGI_FMX, "OPL KEYS"},
+    {BK_PAD, ENGI_FMX, "FMX PAD"}, {BK_FX, ENGI_FMX, "FM KICK"}, {BK_FX, ENGI_FMX, "METAL HIT"},
+    {BK_LEAD, ENGI_FMX, "FM SYNC LEAD"}, {BK_PLUCK, ENGI_FMX, "FMX PLUCK"}, {BK_BASS, ENGI_FMX, "FM WOBBLE"},
+    {BK_KEYS, ENGI_FMX, "CASCADE"},
+    {BK_LEAD, ENGI_WSEQ, "WAVE STEPS"}, {BK_STAB, ENGI_WSEQ, "RHYTHM SEQ"}, {BK_PAD, ENGI_WSEQ, "SWEEP PAD"},
+    {BK_STAB, ENGI_WSEQ, "FIFTH STAB"}, {BK_LEAD, ENGI_WSEQ, "MINOR SEQ"}, {BK_KEYS, ENGI_WSEQ, "MAJOR SEQ"},
+    {BK_BASS, ENGI_WSEQ, "OCTAVE BASS"}, {BK_PAD, ENGI_WSEQ, "TRANCE GATE"}, {BK_PLUCK, ENGI_WSEQ, "BELL STEPS"},
+    {BK_LEAD, ENGI_WSEQ, "8BIT SEQ"}, {BK_PAD, ENGI_WSEQ, "MORPH PAD"}, {BK_PAD, ENGI_WSEQ, "VOX STEPS"},
+    {BK_FX, ENGI_WSEQ, "NOISY SEQ"}, {BK_BASS, ENGI_WSEQ, "DUB STEPS"}, {BK_LEAD, ENGI_WSEQ, "DORIAN RUN"},
+    {BK_PLUCK, ENGI_WSEQ, "PING PONG"},
     {BK_PAD, ENGI_TERRAIN, "TERRAIN"}, {BK_PAD, ENGI_TERRAIN, "RIPPLE PAD"}, {BK_KEYS, ENGI_TERRAIN, "CRYSTAL"},
     {BK_BASS, ENGI_TERRAIN, "BUMPY BASS"}, {BK_LEAD, ENGI_TERRAIN, "SADDLE LEAD"}, {BK_FX, ENGI_TERRAIN, "FOLD DRONE"},
     {BK_LEAD, ENGI_TERRAIN, "TWISTER"}, {BK_FX, ENGI_TERRAIN, "CHAOS FX"}, {BK_KEYS, ENGI_TERRAIN, "ORBIT KEYS"},

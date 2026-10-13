@@ -37,7 +37,7 @@ static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /*
 #if FELUCCA_SLICE
 #error "SLICE is a groovebox engine (CLIPPER_SYNTH 0)"
 #endif
-#define CLIPPER_NENG 6           /* WAVE ACID STRINGS MACRO VPS TERRAIN */
+#define CLIPPER_NENG 8           /* WAVE ACID STRINGS MACRO VPS TERRAIN FMX WSEQ */
 #define NENGINES (13 + CLIPPER_NENG)
 #define ENGI_WAVE 13u            /* Clipper 0.2: wavetables (eng_wave.c) */
 #define ENGI_ACID 14u            /*   a 303-style bass line (eng_acid.c) */
@@ -45,6 +45,8 @@ static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /*
 #define ENGI_MACRO 16u           /*   macro oscillators after Plaits (eng_macro.c) */
 #define ENGI_VPS 17u             /* Clipper 0.5: vector phaseshaping (eng_vps.c, Felucca discussion #145) */
 #define ENGI_TERRAIN 18u         /*   wave terrain, lite (eng_terrain.c, Felucca discussion #146) */
+#define ENGI_FMX 19u             /* Clipper 0.6: six operators, waves, PM / FM / RING, any routing (eng_fmx.c) */
+#define ENGI_WSEQ 20u            /*   wave sequencing (eng_wseq.c, after the Wavestation) */
 #else
 #define NENGINES (13 + FELUCCA_SLICE)
 #endif
@@ -104,6 +106,7 @@ enum {                          /* per-track parameters */
     P_M4SRC, P_M4DST, P_M4AMT,
     P_M5SRC, P_M5DST, P_M5AMT,
     P_M6SRC, P_M6DST, P_M6AMT,
+    P_ITYPE, P_IA, P_IB, P_IC, P_IMIX,         /* Clipper 0.6: the sound's INSERT (SLOOP 2.6's, fx.c): TYPE, A B C, MIX */
 #endif
     P_E0, P_E1, P_E2, P_E3, P_E4, P_E5, P_E6, P_E7,
     P_COUNT
@@ -139,7 +142,8 @@ enum { MD_OFF, MD_VIB, MD_CUT, MD_SHP, MD_WAH, MD_TREM };
 #define P_LYMODE P_SSWING
 #define P_LYSPLIT P_SGATE
 #define P_LYOCT P_SDIV
-enum { LY_OFF, LY_LAYER, LY_SPLIT };
+#define P_LYCH P_SLEN            /* Clipper 0.6, MULTI: the MIDI channel (1..16) the layer's sound answers on its own */
+enum { LY_OFF, LY_LAYER, LY_SPLIT, LY_MULTI };   /* MULTI (0.6): two parts, the layer on its own channel (bi-timbral) */
 /* Clipper 0.4: the matrix's sources and destinations (P_MnSRC, P_MnDST; voice.c mod_matrix) */
 #define MX_SLOTS 6u
 enum { MS_OFF, MS_LFO1, MS_LFO2, MS_ENV1, MS_ENV2, MS_VEL, MS_KEY, MS_MW, MS_AT, MS_RAND, MS_SLIDE, MS_NSRC };
@@ -147,6 +151,7 @@ enum { MT_OFF, MT_PITCH, MT_CUT, MT_SHAPE, MT_AMP, MT_PAN, MT_L2RATE, MT_E1, MT_
 enum { L2_FREE, L2_KEY };
 #define CLIPPER_PROJ_MARK 0xC5u  /* project_t.rsv[0]: written by Clipper (project.c: + LFO 2, ENV 2, the matrix in track 3's
                                   * free lock slots, SLOOP sees nothing of them) */
+#define CLIPPER_PROJ_MARK_06 0xC6u   /* (0.6: the INSERT of both sounds after them, project.c proj_ext_put) */
 #define CLIPPER_PROJ_MARK_04 0xC4u   /* by Clipper 0.4's first build (the same, in tracks 3 and 4's p[]) */
 #define CLIPPER_PROJ_MARK_03 0xC3u   /* by Clipper 0.3 (else the bus, layer, mod reset) */
 
@@ -368,6 +373,9 @@ typedef struct track {
     uint32_t l2ph;               /* Clipper 0.4: LFO 2 in FREE mode (one for the part) */
     int16_t l2rnd;               /* its S&H value */
     int16_t panmod;              /* the matrix's PAN, from the part's sources (fx.c mix_part) */
+    uint8_t ins_run;             /* Clipper 0.6: the INSERT ran (or faded out) in the last block (fx.c track_insert) */
+    uint8_t ins_xt;              /* .. blocks it ran on after the last voice (its tail: a flanger's feedback) */
+    uint16_t ins_res;            /* .. |its last sample| (a tail still ringing) */
 #endif
 } track_t;
 
@@ -386,6 +394,16 @@ typedef struct {
 
 static track_t trk[NTRK];        /* the instrument: three parts and the drum track */
 static song_t song;
+#if CLIPPER_SYNTH
+/* Clipper 0.6: the layer in MULTI (the two sounds two parts: the layer on its own MIDI channel, its own controls) */
+static inline int layer_multi(void) { return trk[1].p[P_LYMODE] == LY_MULTI; }
+/* the part whose performance controls (bend, mod wheel, pressure, pedal: part_ctl) a track follows: the instrument's,
+ * the layer's own in MULTI */
+static inline uint32_t ctl_part(const track_t *t) { return layer_multi() ? (uint32_t)(t - trk) % NPART : 0u; }
+static inline uint32_t layer_ch(void) { return (uint32_t)(trk[1].p[P_LYCH] < 1 ? 1 : trk[1].p[P_LYCH] > 16 ? 16 : trk[1].p[P_LYCH]); }
+#else
+static inline uint32_t ctl_part(const track_t *t) { return (uint32_t)(t - trk) % NPART; }
+#endif
 
 /* The transport clock (seq.c runs it). One unit = one sample at 1 BPM: a beat is BEAT_U units at any
  * tempo, and every division of it (1/4 .. 1/64, the triplets) is a whole number of units. The steps
@@ -425,7 +443,7 @@ static int trk_silent(const track_t *t)
 {
     uint32_t i = (uint32_t)(t - trk);
     if (CLIPPER_SYNTH && i)      /* Clipper: only the instrument (track 1) sounds, and its layer (track 2) when on */
-        return i != 1u || (trk[1].p[P_LYMODE] != LY_LAYER && trk[1].p[P_LYMODE] != LY_SPLIT);
+        return i != 1u || (trk[1].p[P_LYMODE] != LY_LAYER && trk[1].p[P_LYMODE] != LY_SPLIT && trk[1].p[P_LYMODE] != LY_MULTI);
     return t->p[P_MUTE] || (song.solo && !((song.solo >> i) & 1u));
 }
 #define RING_PUBLISH() __asm__ volatile("" ::: "memory")   /* slot store before the index update */

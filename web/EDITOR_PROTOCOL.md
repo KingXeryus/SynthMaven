@@ -436,6 +436,31 @@ ENV2 35..38 and ENV3 39..42 (A D S R), LFO 2 and 3 43..50 (4 each: wave, rate, f
 fade), the matrix 51..114 (16 slots of source, via, destination, amount -64..63), bend range 115 (0..24), level 116,
 0 at 117, the name 118..127 (ASCII, NUL-padded).
 
+## v12: FMX patches (Clipper 0.6)
+
+The FMX engine (`firmware/src/eng_fmx.c`, engine 19) plays a 128-byte patch on each synth part (`fmx_patch_t`, every
+byte 0..127; the editor's `FX` module packs and unpacks it). INFO ends with protocol 12.
+
+| cmd | name | request | reply |
+| --- | --- | --- | --- |
+| 90 | FMX_GET | target, index | target, index, rc, [pack7 of the 128 bytes] |
+| 91 | FMX_PUT | 0, part, pack7 of the 128 bytes | 0, part, rc |
+| 92 | FMX_STORE | slot, pack7 of the 128 bytes | slot, rc |
+
+- FMX_GET target 0: the patch part `index` (0..2) plays; 1: factory patch `index` (0..15); 2: bank slot `index`
+  (0..26): an FMX record as it is, a DX7 voice converted (`fmx_from_dx7`), an empty slot rc 2.
+- FMX_PUT: the part's patch from its next block, every value put into range (`fmx_sanitize`); it stays until a sound
+  loads or PTCH turns.
+- FMX_STORE: into the FM6 bank's slot (the same 27 slots, `fm6_bank.c`), marked FMX's in the bank's spare word (FM6
+  sees that slot empty); rc 3 while the song plays (the flash write silences the audio a moment), 2 a flash error.
+- rc: 0 ok, 1 a bad request.
+
+Layout: six operators 0..71 (12 each: wave 0..9 SINE TRI SAW SQR HALF ABS QUART PULSE SIN8 NOISE, mode bits 0-1 PM / FM /
+RING and bit 2 FIX, coarse 0..31 (0 = x0.5; FIX: 0..3 = 1, 10, 100, 1000 Hz), fine 0..99, level, A D S R, velocity, key
+scaling, detune 0..14 with 7 in tune), the routing 72..107 (`mod[to][from]`, 0..127; an operator into itself is its
+feedback), the outputs 108..113, the template it came from 114 (1..40, 0 none), the pitch envelope 115 (64 none, +-24
+semitones) and its time 116, the level 117 (100 unity), the name 118..127.
+
 ## Notes for the editor
 
 - **One request at a time.** Wait for the reply, about 10–50 ms, before sending the next.

@@ -397,6 +397,10 @@
   #fm6panel h3 { margin: 16px 0 6px; color: var(--dim); text-transform: uppercase; }
   /* Clipper: the HYBRID panel */
   #hypanel h3 { margin: 16px 0 6px; color: var(--dim); text-transform: uppercase; }
+  #fxpanel h3 { margin: 16px 0 6px; color: var(--dim); text-transform: uppercase; }
+  #fxpanel .fxn { width: 3.4em; }
+  #fxpanel td.fxfb .fxn { outline: 1px dashed var(--hi); }
+  #fxpanel .fxgraph { width: 100%; max-width: 560px; height: auto; display: block; margin: 4px 0 8px; }
   .hy { overflow-x: auto; }
   .hy table { border-collapse: collapse; }
   .hy td, .hy th { padding: 2px 6px; text-align: left; vertical-align: middle; white-space: nowrap; }
@@ -541,6 +545,21 @@
         <div id="fm6voice"></div>
         <h3 data-t="fm6Ops"></h3>
         <div id="fm6ops"></div>
+      </div>
+      <!-- Clipper 0.6: the FMX engine's patch (firmware protocol v12): only while the selected track plays FMX -->
+      <div class="card" id="fxpanel" hidden>
+        <h2 data-t="fxTitle" data-ic="ui_knob"></h2>
+        <p class="dim" data-t="fxHelp"></p>
+        <p class="bar"><button id="fxread" data-t="hyReadBtn"></button> <button id="fxsend" class="pri" data-t="hySendBtn"></button>
+          <label><input type="checkbox" id="fxlive" checked> <span data-t="hyLive"></span></label>
+          <label><span data-t="hyFactory"></span> <select id="fxfact"></select></label> <button id="fxload" data-t="load"></button></p>
+        <p class="bar"><button id="fxinit" data-t="hyInit"></button>
+          <button id="fxexport" data-t="hyExport" data-ic="symbol_download"></button>
+          <button id="fximport" data-t="hyImport" data-ic="symbol_upload"></button>
+          <input type="file" id="fxfile" accept=".json,application/json" hidden>
+          <label><span data-t="name"></span> <input type="text" id="fxname" maxlength="10" size="11"></label>
+          <label><span data-t="fxStoreTo"></span> <select id="fxslot"></select></label> <button id="fxstore" data-t="fxStore"></button></p>
+        <div id="fxbody"></div>
       </div>
       <!-- Clipper: the HYBRID engine's patch (firmware protocol v11): only while the selected track plays HYBRID -->
       <div class="card" id="hypanel" hidden>
@@ -744,7 +763,8 @@ const CMD = { INFO: 1, GET: 2, SET: 3, DUMP: 4, DESC: 5, STEP_GET: 6, STEP_SET: 
   FILL_GET: 41, FILL_SET: 42,                         /* v8 (SLOOP 2.4): the steps' fill conditions */
   FM6_GET: 68, FM6_PUT: 69, FM6_LIST: 70, FM6_ERASE: 71,    /* v9 (SLOOP 2.4): the FM6 engine's patches (Felucca 1.0's numbers) */
   DSYN_LIST: 72, DSYN_GET: 73, DSYN_PUT: 74, DSYN_STORE: 75, DSYN_PLAY: 76,   /* v10 (SLOOP 2.5): the SYN drum kits */
-  HY_GET: 77, HY_PUT: 78 };                          /* v11 (Clipper): the HYBRID engine's patches */
+  HY_GET: 77, HY_PUT: 78,                            /* v11 (Clipper): the HYBRID engine's patches */
+  FMX_GET: 90, FMX_PUT: 91, FMX_STORE: 92 };         /* v12 (Clipper 0.6): the FMX engine's patches */
 /* v7: the parameters a step can lock (firmware seq.c p_lockable: the sound, not the sequencer / arp / key / voice
    mode); ids as core.h: LEVEL .. LFO dests, GATE, the sends, GLIDE, PAN, DETUNE, the SLICER, the engine's 8 (from pe0:
    53, or 78 on Clipper 0.4, whose LFO 2, ENV 2 and matrix at 53..77 are not lockable) */
@@ -944,6 +964,10 @@ const parse = {
   /* v11 (Clipper): a HYBRID patch, pack7 of its 128 bytes (HY.unpack) */
   [CMD.HY_GET](a) { return { target: a[0], index: a[1], rc: a[2], bytes: a[2] ? null : unpack7(a.slice(3)).slice(0, 128) }; },
   [CMD.HY_PUT](a) { return { target: a[0], index: a[1], rc: a[2] }; },
+  /* v12 (Clipper 0.6): an FMX patch, pack7 of its 128 bytes (FX.unpack) */
+  [CMD.FMX_GET](a) { return { target: a[0], index: a[1], rc: a[2], bytes: a[2] ? null : unpack7(a.slice(3)).slice(0, 128) }; },
+  [CMD.FMX_PUT](a) { return { target: a[0], index: a[1], rc: a[2] }; },
+  [CMD.FMX_STORE](a) { return { slot: a[0], rc: a[1] }; },
   [CMD.FM6_LIST](a) {
     const r = new Reader(a), o = { factory: r.b(), bank: r.b(), slots: [] };
     for (let i = 0; i < o.factory + o.bank; i++) { const used = r.b(); o.slots.push({ used, name: used ? r.s() : (r.b(), "") }); }
@@ -1044,6 +1068,9 @@ const req = {
   fm6Put: (target, i, packed) => [CMD.FM6_PUT, [target & 0x7F, i & 0x7F, ...Array.from(packed, (x) => x & 0x7F)]],
   hyGet: (target, i) => [CMD.HY_GET, [target & 0x7F, i & 0x7F]],
   hyPut: (part, bytes) => [CMD.HY_PUT, [0, part & 0x7F, ...pack7(bytes)]],
+  fmxGet: (target, i) => [CMD.FMX_GET, [target & 0x7F, i & 0x7F]],
+  fmxPut: (part, bytes) => [CMD.FMX_PUT, [0, part & 0x7F, ...pack7(bytes)]],
+  fmxStore: (slot, bytes) => [CMD.FMX_STORE, [slot & 0x7F, ...pack7(bytes)]],
   fm6List: () => [CMD.FM6_LIST, []],
   fm6Erase: (i) => [CMD.FM6_ERASE, [i & 0x7F]],
   /* v10: the SYN drum kits (firmware proto >= 10). which: a factory kit 0.., or DSYN.USER + k */
@@ -1075,6 +1102,8 @@ function replyMatches(cmd, args, a) {
     case CMD.MICRO_SET: case CMD.FILL_SET: return a[0] === args[0] && a[1] === args[1];
     case CMD.FM6_GET: case CMD.FM6_PUT: return a[0] === args[0] && a[1] === args[1];
     case CMD.HY_GET: case CMD.HY_PUT: return a[0] === args[0] && a[1] === args[1];
+    case CMD.FMX_GET: case CMD.FMX_PUT: return a[0] === args[0] && a[1] === args[1];
+    case CMD.FMX_STORE: return a[0] === args[0];
     case CMD.FM6_ERASE: return a[0] === args[0];
     case CMD.DSYN_GET: return a[0] === args[0];
     case CMD.DSYN_PUT: case CMD.DSYN_PLAY: return a[0] === args[0] && a[1] === args[1];
@@ -2410,10 +2439,24 @@ function makeMockDevice(opt = {}) {
         presets: ["TERRAIN", "RIPPLE PAD", "CRYSTAL", "BUMPY BASS", "SADDLE LEAD", "FOLD DRONE", "TWISTER", "CHAOS FX",
           "ORBIT KEYS", "TERRA PLUCK"].map((n, i) => P(n, [[0, 1, 2, 3, 4, 5, 6, 7, 2, 1][i], 50, 0, 0, 64, 20, 110, 0], [60, 100, 120, 90], 0)) });
       ge.names = [...ge.names, "ACID", "STRINGS", "MACRO", "VPS", "TERRAIN"];
+      if (opt.clipper !== "0.5") {                   /* Clipper 0.6: FMX (eng_fmx.c), protocol 12 */
+        const PT = [...Array.from({ length: 16 }, (_, i) => `F${i + 1}`), ...Array.from({ length: 27 }, (_, i) => `B${i + 1}`)];
+        ENG.push({ name: "FMX", titles: ["FMX", "SHAPE"], edit: [E("PTCH", PT, 0), E("ALG", ["PAT", ...Array.from({ length: 40 }, (_, i) => String(i + 1))], 0),
+          D("MOD", F.PCT, 0, 127, 64), D("FB", F.BIPCT, -64, 63, 0), D("TIME", F.BIPCT, -64, 63, 0), D("DTN", F.PCT, 0, 127, 0),
+          D("VEL", F.BIPCT, -64, 63, 0), D("KTRK", F.BIPCT, -64, 63, 0)],
+          presets: ["FMX EP", "FMX BELL", "SAW FM BASS", "FMX BRASS"].map((n, i) => P(n, [i, 0, 64, 0, 0, 0, 0, 0], [0, 0, 127, 0], 0)) });
+        ENG.push({ name: "WSEQ", titles: ["SEQUENCE", "TONE"], edit: [E("SEQ", ["STEPS", "RHYTHM", "SWEEP", "FIFTHS", "MINOR", "MAJOR",
+          "OCTAVE", "GATE", "BELLS", "8BIT", "MORPH", "VOX", "NOISY", "DUB", "DORIAN", "PING"], 0), D("RATE", F.INT, 0, 127, 40),
+          D("XFADE", F.PCT, 0, 127, 20), E("LOOP", ["FWD", "BACK", "PING", "ONCE"], 0), D("START", F.INT, 0, 127, 0),
+          D("PITCH", F.PCT, 0, 127, 64), D("CUT", F.CUTOFF, 0, 127, 110), D("RES", F.PCT, 0, 127, 10)],
+          presets: ["WAVE STEPS", "RHYTHM SEQ", "SWEEP PAD", "FIFTH STAB"].map((n, i) => P(n, [i, 40, 20, 0, 0, 64, 110, 10], [0, 90, 110, 50], 0)) });
+        ge.names = [...ge.names, "FMX", "WSEQ"];
+      }
     }
     ge.max = ge.names.length - 1;
   }
   const HY_E = ENG.findIndex((e) => e.name === "HYBRID");
+  const FX_E = ENG.findIndex((e) => e.name === "FMX");
   const FM6_E = ENG.findIndex((e) => e.name === "FM6"), FM6_BANK = 27, FM6_NPART = 3;
   const v9 = !opt.legacy && !opt.v3 && !opt.noBackup && !opt.v7 && !opt.v8;   /* SLOOP 2.4: FM6 patches */
   const v10 = v9 && !opt.v9;                         /* SLOOP 2.5: the SYN drum kits */
@@ -2620,7 +2663,7 @@ function makeMockDevice(opt = {}) {
         s(opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : (opt.clipper ? "FELUCCA CLIPPER 0.2 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)")); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
         ENG.forEach((e) => s(e.name));
         if (!opt.legacy) b(NTRK);
-        if (v5) b(opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : opt.clipper ? 11 : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
+        if (v5) b(opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : opt.clipper ? (FX_E >= 0 ? 12 : 11) : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
         break;
       case CMD.GET: case CMD.SET: {
         if (a.length < 2) return null;
@@ -2902,6 +2945,32 @@ function makeMockDevice(opt = {}) {
           } catch (e) { rc = 2; }
         } else if (op === 3) { st.bkPut = null; rc = 0; }
         b(op); b(id); b(rc);
+        break;
+      }
+      case CMD.FMX_GET: case CMD.FMX_PUT: case CMD.FMX_STORE: {   /* Clipper 0.6: editor_fmx.c */
+        if (FX_E < 0) return null;
+        st.fxbank = st.fxbank || [];
+        const fact = (i) => FX.pack({ ...FX.init(), name: `F${i + 1}` });
+        if (cmd === CMD.FMX_GET) {
+          let rc = a.length !== 2 ? 1 : 0, bytes = null;
+          const tr = a[0] === 0 && a[1] < 3 ? st.tracks[a[1]] : null;
+          if (!rc && tr) bytes = tr.fx || (tr.fx = fact(tr.p[P_E0] | 0));
+          else if (!rc && a[0] === 1 && a[1] < 16) bytes = fact(a[1]);
+          else if (!rc && a[0] === 2 && a[1] < 27) { bytes = st.fxbank[a[1]] || null; rc = bytes ? 0 : 2; }
+          else rc = 1;
+          b(a.length ? a[0] : 127); b(a.length > 1 ? a[1] : 127); b(rc);
+          if (!rc) pack7(bytes).forEach(b);
+        } else if (cmd === CMD.FMX_PUT) {
+          const got = a.length > 2 ? unpack7(a.slice(2)) : [], tr = a[1] < 3 ? st.tracks[a[1]] : null;
+          const rc = a[0] !== 0 || !tr || got.length < FX.SIZE ? 1 : 0;
+          if (!rc) tr.fx = FX.pack(FX.unpack(got.slice(0, FX.SIZE)));
+          b(a.length ? a[0] : 127); b(a.length > 1 ? a[1] : 127); b(rc);
+        } else {
+          const got = a.length > 1 ? unpack7(a.slice(1)) : [];
+          let rc = a[0] >= 27 || got.length < FX.SIZE ? 1 : st.playing ? 3 : 0;
+          if (!rc) st.fxbank[a[0]] = FX.pack(FX.unpack(got.slice(0, FX.SIZE)));
+          b(a.length ? a[0] : 127); b(rc);
+        }
         break;
       }
       case CMD.HY_GET: case CMD.HY_PUT: {           /* Clipper: editor_hybrid.c */
@@ -3490,6 +3559,83 @@ const ARR = {
    The tone (a wave with a falling pitch, a second partial), the click, the noise (white, the 808's six metallic
    squares, both, a chip LFSR; the clap's bursts), a resonant filter, drive and level. A kit: 16 of them and its
    crush (bits dropped in the low nibble, sample-and-hold - 1 in the high one). */
+/* Clipper 0.6: the FMX engine's patch (firmware v12, eng_fmx.c fmx_patch_t: 128 bytes, every one 0..127):
+   six operators of 12 bytes (wave, mode bits 0-1 PM / FM / RING and bit 2 FIX, coarse 0..31, fine 0..99, level, A D S R,
+   velocity, key scaling, detune 0..14 with 7 in tune), the routing mod[to][from] 72..107 (0..127, its own operator:
+   feedback), the outputs 108..113, the template 114 (1..40, 0 none), the pitch envelope 115 (64 none) and its time 116,
+   the level 117, the name 118..127 */
+const FX = (() => {
+  const WAVE = ["SINE", "TRI", "SAW", "SQR", "HALF", "ABS", "QUART", "PULSE", "SIN8", "NOISE"];
+  const MODE = ["PM", "FM", "RING"];
+  const RATIO = ["0.5", ...Array.from({ length: 31 }, (_, i) => String(i + 1))];
+  const FIXC = ["1 Hz", "10 Hz", "100 Hz", "1 kHz"];
+  /* tools/gen_fmx.py: per template, the modulators of operators 1..6 (bit s-1: operator s), then the carriers */
+  const ALG = [[0x02, 0x00, 0x08, 0x10, 0x20, 0x20, 0x05], [0x02, 0x02, 0x08, 0x10, 0x20, 0x00, 0x05], [0x02, 0x04, 0x00, 0x10, 0x20, 0x20, 0x09], [0x02, 0x04, 0x00, 0x10, 0x20, 0x08, 0x09], [0x02, 0x00, 0x08, 0x00, 0x20, 0x20, 0x15], [0x02, 0x00, 0x08, 0x00, 0x20, 0x10, 0x15], [0x02, 0x00, 0x18, 0x00, 0x20, 0x20, 0x05], [0x02, 0x00, 0x18, 0x08, 0x20, 0x00, 0x05], [0x02, 0x02, 0x18, 0x00, 0x20, 0x00, 0x05], [0x02, 0x04, 0x04, 0x30, 0x00, 0x00, 0x09], [0x02, 0x04, 0x00, 0x30, 0x00, 0x20, 0x09], [0x02, 0x02, 0x38, 0x00, 0x00, 0x00, 0x05], [0x02, 0x00, 0x38, 0x00, 0x00, 0x20, 0x05], [0x02, 0x00, 0x08, 0x30, 0x00, 0x20, 0x05], [0x02, 0x02, 0x08, 0x30, 0x00, 0x00, 0x05], [0x16, 0x00, 0x08, 0x00, 0x20, 0x20, 0x01], [0x16, 0x02, 0x08, 0x00, 0x20, 0x00, 0x01], [0x0e, 0x00, 0x04, 0x10, 0x20, 0x00, 0x01], [0x02, 0x04, 0x00, 0x20, 0x20, 0x20, 0x19], [0x04, 0x04, 0x04, 0x30, 0x00, 0x00, 0x0b], [0x04, 0x04, 0x04, 0x20, 0x20, 0x00, 0x1b], [0x02, 0x00, 0x20, 0x20, 0x20, 0x20, 0x1d], [0x00, 0x04, 0x00, 0x20, 0x20, 0x20, 0x1b], [0x00, 0x00, 0x20, 0x20, 0x20, 0x20, 0x1f], [0x00, 0x00, 0x00, 0x20, 0x20, 0x20, 0x1f], [0x00, 0x04, 0x00, 0x30, 0x00, 0x20, 0x0b], [0x00, 0x04, 0x04, 0x30, 0x00, 0x00, 0x0b], [0x02, 0x00, 0x08, 0x10, 0x10, 0x00, 0x25], [0x00, 0x00, 0x08, 0x00, 0x20, 0x20, 0x17], [0x00, 0x00, 0x08, 0x10, 0x10, 0x00, 0x27], [0x00, 0x00, 0x00, 0x00, 0x20, 0x20, 0x1f], [0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x3f], [0x02, 0x04, 0x08, 0x10, 0x20, 0x20, 0x01], [0x02, 0x04, 0x00, 0x10, 0x20, 0x20, 0x09], [0x3e, 0x00, 0x00, 0x00, 0x00, 0x20, 0x01], [0x0c, 0x30, 0x00, 0x00, 0x00, 0x20, 0x03], [0x02, 0x00, 0x08, 0x00, 0x20, 0x20, 0x15], [0x02, 0x01, 0x08, 0x04, 0x20, 0x10, 0x15], [0x08, 0x04, 0x10, 0x10, 0x20, 0x20, 0x03], [0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x1f]];
+  const SIZE = 128, NOP = 6, NFACTORY = 16, NBANK = 27;
+  const cl = (v, lo, hi) => Math.max(lo, Math.min(hi, Math.round(+v || 0)));
+  const op0 = () => ({ wave: 0, mode: 0, fix: false, coarse: 1, fine: 0, level: 0, adsr: [0, 0, 127, 30], vel: 0, ksc: 0, dtn: 7 });
+  function init() {
+    const o = { op: Array.from({ length: NOP }, op0), mod: Array.from({ length: NOP }, () => new Array(NOP).fill(0)),
+      out: new Array(NOP).fill(0), alg: 0, peg: 64, ptime: 0, level: 100, name: "INIT" };
+    o.op[0].level = 127;
+    o.out[0] = 110;
+    return o;
+  }
+  function unpack(b) {
+    const o = init();
+    for (let k = 0; k < NOP; k++) {
+      const i = k * 12;
+      o.op[k] = { wave: b[i], mode: b[i + 1] & 3, fix: !!(b[i + 1] & 4), coarse: b[i + 2], fine: b[i + 3], level: b[i + 4],
+        adsr: [b[i + 5], b[i + 6], b[i + 7], b[i + 8]], vel: b[i + 9], ksc: b[i + 10], dtn: b[i + 11] };
+    }
+    for (let d = 0; d < NOP; d++) for (let s = 0; s < NOP; s++) o.mod[d][s] = b[72 + d * NOP + s];
+    for (let d = 0; d < NOP; d++) o.out[d] = b[108 + d];
+    [o.alg, o.peg, o.ptime, o.level] = [b[114], b[115], b[116], b[117]];
+    o.name = String.fromCharCode(...b.slice(118, 128)).replace(/\0+$/, "").trimEnd();
+    return sanitize(o);
+  }
+  function sanitize(x) {
+    const o = init();
+    for (let k = 0; k < NOP; k++) {
+      const q = (x.op || [])[k] || {}, r = o.op[k];
+      r.wave = cl(q.wave, 0, WAVE.length - 1); r.mode = cl(q.mode, 0, 2); r.fix = !!q.fix;
+      r.coarse = cl(q.coarse, 0, r.fix ? 3 : 31); r.fine = cl(q.fine, 0, 99); r.level = cl(q.level, 0, 127);
+      r.adsr = [0, 1, 2, 3].map((i) => cl((q.adsr || [])[i], 0, 127)); r.vel = cl(q.vel, 0, 127); r.ksc = cl(q.ksc, 0, 127);
+      r.dtn = cl(q.dtn ?? 7, 0, 14);
+    }
+    for (let d = 0; d < NOP; d++) for (let s = 0; s < NOP; s++) o.mod[d][s] = cl(((x.mod || [])[d] || [])[s], 0, 127);
+    for (let d = 0; d < NOP; d++) o.out[d] = cl((x.out || [])[d], 0, 127);
+    o.alg = cl(x.alg, 0, ALG.length); o.peg = cl(x.peg ?? 64, 0, 127); o.ptime = cl(x.ptime, 0, 127); o.level = cl(x.level ?? 100, 0, 127);
+    o.name = String(x.name ?? "").replace(/[^\x20-\x7e]/g, " ").slice(0, 10);
+    return o;
+  }
+  function pack(x) {
+    const o = sanitize(x), b = new Array(SIZE).fill(0);
+    o.op.forEach((q, k) => {
+      const i = k * 12;
+      [b[i], b[i + 1], b[i + 2], b[i + 3], b[i + 4]] = [q.wave, q.mode | (q.fix ? 4 : 0), q.coarse, q.fine, q.level];
+      for (let j = 0; j < 4; j++) b[i + 5 + j] = q.adsr[j];
+      [b[i + 9], b[i + 10], b[i + 11]] = [q.vel, q.ksc, q.dtn];
+    });
+    for (let d = 0; d < NOP; d++) for (let s = 0; s < NOP; s++) b[72 + d * NOP + s] = o.mod[d][s];
+    for (let d = 0; d < NOP; d++) b[108 + d] = o.out[d];
+    [b[114], b[115], b[116], b[117]] = [o.alg, o.peg, o.ptime, o.level];
+    for (let i = 0; i < 10; i++) b[118 + i] = i < o.name.length ? o.name.charCodeAt(i) & 0x7F : 0;
+    return b;
+  }
+  /* template a (1..40) into the routing: its connections (the amount there kept, else 100, feedback 60), its carriers */
+  function applyAlg(x, a) {
+    const t = ALG[a - 1];
+    if (!t) return x;
+    for (let d = 0; d < NOP; d++) {
+      for (let s = 0; s < NOP; s++) x.mod[d][s] = (t[d] >> s) & 1 ? (x.mod[d][s] || (s === d ? 60 : 100)) : 0;
+      x.out[d] = (t[6] >> d) & 1 ? (x.out[d] || 100) : 0;
+    }
+    x.alg = a;
+    return x;
+  }
+  return { WAVE, MODE, RATIO, FIXC, ALG, SIZE, NOP, NFACTORY, NBANK, init, unpack, pack, sanitize, applyAlg };
+})();
 /* Clipper: the HYBRID engine's patch (firmware v11, eng_hybrid.c hy_patch_t: 128 bytes, the signed ones as two's
    complement). unpack: bytes -> an object to edit; pack: back, every value into its range (as hy_sanitize). */
 const HY = (() => {
@@ -3689,12 +3835,13 @@ class SetGate {
 }
 /* (after SLOOP 2.6) a sound's values p (common parameters, then the engine's 8 from pe0) in a layout of n values with the
    engine's 8 from ne0: the same layout as it is; else the engine's 8 by their place, and the common ones by position up
-   to the layout both share (SLOOP 2.4 / 2.5: P_E0 53; what SLOOP 2.6 or Clipper added before P_E0 differs): null for
-   the rest (left as the device has them) */
+   to the layout both share (SLOOP 2.4 / 2.5: P_E0 53; what SLOOP 2.6 or Clipper added before P_E0 differs; two Clipper
+   layouts: up to the older one's P_E0): null for the rest (left as the device has them) */
 function patchByCount(p, pe0, n, ne0 = n - 8) {
   const src = Number.isInteger(pe0) && pe0 >= 0 && pe0 + 8 <= p.length ? pe0 : p.length - 8;
   if (!(n > 8) || src < 0 || (p.length === n && src === ne0)) return p.slice(0, n);
-  const out = new Array(n).fill(null), nc = Math.min(src, ne0, 53);
+  /* (Clipper 0.4 on only appends before P_E0: two Clipper layouts share what the older one has by place) */
+  const out = new Array(n).fill(null), nc = src >= 78 && ne0 >= 78 ? Math.min(src, ne0) : Math.min(src, ne0, 53);
   for (let i = 0; i < nc; i++) out[i] = p[i] ?? null;
   for (let k = 0; k < 8; k++) out[ne0 + k] = p[src + k] ?? null;
   return out;
@@ -3865,6 +4012,9 @@ const TEXT = {
     smpSlots: "サンプルスロット", userBank: "ユーザープリセット", none: "なし",
     fm6Title: "FM6 の音色（6 オペレーター）", fm6Help: "FM6 エンジンの音色をまるごと編集します。本体のノブ（EDIT の 8 つ）はこの音色の上にかかるマクロです。トラックへ送るとすぐ鳴り、PTCH を回すか別の音を読み込むまでそのトラックの音色になります（プロジェクトは PTCH だけを保存します）。バンク（B1〜B27）に保存すると PTCH で呼び出せます（本体を停止してから）。",
     hyTitle: "HYBRID の音色（Clipper）", hyHelp: "HYBRID エンジンの音色をまるごと編集します。ボイスごとに 3 オシレーター、2 フィルター、専用のエンベロープ 2 つと LFO 2 つ、16 スロットのモジュレーション・マトリクス。本体のノブはこの上の 8 つの値です（CUT、RES、FENV、PTCH、マクロ M1〜M4 はマトリクスのソース）。LIVE ではすぐに音が変わります。PTCH を回すか別の音を読み込むまでトラックの音色です（プロジェクトは PTCH だけ保存：残したい音色は書き出してください）。",
+    fxTitle: "FMXパッチ（6オペレーター・自由なルーティング）", fxHelp: "FMXエンジンのパッチ全体：オペレーターごとの波形とモード（PM・FM・RING）、比率または固定周波数、エンベロープ。どのオペレーターも他のどれでも変調でき（自分自身はフィードバック）、どれでも出力へ。テンプレート（DX7の32種と8種）から始めて自由に変更。STOREでバンク（B1..B27）に保存（再生を止めてから）。",
+    fxRouting: "ルーティング", fxTemplate: "テンプレート", fxTemplateHelp: "（行がオペレーター、列がそれを変調するもの、対角線はフィードバック、OUTは出力）",
+    fxOps: "オペレーター", fxGlobal: "ピッチエンベロープとレベル", fxStoreTo: "保存先", fxStore: "保存", fxStored: "保存しました", fxEmpty: "空のスロット:", fxStopFirst: "先に再生を止めてください",
     hyReadBtn: "トラックから読む", hySendBtn: "トラックへ送る", hyLive: "ライブ", hyFactory: "ファクトリー", hyInit: "初期化",
     hyExport: "音色を書き出す", hyImport: "音色を読み込む", hyOscs: "オシレーター", hyFilters: "フィルター",
     hySer: "F1 のあと F2", hyPar: "F1 と F2 を並列、BAL で配分", hySplit: "OSC1（とリング）は F1、OSC2＋3 は F2",
@@ -4074,6 +4224,9 @@ const TEXT = {
     smpSlots: "Sample slots", userBank: "User presets", none: "none",
     fm6Title: "FM6 patch (six operators)", fm6Help: "Edit the whole patch of the FM6 engine. The device's knobs (the eight EDIT values) are macros on top of it. Sent to a track it plays at once and stays that track's patch until PTCH turns or another sound loads (a project keeps PTCH only); stored in the bank (B1..B27) it is a PTCH value (stop the device first).",
     hyTitle: "HYBRID patch (Clipper)", hyHelp: "The whole patch of the HYBRID engine: three oscillators, two filters, two envelopes and two LFOs of its own per voice, and a 16-slot modulation matrix. The device's knobs play eight values on top of it (CUT, RES, FENV, PTCH and the macros M1..M4: matrix sources). With LIVE each change is heard at once; the patch stays the track's until PTCH turns or another sound loads (a project keeps PTCH: export the patch to keep it).",
+    fxTitle: "FMX patch (six operators, any routing)", fxHelp: "The whole patch of the FMX engine: each operator its own wave (sine, triangle, saw, square, OPL halves and quarters, pulse, 8-bit sine, noise) and its own mode (PM as the DX7, true FM, RING), a ratio or a fixed frequency, an envelope; any operator into any other (its own: feedback) and any to the output. Start from a template (the DX7's 32 and 8 more), then change any connection. The device's EDIT knobs are macros on top (PTCH, ALG, MOD, FB, TIME, DTN, VEL, KTRK). With LIVE each change is heard at once; STORE keeps it in a bank slot (B1..B27, stop the device first): then it is a PTCH value, kept with presets and projects.",
+    fxRouting: "Routing", fxTemplate: "template", fxTemplateHelp: "(fills the grid: a row is an operator, a column what modulates it; the diagonal is feedback; OUT to the output)",
+    fxOps: "Operators", fxGlobal: "Pitch envelope and level", fxStoreTo: "store to", fxStore: "Store", fxStored: "Stored in", fxEmpty: "Empty slot:", fxStopFirst: "Stop the song first (a flash write silences the audio a moment)",
     hyReadBtn: "Read from track", hySendBtn: "Send to track", hyLive: "live", hyFactory: "factory", hyInit: "Init",
     hyExport: "Export patch", hyImport: "Import patch", hyOscs: "Oscillators", hyFilters: "Filters",
     hySer: "F1 then F2", hyPar: "F1 and F2 side by side, BAL between them", hySplit: "osc 1 (and the ring) into F1, osc 2 + 3 into F2",
@@ -4315,17 +4468,20 @@ const stepEdit = new Map(); /* index -> time of the last edit */
 const EXPECT = { pcount: 61, gcount: [32, 33], pe0: 53 };   /* gcount 33: 2.5's drum DLY (G_DRDLY) */
 /* Clipper 0.4: 25 parameters more just before P_E0 (core.h): LFO 2 (53..55), ENV 2 (56..59), the matrix (60..77) */
 const EXPECT_04 = { pcount: 86, pe0: 78 };
+/* Clipper 0.6: 5 more just before P_E0: the sound's INSERT (78..82: TYPE, A, B, C, MIX) */
+const EXPECT_06 = { pcount: 91, pe0: 83 };
 const layoutKnown = (info) => EXPECT.gcount.includes(info.gcount) &&
-  ((info.pcount === EXPECT.pcount && info.pe0 === EXPECT.pe0) || (info.pcount === EXPECT_04.pcount && info.pe0 === EXPECT_04.pe0));
+  [EXPECT, EXPECT_04, EXPECT_06].some((x) => info.pcount === x.pcount && info.pe0 === x.pe0);
 const MX_PAGES = [1, 2, 3, 4, 5, 6].map((k) => ["MATRIX " + k, 0, [57 + 3 * k, 58 + 3 * k, 59 + 3 * k]]);
 const P = { LEVEL: 0, SLEN: 29, CHORD: 49 };
 const LAYOUT = (pe0) => [
-  { t: "ENV", pages: [["ENV", 0, [1, 2, 3, 4]], ["ENV DEST", 0, [5, 6, 7, 8]], ...(pe0 === 78 ? [["ENV 2", 0, [56, 57, 58, 59]]] : [])] },
-  { t: "LFO", pages: [["LFO", 0, [9, 10, 11, 12]], ["LFO DEST", 0, [13, 14, 15, 16]], ...(pe0 === 78 ? [["LFO 2", 0, [53, 54, 55]]] : [])] },
-  ...(pe0 === 78 ? [{ t: "LFO", title: "MATRIX", pages: MX_PAGES }] : []),
+  { t: "ENV", pages: [["ENV", 0, [1, 2, 3, 4]], ["ENV DEST", 0, [5, 6, 7, 8]], ...(pe0 >= 78 ? [["ENV 2", 0, [56, 57, 58, 59]]] : [])] },
+  { t: "LFO", pages: [["LFO", 0, [9, 10, 11, 12]], ["LFO DEST", 0, [13, 14, 15, 16]], ...(pe0 >= 78 ? [["LFO 2", 0, [53, 54, 55]]] : [])] },
+  ...(pe0 >= 78 ? [{ t: "LFO", title: "MATRIX", pages: MX_PAGES }] : []),
   { t: "EDIT", engine: true, pages: [["EDIT 1", 0, [pe0, pe0 + 1, pe0 + 2, pe0 + 3]], ["EDIT 2", 0, [pe0 + 4, pe0 + 5, pe0 + 6, pe0 + 7]]] },
   { t: "VOICE", pages: [["LEVEL", 0, [0]], ["VOICE", 0, [37, 38, 41, 42]], ["VOICE 2", 0, [43, 44, 39, 40]]] },
-  { t: "FX", pages: [["FX", 0, [33, 34, 35, 36]], ["FILTER", 0, [50]], ["SLICER", 0, [45, 46, 47, 48]], ["DLY", 1, [4, 5, 6, 7]], ["REV/CHO", 1, [8, 9, 10, 11]]] },
+  { t: "FX", pages: [["FX", 0, [33, 34, 35, 36]], ["FILTER", 0, [50]], ...(pe0 >= 83 ? [["INSERT", 0, [78, 79, 80, 81]], ["INSERT 2", 0, [82]]] : []),
+    ["SLICER", 0, [45, 46, 47, 48]], ["DLY", 1, [4, 5, 6, 7]], ["REV/CHO", 1, [8, 9, 10, 11]]] },
   { t: "SEL", pages: [["SEL", 0, [25, 26, 27, 49]], ["SEL 2", 0, [28, 51, 52]]] },
   { t: "ARP", pages: [["ARP", 0, [17, 18, 19, 20]], ["ARP 2", 0, [21, 22, 23, 24]]] },
   { t: "SEQ PATTERN", tab: "seqgroups", pages: [["PATTERN", 0, [29, 30, 31, 32]]] },
@@ -4607,6 +4763,7 @@ function updateBrowser() {
   if (document.activeElement !== ps) ps.value = String(dev.dump.preset);
   fm6Show();
   hyShow();
+  fxShow();
 }
 
 function visible(d) { return d && d.max > d.min && d.label !== "-"; }
@@ -4776,6 +4933,7 @@ async function sendSet(s, id, k) {
       if (!s && id === pSlen() && r.value !== v) lenChanged();   /* (clamped by the device) */
       if (!s && id === dev.info.pe0 + 7 && fm6On()) fm6Later();   /* PTCH: the device loaded that patch */
       if (!s && id === dev.info.pe0 + 3 && hyOn()) hyLater();     /* (HYBRID's PTCH) */
+      if (!s && id === dev.info.pe0 && fxOn()) fxLater();         /* (FMX's PTCH) */
     }
   } catch (e) { if (e.message !== "closed") console.warn(e); }
 }
@@ -4804,6 +4962,7 @@ async function afterSoundChange(msg = "ready") {
   if (hasTracks()) await readMixer();               /* the sound names and the selected strip */
   await fm6Follow();                                /* FM6: the track's patch (a PTCH value may have loaded one) */
   await hyFollow();                                 /* Clipper: the HYBRID patch, the same */
+  await fxFollow();                                 /* Clipper 0.6: the FMX patch, the same */
   sayK(msg);
 }
 $("init").addEventListener("click", async () => {
@@ -7083,6 +7242,7 @@ function onPush(f) {
       if (!c.scope && c.id === d.info.pe0 && drumGrid() && d.dstepsOk) renderDrumBar();   /* the kit, changed on the device */
       if (!c.scope && c.id === d.info.pe0 + 7 && fm6On()) fm6Later();   /* PTCH turned on the device: another patch */
       if (!c.scope && c.id === d.info.pe0 + 3 && hyOn()) hyLater();     /* (HYBRID's PTCH) */
+      if (!c.scope && c.id === d.info.pe0 && fxOn()) fxLater();         /* (FMX's PTCH) */
     } else if (f.cmd === CMD.RELOAD) {
       d.sel = parse[CMD.RELOAD](f.a).track;          /* v3: another track may be selected on the device */
       if (selfReload.n > 0 && Date.now() < selfReload.until) { selfReload.n--; return; }
@@ -7996,6 +8156,176 @@ $("hyfile").addEventListener("change", async (e) => {
     renderHy();
     hyChanged();
     sayK("hyImported", ` ${hyv.name}`);
+  } catch (err) { sayK("hyBadFile", ` ${f.name}`); }
+});
+/* ------------------------------------------------------------------- FMX --- */
+/* Clipper 0.6: the FMX engine's whole patch (firmware v12, EDITOR_PROTOCOL.md "FMX patches"), in the Sound tab while the
+   selected track plays FMX: the six operators (wave, PM / FM / RING, ratio or a fixed frequency, level, envelope,
+   velocity, key scaling, detune), the routing (any operator into any other, each its amount; its own: feedback), the
+   outputs, a template to start from (the DX7's 32 and 8 more), the pitch envelope. LIVE sends each change; STORE
+   writes it into a bank slot (B1..B27: a PTCH value, kept on the device; the device stopped). Files: JSON. */
+let fxv = FX.init();
+let fxTimer = null, fxPending = false;
+const fxEng = () => (dev && dev.info ? dev.info.engines.indexOf("FMX") : -1);
+const fxOk = () => !!dev && !!dev.info && dev.info.proto >= 12 && fxEng() >= 0;
+const fxOn = () => fxOk() && !!dev.dump && dev.dump.engine === fxEng();
+const fxTrack = () => (dev && dev.sel != null ? dev.sel : 0);
+function fxShow() {
+  const on = fxOn();
+  $("fxpanel").hidden = !on;
+  if (on) { renderFxFactory(); renderFx(); }
+}
+function fxChanged() {
+  if (!$("fxlive").checked || !fxOn()) return;
+  clearTimeout(fxTimer);
+  fxTimer = setTimeout(() => op(() => fxSend(true)), 80);
+}
+function fxNum(get, set, min, max, title = "") {        /* a small number box (the routing grid) */
+  const i = el("input", { type: "number", min, max, step: 1, value: get(), title, class: "fxn",
+    onchange: (e) => { set(Math.max(min, Math.min(max, Math.round(+e.target.value || 0)))); e.target.value = get(); fxChanged(); renderFxGraph(); } });
+  return i;
+}
+const fxRange = (get, set, min, max, fmt = String) => {
+  const out = el("output", { text: fmt(get()) });
+  const r = el("input", { type: "range", min, max, step: 1, value: get(),
+    oninput: (e) => { set(+e.target.value); out.textContent = fmt(get()); fxChanged(); } });
+  return el("span", { class: "rg" }, r, out);
+};
+function fxSel(names, get, set, rerender = false) {
+  const s = el("select", { onchange: (e) => { set(+e.target.value); fxChanged(); if (rerender) renderFx(); } },
+    ...names.map((n, k) => el("option", { value: k, text: n })));
+  s.value = String(get());
+  return s;
+}
+/* the routing drawn: the operators in a row, an arc for each connection (its width the amount), the carriers marked */
+function renderFxGraph() {
+  const v = fxv, W = 420, H = 120, ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("class", "fxgraph");
+  const X = (k) => 40 + (5 - k) * 68, Y = 70;
+  const mk = (tag, at) => { const e = document.createElementNS(ns, tag); for (const k in at) e.setAttribute(k, at[k]); svg.append(e); return e; };
+  for (let d = 0; d < 6; d++)
+    for (let s = 0; s < 6; s++) {
+      const a = v.mod[d][s];
+      if (!a) continue;
+      const w = 0.6 + a / 40;
+      if (s === d) mk("circle", { cx: X(d), cy: Y - 22, r: 9, fill: "none", stroke: "var(--t3)", "stroke-width": w });
+      else {
+        const x1 = X(s), x2 = X(d), up = s > d, h = 18 + Math.abs(s - d) * 8;
+        mk("path", { d: `M${x1} ${Y - 12} C ${x1} ${up ? Y - 12 - h : Y + 12 + h}, ${x2} ${up ? Y - 12 - h : Y + 12 + h}, ${x2} ${Y - 12}`,
+          fill: "none", stroke: up ? "var(--t1)" : "var(--t4)", "stroke-width": w });
+      }
+    }
+  for (let k = 0; k < 6; k++) {
+    const car = v.out[k] > 0;
+    mk("rect", { x: X(k) - 13, y: Y - 12, width: 26, height: 24, rx: 4, fill: car ? "var(--t2)" : "var(--s2)", stroke: "var(--fg2)" });
+    const t = mk("text", { x: X(k), y: Y + 5, "text-anchor": "middle", fill: car ? "#000" : "var(--fg)", "font-size": 13 });
+    t.textContent = String(k + 1);
+    if (car) mk("line", { x1: X(k), y1: Y + 12, x2: X(k), y2: Y + 30, stroke: "var(--t2)", "stroke-width": 1 + v.out[k] / 40 });
+  }
+  const g = $("fxgraph");
+  if (g) g.replaceChildren(svg);
+}
+function renderFx() {
+  const v = fxv, body = [];
+  $("fxname").value = v.name;
+  const tmpl = el("select", { onchange: (e) => { const a = +e.target.value; if (a) { FX.applyAlg(fxv, a); fxChanged(); renderFx(); } } },
+    el("option", { value: 0, text: "—" }), ...FX.ALG.map((_, i) => el("option", { value: i + 1, text: String(i + 1) })));
+  tmpl.value = String(v.alg || 0);
+  body.push(el("h3", { text: t("fxRouting") }), el("p", { class: "bar" }, t("fxTemplate"), " ", tmpl, " ",
+    el("span", { class: "dim", text: t("fxTemplateHelp") })), el("div", { id: "fxgraph" }));
+  /* the grid: rows TO, columns FROM, then OUT */
+  body.push(el("div", { class: "hy" }, el("table", {},
+    el("tr", {}, el("th", { text: "TO \\ FROM" }), ...[1, 2, 3, 4, 5, 6].map((k) => el("th", { text: String(k) })), el("th", { text: "OUT" })),
+    ...v.mod.map((row, d) => el("tr", {}, el("td", { text: `OP ${d + 1}` }),
+      ...row.map((_, s) => el("td", { class: s === d ? "fxfb" : "" }, fxNum(() => v.mod[d][s], (x) => { v.mod[d][s] = x; v.alg = 0; }, 0, 127,
+        s === d ? "feedback" : `${s + 1} into ${d + 1}`))),
+      el("td", {}, fxNum(() => v.out[d], (x) => { v.out[d] = x; v.alg = 0; }, 0, 127, "to the output")))))));
+  /* the operators */
+  body.push(el("h3", { text: t("fxOps") }), hyTable(["", "WAVE", "MODE", "FIX", "RATIO", "FINE", "LEVEL", "ATK", "DEC", "SUS", "REL", "VEL", "KSC", "DTN"],
+    v.op.map((o, k) => el("tr", { class: o.level ? "" : "off" }, el("td", { text: `OP ${k + 1}` }),
+      el("td", {}, fxSel(FX.WAVE, () => o.wave, (x) => { o.wave = x; })),
+      el("td", {}, fxSel(FX.MODE, () => o.mode, (x) => { o.mode = x; })),
+      el("td", {}, (() => { const c = el("input", { type: "checkbox", onchange: (e) => { o.fix = e.target.checked; o.coarse = o.fix ? Math.min(o.coarse, 3) : Math.max(o.coarse, 1); fxChanged(); renderFx(); } }); c.checked = o.fix; return c; })()),
+      el("td", {}, fxSel(o.fix ? FX.FIXC : FX.RATIO, () => o.coarse, (x) => { o.coarse = x; })),
+      el("td", {}, fxRange(() => o.fine, (x) => { o.fine = x; }, 0, 99, (x) => (o.fix ? `×${(10 ** (x / 100)).toFixed(2)}` : `+${x}%`))),
+      el("td", {}, fxRange(() => o.level, (x) => { o.level = x; }, 0, 127)),
+      ...[0, 1, 2, 3].map((i) => el("td", {}, fxRange(() => o.adsr[i], (x) => { o.adsr[i] = x; }, 0, 127,
+        i === 2 ? (x) => `${Math.round(x * 100 / 127)}%` : HY.timeText))),
+      el("td", {}, fxRange(() => o.vel, (x) => { o.vel = x; }, 0, 127)),
+      el("td", {}, fxRange(() => o.ksc, (x) => { o.ksc = x; }, 0, 127)),
+      el("td", {}, fxRange(() => o.dtn, (x) => { o.dtn = x; }, 0, 14, (x) => hySigned(x - 7)))))));
+  body.push(el("h3", { text: t("fxGlobal") }), hyTable(["PEG", "PTIM", "LEVEL"], [el("tr", {},
+    el("td", {}, fxRange(() => v.peg, (x) => { v.peg = x; }, 0, 127, (x) => `${hySigned(Math.round((x - 64) * 24 / 64))} st`)),
+    el("td", {}, fxRange(() => v.ptime, (x) => { v.ptime = x; }, 0, 127, HY.timeText)),
+    el("td", {}, fxRange(() => v.level, (x) => { v.level = x; }, 0, 127)))]));
+  $("fxbody").replaceChildren(...body);
+  renderFxGraph();
+}
+function renderFxFactory() {
+  const s = $("fxfact"), keep = s.value;
+  const names = (dev && dev.pdesc && dev.pdesc[dev.info.pe0] && dev.pdesc[dev.info.pe0].names) || [];
+  s.replaceChildren(...Array.from({ length: FX.NFACTORY + FX.NBANK }, (_, i) => el("option", { value: i,
+    text: i < FX.NFACTORY ? `F${i + 1}` : `B${i - FX.NFACTORY + 1}` })));
+  s.value = keep !== "" ? keep : "0";
+  const b = $("fxslot");
+  if (!b.options.length) b.replaceChildren(...Array.from({ length: FX.NBANK }, (_, i) => el("option", { value: i, text: `B${i + 1}` })));
+  void names;
+}
+async function fxReadTrack(quiet) {
+  const r = parse[CMD.FMX_GET](await rq(req.fmxGet(0, fxTrack())));
+  if (r.rc) { if (!quiet) checkRc(r.rc); return; }
+  fxv = FX.unpack(r.bytes);
+  renderFx();
+  if (!quiet) sayK("hyRead", ` ${fxTrack() + 1}: ${fxv.name}`);
+}
+async function fxSend(quiet) {
+  const r = parse[CMD.FMX_PUT](await rq(req.fmxPut(fxTrack(), FX.pack(fxv))));
+  checkRc(r.rc);
+  if (!quiet) sayK("hySent", ` ${fxTrack() + 1}`);
+}
+async function fxFollow() { if (fxOn()) await fxReadTrack(true); }
+function fxLater() {
+  if (fxPending) return;
+  fxPending = true;
+  setTimeout(() => { fxPending = false; op(fxFollow); }, 250);
+}
+$("fxread").addEventListener("click", () => op(() => fxReadTrack(false)));
+$("fxsend").addEventListener("click", () => op(() => fxSend(false)));
+$("fxload").addEventListener("click", () => op(async () => {
+  const i = +$("fxfact").value, bank = i >= FX.NFACTORY;
+  const r = parse[CMD.FMX_GET](await rq(req.fmxGet(bank ? 2 : 1, bank ? i - FX.NFACTORY : i)));
+  if (r.rc === 2) { sayK("fxEmpty", ` B${i - FX.NFACTORY + 1}`); return; }
+  checkRc(r.rc);
+  fxv = FX.unpack(r.bytes);
+  renderFx();
+  fxChanged();
+  sayK("hyLoaded", ` ${bank ? "B" + (i - FX.NFACTORY + 1) : "F" + (i + 1)}: ${fxv.name}`);
+}));
+$("fxstore").addEventListener("click", () => op(async () => {
+  const k = +$("fxslot").value;
+  const r = parse[CMD.FMX_STORE](await rq(req.fmxStore(k, FX.pack(fxv)), { timeout: 4000 }));
+  if (r.rc === 3) { sayK("fxStopFirst"); return; }
+  checkRc(r.rc);
+  sayK("fxStored", ` B${k + 1}`);
+}));
+$("fxinit").addEventListener("click", () => { fxv = FX.init(); renderFx(); fxChanged(); });
+$("fxname").addEventListener("change", (e) => { fxv.name = FX.sanitize({ ...fxv, name: e.target.value }).name; e.target.value = fxv.name; fxChanged(); });
+$("fxexport").addEventListener("click", () => download(`${fileSlug(fxv.name || "fmx")}.clipper-fmx.json`,
+  { format: "clipper-fmx", version: 1, patch: FX.sanitize(fxv) }));
+$("fximport").addEventListener("click", () => $("fxfile").click());
+$("fxfile").addEventListener("change", async (e) => {
+  const f = e.target.files[0];
+  e.target.value = "";
+  if (!f) return;
+  try {
+    const j = JSON.parse(await f.text());
+    if (!j || j.format !== "clipper-fmx" || !j.patch) throw new Error("format");
+    fxv = FX.sanitize(j.patch);
+    renderFx();
+    fxChanged();
+    sayK("hyImported", ` ${fxv.name}`);
   } catch (err) { sayK("hyBadFile", ` ${f.name}`); }
 });
 const today = () => new Date().toISOString().slice(0, 10);

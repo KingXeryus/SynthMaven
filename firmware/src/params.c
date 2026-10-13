@@ -32,7 +32,17 @@ static const char *const N_SLDIV[] = {"1/8", "1/16", "1/32", "8T", "16T", "32T"}
 static const char *const N_CHORD[] = {"OFF", "TRIAD", "7TH", "9TH", "SUS4", "POWER"};   /* seq.c CHORD_DEG */
 static const char *const N_RTYPE[] = {"ROOM", "PLATE"};
 static const char *const N_MODDST[] = {"OFF", "VIB", "CUT", "SHP", "WAH", "TREM"};   /* MD_OFF .. MD_TREM */
-static const char *const N_LYMODE[] = {"OFF", "LAYER", "SPLIT"};       /* LY_OFF .. LY_SPLIT */
+#if CLIPPER_SYNTH
+/* Clipper 0.6: the INSERT's types (fx.c IT_*; SLOOP 2.6's, same order: a SLOOP 2.6 sound keeps its INSERT). Its three
+ * values A B C mean what the type says (ins_desc) */
+static const char *const N_ITYPE[] = {"OFF", "SOFT", "HARD", "FOLD", "FUZZ", "CRUSH", "PHASR", "FLANG", "CHOR"};
+/* CRUSH: BITS 1..16 and RATE (the held sample's rate) over the range in 16 even parts (0-terminated) */
+static const char *const N_IBITS[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
+                                      "16", 0};
+static const char *const N_IRATE[] = {"689", "919", "1.1k", "1.4k", "1.8k", "2.2k", "2.8k", "3.7k", "4.4k", "5.5k",
+                                      "7.4k", "8.8k", "11k", "15k", "22k", "44k", 0};
+#endif
+static const char *const N_LYMODE[] = {"OFF", "LAYER", "SPLIT", "MULTI"};   /* LY_OFF .. LY_MULTI */
 static const char *const N_L2MODE[] = {"FREE", "KEY"};                  /* L2_FREE, L2_KEY */
 static const char *const N_MSRC[] = {"OFF", "LFO1", "LFO2", "ENV1", "ENV2", "VEL", "KEY", "MW", "AT", "RAND", "SLIDE"};
 static const char *const N_MDST[] = {"OFF", "PITCH", "CUT", "SHAPE", "AMP", "PAN", "LFO2",
@@ -44,7 +54,7 @@ static const char *const N_ENGNAME[] = {"ANALOG", "DIGITAL", "PHASE", "LOFI", "S
                                              "SLICE",
 #endif
 #if CLIPPER_SYNTH
-                                        "WAVE", "ACID", "STRINGS", "MACRO", "VPS", "TERRAIN",
+                                        "WAVE", "ACID", "STRINGS", "MACRO", "VPS", "TERRAIN", "FMX", "WSEQ",
 #endif
 };
 
@@ -124,6 +134,13 @@ static const param_desc_t TP[P_COUNT] = {
                [P_M##n##AMT] = PD("AMT", F_BIPCT, -64, 63, 0)
     MXP(1), MXP(2), MXP(3), MXP(4), MXP(5), MXP(6),
 #undef MXP
+    /* Clipper 0.6: the sound's INSERT (fx.c track_insert, SLOOP 2.6's): TYPE OFF = as before. A B C as the editor
+     * protocol names them; the device shows the type's own labels (ins_desc) */
+    [P_ITYPE] = PE("INSRT", N_ITYPE, 0),
+    [P_IA] = PD("INS A", F_PCT, 0, 127, 64),
+    [P_IB] = PD("INS B", F_PCT, 0, 127, 96),
+    [P_IC] = PD("INS C", F_PCT, 0, 127, 96),
+    [P_IMIX] = PD("MIX", F_PCT, 0, 127, 127),
 #endif
 };
 #if CLIPPER_SYNTH
@@ -143,6 +160,7 @@ static void clipper_proj_neutral(void)
     trk[1].p[P_LYMODE] = LY_OFF;
     trk[1].p[P_LYSPLIT] = 64;                         /* C4 */
     trk[1].p[P_LYOCT] = 2;                            /* 0 */
+    trk[1].p[P_LYCH] = 2;                             /* MULTI: the layer on channel 2 */
 }
 #endif
 /* a preset's extra parameters (preset_t.x) into p, each clamped to its range */
@@ -210,10 +228,29 @@ static const param_desc_t GP[G_COUNT] = {
 };
 
 static const param_desc_t DRUM_KIT_DESC = PE("KIT", DRUM_KIT_NAMES, 0);
+#if CLIPPER_SYNTH
+/* the INSERT's A B C as its TYPE means them (TP's ranges and defaults): the drives DRIVE TONE LEVEL, CRUSH BITS RATE
+ * LPF, the swept ones RATE DEPTH FDBK; OFF TP's own (as SLOOP 2.6) */
+#define PU(l, f, df, n, u) {l, f, 0, 127, df, n, u}
+static const param_desc_t INS_DESC[3][3] = {
+    {PU("DRIVE", F_PCT, 64, 0, 0), PU("TONE", F_CUTOFF, 96, 0, 0), PU("LEVEL", F_DB, 96, 0, 0)},
+    {PU("BITS", F_INT, 64, N_IBITS, 0), PU("RATE", F_INT, 96, N_IRATE, "Hz"), PU("LPF", F_CUTOFF, 96, 0, 0)},
+    {PU("RATE", F_LFOHZ, 64, 0, 0), PU("DEPTH", F_PCT, 96, 0, 0), PU("FDBK", F_PCT, 96, 0, 0)},
+};
+#undef PU
+static const param_desc_t *ins_desc(int32_t type, uint32_t k)
+{
+    if (type <= 0 || type >= (int32_t)(sizeof N_ITYPE / sizeof N_ITYPE[0]))
+        return &TP[P_IA + k];
+    return &INS_DESC[type < 5 ? 0 : type == 5 ? 1 : 2][k % 3u];   /* (SOFT .. FUZZ, CRUSH, the swept ones) */
+}
+#endif
 static const param_desc_t *track_desc(const track_t *t, uint32_t id)
 {
     if(is_drum(t) && id==P_E0) return &DRUM_KIT_DESC;
 #if CLIPPER_SYNTH
+    if (id >= P_IA && id <= P_IC)                     /* the INSERT's values as its TYPE names them */
+        return ins_desc(t->p[P_ITYPE], id - P_IA);
     if (id >= P_M1SRC && id <= P_M6AMT && (id - P_M1SRC) % 3u == 1u) {   /* a matrix DST: the engine's own names */
         static const char *names[MT_COUNT];
         static param_desc_t d;
@@ -398,7 +435,7 @@ enum { FAM_HOME, FAM_ENV, FAM_LFO, FAM_FX, FAM_SCL, FAM_EDIT, FAM_GLO, FAM_SAVE,
        FAM_COUNT };
 enum { SC_TRACK, SC_GLOBAL, SC_ENGINE, SC_STEP, SC_TRK, SC_SONG, SC_DRUM, SC_SYN };   /* SC_SYN: ui_synth.c */
 enum { GR_NONE, GR_ADSR, GR_LFO, GR_STEPS, GR_ARP, GR_SCALE, GR_FX, GR_ROLL, GR_BROWSE, GR_SLOTS, GR_USER, GR_TRK,
-       GR_SLCR, GR_LAYER, GR_MORPH, GR_MATRIX };
+       GR_SLCR, GR_LAYER, GR_MORPH, GR_MATRIX, GR_FMX };
 
 typedef struct {
     const char *title;
@@ -422,6 +459,8 @@ static const page_t PAGES[] = {
     {"FX", FAM_FX, SC_TRACK, GR_FX, {P_DIST, P_CHOR, P_DLY, P_REV}},
 #if CLIPPER_SYNTH                                                        /* (the sound's filter model too) */
     {"FILTER", FAM_FX, SC_TRACK, GR_NONE, {P_TFLT, P_FMODEL, 0xFF, 0xFF}},
+    {"INSERT", FAM_FX, SC_TRACK, GR_NONE, {P_ITYPE, P_IA, P_IB, P_IC}},   /* 0.6: the sound's INSERT (fx.c), */
+    {"INSERT 2", FAM_FX, SC_TRACK, GR_NONE, {P_IMIX, 0xFF, 0xFF, 0xFF}},  /* .. its dry / wet */
 #else
     {"FILTER", FAM_FX, SC_TRACK, GR_NONE, {P_TFLT, 0xFF, 0xFF, 0xFF}},   /* the track's filter (drum track too) */
 #endif
@@ -440,6 +479,14 @@ static const page_t PAGES[] = {
     {"SEL 2", FAM_SCL, SC_TRACK, GR_SCALE, {P_TRANS, P_STRUM, P_VLEAD, 0xFF}},   /* (2.4: the chords played) */
     {"EDIT 1", FAM_EDIT, SC_ENGINE, GR_NONE, {P_E0, P_E1, P_E2, P_E3}},
     {"EDIT 2", FAM_EDIT, SC_ENGINE, GR_NONE, {P_E4, P_E5, P_E6, P_E7}},
+#if CLIPPER_SYNTH                                          /* 0.6: FMX's own pages (ui_synth.c X_F*), on FMX only */
+    {"OP", FAM_EDIT, SC_SYN, GR_FMX, {19, 20, 21, 22}},          /* X_FOP X_FWAVE X_FMODE X_FRATIO */
+    {"OP 2", FAM_EDIT, SC_SYN, GR_FMX, {23, 24, 25, 26}},        /* X_FFINE X_FLEVEL X_FVEL X_FKSC */
+    {"OP ENV", FAM_EDIT, SC_SYN, GR_FMX, {27, 28, 29, 30}},      /* X_FATK X_FDEC X_FSUS X_FREL */
+    {"ROUTE", FAM_EDIT, SC_SYN, GR_FMX, {31, 32, 33, 34}},       /* X_FTO X_FFROM X_FAMT X_FOUT */
+    {"FMX", FAM_EDIT, SC_SYN, GR_FMX, {35, 36, 37, 38}},         /* X_FDTN X_FFIX X_FPEG X_FPTIM */
+    {"STORE", FAM_EDIT, SC_SYN, GR_FMX, {39, 40, 0xFF, 0xFF}},   /* X_FSLOT X_FSTORE */
+#endif
     {"VOICE", FAM_EDIT, SC_TRACK, GR_NONE, {P_VOICE, P_GLIDE, P_GLMODE, P_PRIO}},
 #if CLIPPER_SYNTH                                                        /* (one instrument: nothing to mute) */
     {"VOICE 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_ALLOC, P_DETUNE, P_PAN, 0xFF}},
@@ -472,6 +519,16 @@ static const page_t PAGES[] = {
     {"DRUMS", FAM_TRK, SC_DRUM, GR_NONE, {0xFF,0xFF,0xFF,0xFF}},
 };
 #define NPAGES (sizeof(PAGES) / sizeof(PAGES[0]))
+/* a page not there for the sound selected (0.6: FMX's own pages on another engine): the page walks pass it */
+static int page_hidden(uint32_t i)
+{
+#if CLIPPER_SYNTH
+    return i < NPAGES && PAGES[i].graph == GR_FMX && TSEL->eng_req != ENGI_FMX;
+#else
+    (void)i;
+    return 0;
+#endif
+}
 
 /* the drum track has no sound of its own: it uses the global pages (not the preset
  * pages, nor TOOLS > INIT: page_desc), STEP, PATTERN, SLICER and TRACKS; every other page
