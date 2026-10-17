@@ -41,18 +41,67 @@ _Static_assert(G_DRDLY == PROJ_NG && G_COUNT == PROJ_NG + 1u, "the globals a pro
 #define PROJ_NP 61u
 #define PROJ_E0 53u
 #define PROJ_NX (P_E0 - PROJ_E0)
-_Static_assert(P_COUNT == PROJ_NP || (CLIPPER_SYNTH && P_COUNT == PROJ_NP + PROJ_NX && PROJ_NX <= PROJ_E0 && NTRK == 4 &&
-               2u * PROJ_NX + 1u <= 3u * NLOCK), "a track's parameters as stored (Clipper: track 3's lock slots hold the rest)");
+_Static_assert(P_COUNT == PROJ_NP || (CLIPPER_SYNTH && P_COUNT == PROJ_NP + PROJ_NX && PROJ_NX <= PROJ_E0 && NTRK == 4),
+               "a track's parameters as stored (Clipper: track 3's lock slots hold the rest: PROJ_XM3 below)");
 #if CLIPPER_SYNTH
 /* tracks 1 and 2's LFO 2, ENV 2 and matrix (0.4: PROJ_XA values each) and INSERT (0.6: PROJ_XI each) <-> bytes in the
  * free lock slots of track 3 (lk): 3 bytes a slot (param, val low, val high), value - its minimum (every range fits a
  * byte). The 0.4 part first, as 0.4 / 0.5 wrote it (2 x PROJ_XA bytes, then CLIPPER_PROJ_MARK), then 0.6's (2 x PROJ_XI
  * bytes, then CLIPPER_PROJ_MARK_06): a project of 0.4 / 0.5 loads its matrix, its INSERT off */
 #define PROJ_XA ((uint32_t)(P_ITYPE - PROJ_E0))       /* P_L2RATE .. P_M6AMT */
-#define PROJ_XI ((uint32_t)(P_E0 - P_ITYPE))          /* P_ITYPE .. P_IMIX */
+#define PROJ_XI ((uint32_t)(P_IMIX + 1 - P_ITYPE))     /* P_ITYPE .. P_IMIX */
 #define PROJ_XM1 (2u * PROJ_XA)                       /* the byte of CLIPPER_PROJ_MARK */
 #define PROJ_XM2 (PROJ_XM1 + 1u + 2u * PROJ_XI)       /* the byte of CLIPPER_PROJ_MARK_06 */
-_Static_assert(PROJ_XA == 25u && PROJ_XI == 5u && PROJ_XM2 < 3u * NLOCK, "the project's Clipper bytes in track 3's lock slots");
+/* 0.8: the MOD SEQ's RATE LEN SMTH START, SPICE, DICE (PROJ_XS) of both, 4 bytes each (proj_xs_word), after 0.6's,
+ * then CLIPPER_PROJ_MARK_08; their steps in track 4's free lock slots (two a byte, + 8; then the mark) */
+#define PROJ_XS ((uint32_t)(P_E0 - P_MSRATE))
+#define PROJ_XM3 (PROJ_XM2 + 1u + 8u)                 /* the byte of CLIPPER_PROJ_MARK_08 */
+#define CLIPPER_PROJ_MARK_08 0xC8u
+#define PROJ_MS_MARK 64u                              /* track 4: the byte after the steps */
+_Static_assert(PROJ_XA == 25u && PROJ_XI == 5u && PROJ_XS == 6u && P_MSRATE == P_IMIX + 1 && PROJ_XM3 < 3u * NLOCK &&
+               PROJ_MS_MARK < 3u * NLOCK, "the project's Clipper bytes in tracks 3 and 4's lock slots");
+static uint32_t proj_xs_word(const int16_t *p)        /* RATE (4 bits) START (1) LEN - 1 (4) SMTH (7) SPICE (7) DICE (7) */
+{
+    return (uint32_t)clamp(p[P_MSRATE], 0, 15) | (uint32_t)clamp(p[P_MSKEY], 0, 1) << 4 |
+           (uint32_t)clamp(p[P_MSLEN] - 1, 0, 15) << 5 | (uint32_t)clamp(p[P_MSSMTH], 0, 127) << 9 |
+           (uint32_t)clamp(p[P_SPICE], 0, 127) << 16 | (uint32_t)clamp(p[P_DICE], 0, 127) << 23;
+}
+static int32_t proj_xs_val(uint32_t w, uint32_t i)   /* value P_MSRATE + i of a word */
+{
+    switch (i) {
+    case 0: return (int32_t)(w & 15u);
+    case 1: return (int32_t)((w >> 5) & 15u) + 1;
+    case 2: return (int32_t)((w >> 9) & 127u);
+    case 3: return (int32_t)((w >> 4) & 1u);
+    case 4: return (int32_t)((w >> 16) & 127u);
+    default: return (int32_t)((w >> 23) & 127u);
+    }
+}
+_Static_assert(P_MSLEN == P_MSRATE + 1 && P_MSSMTH == P_MSRATE + 2 && P_MSKEY == P_MSRATE + 3 && P_SPICE == P_MSRATE + 4 &&
+               P_DICE == P_MSRATE + 5, "proj_xs_val's order");
+static void proj_bytes_put(plock_t *lk, const uint8_t *b)
+{
+    uint32_t k;
+    for (k = 0; k < NLOCK; k++) {
+        lk[k].step = LOCK_FREE;
+        lk[k].param = b[3u * k];
+        lk[k].val = (int16_t)(b[3u * k + 1u] | b[3u * k + 2u] << 8);
+    }
+}
+static void proj_ms_put(plock_t *lk)                  /* track 4's lock slots: both sounds' steps */
+{
+    uint8_t b[3u * NLOCK];
+    uint32_t j, n;
+    memset(b, 0, sizeof b);
+    for (j = 0; j < 2u; j++)
+        for (n = 0; n < 32u; n++) {
+            uint32_t a = 2u * n, c = a + 1u;
+            b[32u * j + n] = (uint8_t)((uint32_t)clamp(trk[j].ms[a / MSEQ_STEPS][a % MSEQ_STEPS] + 8, 0, 15) |
+                                       (uint32_t)clamp(trk[j].ms[c / MSEQ_STEPS][c % MSEQ_STEPS] + 8, 0, 15) << 4);
+        }
+    b[PROJ_MS_MARK] = CLIPPER_PROJ_MARK_08;
+    proj_bytes_put(lk, b);
+}
 static uint32_t proj_ext_at(uint32_t j, uint32_t k)   /* the byte of track j's value k (P_E0 - PROJ_E0 of them) */
 {
     return k < PROJ_XA ? j * PROJ_XA + k : PROJ_XM1 + 1u + j * PROJ_XI + (k - PROJ_XA);
@@ -62,16 +111,17 @@ static void proj_ext_put(plock_t *lk)
     uint8_t b[3u * NLOCK];
     uint32_t j, k;
     memset(b, 0, sizeof b);
-    for (j = 0; j < 2u; j++)
-        for (k = 0; k < PROJ_NX; k++)
+    for (j = 0; j < 2u; j++) {
+        uint32_t w = proj_xs_word(trk[j].p);
+        for (k = 0; k < PROJ_XA + PROJ_XI; k++)
             b[proj_ext_at(j, k)] = (uint8_t)clamp(trk[j].p[PROJ_E0 + k] - TP[PROJ_E0 + k].min, 0, 255);
+        for (k = 0; k < 4u; k++)
+            b[PROJ_XM2 + 1u + 4u * j + k] = (uint8_t)(w >> (8u * k));
+    }
     b[PROJ_XM1] = CLIPPER_PROJ_MARK;
     b[PROJ_XM2] = CLIPPER_PROJ_MARK_06;
-    for (k = 0; k < NLOCK; k++) {
-        lk[k].step = LOCK_FREE;
-        lk[k].param = b[3u * k];
-        lk[k].val = (int16_t)(b[3u * k + 1u] | b[3u * k + 2u] << 8);
-    }
+    b[PROJ_XM3] = CLIPPER_PROJ_MARK_08;
+    proj_bytes_put(lk, b);
 }
 static uint32_t proj_ext_byte(const plock_t *lk, uint32_t n)
 {
@@ -87,7 +137,30 @@ static int proj_ext_get(const plock_t *lk, uint32_t j, uint32_t k)   /* track j'
         return -1;
     if (k >= PROJ_XA && proj_ext_byte(lk, PROJ_XM2) != CLIPPER_PROJ_MARK_06)
         return -1;                                     /* (0.4 / 0.5: no INSERT) */
+    if (k >= PROJ_XA + PROJ_XI) {                      /* (0.8) the MOD SEQ's, SPICE's: none before 0.8 */
+        uint32_t w = 0, i;
+        if (proj_ext_byte(lk, PROJ_XM3) != CLIPPER_PROJ_MARK_08)
+            return -1;
+        for (i = 0; i < 4u; i++)
+            w |= proj_ext_byte(lk, PROJ_XM2 + 1u + 4u * j + i) << (8u * i);
+        return (int)(proj_xs_val(w, k - PROJ_XA - PROJ_XI) - TP[P_MSRATE + k - PROJ_XA - PROJ_XI].min);
+    }
     return (int)proj_ext_byte(lk, proj_ext_at(j, k));
+}
+static int proj_ms_get(const plock_t *lk, uint32_t j, track_t *t)   /* track j's steps from track 4's: 0, -1 none */
+{
+    uint32_t i, n;
+    for (i = 0; i < NLOCK; i++)
+        if (lk[i].step != LOCK_FREE)
+            return -1;
+    if (proj_ext_byte(lk, PROJ_MS_MARK) != CLIPPER_PROJ_MARK_08)
+        return -1;
+    for (n = 0; n < 32u; n++) {
+        uint32_t b = proj_ext_byte(lk, 32u * j + n), a = 2u * n, c = a + 1u;
+        t->ms[a / MSEQ_STEPS][a % MSEQ_STEPS] = (int8_t)((int32_t)(b & 15u) - 8);
+        t->ms[c / MSEQ_STEPS][c % MSEQ_STEPS] = (int8_t)((int32_t)(b >> 4) - 8);
+    }
+    return 0;
 }
 #endif
 typedef struct {                               /* one track; the drum track ignores engine / preset */
@@ -470,6 +543,8 @@ static void proj_capture(project_t *p)        /* what is playing now, as a proje
                 p->t[i].lock[k].param = (uint8_t)(trk[i].lock[k].param - PROJ_NX);
         if (i == 2u)                                   /* (Clipper 0.4: tracks 1 and 2's LFO 2, ENV 2, matrix) */
             proj_ext_put(p->t[2].lock);
+        if (i == 3u)                                   /* (0.8: their MOD SEQ's steps) */
+            proj_ms_put(p->t[3].lock);
 #endif
         p->t[i].engine = trk[i].eng_req;
         p->t[i].preset = trk[i].preset;
@@ -511,7 +586,7 @@ static void proj_apply(const project_t *p, int all)
                 v = p->t[k + 2u].p[i - PROJ_E0];        /* (0.4's first build: in tracks 3 and 4's p[]) */
             } else if (i >= P_ITYPE && i < P_E0 && k == 0u && p->rsv[0] != CLIPPER_PROJ_MARK && proj_v6_ins_ok[proj_v6_at(p)]) {
                 v = proj_v6_ins[proj_v6_at(p)][i - P_ITYPE];   /* (a SLOOP 2.6 project: its track 1's INSERT) */
-            } else if (i < PROJ_NX && k >= 2u && p->rsv[0] == CLIPPER_PROJ_MARK_04) {
+            } else if (i < PROJ_XA + PROJ_XI && k >= 2u && p->rsv[0] == CLIPPER_PROJ_MARK_04) {
                 v = d->def;                             /* (there, theirs were not stored) */
             }
 #endif
@@ -554,6 +629,10 @@ static void proj_apply(const project_t *p, int all)
                 for (j = 0; j < 4u; j++)
                     st->note[j] &= 127u;
             }
+#if CLIPPER_SYNTH
+        if (k < 2u && (p->rsv[0] != CLIPPER_PROJ_MARK || proj_ms_get(p->t[3].lock, k, t)))
+            mseq_init(t);                               /* (0.8) its MOD SEQ, or the shapes to start from */
+#endif
         fm6_track_loaded(t);                            /* FM6: the project keeps PTCH, not the patch: its slot's */
     }
 #if CLIPPER_SYNTH

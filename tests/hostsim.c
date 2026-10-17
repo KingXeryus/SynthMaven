@@ -120,6 +120,9 @@ static void host_preset_req(track_t *t, uint32_t e, uint32_t pi)
         t->p[P_AMODE + i] = (int16_t)(p->arp[i] ? p->arp[i] - 1 : TP[P_AMODE + i].def);
     }
     preset_extras(t->p, p);
+#if CLIPPER_SYNTH
+    mseq_init(t);                                 /* (0.8) the MOD SEQ's shapes (ui.c apply_preset_to) */
+#endif
     fm6_track_loaded(t);                          /* FM6: the preset's patch (ui.c apply_preset_to) */
 }
 static void host_preset(track_t *t, uint32_t e, uint32_t pi)

@@ -1266,14 +1266,78 @@ static void arp_end(track_t *t)
     }
 }
 
-/* an arp note starts (recorded while recording: what you hear) */
-static void arp_play(track_t *t, uint32_t n)
+/* an arp note starts at velocity vel (recorded while recording: what you hear) */
+static void arp_play(track_t *t, uint32_t n, uint32_t vel)
 {
-    trk_note_on(t, n, 100);
-    seq_out_on(t, n, 100);
+    trk_note_on(t, n, vel);
+    seq_out_on(t, n, vel);
     if (((song.rec >> trk_index(t)) & 1u) && song.playing)
-        rec_note(t, n, 100, 0, 0);
+        rec_note(t, n, vel, 0, 0);
 }
+
+/* Clipper 0.8, SPICE / DICE (after the MicroFreak's): the arp's notes and the sequencer's steps vary, as much as
+ * SPICE says (0: as written), the same way each time round (the k-th note of 16, the pattern's step k) until DICE is
+ * turned (another variation). A note may rest (up to 1 in 6), jump an octave (up to 1 in 4, mostly up), and its
+ * velocity and gate move (up to +-63, x 0.05 .. 1.95). What is stored is never changed */
+typedef struct { uint8_t skip; int8_t oct; uint8_t vel, gate; } spice_t;   /* gate: x / 64 */
+static uint32_t spice_gate = 64u;                    /* (the arp's last note: arp_tick's gate) */
+static int spice_of(const track_t *t, uint32_t k, uint32_t vel, spice_t *o)
+{
+#if CLIPPER_SYNTH
+    uint32_t sp = (uint32_t)clamp(t->p[P_SPICE], 0, 127), h;
+    int32_t v;
+    o->skip = 0, o->oct = 0, o->vel = (uint8_t)vel, o->gate = 64;
+    if (!sp)
+        return 0;
+    h = (k + 1u) * 0x9E3779B1u ^ ((uint32_t)clamp(t->p[P_DICE], 0, 127) + 1u) * 0x85EBCA77u;
+    h ^= h >> 15, h *= 0x2C1B3C6Du, h ^= h >> 12, h *= 0x297A2D39u, h ^= h >> 15;
+    if ((h & 255u) < sp / 3u)
+        o->skip = 1;
+    else if (((h >> 8) & 255u) < sp / 2u)
+        o->oct = (int8_t)((h >> 16) & 3u ? 12 : -12);
+    v = (int32_t)vel + ((((int32_t)((h >> 18) & 127u) - 64) * (int32_t)sp) >> 7);
+    o->vel = (uint8_t)clamp(v, 1, 127);
+    o->gate = (uint8_t)clamp(64 + ((((int32_t)((h >> 25) & 63u) - 32) * (int32_t)sp) >> 6), 3, 125);
+    return 1;
+#else
+    (void)t, (void)k;
+    o->skip = 0, o->oct = 0, o->vel = (uint8_t)vel, o->gate = 64;
+    return 0;
+#endif
+}
+
+#if CLIPPER_SYNTH
+/* Clipper 0.8: the MOD SEQ's clock and glide, once a block for each part (voice.c reads ms_cur: the matrix's SEQ1..4) */
+static const uint8_t MSEQ_DIV[9] = {3, 5, 2, 4, 1, 0, 6, 7, 8};   /* N_MSRATE -> div_units's order */
+static void mseq_tick(track_t *t, uint32_t adv)
+{
+    const int16_t *p = t->p;
+    uint32_t div = MSEQ_DIV[clamp(p[P_MSRATE], 0, 8)], u = div_units(div), len = (uint32_t)clamp(p[P_MSLEN], 1, 16);
+    uint32_t i, on = 0, restart = 0;
+    int32_t k = (128 - clamp(p[P_MSSMTH], 0, 127)) * (128 - clamp(p[P_MSSMTH], 0, 127));   /* Q14 a block */
+    for (i = 0; i < NVOICE && !on; i++)
+        on = t->v[i].active && t->v[i].gate;
+    if (on && !t->ms_held && (p[P_MSKEY] || !song.playing))
+        restart = 1, t->ms_step = 0, t->ms_pos = 0;    /* KEY (and stopped): from each first key */
+    t->ms_held = (uint8_t)on;
+    if (!p[P_MSKEY] && song.playing) {                 /* SYNC: the song's grid */
+        uint32_t into, slen;
+        t->ms_step = (uint8_t)(grid_at(div, 0u, &into, &slen) % len);
+    } else if (!restart) {
+        t->ms_pos += adv;
+        if (t->ms_pos >= u) {
+            t->ms_pos = t->ms_pos - u < u ? t->ms_pos - u : 0u;
+            t->ms_step = (uint8_t)((t->ms_step + 1u) % len);
+        }
+    }
+    if (t->ms_step >= len)
+        t->ms_step = 0;
+    for (i = 0; i < MSEQ_LANES; i++) {
+        int32_t tg = mseq_q15(t->ms[i][t->ms_step % MSEQ_STEPS]);
+        t->ms_cur[i] = restart || k >= 16384 ? tg : t->ms_cur[i] + (((tg - t->ms_cur[i]) * k) >> 14);
+    }
+}
+#endif
 
 /* an arp step: the next note of the list by MODE, or (CHORD) the first 4 notes together, OCT octaves in turn. 1: it
  * plays (arp_note set), 0: nothing to play */
@@ -1282,12 +1346,20 @@ static int arp_step(track_t *t)
     uint32_t list[65], cnt, len = arp_list(t, list, &cnt), i, o, top = 0;
     if (!len)
         return 0;
+    spice_t sp;
     t->arp_idx++;
+    spice_of(t, t->arp_idx % 16u, 100u, &sp);           /* (0.8) SPICE: this note's variation */
+    spice_gate = sp.gate;
     if (t->p[P_AMODE] != AM_CHORD) {
-        t->arp_note = (uint8_t)list[arp_pick(t, list, len)];
-        arp_play(t, t->arp_note);
+        uint32_t nt = list[arp_pick(t, list, len)];
+        if (sp.skip)
+            return 0;                                   /* (a rest: the walk goes on) */
+        t->arp_note = (uint8_t)clamp((int32_t)nt + sp.oct, 1, 127);
+        arp_play(t, t->arp_note, sp.vel);
         return 1;
     }
+    if (sp.skip)
+        return 0;
     o = t->arp_idx % (uint32_t)(t->p[P_AOCT] > 0 ? t->p[P_AOCT] : 1);
     for (i = 0; i < cnt && i < 4u; i++) {          /* the held notes (sorted or as played), o octaves up */
         uint32_t nt = (uint32_t)clamp((int32_t)list[i] + 12 * (int32_t)o, 0, 127);
@@ -1297,7 +1369,7 @@ static int arp_step(track_t *t)
             t->arp_note = (uint8_t)nt;
         else
             t->arp_ch[i - 1u] = (uint8_t)nt;
-        arp_play(t, nt);
+        arp_play(t, nt, sp.vel);
     }
     return 1;
 }
@@ -1355,7 +1427,7 @@ static void arp_tick(track_t *t, uint32_t adv)
         return;
     arp_end(t);
     if ((uint32_t)(rng() & 127u) <= (uint32_t)t->p[P_APROB] && arp_step(t))
-        t->arp_off = slen * (uint32_t)t->p[P_AGATE] / 128u;
+        t->arp_off = slen * (uint32_t)t->p[P_AGATE] / 128u * spice_gate / 64u;   /* (0.8: SPICE's gate, x 1 off) */
 }
 
 /* ------------------------------------------------------- note input --- */
@@ -2130,6 +2202,25 @@ static void seq_step(track_t *t, const step_t *s, uint32_t slen, uint32_t skip)
     const step_t *nx = &t->step[(t->seq_idx + 1u) % trk_len(t)];
     uint32_t next_tie = nx->time == ST_TIE || (nx->time == ST_NOTE && (nx->flags & SF_CONT_ALL));   /* (2.7: notes going on
                                                      * into the next step: held to it, it says which end) */
+#if CLIPPER_SYNTH
+    step_t vs;                                      /* (0.8) SPICE: this step's variation, on a copy */
+    if (t->p[P_SPICE] && s->time == ST_NOTE && s->n && !s->rat && !(s->flags & SF_CONT_ALL)) {
+        spice_t sp;
+        int32_t base = (s->flags & SF_ACCENT) ? 127 : (s->vel ? s->vel : 96);
+        spice_of(t, t->seq_idx, 100u, &sp);
+        if (sp.skip) {
+            seq_release(t);
+            return;
+        }
+        vs = *s;
+        for (i = 0; i < vs.n; i++)
+            vs.note[i] = (uint8_t)clamp((int32_t)vs.note[i] + sp.oct, 1, 127);
+        vs.vel = (uint8_t)clamp(base + (int32_t)sp.vel - 100, 1, 127);
+        vs.flags &= (uint8_t)~SF_ACCENT;
+        gate = gate * sp.gate / 64u;
+        s = &vs;
+    }
+#endif
     if (s->time == ST_TIE) {
         if (t->seq_n) {
             t->seq_off = gate + slen / 2u;
@@ -2856,6 +2947,10 @@ static void events_block(uint32_t n)
     roll_block(adv);
     for (i = 0; i < (CLIPPER_SYNTH ? 1u : NPART); i++)
         arp_tick(&trk[i], adv);
+#if CLIPPER_SYNTH
+    for (i = 0; i < NPART; i++)
+        mseq_tick(&trk[i], adv);                       /* (0.8) the MOD SEQ of both sounds */
+#endif
     if (song.playing) {
         song.tick++;
         clk_pos += adv;

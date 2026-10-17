@@ -36,7 +36,8 @@ static const char *const N_MODDST[] = {"OFF", "VIB", "CUT", "SHP", "WAH", "TREM"
 #if CLIPPER_SYNTH
 /* Clipper 0.6: the INSERT's types (fx.c IT_*; SLOOP 2.6's, same order: a SLOOP 2.6 sound keeps its INSERT). Its three
  * values A B C mean what the type says (ins_desc) */
-static const char *const N_ITYPE[] = {"OFF", "SOFT", "HARD", "FOLD", "FUZZ", "CRUSH", "PHASR", "FLANG", "CHOR"};
+static const char *const N_ITYPE[] = {"OFF", "SOFT", "HARD", "FOLD", "FUZZ", "CRUSH", "PHASR", "FLANG", "CHOR",
+                                     "JUNO1", "JUNO2", "JUN12"};   /* (0.8: the JUNO chorus, I II I+II, on any sound) */
 /* CRUSH: BITS 1..16 and RATE (the held sample's rate) over the range in 16 even parts (0-terminated) */
 static const char *const N_IBITS[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
                                       "16", 0};
@@ -45,7 +46,10 @@ static const char *const N_IRATE[] = {"689", "919", "1.1k", "1.4k", "1.8k", "2.2
 #endif
 static const char *const N_LYMODE[] = {"OFF", "LAYER", "SPLIT", "MULTI"};   /* LY_OFF .. LY_MULTI */
 static const char *const N_L2MODE[] = {"FREE", "KEY"};                  /* L2_FREE, L2_KEY */
-static const char *const N_MSRC[] = {"OFF", "LFO1", "LFO2", "ENV1", "ENV2", "VEL", "KEY", "MW", "AT", "RAND", "SLIDE"};
+static const char *const N_MSRC[] = {"OFF", "LFO1", "LFO2", "ENV1", "ENV2", "VEL", "KEY", "MW", "AT", "RAND", "SLIDE",
+                                     "SEQ1", "SEQ2", "SEQ3", "SEQ4"};   /* (0.8: the MOD SEQ's lanes) */
+static const char *const N_MSRATE[] = {"1/32", "16T", "1/16", "8T", "1/8", "1/4", "1/2", "BAR", "2 BAR"};
+static const char *const N_MSKEY[] = {"SYNC", "KEY"};
 static const char *const N_MDST[] = {"OFF", "PITCH", "CUT", "SHAPE", "AMP", "PAN", "LFO2",
                                      "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8"};   /* (track_desc: the engine's names) */                 /* G_RTYPE: RT_ROOM, RT_PLATE */
 static const char *const N_ROLL[] = {"1/8", "1/16", "1/32", "32T", "1/64"};   /* seq.c ROLL_DEN */
@@ -56,6 +60,7 @@ static const char *const N_ENGNAME[] = {"ANALOG", "DIGITAL", "PHASE", "LOFI", "S
 #endif
 #if CLIPPER_SYNTH
                                         "WAVE", "ACID", "STRINGS", "MACRO", "VPS", "TERRAIN", "FMX", "WSEQ",
+                                        "JUNO", "VECTOR",
 #endif
 };
 
@@ -142,6 +147,13 @@ static const param_desc_t TP[P_COUNT] = {
     [P_IB] = PD("INS B", F_PCT, 0, 127, 96),
     [P_IC] = PD("INS C", F_PCT, 0, 127, 96),
     [P_IMIX] = PD("MIX", F_PCT, 0, 127, 127),
+    /* Clipper 0.8: the MOD SEQ (seq.c mseq_tick: the steps; the matrix's SEQ1..SEQ4 read them) and SPICE / DICE */
+    [P_MSRATE] = PE("RATE", N_MSRATE, 2),
+    [P_MSLEN] = PD("LEN", F_INT, 1, 16, 16),
+    [P_MSSMTH] = PD("SMTH", F_PCT, 0, 127, 0),
+    [P_MSKEY] = PE("START", N_MSKEY, 1),
+    [P_SPICE] = PD("SPICE", F_PCT, 0, 127, 0),
+    [P_DICE] = PD("DICE", F_INT, 0, 127, 0),
 #endif
 };
 #if CLIPPER_SYNTH
@@ -233,17 +245,19 @@ static const param_desc_t DRUM_KIT_DESC = PE("KIT", DRUM_KIT_NAMES, 0);
 /* the INSERT's A B C as its TYPE means them (TP's ranges and defaults): the drives DRIVE TONE LEVEL, CRUSH BITS RATE
  * LPF, the swept ones RATE DEPTH FDBK; OFF TP's own (as SLOOP 2.6) */
 #define PU(l, f, df, n, u) {l, f, 0, 127, df, n, u}
-static const param_desc_t INS_DESC[3][3] = {
+static const param_desc_t INS_DESC[4][3] = {
     {PU("DRIVE", F_PCT, 64, 0, 0), PU("TONE", F_CUTOFF, 96, 0, 0), PU("LEVEL", F_DB, 96, 0, 0)},
     {PU("BITS", F_INT, 64, N_IBITS, 0), PU("RATE", F_INT, 96, N_IRATE, "Hz"), PU("LPF", F_CUTOFF, 96, 0, 0)},
     {PU("RATE", F_LFOHZ, 64, 0, 0), PU("DEPTH", F_PCT, 96, 0, 0), PU("FDBK", F_PCT, 96, 0, 0)},
+    {PU("WIDTH", F_PCT, 127, 0, 0), PU("TONE", F_CUTOFF, 100, 0, 0), PU("NOISE", F_PCT, 0, 0, 0)},   /* JUNO1 .. JUN12 */
 };
 #undef PU
 static const param_desc_t *ins_desc(int32_t type, uint32_t k)
 {
     if (type <= 0 || type >= (int32_t)(sizeof N_ITYPE / sizeof N_ITYPE[0]))
         return &TP[P_IA + k];
-    return &INS_DESC[type < 5 ? 0 : type == 5 ? 1 : 2][k % 3u];   /* (SOFT .. FUZZ, CRUSH, the swept ones) */
+    return &INS_DESC[type < 5 ? 0 : type == 5 ? 1 : type < 9 ? 2 : 3][k % 3u];   /* (SOFT .. FUZZ, CRUSH, the swept
+                                                                                * ones, the JUNO chorus) */
 }
 #endif
 static const param_desc_t *track_desc(const track_t *t, uint32_t id)
@@ -436,7 +450,7 @@ enum { FAM_HOME, FAM_ENV, FAM_LFO, FAM_FX, FAM_SCL, FAM_EDIT, FAM_GLO, FAM_SAVE,
        FAM_COUNT };
 enum { SC_TRACK, SC_GLOBAL, SC_ENGINE, SC_STEP, SC_TRK, SC_SONG, SC_DRUM, SC_SYN };   /* SC_SYN: ui_synth.c */
 enum { GR_NONE, GR_ADSR, GR_LFO, GR_STEPS, GR_ARP, GR_SCALE, GR_FX, GR_ROLL, GR_BROWSE, GR_SLOTS, GR_USER, GR_TRK,
-       GR_SLCR, GR_LAYER, GR_MORPH, GR_MATRIX, GR_FMX, GR_HIST };
+       GR_SLCR, GR_LAYER, GR_MORPH, GR_MATRIX, GR_FMX, GR_HIST, GR_MSEQ };
 
 typedef struct {
     const char *title;
@@ -456,6 +470,8 @@ static const page_t PAGES[] = {
     {"MOD", FAM_LFO, SC_TRACK, GR_NONE, {P_VELF, P_MWDST, P_ATDST, 0xFF}},
     {"LFO 2", FAM_LFO, SC_TRACK, GR_NONE, {P_L2RATE, P_L2WAVE, P_L2MODE, 0xFF}},
     {"MATRIX", FAM_LFO, SC_SYN, GR_MATRIX, {15, 16, 17, 18}},   /* X_MSLOT X_MSRC X_MDST X_MAMT (ui_synth.c) */
+    {"MOD SEQ", FAM_LFO, SC_SYN, GR_MSEQ, {43, 44, 45, 46}},    /* (0.8) X_QLANE X_QSTEP X_QVAL X_QFILL */
+    {"MOD SEQ 2", FAM_LFO, SC_TRACK, GR_MSEQ, {P_MSRATE, P_MSLEN, P_MSSMTH, P_MSKEY}},
 #endif
     {"FX", FAM_FX, SC_TRACK, GR_FX, {P_DIST, P_CHOR, P_DLY, P_REV}},
 #if CLIPPER_SYNTH                                                        /* (the sound's filter model too) */
@@ -514,6 +530,9 @@ static const page_t PAGES[] = {
     {"TOOLS", FAM_SAVE, SC_GLOBAL, GR_NONE, {G_CLRSEQ, G_INITSND, 0xFF, G_NEWPRJ}},
     {"ARP", FAM_ARP, SC_TRACK, GR_ARP, {P_AMODE, P_ARATE, P_AOCT, P_AGATE}},
     {"ARP 2", FAM_ARP, SC_TRACK, GR_NONE, {P_ASWING, P_APROB, P_AHOLD, P_AORDER}},
+#if CLIPPER_SYNTH
+    {"SPICE", FAM_ARP, SC_TRACK, GR_NONE, {P_SPICE, P_DICE, 0xFF, 0xFF}},   /* (0.8) the arp's and the steps' notes vary */
+#endif
     {"STEP", FAM_SEQ, SC_STEP, GR_ROLL, {0, 1, 2, 3}},
     {"PATTERN", FAM_SEQ, SC_TRACK, GR_STEPS, {P_SLEN, P_SDIV, P_SSWING, P_SGATE}},
     {"SONG", CLIPPER_SYNTH ? FAM_TRK : FAM_SEQ, SC_SONG, GR_NONE, {0xFF, 0xFF, 0xFF, 0xFF}},   /* (Clipper: out of reach) */

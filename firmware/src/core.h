@@ -37,7 +37,7 @@ static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /*
 #if FELUCCA_SLICE
 #error "SLICE is a groovebox engine (CLIPPER_SYNTH 0)"
 #endif
-#define CLIPPER_NENG 8           /* WAVE ACID STRINGS MACRO VPS TERRAIN FMX WSEQ */
+#define CLIPPER_NENG 10          /* WAVE ACID STRINGS MACRO VPS TERRAIN FMX WSEQ JUNO VECTOR */
 #define NENGINES (13 + CLIPPER_NENG)
 #define ENGI_WAVE 13u            /* Clipper 0.2: wavetables (eng_wave.c) */
 #define ENGI_ACID 14u            /*   a 303-style bass line (eng_acid.c) */
@@ -47,6 +47,8 @@ static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /*
 #define ENGI_TERRAIN 18u         /*   wave terrain, lite (eng_terrain.c, Felucca discussion #146) */
 #define ENGI_FMX 19u             /* Clipper 0.6: six operators, waves, PM / FM / RING, any routing (eng_fmx.c) */
 #define ENGI_WSEQ 20u            /*   wave sequencing (eng_wseq.c, after the Wavestation) */
+#define ENGI_JUNO 21u            /* Clipper 0.8: the Juno poly and its chorus (eng_juno.c, fx.c juno_chorus) */
+#define ENGI_VECTOR 22u          /*   vector synthesis: four waves, a joystick (eng_vector.c, after the Prophet VS) */
 #else
 #define NENGINES (13 + FELUCCA_SLICE)
 #endif
@@ -107,6 +109,10 @@ enum {                          /* per-track parameters */
     P_M5SRC, P_M5DST, P_M5AMT,
     P_M6SRC, P_M6DST, P_M6AMT,
     P_ITYPE, P_IA, P_IB, P_IC, P_IMIX,         /* Clipper 0.6: the sound's INSERT (SLOOP 2.6's, fx.c): TYPE, A B C, MIX */
+    P_MSRATE, P_MSLEN, P_MSSMTH, P_MSKEY,      /* Clipper 0.8: the MOD SEQ (voice.c mseq_*): a step's length, steps, glide,
+                                                * SYNC (the song's grid) / KEY (from each first key) */
+    P_SPICE, P_DICE,                           /* .. SPICE / DICE (seq.c spice_*): how much the arp's and the sequencer's
+                                                * notes vary, and which variation */
 #endif
     P_E0, P_E1, P_E2, P_E3, P_E4, P_E5, P_E6, P_E7,
     P_COUNT
@@ -146,7 +152,10 @@ enum { MD_OFF, MD_VIB, MD_CUT, MD_SHP, MD_WAH, MD_TREM };
 enum { LY_OFF, LY_LAYER, LY_SPLIT, LY_MULTI };   /* MULTI (0.6): two parts, the layer on its own channel (bi-timbral) */
 /* Clipper 0.4: the matrix's sources and destinations (P_MnSRC, P_MnDST; voice.c mod_matrix) */
 #define MX_SLOTS 6u
-enum { MS_OFF, MS_LFO1, MS_LFO2, MS_ENV1, MS_ENV2, MS_VEL, MS_KEY, MS_MW, MS_AT, MS_RAND, MS_SLIDE, MS_NSRC };
+enum { MS_OFF, MS_LFO1, MS_LFO2, MS_ENV1, MS_ENV2, MS_VEL, MS_KEY, MS_MW, MS_AT, MS_RAND, MS_SLIDE,
+       MS_SEQ1, MS_SEQ2, MS_SEQ3, MS_SEQ4, MS_NSRC };   /* (0.8: the MOD SEQ's four lanes; 4 bits in the stores) */
+#define MSEQ_LANES 4u            /* Clipper 0.8: the MOD SEQ, per sound: 4 lanes of 16 steps, -8..7 each */
+#define MSEQ_STEPS 16u
 enum { MT_OFF, MT_PITCH, MT_CUT, MT_SHAPE, MT_AMP, MT_PAN, MT_L2RATE, MT_E1, MT_COUNT = MT_E1 + 8 };
 enum { L2_FREE, L2_KEY };
 #define CLIPPER_PROJ_MARK 0xC5u  /* project_t.rsv[0]: written by Clipper (project.c: + LFO 2, ENV 2, the matrix in track 3's
@@ -322,6 +331,12 @@ typedef struct track {
     uint8_t arp_walk;            /* (0.7) MODE WALK: the place in the note list it stands on */
     uint8_t arp_odd;             /* (0.7) stopped: the next arp step is an odd one (its SWG: late) */
     uint32_t arp_off;            /* units to its note-off */
+#if CLIPPER_SYNTH                /* Clipper 0.8: the MOD SEQ (voice.c mseq_*), part of the sound */
+    int8_t ms[MSEQ_LANES][MSEQ_STEPS];   /* the steps, -8..7 */
+    uint8_t ms_step, ms_held;    /* the step playing; keys held last block (KEY: the first one restarts it) */
+    uint32_t ms_pos;             /* units into the step (free running: stopped, or KEY) */
+    int32_t ms_cur[MSEQ_LANES];  /* each lane's value now (Q15, glided: SMTH) */
+#endif
     /* sequencer: synth parts step[], the drum track dstep[] (16 lanes) */
     union {
         step_t step[NSTEP];

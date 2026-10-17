@@ -461,6 +461,26 @@ scaling, detune 0..14 with 7 in tune), the routing 72..107 (`mod[to][from]`, 0..
 feedback), the outputs 108..113, the template it came from 114 (1..40, 0 none), the pitch envelope 115 (64 none, +-24
 semitones) and its time 116, the level 117 (100 unity), the name 118..127.
 
+## v13: the MOD SEQ (Clipper 0.8)
+
+INFO ends with 13. Each synth part (0 the instrument, 1 the layer) has a MOD SEQ (`seq.c mseq_tick`): four lanes of
+16 steps, each -8..7, read by the matrix as the sources SEQ1..SEQ4 (`MS_SEQ1..MS_SEQ4`, 11..14). Its RATE, LEN, SMTH,
+START (ids 83..86) and SPICE, DICE (87, 88: the arp's and the sequencer's notes vary) are parameters as any other
+(GET / SET / DESC); P_E0 is 89, P_COUNT 97. The steps:
+
+| cmd | name | request | reply |
+|---|---|---|---|
+| 93 | MSEQ_GET | part | part, rc, 64 bytes |
+| 94 | MSEQ_PUT | part, 64 bytes | part, rc |
+
+- the 64 bytes: lane 1's 16 steps, then lane 2's, 3's, 4's; each the value + 8 (0..15). MSEQ_PUT clamps each.
+- rc 0 ok, 1 bad request (a part other than 0, 1; MSEQ_PUT without its 64 bytes).
+- They go with the sound: a factory preset brings four shapes to start from; user presets keep them (the record's
+  note / flags, `upreset.c up_ms_put`; their RATE .. DICE in the bank's side record) and projects (track 4's free lock
+  slots; RATE .. DICE after 0.6's INSERT in track 3's). UP_GET sends note / flags as they are.
+- 0.8 also has the engines JUNO (21) and VECTOR (22), and the INSERT's types JUNO1, JUNO2, JUN12 (9..11: the JUNO
+  chorus on any sound; A WIDTH, B TONE, C NOISE).
+
 ## Notes for the editor
 
 - **One request at a time.** Wait for the reply, about 10–50 ms, before sending the next.

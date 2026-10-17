@@ -1,4 +1,4 @@
-# Clipper — démarrage rapide (version de test 0.7)
+# Clipper — démarrage rapide (version de test 0.8)
 
 **Clipper** est un firmware de **synthétiseur** pour le M-VAVE FM-1 : un seul instrument, comme le firmware d'origine, Felucca ou Baudgirl. Ce n'est plus une groovebox : pas de pistes, pas de boîte à rythmes, pas de mode song, pas de samples intégrés. Il garde de SLOOP les 12 moteurs, les effets, l'arpégiateur, le séquenceur de pas, l'audio USB et le MIDI. Il ajoute **HYBRID**, une voix à 3 oscillateurs, 2 filtres et une matrice de modulation de 16 slots, avec 24 sons d'usine. Il ajoute aussi le pitch bend, la molette, l'aftertouch et la pédale de sustain sur tous les moteurs.
 
@@ -15,7 +15,7 @@ Clipper vit dans son propre dossier, **`CLIPPER`**, à côté de celui de SLOOP.
 | Adresse | http://localhost:**8766** | http://localhost:**8767** |
 | Écran de démarrage | voilier, « sloop » | trois-mâts, « clipper » |
 
-Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maintenu) → SYS → ABOUT, qui affiche **CLIPPER 0.7**.
+Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maintenu) → SYS → ABOUT, qui affiche **CLIPPER 0.8**.
 
 ## 1. Compiler et installer
 
@@ -23,6 +23,17 @@ Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maint
 2. Double-clique sur **`INSTALL-CLIPPER.bat`**. Il utilise les mêmes outils que SLOOP (WSL MinUI-Build, la chaîne JieLi). La première fois, il copie les trois fichiers du SDK depuis `..\SLOOP\build\deps\ac79`. S'il ne les trouve pas, copie ce dossier `build\deps\ac79` de SLOOP dans `CLIPPER\build\deps\`.
 3. La page d'installation s'ouvre sur http://localhost:8767/webapp/installer/ (Chrome ou Edge, FM-1 en USB). Clique sur **Install**.
 4. La FM-1 redémarre sur l'écran **clipper**. Tes projets, presets, samples et réglages de SLOOP sont toujours là.
+
+## Nouveau dans la 0.8 : JUNO et son chorus, VECTOR, un séquenceur de modulation, SPICE / DICE
+
+- **JUNO**, le polyphonique des Roland Juno-6 / 60 / 106 (l'idée, aucun code de Roland) : un DCO par voix avec une **dent de scie**, une **impulsion** dont le LFO fait varier la largeur (PWM : LFO DEST SHP, la molette, SHAPE dans la matrice) ou **les deux** (**S+P**, les deux boutons du 106), un **sub** carré une octave en dessous et du **bruit** ; le **HPF** aux quatre positions du 106 (0 un peu de basses en plus, 1 neutre, 2 et 3 plus fin), le **filtre ladder 24 dB** résonant, et le **chorus** : **I** (0,5 Hz, large), **II** (0,8 Hz, plus profond), **I+II** (8 Hz, léger, les deux boutons du 60 ensemble) : un chorus BBD stéréo, deux prises d'une même ligne balayées en sens opposés, assombries comme un BBD, gauche = son sec + l'une, droite = son sec + l'autre. Changer de mode pendant un accord tenu se fait en fondu (pas de clic). EDIT : WAVE PW SUB NOIS / HPF CUT RES CHOR. 16 sons (nappes, cuivres, cordes, basses, claviers, lead synthwave, un hoover).
+- **Le chorus du JUNO sur n'importe quel son** : l'INSERT a trois types de plus, **JUNO1**, **JUNO2**, **JUN12** (A WIDTH, B TONE, C NOISE : le souffle du BBD ; MIX le chorus).
+- **VECTOR**, la synthèse vectorielle du Sequential Prophet VS et du joystick du Wavestation : quatre formes d'onde aux coins d'un carré (**A B C D**, 16 formes de Clipper, chacune en trois copies sans repliement), un point dans le carré (**X**, **Y**) les mélange, et **MOVE** fait voyager le point tout seul dès le début de chaque note : CIRC, 8, SWEEP (de A jusqu'au point : l'enveloppe de mixage du VS), LOOP (A B D C), RND, chacun lent ou rapide (+). SHAPE déplace X ; la matrice déplace X et Y par leur nom. Puis un passe-bas 12 dB. EDIT : A B C D / X Y MOVE CUT. 16 sons.
+- **MOD SEQ**, un séquenceur de modulation dans chaque son (LFO → **MOD SEQ**, **MOD SEQ 2**) : quatre lignes de 16 pas (-8..7) qui avancent à **RATE** (1/32 à 2 mesures, au tempo), sur **LEN** pas, chaque ligne avec son lissage (**SMTH**), à partir de chaque première touche (**START KEY**) ou sur la grille du morceau (**SYNC**). La matrice les lit comme quatre sources de plus, **SEQ1..SEQ4** : une ligne sur le cutoff, une autre sur la hauteur, un rythme sur le volume, n'importe quel réglage EDIT par son nom. Sur la FM-1 : LANE STEP VALUE et **SHAPE** (RAMP+ RAMP- TRI SINE SQR RND FLAT INVRT SHIFT : tourne pour écouter chaque forme), la ligne dessinée en grand, le pas joué allumé, les quatre lignes en petit dessous. Un son chargé apporte quatre formes de départ (une rampe, un triangle, un rythme, une ligne aléatoire). Gardé avec le son : UNDO, COMPARE, le SWAP du layer, les presets utilisateur, les projets.
+- **SPICE / DICE** (ARP → **SPICE**, comme sur l'Arturia MicroFreak) : les notes de l'arpégiateur et les pas du séquenceur varient autant que SPICE le dit : certaines se taisent, d'autres sautent d'une octave, la vélocité et la durée bougent ; toujours de la même façon à chaque tour (16 notes, ou les pas du motif), jusqu'à ce qu'on tourne **DICE** (une autre variation). Ce qui est enregistré ne change jamais. SPICE à 0 : exactement comme avant.
+- **L'éditeur web** (protocole 13) : une carte **MOD SEQ** (les quatre lignes en barres à tirer, les formes, LIVE), les nouvelles pages (MOD SEQ 2, SPICE, les types JUNO de l'INSERT), JUNO et VECTOR.
+- **Les deux nouveaux moteurs tournent sur les deux cœurs** (au bit près, comme les autres). **392 sons, 23 moteurs.**
+- **Corrigé** : un preset utilisateur envoyé depuis l'éditeur web était écrit au format de SLOOP par-dessus l'enregistrement de Clipper (LFO 2, ENV 2, matrice et INSERT perdus, et quelques octets écrits après l'enregistrement).
 
 ## Nouveau dans la 0.7 : les deux cœurs, l'historique du son, et le meilleur de SLOOP 2.7
 

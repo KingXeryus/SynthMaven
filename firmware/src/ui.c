@@ -3,7 +3,7 @@
 /* Felucca user interface. Four columns map to KNOB 1..4. Rendering is lazy:
  * every element remembers what it last drew and is redrawn only on change. */
 #ifndef FELUCCA_VERSION
-#define FELUCCA_VERSION "CLIPPER 0.7"  /* the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
+#define FELUCCA_VERSION "CLIPPER 0.8"  /* the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
 #endif
 static void project_save(uint32_t slot);
 static void arrangement_save(void);
@@ -331,6 +331,9 @@ static void apply_preset_to(track_t *t, uint32_t pi)
         else if (kbd_hold)
             t->p[P_AHOLD] = 1;                       /* (0.7) KBD HOLD stays on */
     }
+#if CLIPPER_SYNTH
+    mseq_init(t);                                    /* (0.8) the MOD SEQ: the shapes to start from */
+#endif
     fm6_track_loaded(t);                             /* FM6: the preset's patch (its PTCH) */
 }
 
@@ -524,6 +527,21 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
 #if FELUCCA_SLICE
     {BK_FX, ENGI_SLICE, "BREAK 16"}, {BK_FX, ENGI_SLICE, "CHOP 8"}, {BK_FX, ENGI_SLICE, "REVERSE"},
     {BK_FX, ENGI_SLICE, "USR SLICE"},
+#endif
+#if CLIPPER_SYNTH                                    /* (appended: the favourites keep their entries' places) */
+    /* Clipper 0.8: JUNO, VECTOR */
+    {BK_PAD, ENGI_JUNO, "JUNO 106 PAD"}, {BK_STAB, ENGI_JUNO, "JUNO BRASS"}, {BK_BASS, ENGI_JUNO, "JUNO BASS"},
+    {BK_PAD, ENGI_JUNO, "JUNO STRINGS"}, {BK_KEYS, ENGI_JUNO, "POLY KEYS"}, {BK_LEAD, ENGI_JUNO, "SYNTHWAVE LD"},
+    {BK_STAB, ENGI_JUNO, "80S HITS"}, {BK_KEYS, ENGI_JUNO, "JUNO PIANO"}, {BK_PAD, ENGI_JUNO, "DREAM PAD"},
+    {BK_BASS, ENGI_JUNO, "SUB BASS 106"}, {BK_STAB, ENGI_JUNO, "SYNTH BRASS 2"}, {BK_PLUCK, ENGI_JUNO, "ARP PLUCK"},
+    {BK_FX, ENGI_JUNO, "NOISE SWEEP"}, {BK_ORGAN, ENGI_JUNO, "JUNO ORGAN"}, {BK_LEAD, ENGI_JUNO, "SAW LEAD 106"},
+    {BK_LEAD, ENGI_JUNO, "HOOVER JUNO"},
+    {BK_PAD, ENGI_VECTOR, "VS PAD"}, {BK_PAD, ENGI_VECTOR, "VECTOR SWEEP"}, {BK_STAB, ENGI_VECTOR, "VS BRASS"},
+    {BK_KEYS, ENGI_VECTOR, "GLASS VS"}, {BK_PAD, ENGI_VECTOR, "VOX MORPH"}, {BK_PLUCK, ENGI_VECTOR, "DIGI BELLS"},
+    {BK_BASS, ENGI_VECTOR, "VS BASS"}, {BK_LEAD, ENGI_VECTOR, "WAVE LOOP"}, {BK_ORGAN, ENGI_VECTOR, "ORGAN DRIFT"},
+    {BK_PAD, ENGI_VECTOR, "STRING VS"}, {BK_FX, ENGI_VECTOR, "METAL HIT"}, {BK_KEYS, ENGI_VECTOR, "HOLLOW KEYS"},
+    {BK_LEAD, ENGI_VECTOR, "RESO VECTOR"}, {BK_FX, ENGI_VECTOR, "SPACE DRONE"}, {BK_LEAD, ENGI_VECTOR, "VS LEAD"},
+    {BK_PAD, ENGI_VECTOR, "CHOIR VS"},
 #endif
 };
 #define NBANK (sizeof BANK / sizeof BANK[0])

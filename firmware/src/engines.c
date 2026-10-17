@@ -42,6 +42,8 @@ static int32_t vs_buf[CTL] __attribute__((aligned(8)));
 #include "eng_terrain.c"        /* TERRAIN: wave terrain, lite (Clipper 0.5) */
 #include "eng_fmx.c"            /* FMX: six operators, waves, PM / FM / RING, any routing (Clipper 0.6) */
 #include "eng_wseq.c"           /* WSEQ: wave sequencing (Clipper 0.6) */
+#include "eng_juno.c"           /* JUNO: the Juno poly, its chorus in fx.c (Clipper 0.8) */
+#include "eng_vector.c"         /* VECTOR: vector synthesis (Clipper 0.8) */
 #endif
 
 typedef union {
@@ -92,11 +94,13 @@ static const engine_t *const ENGINES[NENGINES] = {&ENG_ANALOG, &ENG_DIGITAL, &EN
                                                     &ENG_ACID, &ENG_STRINGS, &ENG_MACRO,   /* 14, 15, 16 */
                                                     &ENG_VPS, &ENG_TERRAIN,                /* 17, 18 */
                                                     &ENG_FMX, &ENG_WSEQ,                   /* 19, 20 */
+                                                    &ENG_JUNO, &ENG_VECTOR,                /* 21, 22 */
 #endif
 };
 #if CLIPPER_SYNTH
 _Static_assert(ENGI_WAVE == 13u && ENGI_ACID == 14u && ENGI_STRINGS == 15u && ENGI_MACRO == 16u && ENGI_VPS == 17u &&
-               ENGI_TERRAIN == 18u && ENGI_FMX == 19u && ENGI_WSEQ == 20u, "ENGINES[] order (Clipper)");
+               ENGI_TERRAIN == 18u && ENGI_FMX == 19u && ENGI_WSEQ == 20u && ENGI_JUNO == 21u && ENGI_VECTOR == 22u,
+               "ENGINES[] order (Clipper)");
 /* (eng_wave.c) the table of the instrument: track 1's, else its layer's (one table in RAM: two WAVE sounds share
  * track 1's); while a sound fades out after a change (voice.c sound_fade_begin) its table stays */
 static int32_t wt_wanted(void)

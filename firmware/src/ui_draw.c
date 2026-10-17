@@ -811,6 +811,9 @@ static void draw_graph(void)
         case GR_HIST:
             graph_hist();
             break;
+        case GR_MSEQ:
+            graph_mseq();
+            break;
 #endif
         default:
             if (big_page(pg)) {

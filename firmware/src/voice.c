@@ -926,6 +926,21 @@ static void mx_load(const int16_t *p, mx_t *x)
         x->n++;
     }
 }
+/* Clipper 0.8: the MOD SEQ. Four lanes of 16 steps (-8..7) per sound, stepping at RATE (the song's grid while it
+ * plays and START is SYNC; from each first key with KEY, and while stopped), LEN steps, each lane's value gliding
+ * (SMTH) to its step's: the matrix's sources SEQ1..SEQ4 (seq.c mseq_tick moves them, once a block). A sound loaded
+ * (a factory one) brings four shapes to start from: a ramp, a triangle, a rhythm, a random line */
+static const int8_t MSEQ_INIT[MSEQ_LANES][MSEQ_STEPS] = {
+    {-8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7},
+    {0, 2, 4, 6, 7, 5, 3, 1, -1, -3, -5, -7, -8, -6, -4, -2},
+    {7, 7, -8, -8, 7, -8, 7, 7, -8, 7, -8, -8, 7, -8, 7, -8},
+    {3, -5, 6, -2, 0, 7, -7, 2, -4, 5, -1, -8, 4, 1, -6, 6},
+};
+static void mseq_init(track_t *t)
+{
+    memcpy(t->ms, MSEQ_INIT, sizeof t->ms);
+}
+static int32_t mseq_q15(int32_t v) { return clamp(v * 4369, -32767, 32767); }   /* a step: -8 full scale, 7 just under */
 /* LFO 2's rate index, + the slots to MT_L2RATE (sv: the sources) */
 static uint32_t mx_l2rate(const int16_t *p, const mx_t *x, const int32_t *sv)
 {
@@ -969,7 +984,7 @@ static int vs_ok(const engine_t *e)                 /* its render may run on two
 {
     return e == &ENG_HYBRID || e == &ENG_FMX || e == &ENG_WAVE || e == &ENG_ANALOG || e == &ENG_FM6 || e == &ENG_VPS ||
            e == &ENG_TERRAIN || e == &ENG_WSEQ || e == &ENG_MACRO || e == &ENG_STRINGS || e == &ENG_TRIO ||
-           e == &ENG_PHASE || e == &ENG_DIGITAL || e == &ENG_LOFI || e == &ENG_ACID;
+           e == &ENG_PHASE || e == &ENG_DIGITAL || e == &ENG_LOFI || e == &ENG_ACID || e == &ENG_JUNO || e == &ENG_VECTOR;
 }
 static void vs_finish(track_t *t, const engine_t *e, int32_t *out, uint32_t n)
 {
@@ -1059,6 +1074,8 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
     sv[MS_LFO1] = lfo;                                  /* (the part's sources; with FADE, as the LFO's routes) */
     sv[MS_MW] = part_ctl[pc].mw * 258;                  /* (on HYBRID too: its own matrix has them as well) */
     sv[MS_AT] = (int32_t)catr * 258;
+    for (i = 0; i < MSEQ_LANES; i++)                    /* (0.8) the MOD SEQ's lanes: the part's */
+        sv[MS_SEQ1 + i] = t->ms_cur[i];
     {   /* LFO 2 FREE: one for the part, its rate moved by the part's sources only */
         uint32_t old = t->l2ph;
         t->l2ph += LFO_INC[mx_l2rate(p, &mx, sv)];

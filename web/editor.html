@@ -406,6 +406,14 @@
   #hypanel h3 { margin: 16px 0 6px; color: var(--dim); text-transform: uppercase; }
   #fxpanel h3 { margin: 16px 0 6px; color: var(--dim); text-transform: uppercase; }
   #fxpanel .fxn { width: 3.4em; }
+  #msbody .msrow { display: flex; align-items: center; gap: 2px; margin: 4px 0; }
+  #msbody .mslab { width: 3.2em; cursor: pointer; color: var(--dim); }
+  #msbody .msrow.sel .mslab { color: var(--fg); font-weight: 600; }
+  #msbody .mscell { position: relative; width: 22px; height: 48px; background: var(--s2);
+    border-radius: 2px; cursor: ns-resize; touch-action: none; }
+  #msbody .mscell::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: rgba(127,127,127,.4); }
+  #msbody .msbar { position: absolute; left: 3px; right: 3px; background: var(--t2); border-radius: 1px; z-index: 1; }
+  #msbody .msrow.sel .msbar { background: var(--t3); }
   #fxpanel td.fxfb .fxn { outline: 1px dashed var(--hi); }
   #fxpanel .fxgraph { width: 100%; max-width: 560px; height: auto; display: block; margin: 4px 0 8px; }
   .hy { overflow-x: auto; }
@@ -587,6 +595,15 @@
           <label><span data-t="name"></span> <input type="text" id="fxname" maxlength="10" size="11"></label>
           <label><span data-t="fxStoreTo"></span> <select id="fxslot"></select></label> <button id="fxstore" data-t="fxStore"></button></p>
         <div id="fxbody"></div>
+      </div>
+      <!-- Clipper 0.8: the MOD SEQ's steps (firmware protocol v13): every engine -->
+      <div class="card" id="mspanel" hidden>
+        <h2 data-t="msTitle" data-ic="ui_knob"></h2>
+        <p class="dim" data-t="msHelp"></p>
+        <p class="bar"><button id="msread" data-t="hyReadBtn"></button> <button id="mssend" class="pri" data-t="hySendBtn"></button>
+          <label><input type="checkbox" id="mslive" checked> <span data-t="hyLive"></span></label>
+          <label><span data-t="msShape"></span> <select id="msshape"></select></label> <button id="msapply" data-t="msApply"></button></p>
+        <div id="msbody"></div>
       </div>
       <!-- Clipper: the HYBRID engine's patch (firmware protocol v11): only while the selected track plays HYBRID -->
       <div class="card" id="hypanel" hidden>
@@ -791,7 +808,8 @@ const CMD = { INFO: 1, GET: 2, SET: 3, DUMP: 4, DESC: 5, STEP_GET: 6, STEP_SET: 
   FM6_GET: 68, FM6_PUT: 69, FM6_LIST: 70, FM6_ERASE: 71,    /* v9 (SLOOP 2.4): the FM6 engine's patches (Felucca 1.0's numbers) */
   DSYN_LIST: 72, DSYN_GET: 73, DSYN_PUT: 74, DSYN_STORE: 75, DSYN_PLAY: 76,   /* v10 (SLOOP 2.5): the SYN drum kits */
   HY_GET: 77, HY_PUT: 78,                            /* v11 (Clipper): the HYBRID engine's patches */
-  FMX_GET: 90, FMX_PUT: 91, FMX_STORE: 92 };         /* v12 (Clipper 0.6): the FMX engine's patches */
+  FMX_GET: 90, FMX_PUT: 91, FMX_STORE: 92,           /* v12 (Clipper 0.6): the FMX engine's patches */
+  MSEQ_GET: 93, MSEQ_PUT: 94 };                      /* v13 (Clipper 0.8): the MOD SEQ's steps of a part */
 /* v7: the parameters a step can lock (firmware seq.c p_lockable: the sound, not the sequencer / arp / key / voice
    mode); ids as core.h: LEVEL .. LFO dests, GATE, the sends, GLIDE, PAN, DETUNE, the SLICER, the engine's 8 (from pe0:
    53, or 78 on Clipper 0.4, whose LFO 2, ENV 2 and matrix at 53..77 are not lockable) */
@@ -994,6 +1012,9 @@ const parse = {
   /* v12 (Clipper 0.6): an FMX patch, pack7 of its 128 bytes (FX.unpack) */
   [CMD.FMX_GET](a) { return { target: a[0], index: a[1], rc: a[2], bytes: a[2] ? null : unpack7(a.slice(3)).slice(0, 128) }; },
   [CMD.FMX_PUT](a) { return { target: a[0], index: a[1], rc: a[2] }; },
+  /* v13: part, rc, 64 values (lane 1's 16 steps, lane 2's ..: -8..7) */
+  [CMD.MSEQ_GET](a) { return { part: a[0], rc: a[1], steps: a[1] ? null : Array.from(a.slice(2, 66), (x) => x - 8) }; },
+  [CMD.MSEQ_PUT](a) { return { part: a[0], rc: a[1] }; },
   [CMD.FMX_STORE](a) { return { slot: a[0], rc: a[1] }; },
   [CMD.FM6_LIST](a) {
     const r = new Reader(a), o = { factory: r.b(), bank: r.b(), slots: [] };
@@ -1097,6 +1118,8 @@ const req = {
   hyPut: (part, bytes) => [CMD.HY_PUT, [0, part & 0x7F, ...pack7(bytes)]],
   fmxGet: (target, i) => [CMD.FMX_GET, [target & 0x7F, i & 0x7F]],
   fmxPut: (part, bytes) => [CMD.FMX_PUT, [0, part & 0x7F, ...pack7(bytes)]],
+  mseqGet: (part) => [CMD.MSEQ_GET, [part & 0x7F]],
+  mseqPut: (part, steps) => [CMD.MSEQ_PUT, [part & 0x7F, ...steps.map((v) => Math.max(0, Math.min(15, (v | 0) + 8)))]],
   fmxStore: (slot, bytes) => [CMD.FMX_STORE, [slot & 0x7F, ...pack7(bytes)]],
   fm6List: () => [CMD.FM6_LIST, []],
   fm6Erase: (i) => [CMD.FM6_ERASE, [i & 0x7F]],
@@ -1131,6 +1154,7 @@ function replyMatches(cmd, args, a) {
     case CMD.HY_GET: case CMD.HY_PUT: return a[0] === args[0] && a[1] === args[1];
     case CMD.FMX_GET: case CMD.FMX_PUT: return a[0] === args[0] && a[1] === args[1];
     case CMD.FMX_STORE: return a[0] === args[0];
+    case CMD.MSEQ_GET: case CMD.MSEQ_PUT: return a[0] === args[0];
     case CMD.FM6_ERASE: return a[0] === args[0];
     case CMD.DSYN_GET: return a[0] === args[0];
     case CMD.DSYN_PUT: case CMD.DSYN_PLAY: return a[0] === args[0] && a[1] === args[1];
@@ -2516,12 +2540,25 @@ function makeMockDevice(opt = {}) {
           D("PITCH", F.PCT, 0, 127, 64), D("CUT", F.CUTOFF, 0, 127, 110), D("RES", F.PCT, 0, 127, 10)],
           presets: ["WAVE STEPS", "RHYTHM SEQ", "SWEEP PAD", "FIFTH STAB"].map((n, i) => P(n, [i, 40, 20, 0, 0, 64, 110, 10], [0, 90, 110, 50], 0)) });
         ge.names = [...ge.names, "FMX", "WSEQ"];
+        if (opt.clipper !== "0.6" && opt.clipper !== "0.7") {   /* Clipper 0.8: JUNO, VECTOR, protocol 13 (the MOD SEQ) */
+          ENG.push({ name: "JUNO", titles: ["DCO", "VCF"], edit: [E("WAVE", ["SAW", "PLS", "S+P"], 2), D("PW", F.PCT, 0, 127, 30),
+            D("SUB", F.PCT, 0, 127, 40), D("NOIS", F.PCT, 0, 127, 0), E("HPF", ["0", "1", "2", "3"], 1), D("CUT", F.CUTOFF, 0, 127, 90),
+            D("RES", F.PCT, 0, 127, 20), E("CHOR", ["OFF", "I", "II", "I+II"], 1)],
+            presets: ["JUNO 106 PAD", "JUNO BRASS", "JUNO BASS", "JUNO STRINGS"].map((n, i) => P(n, [[2, 0, 1, 0][i], 40, 40, 0, 1, 88, 20, [1, 0, 0, 2][i]], [70, 100, 115, 95], 0)) });
+          const VW = ["SINE", "TRI", "SAW", "SQR", "PLS25", "PLS10", "ORGAN", "VOX A", "VOX O", "BELL", "HOLLW", "BRASS", "RESO", "DIGI", "STRNG", "METAL"];
+          ENG.push({ name: "VECTOR", titles: ["WAVES", "JOYSTICK"], edit: [E("A", VW, 2), E("B", VW, 7), E("C", VW, 14), E("D", VW, 9),
+            D("X", F.BIPCT, -64, 63, 0), D("Y", F.BIPCT, -64, 63, 0),
+            E("MOVE", ["OFF", "CIRC", "CIRC+", "8", "8+", "SWEEP", "SWP+", "LOOP", "LOOP+", "RND", "RND+"], 1), D("CUT", F.CUTOFF, 0, 127, 100)],
+            presets: ["VS PAD", "VECTOR SWEEP", "VS BRASS", "GLASS VS"].map((n) => P(n, [2, 7, 14, 9, 0, 0, 1, 100], [70, 100, 115, 95], 0)) });
+          ge.names = [...ge.names, "JUNO", "VECTOR"];
+        }
       }
     }
     ge.max = ge.names.length - 1;
   }
   const HY_E = ENG.findIndex((e) => e.name === "HYBRID");
   const FX_E = ENG.findIndex((e) => e.name === "FMX");
+  const JU_E = ENG.findIndex((e) => e.name === "JUNO");   /* (Clipper 0.8: protocol 13, the MOD SEQ) */
   const FM6_E = ENG.findIndex((e) => e.name === "FM6"), FM6_BANK = 27, FM6_NPART = 3;
   const v9 = !opt.legacy && !opt.v3 && !opt.noBackup && !opt.v7 && !opt.v8;   /* SLOOP 2.4: FM6 patches */
   const v10 = v9 && !opt.v9;                         /* SLOOP 2.5: the SYN drum kits */
@@ -2728,7 +2765,7 @@ function makeMockDevice(opt = {}) {
         s(opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : (opt.clipper ? "FELUCCA CLIPPER 0.2 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)")); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
         ENG.forEach((e) => s(e.name));
         if (!opt.legacy) b(NTRK);
-        if (v5) b(opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : opt.clipper ? (FX_E >= 0 ? 12 : 11) : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
+        if (v5) b(opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : opt.clipper ? (JU_E >= 0 ? 13 : FX_E >= 0 ? 12 : 11) : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
         break;
       case CMD.GET: case CMD.SET: {
         if (a.length < 2) return null;
@@ -3034,6 +3071,23 @@ function makeMockDevice(opt = {}) {
           const got = a.length > 1 ? unpack7(a.slice(1)) : [];
           let rc = a[0] >= 27 || got.length < FX.SIZE ? 1 : st.playing ? 3 : 0;
           if (!rc) st.fxbank[a[0]] = FX.pack(FX.unpack(got.slice(0, FX.SIZE)));
+          b(a.length ? a[0] : 127); b(rc);
+        }
+        break;
+      }
+      case CMD.MSEQ_GET: case CMD.MSEQ_PUT: {       /* Clipper 0.8: editor_fmx.c ed_mseq_handle */
+        if (JU_E < 0) return null;
+        const tr = a.length && a[0] < 2 ? st.tracks[a[0]] : null;
+        const INIT = [[-8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7], [0, 2, 4, 6, 7, 5, 3, 1, -1, -3, -5, -7, -8, -6, -4, -2],
+          [7, 7, -8, -8, 7, -8, 7, 7, -8, 7, -8, -8, 7, -8, 7, -8], [3, -5, 6, -2, 0, 7, -7, 2, -4, 5, -1, -8, 4, 1, -6, 6]].flat();
+        if (tr && !tr.ms) tr.ms = INIT.slice();
+        if (cmd === CMD.MSEQ_GET) {
+          const rc = a.length !== 1 || !tr ? 1 : 0;
+          b(a.length ? a[0] : 127); b(rc);
+          if (!rc) tr.ms.forEach((v) => b(v + 8));
+        } else {
+          const rc = a.length !== 65 || !tr ? 1 : 0;
+          if (!rc) tr.ms = Array.from(a.slice(1), (x) => Math.max(-8, Math.min(7, x - 8)));
           b(a.length ? a[0] : 127); b(rc);
         }
         break;
@@ -4099,6 +4153,8 @@ const TEXT = {
     smpSlots: "サンプルスロット", userBank: "ユーザープリセット", none: "なし",
     fm6Title: "FM6 の音色（6 オペレーター）", fm6Help: "FM6 エンジンの音色をまるごと編集します。本体のノブ（EDIT の 8 つ）はこの音色の上にかかるマクロです。トラックへ送るとすぐ鳴り、PTCH を回すか別の音を読み込むまでそのトラックの音色になります（プロジェクトは PTCH だけを保存します）。バンク（B1〜B27）に保存すると PTCH で呼び出せます（本体を停止してから）。",
     hyTitle: "HYBRID の音色（Clipper）", hyHelp: "HYBRID エンジンの音色をまるごと編集します。ボイスごとに 3 オシレーター、2 フィルター、専用のエンベロープ 2 つと LFO 2 つ、16 スロットのモジュレーション・マトリクス。本体のノブはこの上の 8 つの値です（CUT、RES、FENV、PTCH、マクロ M1〜M4 はマトリクスのソース）。LIVE ではすぐに音が変わります。PTCH を回すか別の音を読み込むまでトラックの音色です（プロジェクトは PTCH だけ保存：残したい音色は書き出してください）。",
+    msTitle: "MOD SEQ（16ステップ×4レーン）", msHelp: "サウンドのモジュレーション・シーケンサー：16ステップ（-8..7）の4レーン。RATEで進み（LFOグループのMOD SEQ 2：RATE・LEN・SMTH・START）、マトリックスのソースSEQ1..SEQ4になります。バーを上下にドラッグ、レーン名のクリックでSHAPEの対象を選択。ライブで変更ごとに送信。サウンドと一緒に保存（ユーザープリセット・プロジェクト）。",
+    msShape: "シェイプ", msApply: "レーンに適用",
     fxTitle: "FMXパッチ（6オペレーター・自由なルーティング）", fxHelp: "FMXエンジンのパッチ全体：オペレーターごとの波形とモード（PM・FM・RING）、比率または固定周波数、エンベロープ。どのオペレーターも他のどれでも変調でき（自分自身はフィードバック）、どれでも出力へ。テンプレート（DX7の32種と8種）から始めて自由に変更。STOREでバンク（B1..B27）に保存（再生を止めてから）。",
     fxRouting: "ルーティング", fxTemplate: "テンプレート", fxTemplateHelp: "（行がオペレーター、列がそれを変調するもの、対角線はフィードバック、OUTは出力）",
     fxOps: "オペレーター", fxGlobal: "ピッチエンベロープとレベル", fxStoreTo: "保存先", fxStore: "保存", fxStored: "保存しました", fxEmpty: "空のスロット:", fxStopFirst: "先に再生を止めてください",
@@ -4317,6 +4373,8 @@ const TEXT = {
     smpSlots: "Sample slots", userBank: "User presets", none: "none",
     fm6Title: "FM6 patch (six operators)", fm6Help: "Edit the whole patch of the FM6 engine. The device's knobs (the eight EDIT values) are macros on top of it. Sent to a track it plays at once and stays that track's patch until PTCH turns or another sound loads (a project keeps PTCH only); stored in the bank (B1..B27) it is a PTCH value (stop the device first).",
     hyTitle: "HYBRID patch (Clipper)", hyHelp: "The whole patch of the HYBRID engine: three oscillators, two filters, two envelopes and two LFOs of its own per voice, and a 16-slot modulation matrix. The device's knobs play eight values on top of it (CUT, RES, FENV, PTCH and the macros M1..M4: matrix sources). With LIVE each change is heard at once; the patch stays the track's until PTCH turns or another sound loads (a project keeps PTCH: export the patch to keep it).",
+    msTitle: "MOD SEQ (four lanes of 16 steps)", msHelp: "The sound's modulation sequencer: four lanes of 16 steps (-8..7), stepping at RATE (MOD SEQ 2 in the LFO group: RATE, LEN, SMTH, START), read by the matrix as SEQ1..SEQ4. Drag a bar up or down; click a lane's name to pick it for SHAPE. LIVE sends each change. Kept with the sound (user presets, projects).",
+    msShape: "shape", msApply: "Apply to the lane",
     fxTitle: "FMX patch (six operators, any routing)", fxHelp: "The whole patch of the FMX engine: each operator its own wave (sine, triangle, saw, square, OPL halves and quarters, pulse, 8-bit sine, noise) and its own mode (PM as the DX7, true FM, RING), a ratio or a fixed frequency, an envelope; any operator into any other (its own: feedback) and any to the output. Start from a template (the DX7's 32 and 8 more), then change any connection. The device's EDIT knobs are macros on top (PTCH, ALG, MOD, FB, TIME, DTN, VEL, KTRK). With LIVE each change is heard at once; STORE keeps it in a bank slot (B1..B27, stop the device first): then it is a PTCH value, kept with presets and projects.",
     fxRouting: "Routing", fxTemplate: "template", fxTemplateHelp: "(fills the grid: a row is an operator, a column what modulates it; the diagonal is feedback; OUT to the output)",
     fxOps: "Operators", fxGlobal: "Pitch envelope and level", fxStoreTo: "store to", fxStore: "Store", fxStored: "Stored in", fxEmpty: "Empty slot:", fxStopFirst: "Stop the song first (a flash write silences the audio a moment)",
@@ -4563,20 +4621,23 @@ const EXPECT = { pcount: 61, gcount: [32, 33], pe0: 53 };   /* gcount 33: 2.5's 
 const EXPECT_04 = { pcount: 86, pe0: 78 };
 /* Clipper 0.6: 5 more just before P_E0: the sound's INSERT (78..82: TYPE, A, B, C, MIX) */
 const EXPECT_06 = { pcount: 91, pe0: 83 };
+/* Clipper 0.8: 6 more just before P_E0: the MOD SEQ's RATE LEN SMTH START (83..86), SPICE, DICE (87, 88) */
+const EXPECT_08 = { pcount: 97, pe0: 89 };
 const layoutKnown = (info) => EXPECT.gcount.includes(info.gcount) &&
-  [EXPECT, EXPECT_04, EXPECT_06].some((x) => info.pcount === x.pcount && info.pe0 === x.pe0);
+  [EXPECT, EXPECT_04, EXPECT_06, EXPECT_08].some((x) => info.pcount === x.pcount && info.pe0 === x.pe0);
 const MX_PAGES = [1, 2, 3, 4, 5, 6].map((k) => ["MATRIX " + k, 0, [57 + 3 * k, 58 + 3 * k, 59 + 3 * k]]);
 const P = { LEVEL: 0, SLEN: 29, CHORD: 49 };
 const LAYOUT = (pe0) => [
   { t: "ENV", pages: [["ENV", 0, [1, 2, 3, 4]], ["ENV DEST", 0, [5, 6, 7, 8]], ...(pe0 >= 78 ? [["ENV 2", 0, [56, 57, 58, 59]]] : [])] },
   { t: "LFO", pages: [["LFO", 0, [9, 10, 11, 12]], ["LFO DEST", 0, [13, 14, 15, 16]], ...(pe0 >= 78 ? [["LFO 2", 0, [53, 54, 55]]] : [])] },
   ...(pe0 >= 78 ? [{ t: "LFO", title: "MATRIX", pages: MX_PAGES }] : []),
+  ...(pe0 >= 89 ? [{ t: "LFO", title: "MOD SEQ", pages: [["MOD SEQ 2", 0, [83, 84, 85, 86]]] }] : []),
   { t: "EDIT", engine: true, pages: [["EDIT 1", 0, [pe0, pe0 + 1, pe0 + 2, pe0 + 3]], ["EDIT 2", 0, [pe0 + 4, pe0 + 5, pe0 + 6, pe0 + 7]]] },
   { t: "VOICE", pages: [["LEVEL", 0, [0]], ["VOICE", 0, [37, 38, 41, 42]], ["VOICE 2", 0, [43, 44, 39, 40]]] },
   { t: "FX", pages: [["FX", 0, [33, 34, 35, 36]], ["FILTER", 0, [50]], ...(pe0 >= 83 ? [["INSERT", 0, [78, 79, 80, 81]], ["INSERT 2", 0, [82]]] : []),
     ["SLICER", 0, [45, 46, 47, 48]], ["DLY", 1, [4, 5, 6, 7]], ["REV/CHO", 1, [8, 9, 10, 11]]] },
   { t: "SEL", pages: [["SEL", 0, [25, 26, 27, 49]], ["SEL 2", 0, [28, 51, 52]]] },
-  { t: "ARP", pages: [["ARP", 0, [17, 18, 19, 20]], ["ARP 2", 0, [21, 22, 23, 24]]] },
+  { t: "ARP", pages: [["ARP", 0, [17, 18, 19, 20]], ["ARP 2", 0, [21, 22, 23, 24]], ...(pe0 >= 89 ? [["SPICE", 0, [87, 88]]] : [])] },
   { t: "SEQ PATTERN", tab: "seqgroups", pages: [["PATTERN", 0, [29, 30, 31, 32]]] },
   { t: "GLOBAL", tab: "setgroups", pages: [["GLOBAL", 1, [0, 1, 2, 3]]] },
   { t: "MASTER", tab: "setgroups", pages: [["MASTER", 1, [27, 28, 29, 30]]] },
@@ -4870,6 +4931,7 @@ function updateBrowser() {
   fm6Show();
   hyShow();
   fxShow();
+  msShow();
 }
 
 function visible(d) { return d && d.max > d.min && d.label !== "-"; }
@@ -5071,6 +5133,7 @@ async function afterSoundChange(msg = "ready") {
   await fm6Follow();                                /* FM6: the track's patch (a PTCH value may have loaded one) */
   await hyFollow();                                 /* Clipper: the HYBRID patch, the same */
   await fxFollow();                                 /* Clipper 0.6: the FMX patch, the same */
+  await msFollow();                                 /* Clipper 0.8: the MOD SEQ's steps, the same */
   stLoaded();                                       /* (0.7: the sound as loaded: COMPARE's, the diff's) */
   sayK(msg);
 }
@@ -8494,6 +8557,82 @@ $("hyfile").addEventListener("change", async (e) => {
     sayK("hyImported", ` ${hyv.name}`);
   } catch (err) { sayK("hyBadFile", ` ${f.name}`); }
 });
+/* --------------------------------------------------------------- MOD SEQ --- */
+/* Clipper 0.8: the MOD SEQ's steps of the selected part (firmware v13, EDITOR_PROTOCOL.md "MOD SEQ"), on every engine:
+   four lanes of 16 bars, dragged up and down (-8..7); a SHAPE fills the selected lane over the 16 steps. Its RATE, LEN,
+   SMTH, START are the sound's parameters (the LFO group's MOD SEQ 2). LIVE sends each change */
+const MS_SHAPES = ["RAMP+", "RAMP-", "TRI", "SINE", "SQR", "RND", "FLAT", "INVRT", "SHIFT"];
+let msv = new Array(64).fill(0), msLane = 0, msTimer = null, msPending = false;
+const msOk = () => !!dev && !!dev.info && dev.info.proto >= 13;
+const msTrack = () => (dev && dev.sel != null ? Math.min(dev.sel, 1) : 0);
+function msShow() {
+  const on = msOk();
+  $("mspanel").hidden = !on;
+  if (on) renderMs();
+  if (on && msShow.dev !== dev) { msShow.dev = dev; op(msFollow); }   /* (a device connected: its steps) */
+}
+function msChanged() {
+  if (!$("mslive").checked || !msOk()) return;
+  clearTimeout(msTimer);
+  msTimer = setTimeout(() => op(() => msSend(true)), 80);
+}
+function msShape(lane, k) {                          /* (firmware ui_synth.c mseq_fill, over 16 steps) */
+  const q = msv.slice(lane * 16, lane * 16 + 16), first = q[0];
+  for (let i = 0; i < 16; i++) {
+    let v = q[i];
+    switch (MS_SHAPES[k]) {
+      case "RAMP+": v = -8 + Math.floor(i * 15 / 15); break;
+      case "RAMP-": v = 7 - Math.floor(i * 15 / 15); break;
+      case "TRI": { const h = Math.floor((i * 30 + 8) / 16); v = (h <= 15 ? h : 30 - h) - 8; break; }
+      case "SINE": v = Math.round(Math.sin(2 * Math.PI * i / 16) * 7); break;
+      case "SQR": v = i < 8 ? 7 : -8; break;
+      case "RND": v = Math.floor(Math.random() * 16) - 8; break;
+      case "FLAT": v = 0; break;
+      case "INVRT": v = -v; break;
+      case "SHIFT": v = i + 1 < 16 ? q[i + 1] : first; break;
+    }
+    msv[lane * 16 + i] = Math.max(-8, Math.min(7, v));
+  }
+}
+function renderMs() {
+  const sh = $("msshape");
+  if (!sh.options.length) sh.replaceChildren(...MS_SHAPES.map((n, i) => el("option", { value: i, text: n })));
+  const rows = [0, 1, 2, 3].map((l) => {
+    const cells = Array.from({ length: 16 }, (_, i) => {
+      const v = msv[l * 16 + i], bar = el("div", { class: "msbar" });
+      bar.style.top = v >= 0 ? `${24 - v * 3}px` : "24px";
+      bar.style.height = `${Math.max(1, Math.abs(v) * 3)}px`;
+      const c = el("div", { class: "mscell", title: `SEQ${l + 1} step ${i + 1}: ${v}` }, bar);
+      const set = (e) => {
+        const r = c.getBoundingClientRect(), y = (e.clientY - r.top) / r.height;
+        const nv = Math.max(-8, Math.min(7, Math.round((0.5 - y) * 16)));
+        if (nv !== msv[l * 16 + i]) { msv[l * 16 + i] = nv; renderMs(); msChanged(); }
+      };
+      c.addEventListener("pointerdown", (e) => { c.setPointerCapture(e.pointerId); set(e); });
+      c.addEventListener("pointermove", (e) => { if (e.buttons) set(e); });
+      return c;
+    });
+    const lab = el("span", { class: "mslab", text: `SEQ${l + 1}`, onclick: () => { msLane = l; renderMs(); } });
+    return el("div", { class: "msrow" + (l === msLane ? " sel" : "") }, lab, ...cells);
+  });
+  $("msbody").replaceChildren(...rows);
+}
+async function msReadTrack(quiet) {
+  const r = parse[CMD.MSEQ_GET](await rq(req.mseqGet(msTrack())));
+  if (r.rc) { if (!quiet) checkRc(r.rc); return; }
+  msv = r.steps;
+  renderMs();
+  if (!quiet) sayK("hyRead", ` ${msTrack() + 1}`);
+}
+async function msSend(quiet) {
+  const r = parse[CMD.MSEQ_PUT](await rq(req.mseqPut(msTrack(), msv)));
+  checkRc(r.rc);
+  if (!quiet) sayK("hySent", ` ${msTrack() + 1}`);
+}
+async function msFollow() { if (msOk()) await msReadTrack(true); }
+$("msread").addEventListener("click", () => op(() => msReadTrack(false)));
+$("mssend").addEventListener("click", () => op(() => msSend(false)));
+$("msapply").addEventListener("click", () => { msShape(msLane, +$("msshape").value); renderMs(); msChanged(); });
 /* ------------------------------------------------------------------- FMX --- */
 /* Clipper 0.6: the FMX engine's whole patch (firmware v12, EDITOR_PROTOCOL.md "FMX patches"), in the Sound tab while the
    selected track plays FMX: the six operators (wave, PM / FM / RING, ratio or a fixed frequency, level, envelope,

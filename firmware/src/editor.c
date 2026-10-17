@@ -30,7 +30,8 @@ enum { ED_INFO = 1, ED_GET, ED_SET, ED_DUMP, ED_DESC, ED_STEP_GET, ED_STEP_SET, 
        ED_FM6_GET = 68, ED_FM6_PUT, ED_FM6_LIST, ED_FM6_ERASE };                /* v9: FM6 patches (Felucca's numbers) */
 /* v10 (SLOOP 2.5): DSYN_LIST .. DSYN_PLAY = 72..76, editor_dsyn.c; backup object 9 = the SYN kits */
 /* v11 (Clipper): HY_GET, HY_PUT = 77, 78, editor_hybrid.c */
-#define ED_PROTO (CLIPPER_SYNTH ? 12u : 11u)           /* the protocol version INFO ends with (12: Clipper's FMX) */
+#define ED_PROTO (CLIPPER_SYNTH ? 13u : 11u)           /* the protocol version INFO ends with (12: Clipper's FMX, 13: its
+                                                        * MOD SEQ, JUNO, VECTOR) */
 
 static uint8_t ed_out[600];
 static uint32_t ed_n;
@@ -664,7 +665,7 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         return;
     }
 #if CLIPPER_SYNTH
-    if (ed_fmx_handle(cmd, a, na)) {                       /* v12: the FMX patches */
+    if (ed_fmx_handle(cmd, a, na) || ed_mseq_handle(cmd, a, na)) {   /* v12: the FMX patches; v13: the MOD SEQ */
         ed_send();
         return;
     }
@@ -894,8 +895,12 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         if (!rc) {
             int16_t v[P_COUNT];
             up_values(&r, v);                              /* each value inside its range */
+#if CLIPPER_SYNTH
+            up_rec_set(&r, v);                             /* (0.8: the record's own layout; P_COUNT > its p[]) */
+#else
             for (i = 0; i < P_COUNT; i++)
                 r.p[i] = v[i];
+#endif
             rc = ed_flash_busy() ? 3u : up_put(slot, &r) ? 2u : 0u;
         }
         ed_b(a[0]);

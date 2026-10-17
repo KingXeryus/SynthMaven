@@ -67,3 +67,34 @@ static int ed_fmx_handle(uint32_t cmd, const uint8_t *a, uint32_t n)
     }
     return 0;
 }
+
+/* v13 (Clipper 0.8): the MOD SEQ's steps of a part (its RATE LEN SMTH START, SPICE, DICE: parameters as any other)
+ *   MSEQ_GET  part              -> part, rc, 64 bytes (lane 1's 16 steps, then lane 2's ..: each value + 8, 0..15)
+ *   MSEQ_PUT  part, 64 bytes    -> part, rc        the part's steps at once (each clamped to -8..7)
+ * rc: 0 ok, 1 bad request */
+enum { ED_MSEQ_GET = 93, ED_MSEQ_PUT };
+static int ed_mseq_handle(uint32_t cmd, const uint8_t *a, uint32_t n)
+{
+    uint32_t i, rc;
+    switch (cmd) {
+    case ED_MSEQ_GET:
+        rc = n != 1u || a[0] >= NPART;
+        ed_b(n ? a[0] : 127u);
+        ed_b(rc);
+        if (!rc)
+            for (i = 0; i < MSEQ_LANES * MSEQ_STEPS; i++)
+                ed_b((uint32_t)(trk[a[0]].ms[i / MSEQ_STEPS][i % MSEQ_STEPS] + 8));
+        return 1;
+    case ED_MSEQ_PUT:
+        rc = n != 1u + MSEQ_LANES * MSEQ_STEPS || a[0] >= NPART;
+        if (!rc) {
+            for (i = 0; i < MSEQ_LANES * MSEQ_STEPS; i++)
+                trk[a[0]].ms[i / MSEQ_STEPS][i % MSEQ_STEPS] = (int8_t)clamp((int32_t)a[1u + i] - 8, -8, 7);
+            ui.force = 1;
+        }
+        ed_b(n ? a[0] : 127u);
+        ed_b(rc);
+        return 1;
+    }
+    return 0;
+}

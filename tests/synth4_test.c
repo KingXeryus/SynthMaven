@@ -518,7 +518,7 @@ static void t_userbank(void)
         for (i = 0; i < 53u; i++)
             good &= out[i] == (int16_t)i;
         for (i = 53u; i < P_E0; i++)                 /* (0.6: its INSERT, the same values: 99) */
-            good &= out[i] == (i >= P_ITYPE ? 99 : def[i]);
+            good &= out[i] == (i >= P_ITYPE && i <= P_IMIX ? 99 : def[i]);   /* (0.8: the MOD SEQ's at defaults) */
         for (i = 0; i < 8u; i++)
             good &= out[P_E0 + i] == (int16_t)(263 + i);
         ok(good, "user presets: a SLOOP 2.6 record: its sound and its INSERT, 2.6's others left out, the matrix at defaults");

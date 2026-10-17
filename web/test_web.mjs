@@ -661,8 +661,19 @@ async function fmxPatch() {
   const empty = E.parse[E.CMD.FMX_GET](await rq(E.req.fmxGet(2, 6)));
   const st = E.parse[E.CMD.FMX_STORE](await rq(E.req.fmxStore(6, X.pack(kick))));
   const back = E.parse[E.CMD.FMX_GET](await rq(E.req.fmxGet(2, 6)));
-  ok(info.proto === 12 && info.engines.includes("FMX") && !put.rc && eq(Array.from(got.bytes), fx.factory[0]) && empty.rc === 2 && !st.rc
+  ok(info.proto === 13 && info.engines.includes("FMX") && !put.rc && eq(Array.from(got.bytes), fx.factory[0]) && empty.rc === 2 && !st.rc
     && eq(Array.from(back.bytes), fx.factory[10]), "FMX: through the mock: PUT, GET back, an empty slot (rc 2), STORE, the slot read");
+  /* Clipper 0.8 (protocol 13): JUNO and VECTOR, the MOD SEQ's steps (editor_fmx.c ed_mseq_handle) */
+  const q = E.req.mseqPut(1, Array.from({ length: 64 }, (_, i) => (i % 16) - 8));
+  ok(q[0] === E.CMD.MSEQ_PUT && q[0] === 94 && q[1].length === 65 && q[1][0] === 1 && q[1][1] === 0 && q[1][16] === 15 && q[1].every((x) => x < 128),
+    "MOD SEQ: MSEQ_PUT is the part, then 64 steps + 8 (0..15)");
+  const g0 = E.parse[E.CMD.MSEQ_GET](await rq(E.req.mseqGet(0)));
+  const p1 = E.parse[E.CMD.MSEQ_PUT](await rq(q));
+  const g1 = E.parse[E.CMD.MSEQ_GET](await rq(E.req.mseqGet(1)));
+  const bad = E.parse[E.CMD.MSEQ_GET](await rq(E.req.mseqGet(5)));
+  ok(info.engines.includes("JUNO") && info.engines.includes("VECTOR") && !g0.rc && g0.steps.length === 64 && g0.steps[0] === -8 && g0.steps[15] === 7
+    && !p1.rc && !g1.rc && g1.steps[16] === -8 && g1.steps[31] === 7 && bad.rc === 1,
+    "MOD SEQ through the mock: JUNO, VECTOR listed; the shapes to start from; PUT, GET back; a part out of range (rc 1)");
 }
 
 /* ------------------------------------- editor v5 (SLOOP 2.0): lanes, levels, ratchets --- */
@@ -681,12 +692,14 @@ async function editorV5() {
     && names.indexOf("ED_MICRO_GET") + 1 === C.MICRO_GET && names.indexOf("ED_MICRO_SET") + 1 === C.MICRO_SET
     && names.indexOf("ED_FILL_GET") + 1 === C.FILL_GET && names.indexOf("ED_FILL_SET") + 1 === C.FILL_SET
     && /ED_FM6_GET = 68, ED_FM6_PUT, ED_FM6_LIST, ED_FM6_ERASE/.test(ec) && C.FM6_GET === 68 && C.FM6_ERASE === 71
-    && /#define ED_PROTO \(CLIPPER_SYNTH \? 12u : 11u\)/.test(ec) && /ed_b\(ED_PROTO\);/.test(ec)
+    && /#define ED_PROTO \(CLIPPER_SYNTH \? 13u : 11u\)/.test(ec) && /ed_b\(ED_PROTO\);/.test(ec)
     && /enum \{ ED_FMX_GET = 90, ED_FMX_PUT, ED_FMX_STORE \};/.test(readFileSync(join(HERE, "../firmware/src/editor_fmx.c"), "utf8"))
     && C.FMX_GET === 90 && C.FMX_STORE === 92
+    && /enum \{ ED_MSEQ_GET = 93, ED_MSEQ_PUT \};/.test(readFileSync(join(HERE, "../firmware/src/editor_fmx.c"), "utf8"))
+    && C.MSEQ_GET === 93 && C.MSEQ_PUT === 94
     && /enum \{ ED_HY_GET = 77, ED_HY_PUT \};/.test(readFileSync(join(HERE, "../firmware/src/editor_hybrid.c"), "utf8")) && C.HY_GET === 77 && C.HY_PUT === 78
     && /enum \{ ED_DSYN_LIST = 72, ED_DSYN_GET, ED_DSYN_PUT, ED_DSYN_STORE, ED_DSYN_PLAY \};/.test(readFileSync(join(HERE, "../firmware/src/editor_dsyn.c"), "utf8"))
-    && C.DSYN_LIST === 72 && C.DSYN_PLAY === 76, "v5..v11: command numbers and INFO == editor.c / editor_dsyn.c / editor_hybrid.c");
+    && C.DSYN_LIST === 72 && C.DSYN_PLAY === 76, "v5..v13: command numbers and INFO == editor.c / editor_dsyn.c / editor_hybrid.c / editor_fmx.c");
   const enumNames = (id) => (new RegExp(`${id}\\[\\] = \\{([^}]*)\\}`).exec(pc) || [])[1].split(",").map((x) => x.trim().replace(/"/g, ""));
   const chord = E.parse[C.DESC](await rq(E.req.desc(0, 49)));
   const gd = [];
@@ -772,10 +785,10 @@ async function editorV7() {
     const sy = {}; let k = 0;
     for (const nm of (/enum \{\s*\/\* per-track parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/#(if|endif)[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) sy[nm] = k++;
     ok(sy.P_L2RATE === 53 && sy.P_E2ATK === 56 && sy.P_M1SRC === 60 && sy.P_M6AMT === 77 && sy.P_ITYPE === 78 && sy.P_IMIX === 82
-      && sy.P_E0 === 83 && sy.P_COUNT === 91
-      && E.lockable(sy.P_E0, 83) && E.lockable(sy.P_E7, 83) && !E.lockable(sy.P_L2RATE, 83) && !E.lockable(sy.P_M6AMT, 83)
-      && !E.lockable(sy.P_ITYPE, 83) && !E.lockable(sy.P_IMIX, 83),
-      "v7: Clipper's layout (LFO 2 53, ENV 2 56, MATRIX 60, 0.6's INSERT 78, P_E0 83): its EDIT values lockable, the rest not");
+      && sy.P_MSRATE === 83 && sy.P_MSKEY === 86 && sy.P_SPICE === 87 && sy.P_DICE === 88 && sy.P_E0 === 89 && sy.P_COUNT === 97
+      && E.lockable(sy.P_E0, 89) && E.lockable(sy.P_E7, 89) && !E.lockable(sy.P_L2RATE, 89) && !E.lockable(sy.P_M6AMT, 89)
+      && !E.lockable(sy.P_ITYPE, 89) && !E.lockable(sy.P_IMIX, 89) && !E.lockable(sy.P_MSRATE, 89) && !E.lockable(sy.P_DICE, 89),
+      "v7: Clipper's layout (LFO 2 53, ENV 2 56, MATRIX 60, INSERT 78, 0.8's MOD SEQ 83, SPICE 87, P_E0 89): its EDIT values lockable, the rest not");
   }
   {   /* (after SLOOP 2.6) SetGate: a value set again is sent once the last request is answered */
     const g = new E.SetGate();

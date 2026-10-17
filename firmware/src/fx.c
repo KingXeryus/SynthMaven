@@ -578,7 +578,8 @@ static void tflt_run(djf_t *f, const tsvf_t *c, int32_t *b, uint32_t n, uint32_t
  * as before (nothing runs). MIX glides (2.9 ms, SL_SLOPE); a TYPE change fades the old one out, clears the state,
  * fades the new one in; so does a start from MIX 0 (no stale line or filter).
  * State in RAM (.bss): 580 B a sound; noinline, its own loops */
-enum { IT_OFF, IT_SOFT, IT_HARD, IT_FOLD, IT_FUZZ, IT_CRUSH, IT_PHASER, IT_FLANGER, IT_CHORUS, IT_N };
+enum { IT_OFF, IT_SOFT, IT_HARD, IT_FOLD, IT_FUZZ, IT_CRUSH, IT_PHASER, IT_FLANGER, IT_CHORUS,
+       IT_JUNO1, IT_JUNO2, IT_JUNO12, IT_N };   /* (0.8: the JUNO chorus, juno_chorus below: the INSERT passes them) */
 _Static_assert(IT_N == sizeof N_ITYPE / sizeof N_ITYPE[0], "the INSERT's types as params.c names them");
 _Static_assert(P_IA == P_ITYPE + 1 && P_IC == P_ITYPE + 3 && P_IMIX == P_ITYPE + 4, "the INSERT's values in order");
 #define IL_LEN 256u                     /* FLANG / CHOR: the line, samples (a power of 2: masked) */
@@ -756,6 +757,8 @@ static __attribute__((noinline)) void ins_swept(ins_t *s, const int16_t *p, int3
 static __attribute__((noinline)) int ins_run(ins_t *s, const int16_t *p, int32_t *b, uint32_t n)
 {
     int32_t ty = clamp(p[P_ITYPE], 0, IT_N - 1), tw;
+    if (ty >= IT_JUNO1)
+        ty = IT_OFF;                                    /* the JUNO chorus: not here (juno_chorus, after the FILTER) */
     if (s->type != ty && !s->w)                         /* faded out: the new type from rest */
         s->type = (uint8_t)ty;
     tw = s->type == ty && ty ? ins_mixq(p[P_IMIX]) : 0;
@@ -782,6 +785,109 @@ static __attribute__((noinline)) void ins_rest(track_t *t)
     memset(&ins[(uint32_t)(t - trk) % NPART], 0, sizeof(ins_t));
     t->ins_run = 0;
 }
+
+/* ---- the JUNO chorus (Clipper 0.8): the stereo BBD chorus of the Juno-60 / 106, its idea and its published
+ * measurements (no code of anyone's): one line, two taps whose delays a triangle LFO sweeps in opposite directions,
+ * each tap low-passed as a BBD's, left = dry + tap 1, right = dry + tap 2.
+ *   I     0.513 Hz, 1.66 .. 5.35 ms        II  0.863 Hz, the same range        I+II  9.75 Hz, 3.3 .. 3.7 ms
+ * Its mode: the JUNO engine's CHOR, else the INSERT's types JUNO1 JUNO2 JUN12 (any sound; then MIX the wet, A WIDTH,
+ * B TONE, C NOISE: the BBD's hiss). Mode changes fade out (2.9 ms), clear the line, fill it (5.8 ms), fade in. 532 B a
+ * part (.bss);
+ * the stereo half (left - right) in jc_side for mix_part1's level loop; off: nothing runs */
+#define JC_LEN 256u                     /* the line: 5.8 ms (a power of 2: masked), at a quarter (headroom) */
+typedef struct {
+    int32_t w;                          /* the wet now, Q15 */
+    uint32_t ph, nz;                    /* the LFO's phase; the hiss */
+    int32_t l1, l2;                     /* each tap's low-pass */
+    uint16_t wp;                        /* the line's next write */
+    uint8_t mode;                       /* running: 1 I, 2 II, 3 I+II */
+    uint16_t fill;                      /* samples left before it fades in (the line full of the sound first) */
+    uint8_t idle;                       /* the part was silent (mix_part1 did not run it): a new mode at once */
+    int16_t line[JC_LEN];
+} jc_t;
+static jc_t jc[NPART];
+static int32_t jc_side[CTL];
+static const uint32_t JC_INC[3] = {49962u, 84048u, 949577u};   /* 0.513, 0.863, 9.75 Hz at 44.1 kHz */
+static int32_t jc_mode(const track_t *t, int32_t *wet, int32_t *width, int32_t *tone, int32_t *hiss)
+{
+    const int16_t *p = t->p;
+    int32_t m = t->engine == ENGI_JUNO ? clamp(p[P_E7], 0, 3) : 0;
+    *wet = 32768, *width = 127, *tone = 100, *hiss = 0;
+    if (!m && p[P_ITYPE] >= IT_JUNO1 && p[P_ITYPE] <= IT_JUNO12) {
+        m = p[P_ITYPE] - IT_JUNO1 + 1;
+        *wet = ins_mixq(p[P_IMIX]);
+        *width = clamp(p[P_IA], 0, 127), *tone = clamp(p[P_IB], 0, 127), *hiss = clamp(p[P_IC], 0, 127);
+    }
+    return *wet ? m : 0;
+}
+/* the part silent: a chorus whose mode is no longer asked for stops at once (nothing to fade: the next note dry) */
+static void jc_idle(const track_t *t)
+{
+    jc_t *c = &jc[(uint32_t)(t - trk) % NPART];
+    int32_t a, b, d, e;
+    c->idle = 1;
+    if (c->mode && jc_mode(t, &a, &b, &d, &e) != c->mode)
+        c->w = 0, c->mode = 0;
+}
+/* the chorus on the part's block b (mono in, its mid back in b, its side in jc_side): 1 when it ran */
+static __attribute__((noinline)) int juno_chorus(track_t *t, int32_t *b, uint32_t n)
+{
+    jc_t *c = &jc[(uint32_t)(t - trk) % NPART];
+    int32_t wet, width, tone, hiss, m = jc_mode(t, &wet, &width, &tone, &hiss), tw, w, l1, l2, k;
+    uint32_t i, ph, wp, inc, base, span;
+    int16_t *line = c->line;
+    if (c->mode != m && (!c->w || c->idle)) {           /* faded out (or silent): the new mode from rest */
+        memset(c, 0, sizeof *c);
+        c->mode = (uint8_t)m;
+        c->nz = 0x2545F491u;
+        c->fill = JC_LEN;                               /* (an empty line read back: a step when the sound reaches it) */
+    }
+    c->idle = 0;
+    if (!c->mode)
+        return 0;
+    tw = c->mode == m ? wet : 0;
+    k = ins_lpk(tone) >> 1;                             /* Q15 */
+    inc = JC_INC[c->mode - 1u];
+    if (c->mode == 3u)
+        base = 9535488u, span = 18u;                    /* 145.5 + 0 .. 17.7 samples (Q16) */
+    else
+        base = 4797235u, span = 163u;                   /* 73.2 + 0 .. 163 samples */
+    w = c->w, ph = c->ph, wp = c->wp, l1 = c->l1, l2 = c->l2;
+    width = width * 258;
+    hiss = hiss * hiss / 96;                          /* (a gentle curve: 96 a faint hiss, 127 the BBD's) */
+    for (i = 0; i < n; i++, ph += inc) {
+        int32_t x = b[i], tr = (int32_t)ins_tri(ph), v1, v2, r0, fr, g, md, sd;
+        uint32_t d1 = base + span * (uint32_t)tr, d2 = base + span * (uint32_t)(65535 - tr);
+        if (c->fill)
+            c->fill--;
+        else
+            w += clamp(tw - w, -SL_SLOPE, SL_SLOPE);
+        r0 = (int32_t)(wp - (d1 >> 16)) & (int32_t)(JC_LEN - 1u), fr = (int32_t)((d1 >> 1) & 0x7FFFu);
+        v1 = line[r0] + (((line[(r0 - 1) & (int32_t)(JC_LEN - 1u)] - line[r0]) * fr) >> 15);
+        r0 = (int32_t)(wp - (d2 >> 16)) & (int32_t)(JC_LEN - 1u), fr = (int32_t)((d2 >> 1) & 0x7FFFu);
+        v2 = line[r0] + (((line[(r0 - 1) & (int32_t)(JC_LEN - 1u)] - line[r0]) * fr) >> 15);
+        l1 += ((v1 - l1) * k) >> 15;                    /* the BBD's dark */
+        l2 += ((v2 - l2) * k) >> 15;
+        {
+            int32_t in = clamp(x >> 2, -32767, 32767);
+            if (hiss) {
+                c->nz = c->nz * 1664525u + 1013904223u;
+                in += (((int32_t)(c->nz >> 16) - 32768) * hiss) >> 15;
+            }
+            line[wp] = (int16_t)clamp(in, -32767, 32767);
+        }
+        wp = (wp + 1u) & (JC_LEN - 1u);
+        g = 32768 - ((w * 9830) >> 15);                 /* 1 dry .. 0.7 at full wet */
+        md = x + mulq15((l1 + l2) << 1, w);             /* dry + (tap 1 + tap 2) / 2 (the taps at a quarter) */
+        sd = mulq15(mulq15((l1 - l2) << 1, w), width);  /* (tap 1 - tap 2) / 2 */
+        b[i] = mulq15(md, g);
+        jc_side[i] = mulq15(sd, g);
+    }
+    c->w = w, c->ph = ph, c->wp = (uint16_t)wp, c->l1 = l1, c->l2 = l2;
+    if (!w && c->mode != m)
+        c->mode = 0;                                    /* (faded out: the next block takes the new one) */
+    return 1;
+}
 #endif
 
 /* (0.7, SLOOP 2.7's, after JIANT FM 0.6.8, github.com/juanjiant-bit/JIANT) LEVEL and PAN glide: a knob's detent (or a
@@ -804,11 +910,13 @@ static void mix_part1(track_t *t, uint32_t n)
     if (track_render(t, b, n))
         t->tail = t->p[P_ITYPE] ? 64 : 16, t->ins_xt = 0;  /* blocks of DIST / INSERT state to run out after the last
                                                          * voice (the INSERT's: 46 ms, a flanger's feedback) */
-    else if ((!t->tail || !(t->p[P_DIST] | t->p[P_ITYPE]) || !--t->tail) && !slicer_busy(t) &&
+    else if ((!t->tail || !(t->p[P_DIST] | t->p[P_ITYPE] | jc[(uint32_t)(t - trk) % NPART].w) || !--t->tail) &&
+             !slicer_busy(t) &&
              !(t->ins_run && t->ins_res > 16u && t->ins_xt < 255u && ++t->ins_xt)) {   /* (the INSERT's DC blocker
                                                          * run out first, up to 255 blocks more: no step) */
         if (t->ins_run && !t->p[P_ITYPE])
             ins_rest(t);                                /* TYPE OFF while silent: no fade-out left for the next note */
+        jc_idle(t);                                     /* (0.8: the JUNO chorus the same) */
         slicer_track(t, 0, n);
         return;
     }
@@ -849,6 +957,9 @@ static void mix_part1(track_t *t, uint32_t n)
             if (djf_block(f, t->p[P_TFLT], &fc))
                 tflt_run(f, &fc, b, n, 0);
         }
+#if CLIPPER_SYNTH
+        const int32_t *side = juno_chorus(t, b, n) ? jc_side : 0;   /* (0.8) the JUNO chorus: stereo */
+#endif
         int32_t lvl0, dl, gl0, dgl, gr0, dgr;          /* (0.7, after SLOOP 2.7) LEVEL (and a new sound's trim) and PAN
                                                          * glide (mix_glide), ramped sample by sample inside the block */
         if (!t->mix_on)
@@ -876,6 +987,20 @@ static void mix_part1(track_t *t, uint32_t n)
             if (r)
                 send_r[i] += mulq15(xs, r);
             gl = gl0 + ((dgl * (int32_t)i) >> CTL_LOG2), gr = gr0 + ((dgr * (int32_t)i) >> CTL_LOG2);   /* (0.7) */
+#if CLIPPER_SYNTH
+            if (side) {                                 /* the chorus's left - right, through the same level */
+#if NVOICE > 8
+                int32_t sd = ((side[i] >> 3) * (lvl0 + dl * (int32_t)i)) >> 9;
+#else
+                int32_t sd = ((side[i] >> 2) * (lvl0 + dl * (int32_t)i)) >> 10;
+#endif
+                if (g < 32767)
+                    sd = (sd >> 4) * (g >> 3) >> 8;
+                mix_l[i] += (((x + sd) >> 4) * gl) >> 8;
+                mix_r[i] += (((x - sd) >> 4) * gr) >> 8;
+                continue;
+            }
+#endif
             mix_l[i] += ((x >> 4) * gl) >> 8;           /* (x may pass 2^19: >> 4 first) */
             mix_r[i] += ((x >> 4) * gr) >> 8;
         }

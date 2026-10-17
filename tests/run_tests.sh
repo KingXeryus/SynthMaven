@@ -167,6 +167,14 @@ if ${CC_TSAN:-gcc} -O1 -g -w -fsanitize=thread -DCLIPPER_SYNTH=1 -Ibuild/gen -If
 else
     echo "(split under ThreadSanitizer: this compiler has none, skipped)"
 fi
+$SYN -o "$OUT/synth8_test" tests/synth8_test.c -lm
+run "Clipper 0.8: JUNO (presets, tune, PW, HPF, the chorus I / II / I+II, no click, as an INSERT), VECTOR (corners, MOVE), the MOD SEQ (KEY, SYNC, LEN, SMTH, to CUT / AMP, projects, user presets), SPICE / DICE (arp, sequencer)" "$OUT/synth8_test"
+if $SYN_UB -o "$OUT/synth8_ub" tests/synth8_test.c -lm 2>/dev/null; then
+    run "Clipper 0.8 under ASan + UBSan" sh -c "'$OUT/synth8_ub' >/dev/null && echo clean"
+fi
+mkdir -p "$OUT/mseq_ui"
+$SYN -o "$OUT/mseq_ui_test" tests/mseq_ui_test.c -lm -lpthread
+run "Clipper 0.8 on the FM-1: MOD SEQ pages (lane, step, value, SHAPE), MOD SEQ 2, SPICE, UNDO of a step, the layer SWAP, JUNO / VECTOR in the browser" "$OUT/mseq_ui_test" "$OUT/mseq_ui"
 $SYN -o "$OUT/engines3_test" tests/engines3_test.c -lm
 run "Clipper 0.5 VPS (vector phaseshaping: pitch, formant, D, no DC, no aliasing, no step) and TERRAIN (every surface pitched, RAD, DRIFT, no aliasing), bounded, cost" "$OUT/engines3_test" build/eng3_demo
 if $SYN_UB -o "$OUT/engines3_ub" tests/engines3_test.c -lm 2>/dev/null; then

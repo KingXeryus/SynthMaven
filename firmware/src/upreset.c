@@ -43,7 +43,7 @@ _Static_assert(P_COUNT < 128, "user preset record: P_COUNT");
  * Clipper 0.4's own bank (232-byte records, np 86) is read and made this one (up_bank_check) */
 #define UP_E0V 53u                               /* P_E0 of SLOOP 2.4 / 2.5 and of the stored layout */
 #define UP_NP (UP_E0V + 8u)
-#define UP_NX ((uint32_t)P_E0 - UP_E0V)          /* the Clipper parameters packed */
+#define UP_NX ((uint32_t)P_IMIX + 1u - UP_E0V)    /* the Clipper parameters packed (0.8's MOD SEQ and SPICE: up_side) */
 #define UP_NX4 25u                               /* .. by 0.4 / 0.5 (LFO 2, ENV 2, the matrix) */
 #define UP_XMAGIC 0x434C                         /* "CL": a 0.4 / 0.5 record (p[71]) */
 #define UP_XMAGIC6 0x4Du                         /* 0.6: p[71]'s low byte; its high byte the stream's bits 160..167 */
@@ -53,8 +53,9 @@ _Static_assert(P_COUNT < 128, "user preset record: P_COUNT");
 #define UP_E004 78u                            /* SLOOP 2.6's records: its INSERT at p[53..57] */
 static const uint8_t UP_XW[UP_NX] = {7, 3, 1, 7, 7, 7, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7,
                                      4, 7, 7, 7, 7};   /* bits (0.6: + the INSERT's TYPE, A, B, C, MIX) */
-_Static_assert(UP_NX == 30u && P_L2RATE == UP_E0V && P_ITYPE == UP_E0V + UP_NX4 && P_IMIX == P_E0 - 1,
-               "the packed parameters, in order");
+_Static_assert(UP_NX == 30u && P_L2RATE == UP_E0V && P_ITYPE == UP_E0V + UP_NX4 && P_IMIX + 1 == P_MSRATE &&
+               P_DICE == P_E0 - 1, "the packed parameters, in order");
+#define UP_XMS 161u                              /* (0.8) a bit of the stream: note / flags hold the MOD SEQ's steps */
 /* bit k of the packed stream: the record's p[UP_NP + k / 16] for k < 160, then p[71]'s high byte */
 static int16_t *up_xword(int16_t *p, uint32_t k, uint32_t *sh)
 {
@@ -104,6 +105,57 @@ static int up_xrec(const up_rec_t *r)
 }
 static uint8_t up_ld[8u + UP_PER_BANK * UP_RSIZE_04] __attribute__((section(".pool")));   /* (a 0.4 bank, loading) */
 static up_bank_t up_bank[UP_SLOTS / UP_PER_BANK] __attribute__((section(".pool")));
+/* 0.8: what the record has no room for (the MOD SEQ's RATE LEN SMTH START, SPICE, DICE: UP_NS values) rides in the
+ * bank's side record (storage.c st_side: SLOOP never sees it), a slot's bytes v[0] = 1 (set), then each value - its
+ * minimum; a slot without them (an older save, SLOOP's) loads their defaults. The steps: the record's note / flags
+ * (16 + 16 bytes, two steps a byte, + 8: SLOOP stores its pattern there and loads none of it), marked by UP_XMS */
+#define UP_NS ((uint32_t)P_E0 - P_MSRATE)
+#define UP_SIDE_MAGIC 0x38535055u                /* "UPS8" */
+typedef struct {
+    uint32_t magic;
+    uint8_t v[UP_PER_BANK][8];
+    uint32_t crc;
+} up_side_t;
+_Static_assert(UP_NS == 6u && sizeof(up_side_t) == 136u, "the user presets' side record");
+static up_side_t up_side[UP_SLOTS / UP_PER_BANK];
+static uint8_t up_xs[8];                         /* the side bytes of the record up_rec_set made last (up_put's) */
+static const uint8_t *up_side_of(const up_rec_t *r)   /* a record's side bytes, 0 = none */
+{
+    uint32_t b;
+    for (b = 0; b < UP_SLOTS / UP_PER_BANK; b++)
+        if (r >= up_bank[b].r && r < up_bank[b].r + UP_PER_BANK)
+            return up_side[b].magic == UP_SIDE_MAGIC ? up_side[b].v[r - up_bank[b].r] : 0;
+    return up_xs;
+}
+static int up_has_ms(const up_rec_t *r)          /* note / flags hold the MOD SEQ */
+{
+    uint32_t sh;
+    const int16_t *w;
+    if (up_xrec(r) != 6)
+        return 0;
+    w = up_xword((int16_t *)r->p, UP_XMS, &sh);
+    return ((uint16_t)*w >> sh) & 1u;
+}
+static void up_ms_put(up_rec_t *r, int8_t (*ms)[MSEQ_STEPS])   /* (after up_rec_set) */
+{
+    uint32_t n, sh;
+    int16_t *w = up_xword(r->p, UP_XMS, &sh);
+    for (n = 0; n < 32u; n++) {
+        uint32_t lo = (uint32_t)clamp(ms[(2u * n) / MSEQ_STEPS][(2u * n) % MSEQ_STEPS] + 8, 0, 15);
+        uint32_t hi = (uint32_t)clamp(ms[(2u * n + 1u) / MSEQ_STEPS][(2u * n + 1u) % MSEQ_STEPS] + 8, 0, 15);
+        (n < 16u ? r->note : r->flags)[n % 16u] = (uint8_t)(lo | hi << 4);
+    }
+    *w = (int16_t)((uint16_t)*w | (uint16_t)(1u << sh));
+}
+static void up_ms_get(const up_rec_t *r, int8_t (*ms)[MSEQ_STEPS])
+{
+    uint32_t n;
+    for (n = 0; n < 32u; n++) {
+        uint32_t b = (n < 16u ? r->note : r->flags)[n % 16u];
+        ms[(2u * n) / MSEQ_STEPS][(2u * n) % MSEQ_STEPS] = (int8_t)((int32_t)(b & 15u) - 8);
+        ms[(2u * n + 1u) / MSEQ_STEPS][(2u * n + 1u) % MSEQ_STEPS] = (int8_t)((int32_t)(b >> 4) - 8);
+    }
+}
 #else
 #define UP_E0V ((uint32_t)P_E0)
 static up_bank_t up_bank[UP_SLOTS / UP_PER_BANK];
@@ -130,6 +182,9 @@ static void up_rec_set(up_rec_t *r, const int16_t *v)
     for (i = 0; i < 8u; i++)
         r->p[UP_E0V + i] = v[P_E0 + i];
     up_xpack(r->p, &v[UP_E0V]);
+    up_xs[0] = 1;
+    for (i = 0; i < UP_NS; i++)
+        up_xs[1u + i] = (uint8_t)clamp(v[P_MSRATE + i] - TP[P_MSRATE + i].min, 0, 255);
 #else
     r->np = P_COUNT;
     for (i = 0; i < P_COUNT; i++)
@@ -151,6 +206,11 @@ static void up_params(const up_rec_t *r, int16_t *out, const int16_t *def)
     else if (r->np == UP_NP_V26)                        /* SLOOP 2.6's: its INSERT, the same types and values */
         for (i = 0; i < 5u; i++)
             out[P_ITYPE + i] = r->p[UP_E0V + i];
+    {
+        const uint8_t *sd = up_xrec(r) ? up_side_of(r) : 0;   /* (0.8) the MOD SEQ's and SPICE's: the side's */
+        for (i = 0; i < UP_NS; i++)
+            out[P_MSRATE + i] = sd && sd[0] == 1u ? (int16_t)(sd[1u + i] + TP[P_MSRATE + i].min) : def[P_MSRATE + i];
+    }
 #endif
 }
 
@@ -307,8 +367,15 @@ static void up_boot(void)                      /* persist_boot: the banks from f
     uint32_t b;
     for (b = 0; b < UP_SLOTS / UP_PER_BANK; b++)
 #if CLIPPER_SYNTH
+    {
+        memset(&up_side[b], 0, sizeof up_side[b]);
         if (up_bank_import(b, up_ld, flash_ok ? st_load(OBJ_UPRESET0 + b, up_ld, sizeof up_ld) : -1))
             st_save(OBJ_UPRESET0 + b, &up_bank[b], sizeof up_bank[b]);   /* (a 0.4 bank: written back as SLOOP reads it) */
+        else if (flash_ok && (st_side_load(OBJ_UPRESET0 + b, &up_side[b], sizeof up_side[b]) ||
+                              up_side[b].magic != UP_SIDE_MAGIC ||
+                              up_side[b].crc != st_crc32(&up_side[b], sizeof up_side[b] - 4u)))
+            memset(&up_side[b], 0, sizeof up_side[b]);   /* (0.8: none, or another firmware's) */
+    }
 #else
         up_bank_check(b, flash_ok ? st_load(OBJ_UPRESET0 + b, &up_bank[b], sizeof up_bank[b]) : -1);
 #endif
@@ -326,6 +393,19 @@ static int up_put(uint32_t k, const up_rec_t *r)
         *up_rec(k) = *r;
     else
         memset(up_rec(k), 0, sizeof(up_rec_t));
+#if CLIPPER_SYNTH
+    {   /* (0.8) its side bytes: up_rec_set's (made just before), none when erased */
+        up_side_t *sd = &up_side[k / UP_PER_BANK];
+        if (sd->magic != UP_SIDE_MAGIC)
+            memset(sd, 0, sizeof *sd);
+        sd->magic = UP_SIDE_MAGIC;
+        if (r)
+            memcpy(sd->v[k % UP_PER_BANK], up_xs, sizeof up_xs);
+        else
+            memset(sd->v[k % UP_PER_BANK], 0, sizeof sd->v[0]);
+        sd->crc = st_crc32(sd, sizeof *sd - 4u);
+    }
+#endif
     if (!r) {
         uint32_t i;
         for (i = 0; i < NTRK; i++)
@@ -334,8 +414,16 @@ static int up_put(uint32_t k, const up_rec_t *r)
     }
     up_gen++;
 #if FELUCCA_FLASH
-    if (flash_ok)
-        return st_save(OBJ_UPRESET0 + k / UP_PER_BANK, bk, sizeof *bk) ? 2 : 0;
+    if (flash_ok) {
+        int rc;
+#if CLIPPER_SYNTH
+        st_side = &up_side[k / UP_PER_BANK];
+        st_side_len = sizeof(up_side_t);
+#endif
+        rc = st_save(OBJ_UPRESET0 + k / UP_PER_BANK, bk, sizeof *bk);
+        st_side = 0;
+        return rc ? 2 : 0;
+    }
 #endif
     return 3;
 }
@@ -373,7 +461,11 @@ static int up_store(uint32_t k, const char *name)
             r.name[i] = b[i];
     }
     up_rec_set(&r, TSEL->p);
+#if CLIPPER_SYNTH
+    up_ms_put(&r, TSEL->ms);                            /* (0.8) the MOD SEQ's steps where the pattern was */
+#else
     up_pat_from(&r, TSEL->step);
+#endif
     return up_put(k, &r);
 }
 
@@ -409,6 +501,12 @@ static int up_load_to(track_t *t, uint32_t k)
     t->eng_req = r->engine;
     for (i = 0; i < P_COUNT; i++)
         t->p[i] = v[i];
+#if CLIPPER_SYNTH
+    if (up_has_ms(r))                                   /* (0.8) its MOD SEQ, or the shapes to start from */
+        up_ms_get(r, t->ms);
+    else
+        mseq_init(t);
+#endif
     t->preset = 0;
     fm1_irq_on();
     fm6_track_loaded(t);                                /* FM6: a user preset holds the PTCH and the macros */

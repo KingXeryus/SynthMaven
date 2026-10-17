@@ -17,17 +17,22 @@ enum { X_LYMODE, X_LYSOUND, X_LYSPLIT, X_LYLEVEL, X_LYOCT, X_LYPAN, X_LYFILT, X_
        X_FOP, X_FWAVE, X_FMODE, X_FRATIO, X_FFINE, X_FLEVEL, X_FVEL, X_FKSC, X_FATK, X_FDEC, X_FSUS, X_FREL,
        X_FTO, X_FFROM, X_FAMT, X_FOUT, X_FDTN, X_FFIX, X_FPEG, X_FPTIM, X_FSLOT, X_FSTORE,
        X_HPOS, X_HCMP,                                 /* 0.7: UNDO (the place in the sound's history), COMPARE */
+       X_QLANE, X_QSTEP, X_QVAL, X_QFILL,              /* 0.8: the MOD SEQ: the lane, the step, its value, a SHAPE */
        X_COUNT };
+static void mseq_fill(struct track *t, uint32_t l, uint32_t f);
+static const char *const N_QFILL[] = {"--", "RAMP+", "RAMP-", "TRI", "SINE", "SQR", "RND", "FLAT", "INVRT", "SHIFT"};
+enum { QF_NONE, QF_UP, QF_DOWN, QF_TRI, QF_SINE, QF_SQR, QF_RND, QF_FLAT, QF_INV, QF_SHIFT, QF_N };
 static const char *const N_RNDWHAT[] = {"EDIT", "+ENV", "ALL", "ENV", "MOD", "FX", "OPS"};   /* (0.7: one section, as the
                                                         * Hydrasynth's; OPS: FMX's operators, opsix style) */
 static const char *const N_OCTS[] = {"-2", "-1", "0", "+1", "+2"};
 static int16_t xv[X_COUNT] = {[X_RNDAMT] = 40, [X_RNDWHAT] = 1, [X_MSLOT] = 1, [X_FOP] = 1, [X_FTO] = 1, [X_FFROM] = 2,
-                              [X_FSLOT] = 1};
+                              [X_FSLOT] = 1, [X_QLANE] = 1, [X_QSTEP] = 1};
 static const char *const N_FRATIO[32] = {"0.5", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13",
                                          "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26",
                                          "27", "28", "29", "30", "31"};
 static const char *const N_FFIXC[4] = {"1Hz", "10Hz", "100Hz", "1kHz"};
-_Static_assert(X_FOP == 19 && X_FSTORE == 40 && X_HPOS == 41, "params.c PAGES: FMX's ids, UNDO's");
+_Static_assert(X_FOP == 19 && X_FSTORE == 40 && X_HPOS == 41 && X_QLANE == 43 && QF_N == NELEM(N_QFILL),
+               "params.c PAGES: FMX's ids, UNDO's, MOD SEQ's");
 static const char *const N_CMP[] = {"EDIT", "ORIG"};
 static param_desc_t xd_sound = {"SOUND", F_INT, 0, 0, 0, 0, 0};   /* (its range: the list's length, syn_desc) */
 static const param_desc_t XD[X_COUNT] = {
@@ -67,6 +72,10 @@ static const param_desc_t XD[X_COUNT] = {
     [X_FPEG] = PD("PEG", F_BIPCT, -64, 63, 0),
     [X_FPTIM] = PD("PTIM", F_TIME, 0, 127, 40),
     [X_FSLOT] = PD("SLOT", F_INT, 1, FM6_BANK_N, 1),
+    [X_QLANE] = PD("LANE", F_INT, 1, 4, 1),
+    [X_QSTEP] = PD("STEP", F_INT, 1, 16, 1),
+    [X_QVAL] = PD("VALUE", F_INT, -8, 7, 0),
+    [X_QFILL] = PE("SHAPE", N_QFILL, 0),
     [X_FSTORE] = PE("STORE", N_GO, 0),
     [X_HPOS] = PD("UNDO", F_INT, -16, 0, 0),
     [X_HCMP] = PE("CMP", N_CMP, 0),
@@ -76,6 +85,7 @@ static const param_desc_t XD[X_COUNT] = {
 typedef struct {
     uint8_t ok, eng, preset, user;
     int16_t p[P_COUNT];
+    int8_t ms[MSEQ_LANES][MSEQ_STEPS];               /* (0.8) the MOD SEQ's steps */
 } syn_snap_t;
 static syn_snap_t syn_a, syn_b, syn_back;
 
@@ -86,6 +96,7 @@ static void snap_take(syn_snap_t *s, const track_t *t)
     s->preset = t->preset;
     s->user = t->user;
     memcpy(s->p, t->p, sizeof s->p);
+    memcpy(s->ms, t->ms, sizeof s->ms);
 }
 /* a snapshot's sound into t (its mix and pattern parameters stay: param_kept) */
 static void snap_put(track_t *t, const syn_snap_t *s)
@@ -101,6 +112,7 @@ static void snap_put(track_t *t, const syn_snap_t *s)
             t->p[i] = s->p[i];
     t->preset = s->preset;
     t->user = s->user;
+    memcpy(t->ms, s->ms, sizeof t->ms);
     fm1_irq_on();
     fm6_track_loaded(t);
     ui.force = 1;
@@ -136,6 +148,8 @@ static int hist_same(const hist_t *a, const hist_t *b)  /* the same sound (its m
     for (i = 0; i < P_COUNT; i++)
         if ((i >= P_E0 || !param_kept(i)) && i != P_ED_FX && a->s.p[i] != b->s.p[i])
             return 0;
+    if (memcmp(a->s.ms, b->s.ms, sizeof a->s.ms))
+        return 0;                                     /* (0.8: a MOD SEQ step) */
     return a->s.eng != ENGI_FMX || !memcmp(&a->fx, &b->fx, sizeof a->fx);
 }
 static void hist_put(const hist_t *h)
@@ -295,7 +309,9 @@ static void hist_label(const hist_t *a, const hist_t *b, char *out, uint32_t cap
             }
             n++;
         }
-    if (!n && b->s.eng == ENGI_FMX)
+    if (!n && memcmp(a->s.ms, b->s.ms, sizeof a->s.ms))
+        str_cpy(out, "MOD SEQ", cap);
+    else if (!n && b->s.eng == ENGI_FMX)
         str_cpy(out, "FMX PATCH", cap);
     else if (n > 2u) {
         char k[8] = " +";
@@ -512,6 +528,8 @@ static void layer_swap(void)
     }
     a->preset = sb.preset, b->preset = sa.preset;
     a->user = sb.user, b->user = sa.user;
+    memcpy(a->ms, sb.ms, sizeof a->ms);               /* (0.8) the MOD SEQs trade places too */
+    memcpy(b->ms, sa.ms, sizeof b->ms);
     hy_slot_seen[0] = hy_slot_seen[1] = 0;            /* HYBRID: each part its patch again */
     fm1_irq_on();
     fm6_track_loaded(a);
@@ -545,6 +563,10 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
         return &hd;
     }
     case X_HCMP: xv[X_HCMP] = hist_cmp_on; *valp = &xv[X_HCMP]; break;
+    case X_QVAL:                                      /* (0.8) the selected step of the selected lane */
+        xv[X_QVAL] = TSEL->ms[clamp(xv[X_QLANE], 1, 4) - 1][clamp(xv[X_QSTEP], 1, 16) - 1];
+        *valp = &xv[X_QVAL];
+        break;
     case X_LYSPLIT:
         if (layer_multi()) {                          /* 0.6, MULTI: no split; the knob is the layer's channel */
             static const param_desc_t ch = {"CH", F_INT, 1, 16, 2, 0, 0};
@@ -659,6 +681,16 @@ static void syn_changed(uint32_t id, int16_t *vp)
     case X_FOP:
     case X_FTO:
     case X_FFROM:
+    case X_QLANE:
+    case X_QSTEP:
+        ui.force = 1;
+        break;
+    case X_QVAL:
+        TSEL->ms[clamp(xv[X_QLANE], 1, 4) - 1][clamp(xv[X_QSTEP], 1, 16) - 1] = (int8_t)clamp(*vp, -8, 7);
+        ui.force = 1;
+        break;
+    case X_QFILL:
+        mseq_fill(TSEL, (uint32_t)clamp(xv[X_QLANE], 1, 4) - 1u, (uint32_t)clamp(*vp, 0, QF_N - 1));
         ui.force = 1;
         break;
     case X_FWAVE: case X_FMODE: case X_FRATIO: case X_FFINE: case X_FLEVEL: case X_FVEL: case X_FKSC: case X_FATK:
@@ -872,6 +904,63 @@ static void graph_hist(void)
 }
 
 /* the graph of the MATRIX page: the six slots, source > destination and amount, the one turned lit */
+/* 0.8: a SHAPE into lane l of the MOD SEQ, over its LEN steps (SHIFT: one step to the left, INVRT: upside down) */
+static void mseq_fill(track_t *t, uint32_t l, uint32_t f)
+{
+    uint32_t i, len = (uint32_t)clamp(t->p[P_MSLEN], 1, 16);
+    int8_t *q = t->ms[l % MSEQ_LANES], first = q[0];
+    for (i = 0; i < len; i++) {
+        int32_t v = q[i];
+        switch (f) {
+        case QF_UP: v = len > 1u ? -8 + (int32_t)(i * 15u / (len - 1u)) : 0; break;
+        case QF_DOWN: v = len > 1u ? 7 - (int32_t)(i * 15u / (len - 1u)) : 0; break;
+        case QF_TRI: {
+            uint32_t h = (i * 2u * 15u + len / 2u) / len;   /* 0 .. 30 and back */
+            v = (int32_t)(h <= 15u ? h : 30u - h) - 8;
+            break;
+        }
+        case QF_SINE: v = (osc_sine(i * (0xFFFFFFFFu / len)) * 7 + 16383) / 32767; break;
+        case QF_SQR: v = i < len / 2u ? 7 : -8; break;
+        case QF_RND: v = (int32_t)(rng() >> 28) - 8; break;
+        case QF_FLAT: v = 0; break;
+        case QF_INV: v = clamp(-v, -8, 7); break;
+        case QF_SHIFT: v = i + 1u < len ? q[i + 1u] : first; break;
+        default: break;
+        }
+        q[i] = (int8_t)clamp(v, -8, 7);
+    }
+}
+/* the MOD SEQ's pages: the selected lane large (the step being edited white, the one playing lit, past LEN dim), the
+ * four lanes small below it */
+static void graph_mseq(void)
+{
+    const track_t *t = TSEL;
+    uint32_t i, l, lane = (uint32_t)clamp(xv[X_QLANE], 1, 4) - 1u, st = (uint32_t)clamp(xv[X_QSTEP], 1, 16) - 1u;
+    uint32_t len = (uint32_t)clamp(t->p[P_MSLEN], 1, 16), play = t->ms_step;
+    int edit = cur_page()->id[0] == X_QLANE;
+    cv_rect(6, 30, 228, 1, C_LINE);
+    for (i = 0; i < MSEQ_STEPS; i++) {
+        int32_t v = t->ms[lane][i], x = 8 + (int32_t)i * 14, h = v * 3;
+        uint16_t c = i >= len ? C_DIM : i == play ? C_HI : C_GRAY;
+        if (edit && i == st)
+            c = C_WHITE;
+        if (h >= 0)
+            cv_rect(x, 30 - h, 11, h ? h : 1, c);
+        else
+            cv_rect(x, 31, 11, -h, c);
+        if (edit && i == st)
+            cv_rect(x, 56, 11, 2, C_WHITE);
+    }
+    for (l = 0; l < MSEQ_LANES; l++) {
+        int32_t x0 = 6 + (int32_t)l * 58;
+        char b[3] = {'S', (char)('1' + l), 0};
+        cv_text(x0, 62, &FONT_S, b, l == lane ? C_HI : C_DIM);
+        for (i = 0; i < MSEQ_STEPS; i++) {
+            int32_t v = t->ms[l][i], x = x0 + 16 + (int32_t)i * 2;
+            cv_rect(x, v >= 0 ? 70 - v : 71, 1, v >= 0 ? (v ? v : 1) : -v, i >= len ? C_DIM : l == lane ? C_HI : C_GRAY);
+        }
+    }
+}
 static void graph_matrix(void)
 {
     const track_t *t = TSEL;
