@@ -30,8 +30,8 @@ enum { ED_INFO = 1, ED_GET, ED_SET, ED_DUMP, ED_DESC, ED_STEP_GET, ED_STEP_SET, 
        ED_FM6_GET = 68, ED_FM6_PUT, ED_FM6_LIST, ED_FM6_ERASE };                /* v9: FM6 patches (Felucca's numbers) */
 /* v10 (SLOOP 2.5): DSYN_LIST .. DSYN_PLAY = 72..76, editor_dsyn.c; backup object 9 = the SYN kits */
 /* v11 (Clipper): HY_GET, HY_PUT = 77, 78, editor_hybrid.c */
-#define ED_PROTO (CLIPPER_SYNTH ? 13u : 11u)           /* the protocol version INFO ends with (12: Clipper's FMX, 13: its
-                                                        * MOD SEQ, JUNO, VECTOR) */
+#define ED_PROTO (CLIPPER_SYNTH ? 14u : 11u)           /* the protocol version INFO ends with (12: Clipper's FMX, 13: its
+                                                        * MOD SEQ, JUNO, VECTOR, 14: the TUNING) */
 
 static uint8_t ed_out[600];
 static uint32_t ed_n;

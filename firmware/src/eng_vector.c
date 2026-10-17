@@ -11,11 +11,15 @@
  *   MOVE  OFF; CIRC (a circle round the point); 8 (a figure eight); SWEEP (from A to the point, over the note: the
  *         VS's mix envelope); LOOP (the square's edge, A B D C, round the point); RND (a smooth random walk). Each slow
  *         and fast (+): 0.25 Hz / 2 Hz, a sweep of 4 s / 0.5 s
- *   CUT   a 12 dB low-pass (keyboard half), its envelope ENV DEST FLT
+ *   CUT   a 12 dB low-pass (keyboard half), its envelope ENV DEST FLT; (0.9) FX > FILTER > MODL another (dsp.c fmod_*)
  * The waves: three band-limited copies each (512 points to the 96th harmonic, 128 to the 24th, 32 to the 6th), the
  * voice reading the copy that stays under ~20 kHz at its pitch.
- * Voice state: ph[0] the oscillator, ph[1] MOVE's phase (from the note's start), ph[2] RND's generator; s[0..1] the
- * SVF, s[2..3] RND's point now, s[4..5] its target, s[6..7] the point at the last block's end (Q15; s[6] < 0: none) */
+ * Voice state: ph[0] the oscillator, ph[1] MOVE's phase (from the note's start), ph[2] RND's generator; s[0..3] the
+ * filter (the SVF its first two), s[4] RND's point now, s[5] its target (x, y: two int16), s[6..7] the point at the last
+ * block's end (Q15; s[6] < 0: none) */
+static inline int32_t vec_lo(int32_t w) { return (int32_t)(int16_t)(w & 0xFFFF); }
+static inline int32_t vec_hi(int32_t w) { return w >> 16; }
+static inline int32_t vec_pk(int32_t x, int32_t y) { return (int32_t)((uint32_t)(uint16_t)x | (uint32_t)y << 16); }
 #include "vector_tables.h"
 enum { VM_OFF, VM_CIRC, VM_CIRCF, VM_EIGHT, VM_EIGHTF, VM_SWEEP, VM_SWEEPF, VM_LOOP, VM_LOOPF, VM_RND, VM_RNDF, VM_N };
 static const char *const N_VMOVE[VM_N] = {"OFF", "CIRC", "CIRC+", "8", "8+", "SWEEP", "SWP+", "LOOP", "LOOP+", "RND",
@@ -27,12 +31,12 @@ static void vector_note_on(track_t *t, voice_t *v)
 {
     (void)t;
     v->ph[1] = 0;
-    v->s[2] = v->s[3] = v->s[4] = v->s[5] = 0;
+    v->s[4] = v->s[5] = 0;
     v->s[6] = -1;
     if (!v->ph[2])
         v->ph[2] = 0x2545F491u ^ ((uint32_t)v->note * 2654435761u);
     if (!v->env && !v->env_out)
-        v->s[0] = v->s[1] = 0;
+        v->s[0] = v->s[1] = v->s[2] = v->s[3] = 0;
 }
 
 /* the point (Q15, 0..32767 each) at this block's end: X Y, SHAPE, MOVE */
@@ -67,12 +71,12 @@ static void vector_point(const track_t *t, voice_t *v, const vmod_t *m, uint32_t
     case VM_RND: case VM_RNDF:
         if (ph + inc < ph || v->s[6] < 0) {          /* a new target each period */
             uint32_t r = v->ph[2] = v->ph[2] * 1664525u + 1013904223u;
-            v->s[4] = mulq15((int32_t)(r >> 16) - 32768, VEC_RADIUS);
-            v->s[5] = mulq15((int32_t)(r & 0xFFFFu) - 32768, VEC_RADIUS);
+            v->s[5] = vec_pk(mulq15((int32_t)(r >> 16) - 32768, VEC_RADIUS), mulq15((int32_t)(r & 0xFFFFu) - 32768, VEC_RADIUS));
         }
-        v->s[2] += (v->s[4] - v->s[2]) >> (fast ? 2 : 5);
-        v->s[3] += (v->s[5] - v->s[3]) >> (fast ? 2 : 5);
-        dx = v->s[2], dy = v->s[3];
+        dx = vec_lo(v->s[4]), dy = vec_hi(v->s[4]);
+        dx += (vec_lo(v->s[5]) - dx) >> (fast ? 2 : 5);
+        dy += (vec_hi(v->s[5]) - dy) >> (fast ? 2 : 5);
+        v->s[4] = vec_pk(dx, dy);
         break;
     default:
         break;
@@ -91,9 +95,9 @@ static void vector_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
     const int16_t *wb = VEC_WAVE[(uint32_t)clamp(p[P_E1], 0, VEC_NW - 1)] + VEC_OFF[lv];
     const int16_t *wc = VEC_WAVE[(uint32_t)clamp(p[P_E2], 0, VEC_NW - 1)] + VEC_OFF[lv];
     const int16_t *wd = VEC_WAVE[(uint32_t)clamp(p[P_E3], 0, VEC_NW - 1)] + VEC_OFF[lv];
-    int32_t x1, y1, x0, y0, ic1 = v->s[0], ic2 = v->s[1];
+    int32_t x1, y1, x0, y0, st[4] = {v->s[0], v->s[1], v->s[2], v->s[3]}, model = fm_model(t);
     int32_t a0, b0, c0, d0, a1, b1, c1, d1, da, db, dc, dd;
-    tsvf_t flt;
+    fmod_t fm;
     vector_point(t, v, m, n, &x1, &y1);
     x0 = v->s[6] < 0 ? x1 : v->s[6], y0 = v->s[6] < 0 ? y1 : v->s[7];
     /* the corners' weights at the block's start and end, Q14 (their sum 16384): ramped over the block */
@@ -102,7 +106,7 @@ static void vector_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
     a1 = ((32767 - x1) * (32767 - y1)) >> 16, b1 = (x1 * (32767 - y1)) >> 16, c1 = ((32767 - x1) * y1) >> 16;
     d1 = 16383 - a1 - b1 - c1;
     da = (a1 - a0) / (int32_t)n, db = (b1 - b0) / (int32_t)n, dc = (c1 - c0) / (int32_t)n, dd = (d1 - d0) / (int32_t)n;
-    tsvf_coef(&flt, (p[P_E7] << 8) + m->cutoff + ((v->pitch16 - 60 * 16) << 3), 24);
+    fmod_coef(&fm, model, (p[P_E7] << 8) + m->cutoff + ((v->pitch16 - 60 * 16) << 3), model == FM_SVF ? 24 : 64);
     for (i = 0; i < n; i++, ph += inc) {
         uint32_t k = ph >> sh, k1 = (k + 1u) & mask;
         int32_t fr = (int32_t)((ph >> fsh) & 0x7FFFu), s, y;
@@ -111,14 +115,14 @@ static void vector_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
         s += (wc[k] + (((wc[k1] - wc[k]) * fr) >> 15)) * c0;
         s += (wd[k] + (((wd[k1] - wd[k]) * fr) >> 15)) * d0;
         a0 += da, b0 += db, c0 += dc, d0 += dd;
-        y = tsvf_lp(&flt, (s >> 14) * 3 >> 2, &ic1, &ic2);
+        y = (s >> 14) * 3 >> 2;
+        y = model == FM_SVF ? tsvf_lp(&fm.sv, y, &st[0], &st[1]) : fmod_tick(&fm, y << 1, st, st);
         if (y > 16000 || y < -16000)
             y = soft_knee(y, 16000);
         out[i] += mulq15(mulq15(y << 1, amp_at(m, i)), VOICE_FS) << 1;
     }
     v->ph[0] = ph;
-    v->s[0] = ic1;
-    v->s[1] = ic2;
+    v->s[0] = st[0], v->s[1] = st[1], v->s[2] = st[2], v->s[3] = st[3];
     v->s[6] = x1;
     v->s[7] = y1;
 }
@@ -144,6 +148,11 @@ static const preset_t VECTOR_PRESETS[] = {
     {"VS LEAD", {2, 11, 4, 12, -10, -40, VM_CIRCF, 104}, {0, 80, 110, 40}, 10, 1, FX(10, 0, 30, 30),
      XP(P_GLIDE + 1, 16)},
     {"CHOIR VS", {7, 8, 0, 10, 0, 20, VM_SWEEP, 100}, {90, 100, 120, 100}, 0, 0, FX(0, 40, 20, 80)},
+    /* 0.9: the filter MODELs (FX > FILTER > MODL), VINTAGE */
+    {"MS20 VECTOR", {2, 11, 3, 12, 20, -20, VM_EIGHTF, 66}, {0, 80, 100, 40}, 30, 1, FX(10, 0, 26, 24),
+     XP(P_FMODEL + 1, FM_MS20, P_GLIDE + 1, 18, P_VINT + 1, 30)},
+    {"DIODE VS BASS", {2, 3, 4, 0, -50, -50, VM_SWEEPF, 52}, {0, 70, 90, 24}, 40, 1, FX(6, 0, 0, 8),
+     XP(P_FMODEL + 1, FM_DIODE, P_VINT + 1, 40)},
 };
 
 static const engine_t ENG_VECTOR = {

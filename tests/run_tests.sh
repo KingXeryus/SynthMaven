@@ -174,7 +174,17 @@ if $SYN_UB -o "$OUT/synth8_ub" tests/synth8_test.c -lm 2>/dev/null; then
 fi
 mkdir -p "$OUT/mseq_ui"
 $SYN -o "$OUT/mseq_ui_test" tests/mseq_ui_test.c -lm -lpthread
-run "Clipper 0.8 on the FM-1: MOD SEQ pages (lane, step, value, SHAPE), MOD SEQ 2, SPICE, UNDO of a step, the layer SWAP, JUNO / VECTOR in the browser" "$OUT/mseq_ui_test" "$OUT/mseq_ui"
+run "Clipper 0.8 / 0.9 on the FM-1: MOD SEQ pages (lane, step, value, SHAPE), MOD SEQ 2, SPICE, UNDO of a step, the layer SWAP, JUNO / VECTOR in the browser, TUNING, VINTG, MODL, TURNG's labels" "$OUT/mseq_ui_test" "$OUT/mseq_ui"
+$SYN -o "$OUT/synth9_test" tests/synth9_test.c -lm
+run "Clipper 0.9: the filter MODELs (SVF MOOG MS20 DIODE SEM NOTCH BP HP: bounded, responses, switch without a click), VINTAGE, the TUNING (JUST, 19-EDO, RAST, a USER scale), the TURNG arp and LOOP, projects and user presets" "$OUT/synth9_test"
+if $SYN_UB -o "$OUT/synth9_ub" tests/synth9_test.c -lm 2>/dev/null; then
+    run "Clipper 0.9 under ASan + UBSan" sh -c "'$OUT/synth9_ub' >/dev/null && echo clean"
+fi
+$SYN -o "$OUT/clean_test" tests/clean_test.c -lm
+run "Clipper 0.9 audio: no click or crackle (45 cases: presets of every engine, steals, mute, level, pan, INSERT, DIST, the sends, FILT, MODL, CHOR, VINTAGE, delay TIME, reverb SIZE, EQ, WAVE TABL, FMX PTCH, engine switch, TUNING, LAYER, MOD SEQ)" "$OUT/clean_test"
+if $SYN_UB -o "$OUT/clean_ub" tests/clean_test.c -lm 2>/dev/null; then
+    run "Clipper 0.9 audio under ASan + UBSan" sh -c "'$OUT/clean_ub' >/dev/null && echo clean"
+fi
 $SYN -o "$OUT/engines3_test" tests/engines3_test.c -lm
 run "Clipper 0.5 VPS (vector phaseshaping: pitch, formant, D, no DC, no aliasing, no step) and TERRAIN (every surface pitched, RAD, DRIFT, no aliasing), bounded, cost" "$OUT/engines3_test" build/eng3_demo
 if $SYN_UB -o "$OUT/engines3_ub" tests/engines3_test.c -lm 2>/dev/null; then

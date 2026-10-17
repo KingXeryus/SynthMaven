@@ -19,6 +19,17 @@ static inline int32_t soft_knee(int32_t y, int32_t k)   /* linear up to k, then 
  * others: an engine's scratch that is not on the stack is one per core, picked by C1_IX(out) (1: the second core's) */
 static int32_t vs_buf[CTL] __attribute__((aligned(8)));
 #define C1_IX(out) ((out) == vs_buf ? 1u : 0u)
+/* (0.9) the filter MODEL the engines with a low-pass of their own play (dsp.c fmod_*): P_FMODEL after the short duck
+ * a change of it brings (fx.c mix_part1: no click), SVF in the groovebox */
+static inline int32_t fm_model(const track_t *t)
+{
+#if CLIPPER_SYNTH
+    return t->fm_eff ? t->fm_eff : clamp(t->p[P_FMODEL], FM_SVF, FM_LAST);
+#else
+    (void)t;
+    return FM_SVF;
+#endif
+}
 /* (pitch_inc: felucca_tables.h, SLOOP 2.5: from the top octave) */
 #include "eng_analog.c"
 #include "eng_digital.c"
@@ -113,7 +124,7 @@ static int32_t wt_wanted(void)
         if (t->xf_on && ENGINES[t->engine % NENGINES] == &ENG_WAVE)
             return wt_have;
         if (ENGINES[t->eng_req % NENGINES] == &ENG_WAVE)
-            return (int32_t)((uint32_t)t->p[P_E0] % WT_NALL);
+            return wt_tab_eff[k] ? wt_tab_eff[k] - 1 : (int32_t)((uint32_t)t->p[P_E0] % WT_NALL);   /* (0.9: after the duck) */
     }
     return -1;
 }

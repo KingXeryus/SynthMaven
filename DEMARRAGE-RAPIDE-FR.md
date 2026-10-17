@@ -1,4 +1,4 @@
-# Clipper — démarrage rapide (version de test 0.8)
+# Clipper — démarrage rapide (version de test 0.9)
 
 **Clipper** est un firmware de **synthétiseur** pour le M-VAVE FM-1 : un seul instrument, comme le firmware d'origine, Felucca ou Baudgirl. Ce n'est plus une groovebox : pas de pistes, pas de boîte à rythmes, pas de mode song, pas de samples intégrés. Il garde de SLOOP les 12 moteurs, les effets, l'arpégiateur, le séquenceur de pas, l'audio USB et le MIDI. Il ajoute **HYBRID**, une voix à 3 oscillateurs, 2 filtres et une matrice de modulation de 16 slots, avec 24 sons d'usine. Il ajoute aussi le pitch bend, la molette, l'aftertouch et la pédale de sustain sur tous les moteurs.
 
@@ -15,7 +15,7 @@ Clipper vit dans son propre dossier, **`CLIPPER`**, à côté de celui de SLOOP.
 | Adresse | http://localhost:**8766** | http://localhost:**8767** |
 | Écran de démarrage | voilier, « sloop » | trois-mâts, « clipper » |
 
-Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maintenu) → SYS → ABOUT, qui affiche **CLIPPER 0.8**.
+Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maintenu) → SYS → ABOUT, qui affiche **CLIPPER 0.9**.
 
 ## 1. Compiler et installer
 
@@ -23,6 +23,17 @@ Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maint
 2. Double-clique sur **`INSTALL-CLIPPER.bat`**. Il utilise les mêmes outils que SLOOP (WSL MinUI-Build, la chaîne JieLi). La première fois, il copie les trois fichiers du SDK depuis `..\SLOOP\build\deps\ac79`. S'il ne les trouve pas, copie ce dossier `build\deps\ac79` de SLOOP dans `CLIPPER\build\deps\`.
 3. La page d'installation s'ouvre sur http://localhost:8767/webapp/installer/ (Chrome ou Edge, FM-1 en USB). Clique sur **Install**.
 4. La FM-1 redémarre sur l'écran **clipper**. Tes projets, presets, samples et réglages de SLOOP sont toujours là.
+
+## Nouveau dans la 0.9 : modèles de filtre, VINTAGE, micro-accordage, une machine de Turing, un son propre
+
+- **Modèles de filtre** (FILTER → **MODL**, sur ANALOG, WAVE et VECTOR ; HYBRID garde ses deux filtres) : **SVF** (12 dB, comme avant), **MOOG** (le ladder 24 dB), **MS20** (2 pôles avec l'écrêtage à diodes dans la réinjection : il hurle à forte résonance sans décrocher), **DIODE** (le ladder à diodes 4 pôles, famille TB-303 / EMS : caoutchouteux, perd moins de basses), **SEM** (le state variable 12 dB d'Oberheim, résonance douce), **NOTCH**, **BP** et **HP**. Changer de modèle sur une note tenue fait un petit creux puis revient (pas de clic).
+- **VINTAGE** (VOICE 2 → **VINTG**, tous les moteurs) : chaque voix a sa propre petite erreur d'accord et de filtre (sa « carte de voix »), une lente dérive de hauteur, et chaque note un peu de la sienne. À 127 : carte ±6 cents, dérive ±5, note ±2, coupure ±1,5 pas. À 0 : identique à avant, au bit près.
+- **TUNING** (GLO → **TUNING**, pour tous les sons, gardé avec les réglages) : **EQUAL**, **JUST** (intonation juste), **PYTHA**gore, **MEANT**one (1/4 de comma), **WERCK**meister III, **KIRNB**erger III, les maqams **RAST** et **BAYAT**i (tierces neutres), **SLEND**ro et **PELOG** (gamelan), **19**, **24** et **31-EDO**, et **USER** : n'importe quelle gamme **Scala .scl** (jusqu'à 48 notes par période, n'importe quelle période, même la tritave de Bohlen-Pierce) envoyée depuis l'éditeur web. ROOT choisit la tonique.
+- **TURNG**, une machine de Turing dans l'arpégiateur (ARP MODE → TURNG, d'après la Turing Machine de Music Thing) : un registre à décalage en boucle choisit parmi les notes tenues. Sur la page SPICE : **MUTAT** (0 figé, 127 aléatoire), **SEED** (un autre motif), **LOOP** (longueur 1..16). LOOP fixe aussi sur combien de notes SPICE / DICE varient avant de se répéter.
+- **Un son propre, sans clics** (un nouveau test de 45 cas rend chaque changement et vérifie qu'aucun échantillon ne saute) : le limiteur de sortie bouge en courbe en S ; les envois (CHOR / DLY / REV) et la DIST de l'INSERT glissent au lieu de sauter ; le TIME du delay passe en fondu de l'ancienne à la nouvelle prise ; la DEPTH du chorus glisse ; le FILT du master passe par le milieu entre LP et HP ; FLANG / CHOR de l'INSERT attendent que leur ligne soit pleine ; une table WAVE, un patch FMX ou un modèle de filtre changés sur une note tenue font un creux et reviennent.
+- **3 nouveaux sons** (TURING JUNO, MS20 VECTOR, DIODE VS BASS). **395 sons, 23 moteurs.**
+- **Corrigé** : un projet SLOOP 2.6 chargé dans Clipper lisait ses valeurs MOD SEQ / SPICE au-delà de celles de son INSERT (maintenant leurs valeurs par défaut).
+- **L'éditeur web** (protocole 14) : une carte **Tuning** (système, tonique, charger un .scl) et les nouveaux réglages.
 
 ## Nouveau dans la 0.8 : JUNO et son chorus, VECTOR, un séquenceur de modulation, SPICE / DICE
 

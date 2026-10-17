@@ -24,6 +24,8 @@
 static const uint16_t WT_OFF[WT_LEVELS] = {0, 1024, 1536, 1792, 1920, 1984, 2016};
 static int16_t wt_mip[WT_NF][WT_PTS] __attribute__((section(".pool")));   /* 64 KB */
 static volatile int16_t wt_have = -1;            /* the table in wt_mip, complete (-1: none, or being built) */
+static int16_t wt_tab_eff[NPART];                /* (0.9) the table each part plays (+ 1; 0: TABL itself): TABL turned
+                                                  * under a sound, the part ducks first (fx.c part_duck), then this */
 static int16_t wt_building = -1;                 /* the table being built, frame by frame */
 static uint8_t wt_next;                          /* its next frame */
 #define WT_NALL (WT_NFACTORY + SMP_USER_SLOTS)   /* + USR1..USR4 */
@@ -252,15 +254,15 @@ static void wave_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const 
     const int16_t *p = t->p;
     static int32_t acc_[2][CTL], pos_[2][CTL];       /* (static: the audio ISR's stack stays small; 0.7: one per core) */
     int32_t *acc = acc_[C1_IX(out)], *pos = pos_[C1_IX(out)];
-    uint32_t want = (uint32_t)p[P_E0] % WT_NALL, i, inc1 = m->inc, inc2;
+    uint32_t want = wt_tab_eff[(uint32_t)(t - trk) % NPART] ? (uint32_t)wt_tab_eff[(uint32_t)(t - trk) % NPART] - 1u
+                                                            : (uint32_t)p[P_E0] % WT_NALL, i, inc1 = m->inc, inc2;
     int32_t det = p[P_E2], sub = p[P_E3] * 258, drive = 32768 + p[P_E6] * 768, dw = p[P_E6] * 258, drv = p[P_E6];
     int32_t cut = (p[P_E4] << 8) + m->cutoff + (p[P_E7] * (v->pitch16 - 60 * 16) >> 4);
     int32_t p1 = clamp((p[P_E1] << 8) + m->shape - (64 << 8), 0, 127 << 8) * (int32_t)(WT_NF - 1u) / 127;   /* Q8 */
     int32_t p0 = v->s[7] < 0 ? p1 : v->s[7];
-    int32_t ic1 = v->s[0], ic2 = v->s[1], ls[4] = {v->s[3], v->s[4], v->s[5], v->s[6]};
-    int moog = t->p[P_FMODEL] == FM_MOOG;
-    tsvf_t flt;
-    ladder_t lad;
+    int32_t sv[2] = {v->s[0], v->s[1]}, ls[4] = {v->s[3], v->s[4], v->s[5], v->s[6]};
+    int32_t model = fm_model(t);                     /* (0.9: the filter MODEL, dsp.c fmod_*) */
+    fmod_t fm;
     if (n > CTL)
         return;
     if (wt_have != (int32_t)want) {                  /* not built yet (TABL just turned): silent, phases run on */
@@ -289,16 +291,14 @@ static void wave_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const 
     } else {
         v->ph[2] += (inc1 >> 1) * n;
     }
-    if (moog)
-        ladder_coef(&lad, cut, p[P_E5]);
-    else
-        tsvf_coef(&flt, cut, p[P_E5]);
+    fmod_coef(&fm, model, cut, p[P_E5]);
     for (i = 0; i < n; i++) {
         int32_t s = acc[i];
         if (drv)                                      /* ANALOG's drive */
             s += mulq15(softclip(((s >> 2) * (drive >> 2)) >> 11) - s, dw);
         {
-            int32_t y = moog ? ladder_tick(&lad, s, ls) >> 1 : tsvf_lp(&flt, s >> 1, &ic1, &ic2), a = y < 0 ? -y : y;
+            int32_t y = model == FM_SVF ? tsvf_lp(&fm.sv, s >> 1, &sv[0], &sv[1]) : fmod_tick(&fm, s, sv, ls);
+            int32_t a = y < 0 ? -y : y;
             if (a > 16000) {
                 a = 16000 + (softclip((a - 16000) * 2) >> 1);
                 y = y < 0 ? -a : a;
@@ -307,8 +307,8 @@ static void wave_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const 
         }
         out[i] += mulq15(mulq15(s, amp_at(m, i)), VOICE_FS) << 1;
     }
-    v->s[0] = ic1;
-    v->s[1] = ic2;
+    v->s[0] = sv[0];
+    v->s[1] = sv[1];
     v->s[3] = ls[0], v->s[4] = ls[1], v->s[5] = ls[2], v->s[6] = ls[3];
     v->s[7] = p1;
 }

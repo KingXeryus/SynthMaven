@@ -34,7 +34,7 @@ const E = vm.runInNewContext(proto + `
    CHOP, chopNovelty, chopHits, chopSnap, chopGrid, chopEqual, chopList, chopPick, chopFit, chopZones, wavFile, zipStore, crc32,
    UP, bank, capturePatch, auditionPatch, startWatch, libraryFile, readLibraryFile, paramKeys, patternFromSteps, stepsFromPattern, upName,
    mixer, GM_DRUM, drumName, parseNotes, fmtValue, F, DRUM_LANES, LV_NAMES, emptyDrum, lockable, MICRO, FC, fillGet, fillSet, pack7, unpack7,
-   backupCapture, backupRestore, backupObjects, b64enc, b64dec, FM6, KIT, kitPad, kitZones, kitLen, kitBytes, kitFit, kitSplit, kitLaneOf, kitPlace, zipRead, ROLL, SMF, ARR, mockSettings, fm6CartWrite, fm6CartPreset, fm6CartSlots, fm6CartPresets, DSYN, DSYN_MOCK_NAMES, DSYN_MOCK_KITS, HY, FX, WT, SetGate, patchByCount, bkProjFormat, bkDevFormat, bkFwAtLeast, FM1_PORT_ED: FM1_PORT, fm1Ports })`,
+   backupCapture, backupRestore, backupObjects, b64enc, b64dec, FM6, KIT, kitPad, kitZones, kitLen, kitBytes, kitFit, kitSplit, kitLaneOf, kitPlace, zipRead, ROLL, SMF, ARR, mockSettings, fm6CartWrite, fm6CartPreset, fm6CartSlots, fm6CartPresets, DSYN, DSYN_MOCK_NAMES, DSYN_MOCK_KITS, HY, FX, WT, SetGate, patchByCount, bkProjFormat, bkDevFormat, bkFwAtLeast, FM1_PORT_ED: FM1_PORT, fm1Ports, parseScl })`,
 { setTimeout, clearTimeout, setInterval, clearInterval, console, TextEncoder, TextDecoder, Blob, Response, DecompressionStream });
 
 async function editorMock() {
@@ -661,7 +661,7 @@ async function fmxPatch() {
   const empty = E.parse[E.CMD.FMX_GET](await rq(E.req.fmxGet(2, 6)));
   const st = E.parse[E.CMD.FMX_STORE](await rq(E.req.fmxStore(6, X.pack(kick))));
   const back = E.parse[E.CMD.FMX_GET](await rq(E.req.fmxGet(2, 6)));
-  ok(info.proto === 13 && info.engines.includes("FMX") && !put.rc && eq(Array.from(got.bytes), fx.factory[0]) && empty.rc === 2 && !st.rc
+  ok(info.proto === 14 && info.engines.includes("FMX") && !put.rc && eq(Array.from(got.bytes), fx.factory[0]) && empty.rc === 2 && !st.rc
     && eq(Array.from(back.bytes), fx.factory[10]), "FMX: through the mock: PUT, GET back, an empty slot (rc 2), STORE, the slot read");
   /* Clipper 0.8 (protocol 13): JUNO and VECTOR, the MOD SEQ's steps (editor_fmx.c ed_mseq_handle) */
   const q = E.req.mseqPut(1, Array.from({ length: 64 }, (_, i) => (i % 16) - 8));
@@ -674,6 +674,22 @@ async function fmxPatch() {
   ok(info.engines.includes("JUNO") && info.engines.includes("VECTOR") && !g0.rc && g0.steps.length === 64 && g0.steps[0] === -8 && g0.steps[15] === 7
     && !p1.rc && !g1.rc && g1.steps[16] === -8 && g1.steps[31] === 7 && bad.rc === 1,
     "MOD SEQ through the mock: JUNO, VECTOR listed; the shapes to start from; PUT, GET back; a part out of range (rc 1)");
+  /* Clipper 0.9 (protocol 14): the TUNING (editor_fmx.c ED_TUNE_GET / ED_TUNE_PUT) and Scala .scl files */
+  const scl = E.parseScl("! test.scl\n!\nQuarter-tone test\n 5\n!\n 150.0\n 6/5\n 500.\n 3/2 comment\n 2/1\n");
+  ok(scl && scl.desc === "Quarter-tone test" && scl.deg.length === 5 && scl.deg[0] === 0 && scl.deg[1] === 2400
+    && scl.deg[2] === 5050 && scl.deg[3] === 8000 && scl.deg[4] === 11231 && scl.period === 19200,
+    ".scl: description, count, cents and ratios (1/16 cent), the period the last line");
+  ok(!E.parseScl("x\n 3\n 100.0\n 50.0\n 2/1\n") && !E.parseScl("x\n 2\n 100.0\n") && !E.parseScl("x\n 49\n" + " 10.0\n".repeat(49))
+    && E.parseScl("x\n 1\n 3/1\n").period === 30431, ".scl: falling, short or too long refused; 1 note: the period alone (tritave)");
+  const tq = E.req.tunePut(13, 2, scl.deg, scl.period);
+  ok(tq[0] === E.CMD.TUNE_PUT && tq[0] === 96 && tq[1].length === 6 + 3 * 4 && tq[1].every((x) => x < 128), "TUNING: TUNE_PUT is sys, root, n, period, n-1 degrees (21 bits each)");
+  const t0 = E.parse[E.CMD.TUNE_GET](await rq(E.req.tuneGet()));
+  const tp = E.parse[E.CMD.TUNE_PUT](await rq(tq));
+  const t1 = E.parse[E.CMD.TUNE_GET](await rq(E.req.tuneGet()));
+  const tb = E.parse[E.CMD.TUNE_PUT](await rq(E.req.tunePut(1, 0, [0, 3000, 2000], 19200)));
+  ok(!t0.rc && t0.sys === 0 && t0.deg.length === 12 && t0.deg[11] === 17600 && t0.period === 19200 && !tp.rc && !t1.rc && t1.sys === 13 && t1.root === 2
+    && t1.deg.join() === scl.deg.join() && t1.period === 19200 && tb.rc === 1,
+    "TUNING through the mock: 12-EDO to start; PUT a .scl, GET it back; degrees not rising refused (rc 1)");
 }
 
 /* ------------------------------------- editor v5 (SLOOP 2.0): lanes, levels, ratchets --- */
@@ -692,11 +708,11 @@ async function editorV5() {
     && names.indexOf("ED_MICRO_GET") + 1 === C.MICRO_GET && names.indexOf("ED_MICRO_SET") + 1 === C.MICRO_SET
     && names.indexOf("ED_FILL_GET") + 1 === C.FILL_GET && names.indexOf("ED_FILL_SET") + 1 === C.FILL_SET
     && /ED_FM6_GET = 68, ED_FM6_PUT, ED_FM6_LIST, ED_FM6_ERASE/.test(ec) && C.FM6_GET === 68 && C.FM6_ERASE === 71
-    && /#define ED_PROTO \(CLIPPER_SYNTH \? 13u : 11u\)/.test(ec) && /ed_b\(ED_PROTO\);/.test(ec)
+    && /#define ED_PROTO \(CLIPPER_SYNTH \? 14u : 11u\)/.test(ec) && /ed_b\(ED_PROTO\);/.test(ec)
     && /enum \{ ED_FMX_GET = 90, ED_FMX_PUT, ED_FMX_STORE \};/.test(readFileSync(join(HERE, "../firmware/src/editor_fmx.c"), "utf8"))
     && C.FMX_GET === 90 && C.FMX_STORE === 92
-    && /enum \{ ED_MSEQ_GET = 93, ED_MSEQ_PUT \};/.test(readFileSync(join(HERE, "../firmware/src/editor_fmx.c"), "utf8"))
-    && C.MSEQ_GET === 93 && C.MSEQ_PUT === 94
+    && /enum \{ ED_MSEQ_GET = 93, ED_MSEQ_PUT, ED_TUNE_GET, ED_TUNE_PUT \};/.test(readFileSync(join(HERE, "../firmware/src/editor_fmx.c"), "utf8"))
+    && C.MSEQ_GET === 93 && C.MSEQ_PUT === 94 && C.TUNE_GET === 95 && C.TUNE_PUT === 96
     && /enum \{ ED_HY_GET = 77, ED_HY_PUT \};/.test(readFileSync(join(HERE, "../firmware/src/editor_hybrid.c"), "utf8")) && C.HY_GET === 77 && C.HY_PUT === 78
     && /enum \{ ED_DSYN_LIST = 72, ED_DSYN_GET, ED_DSYN_PUT, ED_DSYN_STORE, ED_DSYN_PLAY \};/.test(readFileSync(join(HERE, "../firmware/src/editor_dsyn.c"), "utf8"))
     && C.DSYN_LIST === 72 && C.DSYN_PLAY === 76, "v5..v13: command numbers and INFO == editor.c / editor_dsyn.c / editor_hybrid.c / editor_fmx.c");
@@ -785,10 +801,11 @@ async function editorV7() {
     const sy = {}; let k = 0;
     for (const nm of (/enum \{\s*\/\* per-track parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/#(if|endif)[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) sy[nm] = k++;
     ok(sy.P_L2RATE === 53 && sy.P_E2ATK === 56 && sy.P_M1SRC === 60 && sy.P_M6AMT === 77 && sy.P_ITYPE === 78 && sy.P_IMIX === 82
-      && sy.P_MSRATE === 83 && sy.P_MSKEY === 86 && sy.P_SPICE === 87 && sy.P_DICE === 88 && sy.P_E0 === 89 && sy.P_COUNT === 97
-      && E.lockable(sy.P_E0, 89) && E.lockable(sy.P_E7, 89) && !E.lockable(sy.P_L2RATE, 89) && !E.lockable(sy.P_M6AMT, 89)
-      && !E.lockable(sy.P_ITYPE, 89) && !E.lockable(sy.P_IMIX, 89) && !E.lockable(sy.P_MSRATE, 89) && !E.lockable(sy.P_DICE, 89),
-      "v7: Clipper's layout (LFO 2 53, ENV 2 56, MATRIX 60, INSERT 78, 0.8's MOD SEQ 83, SPICE 87, P_E0 89): its EDIT values lockable, the rest not");
+      && sy.P_MSRATE === 83 && sy.P_MSKEY === 86 && sy.P_SPICE === 87 && sy.P_DICE === 88 && sy.P_VINT === 89 && sy.P_SLOOP === 90
+      && sy.P_E0 === 91 && sy.P_COUNT === 99
+      && E.lockable(sy.P_E0, 91) && E.lockable(sy.P_E7, 91) && !E.lockable(sy.P_L2RATE, 91) && !E.lockable(sy.P_M6AMT, 91)
+      && !E.lockable(sy.P_ITYPE, 91) && !E.lockable(sy.P_IMIX, 91) && !E.lockable(sy.P_MSRATE, 91) && !E.lockable(sy.P_DICE, 91) && !E.lockable(sy.P_SLOOP, 91),
+      "v7: Clipper's layout (LFO 2 53, ENV 2 56, MATRIX 60, INSERT 78, 0.8's MOD SEQ 83, SPICE 87, 0.9's VINTAGE 89 LOOP 90, P_E0 91): its EDIT values lockable, the rest not");
   }
   {   /* (after SLOOP 2.6) SetGate: a value set again is sent once the last request is answered */
     const g = new E.SetGate();

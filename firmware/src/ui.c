@@ -3,7 +3,7 @@
 /* Felucca user interface. Four columns map to KNOB 1..4. Rendering is lazy:
  * every element remembers what it last drew and is redrawn only on change. */
 #ifndef FELUCCA_VERSION
-#define FELUCCA_VERSION "CLIPPER 0.8"  /* the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
+#define FELUCCA_VERSION "CLIPPER 0.9"  /* the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
 #endif
 static void project_save(uint32_t slot);
 static void arrangement_save(void);
@@ -542,6 +542,8 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     {BK_PAD, ENGI_VECTOR, "STRING VS"}, {BK_FX, ENGI_VECTOR, "METAL HIT"}, {BK_KEYS, ENGI_VECTOR, "HOLLOW KEYS"},
     {BK_LEAD, ENGI_VECTOR, "RESO VECTOR"}, {BK_FX, ENGI_VECTOR, "SPACE DRONE"}, {BK_LEAD, ENGI_VECTOR, "VS LEAD"},
     {BK_PAD, ENGI_VECTOR, "CHOIR VS"},
+    /* Clipper 0.9 (appended: the favourites keep their places) */
+    {BK_PLUCK, ENGI_JUNO, "TURING JUNO"}, {BK_LEAD, ENGI_VECTOR, "MS20 VECTOR"}, {BK_BASS, ENGI_VECTOR, "DIODE VS BASS"},
 #endif
 };
 #define NBANK (sizeof BANK / sizeof BANK[0])

@@ -941,6 +941,101 @@ static void mseq_init(track_t *t)
     memcpy(t->ms, MSEQ_INIT, sizeof t->ms);
 }
 static int32_t mseq_q15(int32_t v) { return clamp(v * 4369, -32767, 32767); }   /* a step: -8 full scale, 7 just under */
+/* Clipper 0.9, the TUNING (GLO > TUNING; the editor sends a Scala scale): every note's pitch off equal temperament by
+ * tun_tab (1/4096 semitone), between notes interpolated (a glide goes through the scale). Two kinds of systems:
+ *   12-note tables, each pitch class's deviation from equal temperament around ROOT (JUST, PYTHAG, MEANTONE, WERCK3,
+ *   KIRNB3, the maqams RAST and BAYATI with their neutral thirds);
+ *   scales of n degrees in a period (SLENDRO, PELOG, 19 / 24 / 31-EDO, the USER scale from a .scl file): every key
+ *   the next degree, C4 + ROOT the scale's 1/1 at its equal-tempered pitch.
+ * G_TUNE (A4 in cents) still moves it all. EQUAL: tun_on 0, nothing touched, bit for bit */
+enum { TU_EQUAL, TU_JUST, TU_PYTH, TU_MEAN, TU_WERCK, TU_KIRN, TU_RAST, TU_BAYATI, TU_SLENDRO, TU_PELOG, TU_19, TU_24,
+       TU_31, TU_USER, TU_N };
+static const char *const N_TUNE[TU_N] = {"EQUAL", "JUST", "PYTHA", "MEANT", "WERCK", "KIRNB", "RAST", "BAYAT", "SLEND",
+                                         "PELOG", "19EDO", "24EDO", "31EDO", "USER"};
+#define TU_MAXDEG 48u
+typedef struct {
+    uint8_t sys, root, n, rsv;                          /* system, ROOT (0..11), USER: degrees (1..TU_MAXDEG) */
+    uint16_t period;                                    /* USER: the period, 1/16 cent (1200 cents: 19200) */
+    uint16_t deg[TU_MAXDEG];                            /* USER: degrees 1..n - 1 above 1/1 (deg[0] = 0), 1/16 cent */
+} tune_t;
+static tune_t tune_cfg = {TU_EQUAL, 0, 12, 0, 19200,      /* (USER until a scale comes: equal temperament) */
+                          {0, 1600, 3200, 4800, 6400, 8000, 9600, 11200, 12800, 14400, 16000, 17600}};
+static int32_t tun_tab[129];
+static volatile uint8_t tun_on;
+static const int16_t TU_TAB12[6][12] = {               /* 1/10 cent off equal temperament, from ROOT */
+    {0, 117, 39, 156, -137, -20, -98, 20, 137, -156, 176, -117},       /* JUST (5-limit) */
+    {0, -98, 39, -59, 78, -20, 117, 20, -78, 59, -39, 98},             /* PYTHAG */
+    {0, -240, -68, 103, -137, 34, -205, -34, -274, -103, 68, -171},    /* MEANTONE (1/4 comma) */
+    {0, -98, -78, -59, -98, -20, -117, -39, -78, -117, -39, -78},      /* WERCKMEISTER III */
+    {0, -98, -68, -59, -137, -20, -98, -34, -78, -103, -39, -117},     /* KIRNBERGER III */
+    {0, 0, 0, 0, -500, 0, 0, 0, 0, 0, 0, -500},                        /* RAST: E and B half flat */
+};
+static int32_t tun_deg_cents16(uint32_t sys, uint32_t k, uint32_t *n, uint32_t *period)   /* degree k, 1/16 cent */
+{
+    static const uint16_t SL[5] = {0, 231, 474, 717, 955}, PE[7] = {0, 120, 258, 539, 675, 785, 943};
+    switch (sys) {
+    case TU_SLENDRO: *n = 5, *period = 19200; return SL[k % 5u] * 16;
+    case TU_PELOG: *n = 7, *period = 19200; return PE[k % 7u] * 16;
+    case TU_19: *n = 19, *period = 19200; return (int32_t)(k % 19u) * 19200 / 19;
+    case TU_24: *n = 24, *period = 19200; return (int32_t)(k % 24u) * 800;
+    case TU_31: *n = 31, *period = 19200; return (int32_t)(k % 31u) * 19200 / 31;
+    default:
+        *n = clamp(tune_cfg.n, 1, TU_MAXDEG), *period = clamp(tune_cfg.period, 16, 65535);
+        return k % *n ? tune_cfg.deg[k % *n] : 0;
+    }
+}
+/* the table from tune_cfg (the main loop: a change on GLO > TUNING, the editor, power-on) */
+static void tune_build(void)
+{
+    static int32_t tab[129];
+    uint32_t sys = tune_cfg.sys < TU_N ? tune_cfg.sys : TU_EQUAL, key, root = tune_cfg.root % 12u;
+    for (key = 0; key < 128u; key++) {
+        int32_t off = 0;
+        if (sys >= TU_JUST && sys <= TU_RAST) {
+            off = TU_TAB12[sys - TU_JUST][(key + 12u - root) % 12u] * 4096 / 1000;
+        } else if (sys == TU_BAYATI) {                  /* (on ROOT: its 2nd degree half flat) */
+            off = (key + 12u - root) % 12u == 2u ? -50 * 4096 / 100 : 0;
+        } else if (sys != TU_EQUAL) {
+            int32_t d = (int32_t)key - (60 + (int32_t)root), oct, k;
+            uint32_t n, per;
+            tun_deg_cents16(sys, 0, &n, &per);
+            oct = d >= 0 ? d / (int32_t)n : -((-d + (int32_t)n - 1) / (int32_t)n);
+            k = d - oct * (int32_t)n;
+            off = (oct * (int32_t)per + tun_deg_cents16(sys, (uint32_t)k, &n, &per)) * 64 / 25 -
+                  d * 4096;                             /* (1/16 cent x 4096 / 1600; fits 32 bits: +-8 octaves) */
+            off = clamp(off, -100 * 4096, 100 * 4096);
+        }
+        tab[key] = off;
+    }
+    tab[128] = tab[127];
+    fm1_irq_off();
+    memcpy(tun_tab, tab, sizeof tun_tab);
+    tun_on = (uint8_t)(sys != TU_EQUAL);
+    fm1_irq_on();
+}
+static inline int32_t tun_at(int32_t p16)               /* the offset at a pitch in 1/16 semitone */
+{
+    int32_t n = clamp(p16, 0, 127 * 16) >> 4, f = clamp(p16, 0, 127 * 16) & 15;
+    return tun_tab[n] + (((tun_tab[n + 1] - tun_tab[n]) * f) >> 4);
+}
+
+/* Clipper 0.9, VINTAGE (VOICE 2 > VINTG): the voices of an analog polysynth are never quite alike (the Prophet-5's
+ * "slop"): each voice here has its own small tuning error and filter offset (its "card", fixed), a slow drift of its
+ * pitch (a random walk, a new target every second or so) and each note a little of its own. At 127: the card +-6 cents,
+ * the drift +-5, the note +-2, the filter +-1.5 steps; 0: nothing, bit for bit */
+static int32_t vcard(uint32_t k, uint32_t salt)         /* the voice card's value, Q15 */
+{
+    uint32_t h = (k + 1u) * 0x9E3779B1u ^ (salt + 7u) * 0x85EBCA77u;
+    h ^= h >> 15, h *= 0x2C1B3C6Du, h ^= h >> 12;
+    return (int32_t)(h >> 16) - 32768;
+}
+static int32_t vintage_pitch(voice_t *v, uint32_t k, int32_t vint)   /* 1/4096 semitone; once a block */
+{
+    if ((rng() & 1023u) < 2u)                           /* (~1.4 s between targets) */
+        v->vdtgt = (int16_t)((int32_t)(rng() >> 16) - 32768);
+    v->vdrift = (int16_t)(v->vdrift + ((v->vdtgt - v->vdrift) >> 9));
+    return ((((vcard(k, 0u) * 246) >> 15) + ((v->vdrift * 205) >> 15) + ((v->rnd * 82) >> 15)) * vint) >> 7;
+}
 /* LFO 2's rate index, + the slots to MT_L2RATE (sv: the sources) */
 static uint32_t mx_l2rate(const int16_t *p, const mx_t *x, const int32_t *sv)
 {
@@ -1047,7 +1142,7 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
     vib = osc_sine(vib_ph[(uint32_t)(t - trk) % NPART]);
     /* Clipper 0.4: the matrix (mx_load); sv: its sources (the part's here, the voice's in the loop) */
     mx_t mx;
-    int32_t sv[MS_NSRC], l2free, pan_new = 0;
+    int32_t sv[MS_NSRC], l2free, pan_new = 0, vint = clamp(t->p[P_VINT], 0, 127);
     uint32_t pan_age = 0, catr = part_ctl[pc].at;
 #endif
     /* TUNE in cents: whole 1/16 semitones in the pitch, the rest as a fine factor (no dead zone) */
@@ -1211,6 +1306,10 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
                 q += clamp(mpit, -24 * 4096, 24 * 4096);   /* the matrix */
                 if (mpe)                                /* MPE: the note's own bend */
                     q += (mpe_bend[v->ch & 15u] * (int32_t)MPE_RANGE[mpe_mode % MPE_MODES]) >> 3;
+                if (tun_on)                             /* (0.9) the TUNING: the note's own pitch (glides too) */
+                    q += tun_at(v->pitch_cur);
+                if (vint)                               /* (0.9) VINTAGE: the voice's own tuning and drift */
+                    q += vintage_pitch(v, (uint32_t)(t - trk) * NVOICE + i, vint);
             }
 #endif
             pitch = (q >> 8) + tune;
@@ -1244,6 +1343,8 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
             if (p[P_ATDST] == MD_SHP)
                 m.shape += a * 128;
             m.cutoff += clamp(mcut, -32767, 32767);    /* the matrix */
+            if (vint)                                   /* (0.9) VINTAGE: each voice's filter a little off */
+                m.cutoff += ((vcard((uint32_t)(t - trk) * NVOICE + i, 1u) * 400) >> 15) * vint >> 7;
             if (mshp)
                 m.shape = clamp(m.shape + clamp(mshp, -32767, 32767), 0, 127 << 8);
             if (mpe && !(mx.srcs & (1u << MS_SLIDE)))  /* MPE: SLIDE to the cutoff when no slot takes it */

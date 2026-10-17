@@ -596,6 +596,17 @@
           <label><span data-t="fxStoreTo"></span> <select id="fxslot"></select></label> <button id="fxstore" data-t="fxStore"></button></p>
         <div id="fxbody"></div>
       </div>
+      <!-- Clipper 0.9: the TUNING (firmware protocol v14): kept with the FM-1's settings -->
+      <div class="card" id="tupanel" hidden>
+        <h2 data-t="tuTitle" data-ic="ui_knob"></h2>
+        <p class="dim" data-t="tuHelp"></p>
+        <p class="bar"><label><span data-t="tuSystem"></span> <select id="tusys"></select></label>
+          <label><span data-t="tuRoot"></span> <select id="turoot"></select></label>
+          <button id="tuscl" data-t="tuLoad" data-ic="symbol_upload"></button>
+          <input type="file" id="tufile" accept=".scl,text/plain" hidden>
+          <button id="tusend" class="pri" data-t="tuSendBtn"></button></p>
+        <p class="dim" id="tuinfo"></p>
+      </div>
       <!-- Clipper 0.8: the MOD SEQ's steps (firmware protocol v13): every engine -->
       <div class="card" id="mspanel" hidden>
         <h2 data-t="msTitle" data-ic="ui_knob"></h2>
@@ -809,7 +820,8 @@ const CMD = { INFO: 1, GET: 2, SET: 3, DUMP: 4, DESC: 5, STEP_GET: 6, STEP_SET: 
   DSYN_LIST: 72, DSYN_GET: 73, DSYN_PUT: 74, DSYN_STORE: 75, DSYN_PLAY: 76,   /* v10 (SLOOP 2.5): the SYN drum kits */
   HY_GET: 77, HY_PUT: 78,                            /* v11 (Clipper): the HYBRID engine's patches */
   FMX_GET: 90, FMX_PUT: 91, FMX_STORE: 92,           /* v12 (Clipper 0.6): the FMX engine's patches */
-  MSEQ_GET: 93, MSEQ_PUT: 94 };                      /* v13 (Clipper 0.8): the MOD SEQ's steps of a part */
+  MSEQ_GET: 93, MSEQ_PUT: 94,                        /* v13 (Clipper 0.8): the MOD SEQ's steps of a part */
+  TUNE_GET: 95, TUNE_PUT: 96 };                      /* v14 (Clipper 0.9): the TUNING (a Scala scale) */
 /* v7: the parameters a step can lock (firmware seq.c p_lockable: the sound, not the sequencer / arp / key / voice
    mode); ids as core.h: LEVEL .. LFO dests, GATE, the sends, GLIDE, PAN, DETUNE, the SLICER, the engine's 8 (from pe0:
    53, or 78 on Clipper 0.4, whose LFO 2, ENV 2 and matrix at 53..77 are not lockable) */
@@ -1015,6 +1027,12 @@ const parse = {
   /* v13: part, rc, 64 values (lane 1's 16 steps, lane 2's ..: -8..7) */
   [CMD.MSEQ_GET](a) { return { part: a[0], rc: a[1], steps: a[1] ? null : Array.from(a.slice(2, 66), (x) => x - 8) }; },
   [CMD.MSEQ_PUT](a) { return { part: a[0], rc: a[1] }; },
+  /* v14: rc, system, root, n, period (21 bits), n - 1 degrees (21 bits each; 1/16 cent) */
+  [CMD.TUNE_GET](a) {
+    const u21 = (k) => a[k] | a[k + 1] << 7 | a[k + 2] << 14, n = a[3] || 0;
+    return { rc: a[0], sys: a[1], root: a[2], n, period: u21(4), deg: [0, ...Array.from({ length: Math.max(0, n - 1) }, (_, i) => u21(7 + 3 * i))] };
+  },
+  [CMD.TUNE_PUT](a) { return { rc: a[0] }; },
   [CMD.FMX_STORE](a) { return { slot: a[0], rc: a[1] }; },
   [CMD.FM6_LIST](a) {
     const r = new Reader(a), o = { factory: r.b(), bank: r.b(), slots: [] };
@@ -1119,6 +1137,12 @@ const req = {
   fmxGet: (target, i) => [CMD.FMX_GET, [target & 0x7F, i & 0x7F]],
   fmxPut: (part, bytes) => [CMD.FMX_PUT, [0, part & 0x7F, ...pack7(bytes)]],
   mseqGet: (part) => [CMD.MSEQ_GET, [part & 0x7F]],
+  tuneGet: () => [CMD.TUNE_GET, []],
+  /* sys, root, deg: [0, d1 .. d(n-1)] and period, in 1/16 cent */
+  tunePut: (sys, root, deg, period) => {
+    const u21 = (v) => [v & 127, (v >> 7) & 127, (v >> 14) & 127];
+    return [CMD.TUNE_PUT, [sys & 127, root & 127, deg.length & 127, ...u21(period), ...deg.slice(1).flatMap(u21)]];
+  },
   mseqPut: (part, steps) => [CMD.MSEQ_PUT, [part & 0x7F, ...steps.map((v) => Math.max(0, Math.min(15, (v | 0) + 8)))]],
   fmxStore: (slot, bytes) => [CMD.FMX_STORE, [slot & 0x7F, ...pack7(bytes)]],
   fm6List: () => [CMD.FM6_LIST, []],
@@ -1132,6 +1156,29 @@ const req = {
   dsynStore: () => [CMD.DSYN_STORE, []],
   dsynPlay: (k, lane, vel = 110) => [CMD.DSYN_PLAY, [k & 0x7F, lane & 0x7F, Math.max(1, Math.min(127, vel | 0))]],
 };
+
+/* v14: a Scala .scl file -> {desc, deg: [0, ...] and period in 1/16 cent} (null: not a scale this device takes) */
+function parseScl(text) {
+  const lines = String(text).split(/\r?\n/).filter((l) => !/^\s*!/.test(l));
+  if (lines.length < 2) return null;
+  const desc = lines[0].trim(), n = parseInt(lines[1], 10);
+  if (!(n >= 1) || n > 48 || lines.length < 2 + n) return null;
+  const cents = [];
+  for (let i = 0; i < n; i++) {
+    const t = lines[2 + i].trim().split(/\s+/)[0];
+    let c;
+    if (/^-?\d*\.\d*$/.test(t)) c = parseFloat(t);
+    else if (/^\d+\/\d+$/.test(t)) { const [x, y] = t.split("/").map(Number); c = 1200 * Math.log2(x / y); }
+    else if (/^\d+$/.test(t)) c = 1200 * Math.log2(+t);
+    else return null;
+    if (!isFinite(c)) return null;
+    cents.push(c);
+  }
+  const period = Math.round(cents[n - 1] * 16), deg = [0, ...cents.slice(0, n - 1).map((c) => Math.round(c * 16))];
+  for (let i = 1; i < deg.length; i++) if (!(deg[i] > deg[i - 1]) || deg[i] >= period) return null;
+  if (!(period > 0) || period > 65535) return null;
+  return { desc, deg, period };
+}
 
 /* which reply belongs to which request (the device echoes these) */
 function replyMatches(cmd, args, a) {
@@ -1155,6 +1202,7 @@ function replyMatches(cmd, args, a) {
     case CMD.FMX_GET: case CMD.FMX_PUT: return a[0] === args[0] && a[1] === args[1];
     case CMD.FMX_STORE: return a[0] === args[0];
     case CMD.MSEQ_GET: case CMD.MSEQ_PUT: return a[0] === args[0];
+    case CMD.TUNE_GET: case CMD.TUNE_PUT: return true;
     case CMD.FM6_ERASE: return a[0] === args[0];
     case CMD.DSYN_GET: return a[0] === args[0];
     case CMD.DSYN_PUT: case CMD.DSYN_PLAY: return a[0] === args[0] && a[1] === args[1];
@@ -2540,7 +2588,8 @@ function makeMockDevice(opt = {}) {
           D("PITCH", F.PCT, 0, 127, 64), D("CUT", F.CUTOFF, 0, 127, 110), D("RES", F.PCT, 0, 127, 10)],
           presets: ["WAVE STEPS", "RHYTHM SEQ", "SWEEP PAD", "FIFTH STAB"].map((n, i) => P(n, [i, 40, 20, 0, 0, 64, 110, 10], [0, 90, 110, 50], 0)) });
         ge.names = [...ge.names, "FMX", "WSEQ"];
-        if (opt.clipper !== "0.6" && opt.clipper !== "0.7") {   /* Clipper 0.8: JUNO, VECTOR, protocol 13 (the MOD SEQ) */
+        if (opt.clipper !== "0.6" && opt.clipper !== "0.7") {   /* Clipper 0.8: JUNO, VECTOR, protocol 13 (the MOD SEQ); 0.9:
+                                                     protocol 14 (the TUNING) */
           ENG.push({ name: "JUNO", titles: ["DCO", "VCF"], edit: [E("WAVE", ["SAW", "PLS", "S+P"], 2), D("PW", F.PCT, 0, 127, 30),
             D("SUB", F.PCT, 0, 127, 40), D("NOIS", F.PCT, 0, 127, 0), E("HPF", ["0", "1", "2", "3"], 1), D("CUT", F.CUTOFF, 0, 127, 90),
             D("RES", F.PCT, 0, 127, 20), E("CHOR", ["OFF", "I", "II", "I+II"], 1)],
@@ -2765,7 +2814,7 @@ function makeMockDevice(opt = {}) {
         s(opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : (opt.clipper ? "FELUCCA CLIPPER 0.2 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)")); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
         ENG.forEach((e) => s(e.name));
         if (!opt.legacy) b(NTRK);
-        if (v5) b(opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : opt.clipper ? (JU_E >= 0 ? 13 : FX_E >= 0 ? 12 : 11) : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
+        if (v5) b(opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : opt.clipper ? (JU_E >= 0 ? (opt.clipper === "0.8" ? 13 : 14) : FX_E >= 0 ? 12 : 11) : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
         break;
       case CMD.GET: case CMD.SET: {
         if (a.length < 2) return null;
@@ -3072,6 +3121,24 @@ function makeMockDevice(opt = {}) {
           let rc = a[0] >= 27 || got.length < FX.SIZE ? 1 : st.playing ? 3 : 0;
           if (!rc) st.fxbank[a[0]] = FX.pack(FX.unpack(got.slice(0, FX.SIZE)));
           b(a.length ? a[0] : 127); b(rc);
+        }
+        break;
+      }
+      case CMD.TUNE_GET: case CMD.TUNE_PUT: {       /* Clipper 0.9: editor_fmx.c (TU_N 14 systems, 48 degrees) */
+        if (JU_E < 0 || opt.clipper === "0.8") return null;
+        const u21 = (v) => [v & 127, (v >> 7) & 127, (v >> 14) & 127];
+        st.tune = st.tune || { sys: 0, root: 0, period: 19200, deg: Array.from({ length: 12 }, (_, i) => i * 1600) };
+        if (cmd === CMD.TUNE_GET) {
+          b(0); b(st.tune.sys); b(st.tune.root); b(st.tune.deg.length);
+          u21(st.tune.period).forEach(b);
+          st.tune.deg.slice(1).forEach((d) => u21(d).forEach(b));
+        } else {
+          const nd = a[2] | 0, g = (k) => a[k] | a[k + 1] << 7 | a[k + 2] << 14;
+          let rc = a.length < 6 || a[0] >= 14 || a[1] > 11 || nd < 1 || nd > 48 || a.length !== 6 + 3 * (nd - 1) ? 1 : 0;
+          const deg = [0];
+          for (let i = 1; !rc && i < nd; i++) { const d = g(6 + 3 * (i - 1)); if (d <= deg[i - 1] || d >= g(3)) rc = 1; deg.push(d); }
+          if (!rc) st.tune = { sys: a[0], root: a[1], period: g(3), deg };
+          b(rc);
         }
         break;
       }
@@ -4155,6 +4222,8 @@ const TEXT = {
     hyTitle: "HYBRID の音色（Clipper）", hyHelp: "HYBRID エンジンの音色をまるごと編集します。ボイスごとに 3 オシレーター、2 フィルター、専用のエンベロープ 2 つと LFO 2 つ、16 スロットのモジュレーション・マトリクス。本体のノブはこの上の 8 つの値です（CUT、RES、FENV、PTCH、マクロ M1〜M4 はマトリクスのソース）。LIVE ではすぐに音が変わります。PTCH を回すか別の音を読み込むまでトラックの音色です（プロジェクトは PTCH だけ保存：残したい音色は書き出してください）。",
     msTitle: "MOD SEQ（16ステップ×4レーン）", msHelp: "サウンドのモジュレーション・シーケンサー：16ステップ（-8..7）の4レーン。RATEで進み（LFOグループのMOD SEQ 2：RATE・LEN・SMTH・START）、マトリックスのソースSEQ1..SEQ4になります。バーを上下にドラッグ、レーン名のクリックでSHAPEの対象を選択。ライブで変更ごとに送信。サウンドと一緒に保存（ユーザープリセット・プロジェクト）。",
     msShape: "シェイプ", msApply: "レーンに適用",
+    tuTitle: "チューニング（音律・Scala）", tuHelp: "FM-1全体のチューニング：平均律、純正律、ピタゴラス、ミーントーン、ヴェルクマイスターIII、キルンベルガーIII、マカーム（ラースト・バヤーティー）、スレンドロ、ペロッグ、19／24／31平均律、またはScalaの.sclファイルのUSER音階（48音まで。キーごとに次の音度、C4＋ROOTが1/1）。FM-1ではGLO > TUNING。",
+    tuSystem: "音律", tuRoot: "ルート", tuLoad: ".sclを読み込む", tuBad: "FM-1で使えない音階（.scl、1〜48音、上昇、周期内）：", tuUser: "USER音階：", tuSendBtn: "FM-1へ送信",
     fxTitle: "FMXパッチ（6オペレーター・自由なルーティング）", fxHelp: "FMXエンジンのパッチ全体：オペレーターごとの波形とモード（PM・FM・RING）、比率または固定周波数、エンベロープ。どのオペレーターも他のどれでも変調でき（自分自身はフィードバック）、どれでも出力へ。テンプレート（DX7の32種と8種）から始めて自由に変更。STOREでバンク（B1..B27）に保存（再生を止めてから）。",
     fxRouting: "ルーティング", fxTemplate: "テンプレート", fxTemplateHelp: "（行がオペレーター、列がそれを変調するもの、対角線はフィードバック、OUTは出力）",
     fxOps: "オペレーター", fxGlobal: "ピッチエンベロープとレベル", fxStoreTo: "保存先", fxStore: "保存", fxStored: "保存しました", fxEmpty: "空のスロット:", fxStopFirst: "先に再生を止めてください",
@@ -4375,6 +4444,8 @@ const TEXT = {
     hyTitle: "HYBRID patch (Clipper)", hyHelp: "The whole patch of the HYBRID engine: three oscillators, two filters, two envelopes and two LFOs of its own per voice, and a 16-slot modulation matrix. The device's knobs play eight values on top of it (CUT, RES, FENV, PTCH and the macros M1..M4: matrix sources). With LIVE each change is heard at once; the patch stays the track's until PTCH turns or another sound loads (a project keeps PTCH: export the patch to keep it).",
     msTitle: "MOD SEQ (four lanes of 16 steps)", msHelp: "The sound's modulation sequencer: four lanes of 16 steps (-8..7), stepping at RATE (MOD SEQ 2 in the LFO group: RATE, LEN, SMTH, START), read by the matrix as SEQ1..SEQ4. Drag a bar up or down; click a lane's name to pick it for SHAPE. LIVE sends each change. Kept with the sound (user presets, projects).",
     msShape: "shape", msApply: "Apply to the lane",
+    tuTitle: "Tuning (scales, temperaments, Scala)", tuHelp: "The FM-1's tuning, for every sound: equal temperament, just intonation, Pythagorean, meantone, Werckmeister III, Kirnberger III, the maqams Rast and Bayati, slendro, pelog, 19 / 24 / 31-EDO, or a USER scale from a Scala .scl file (up to 48 notes; each key the next degree, C4 + ROOT its 1/1). On the FM-1: GLO > TUNING.",
+    tuSystem: "system", tuRoot: "root", tuLoad: "Load a .scl", tuBad: "Not a scale the FM-1 takes (.scl, 1..48 notes, rising, inside the period):", tuUser: "USER scale:", tuSendBtn: "send to the FM-1",
     fxTitle: "FMX patch (six operators, any routing)", fxHelp: "The whole patch of the FMX engine: each operator its own wave (sine, triangle, saw, square, OPL halves and quarters, pulse, 8-bit sine, noise) and its own mode (PM as the DX7, true FM, RING), a ratio or a fixed frequency, an envelope; any operator into any other (its own: feedback) and any to the output. Start from a template (the DX7's 32 and 8 more), then change any connection. The device's EDIT knobs are macros on top (PTCH, ALG, MOD, FB, TIME, DTN, VEL, KTRK). With LIVE each change is heard at once; STORE keeps it in a bank slot (B1..B27, stop the device first): then it is a PTCH value, kept with presets and projects.",
     fxRouting: "Routing", fxTemplate: "template", fxTemplateHelp: "(fills the grid: a row is an operator, a column what modulates it; the diagonal is feedback; OUT to the output)",
     fxOps: "Operators", fxGlobal: "Pitch envelope and level", fxStoreTo: "store to", fxStore: "Store", fxStored: "Stored in", fxEmpty: "Empty slot:", fxStopFirst: "Stop the song first (a flash write silences the audio a moment)",
@@ -4623,8 +4694,10 @@ const EXPECT_04 = { pcount: 86, pe0: 78 };
 const EXPECT_06 = { pcount: 91, pe0: 83 };
 /* Clipper 0.8: 6 more just before P_E0: the MOD SEQ's RATE LEN SMTH START (83..86), SPICE, DICE (87, 88) */
 const EXPECT_08 = { pcount: 97, pe0: 89 };
+/* Clipper 0.9: 2 more: VINTAGE (89), LOOP (90) */
+const EXPECT_09 = { pcount: 99, pe0: 91 };
 const layoutKnown = (info) => EXPECT.gcount.includes(info.gcount) &&
-  [EXPECT, EXPECT_04, EXPECT_06, EXPECT_08].some((x) => info.pcount === x.pcount && info.pe0 === x.pe0);
+  [EXPECT, EXPECT_04, EXPECT_06, EXPECT_08, EXPECT_09].some((x) => info.pcount === x.pcount && info.pe0 === x.pe0);
 const MX_PAGES = [1, 2, 3, 4, 5, 6].map((k) => ["MATRIX " + k, 0, [57 + 3 * k, 58 + 3 * k, 59 + 3 * k]]);
 const P = { LEVEL: 0, SLEN: 29, CHORD: 49 };
 const LAYOUT = (pe0) => [
@@ -4633,11 +4706,12 @@ const LAYOUT = (pe0) => [
   ...(pe0 >= 78 ? [{ t: "LFO", title: "MATRIX", pages: MX_PAGES }] : []),
   ...(pe0 >= 89 ? [{ t: "LFO", title: "MOD SEQ", pages: [["MOD SEQ 2", 0, [83, 84, 85, 86]]] }] : []),
   { t: "EDIT", engine: true, pages: [["EDIT 1", 0, [pe0, pe0 + 1, pe0 + 2, pe0 + 3]], ["EDIT 2", 0, [pe0 + 4, pe0 + 5, pe0 + 6, pe0 + 7]]] },
-  { t: "VOICE", pages: [["LEVEL", 0, [0]], ["VOICE", 0, [37, 38, 41, 42]], ["VOICE 2", 0, [43, 44, 39, 40]]] },
+  { t: "VOICE", pages: [["LEVEL", 0, [0]], ["VOICE", 0, [37, 38, 41, 42]], ["VOICE 2", 0, [43, 44, 39, 40]],
+    ...(pe0 >= 91 ? [["VINTAGE", 0, [89]]] : [])] },
   { t: "FX", pages: [["FX", 0, [33, 34, 35, 36]], ["FILTER", 0, [50]], ...(pe0 >= 83 ? [["INSERT", 0, [78, 79, 80, 81]], ["INSERT 2", 0, [82]]] : []),
     ["SLICER", 0, [45, 46, 47, 48]], ["DLY", 1, [4, 5, 6, 7]], ["REV/CHO", 1, [8, 9, 10, 11]]] },
   { t: "SEL", pages: [["SEL", 0, [25, 26, 27, 49]], ["SEL 2", 0, [28, 51, 52]]] },
-  { t: "ARP", pages: [["ARP", 0, [17, 18, 19, 20]], ["ARP 2", 0, [21, 22, 23, 24]], ...(pe0 >= 89 ? [["SPICE", 0, [87, 88]]] : [])] },
+  { t: "ARP", pages: [["ARP", 0, [17, 18, 19, 20]], ["ARP 2", 0, [21, 22, 23, 24]], ...(pe0 >= 89 ? [["SPICE", 0, pe0 >= 91 ? [87, 88, 90] : [87, 88]]] : [])] },
   { t: "SEQ PATTERN", tab: "seqgroups", pages: [["PATTERN", 0, [29, 30, 31, 32]]] },
   { t: "GLOBAL", tab: "setgroups", pages: [["GLOBAL", 1, [0, 1, 2, 3]]] },
   { t: "MASTER", tab: "setgroups", pages: [["MASTER", 1, [27, 28, 29, 30]]] },
@@ -4932,6 +5006,7 @@ function updateBrowser() {
   hyShow();
   fxShow();
   msShow();
+  tuShow();
 }
 
 function visible(d) { return d && d.max > d.min && d.label !== "-"; }
@@ -8556,6 +8631,54 @@ $("hyfile").addEventListener("change", async (e) => {
     hyChanged();
     sayK("hyImported", ` ${hyv.name}`);
   } catch (err) { sayK("hyBadFile", ` ${f.name}`); }
+});
+/* ---------------------------------------------------------------- TUNING --- */
+/* Clipper 0.9: the FM-1's tuning (firmware v14): a system and its root, or a USER scale from a Scala .scl file */
+const TU_NAMES = ["EQUAL", "JUST", "PYTHAG", "MEANTONE", "WERCK III", "KIRNB III", "RAST", "BAYATI", "SLENDRO", "PELOG",
+  "19-EDO", "24-EDO", "31-EDO", "USER"];
+let tuv = null;
+const tuOk = () => !!dev && !!dev.info && dev.info.proto >= 14;
+function tuShow() {
+  const on = tuOk();
+  $("tupanel").hidden = !on;
+  if (!on) return;
+  if (!$("tusys").options.length) {
+    $("tusys").replaceChildren(...TU_NAMES.map((n, i) => el("option", { value: i, text: n })));
+    $("turoot").replaceChildren(...["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"].map((n, i) => el("option", { value: i, text: n })));
+  }
+  if (tuShow.dev !== dev) { tuShow.dev = dev; op(tuRead); }
+}
+function tuRender() {
+  if (!tuv) return;
+  $("tusys").value = String(tuv.sys);
+  $("turoot").value = String(tuv.root);
+  $("tuinfo").textContent = `${t("tuUser")} ${tuv.desc || ""} ${tuv.deg.length} / ${(tuv.period / 16).toFixed(2)} ct: ` +
+    tuv.deg.map((d) => (d / 16).toFixed(1)).join(" ");
+}
+async function tuRead() {
+  const r = parse[CMD.TUNE_GET](await rq(req.tuneGet()));
+  if (r.rc) return;
+  tuv = { ...r, desc: tuv && tuv.desc };
+  tuRender();
+}
+async function tuSend() {
+  if (!tuv) return;
+  const r = parse[CMD.TUNE_PUT](await rq(req.tunePut(tuv.sys, tuv.root, tuv.deg, tuv.period)));
+  checkRc(r.rc);
+}
+$("tusys").addEventListener("change", () => { if (tuv) { tuv.sys = +$("tusys").value; op(tuSend); } });
+$("turoot").addEventListener("change", () => { if (tuv) { tuv.root = +$("turoot").value; op(tuSend); } });
+$("tusend").addEventListener("click", () => op(tuSend));
+$("tuscl").addEventListener("click", () => $("tufile").click());
+$("tufile").addEventListener("change", async (e) => {
+  const f = e.target.files[0];
+  e.target.value = "";
+  if (!f) return;
+  const sc = parseScl(await f.text());
+  if (!sc) { sayK("tuBad", ` ${f.name}`); return; }
+  tuv = { ...(tuv || { root: 0 }), sys: TU_NAMES.length - 1, deg: sc.deg, period: sc.period, desc: sc.desc };
+  tuRender();
+  op(tuSend);
 });
 /* --------------------------------------------------------------- MOD SEQ --- */
 /* Clipper 0.8: the MOD SEQ's steps of the selected part (firmware v13, EDITOR_PROTOCOL.md "MOD SEQ"), on every engine:

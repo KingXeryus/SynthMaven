@@ -54,12 +54,18 @@ _Static_assert(P_COUNT == PROJ_NP || (CLIPPER_SYNTH && P_COUNT == PROJ_NP + PROJ
 #define PROJ_XM2 (PROJ_XM1 + 1u + 2u * PROJ_XI)       /* the byte of CLIPPER_PROJ_MARK_06 */
 /* 0.8: the MOD SEQ's RATE LEN SMTH START, SPICE, DICE (PROJ_XS) of both, 4 bytes each (proj_xs_word), after 0.6's,
  * then CLIPPER_PROJ_MARK_08; their steps in track 4's free lock slots (two a byte, + 8; then the mark) */
-#define PROJ_XS ((uint32_t)(P_E0 - P_MSRATE))
+#define PROJ_XS ((uint32_t)(P_VINT - P_MSRATE))
+/* 0.9: VINTAGE and LOOP of both (PROJ_X9 each, value - its minimum) in track 4, after the steps' mark, then
+ * CLIPPER_PROJ_MARK_09 */
+#define PROJ_X9 ((uint32_t)(P_E0 - P_VINT))
+#define PROJ_X9_AT (PROJ_MS_MARK + 1u)
+#define PROJ_X9_MARK (PROJ_X9_AT + 2u * PROJ_X9)
+#define CLIPPER_PROJ_MARK_09 0xC9u
 #define PROJ_XM3 (PROJ_XM2 + 1u + 8u)                 /* the byte of CLIPPER_PROJ_MARK_08 */
 #define CLIPPER_PROJ_MARK_08 0xC8u
 #define PROJ_MS_MARK 64u                              /* track 4: the byte after the steps */
-_Static_assert(PROJ_XA == 25u && PROJ_XI == 5u && PROJ_XS == 6u && P_MSRATE == P_IMIX + 1 && PROJ_XM3 < 3u * NLOCK &&
-               PROJ_MS_MARK < 3u * NLOCK, "the project's Clipper bytes in tracks 3 and 4's lock slots");
+_Static_assert(PROJ_XA == 25u && PROJ_XI == 5u && PROJ_XS == 6u && PROJ_X9 == 2u && P_MSRATE == P_IMIX + 1 &&
+               PROJ_XM3 < 3u * NLOCK && PROJ_X9_MARK < 3u * NLOCK, "the project's Clipper bytes in tracks 3 and 4's lock slots");
 static uint32_t proj_xs_word(const int16_t *p)        /* RATE (4 bits) START (1) LEN - 1 (4) SMTH (7) SPICE (7) DICE (7) */
 {
     return (uint32_t)clamp(p[P_MSRATE], 0, 15) | (uint32_t)clamp(p[P_MSKEY], 0, 1) << 4 |
@@ -100,6 +106,10 @@ static void proj_ms_put(plock_t *lk)                  /* track 4's lock slots: b
                                        (uint32_t)clamp(trk[j].ms[c / MSEQ_STEPS][c % MSEQ_STEPS] + 8, 0, 15) << 4);
         }
     b[PROJ_MS_MARK] = CLIPPER_PROJ_MARK_08;
+    for (j = 0; j < 2u; j++)                          /* (0.9) VINTAGE, LOOP */
+        for (n = 0; n < PROJ_X9; n++)
+            b[PROJ_X9_AT + PROJ_X9 * j + n] = (uint8_t)clamp(trk[j].p[P_VINT + n] - TP[P_VINT + n].min, 0, 255);
+    b[PROJ_X9_MARK] = CLIPPER_PROJ_MARK_09;
     proj_bytes_put(lk, b);
 }
 static uint32_t proj_ext_at(uint32_t j, uint32_t k)   /* the byte of track j's value k (P_E0 - PROJ_E0 of them) */
@@ -146,6 +156,16 @@ static int proj_ext_get(const plock_t *lk, uint32_t j, uint32_t k)   /* track j'
         return (int)(proj_xs_val(w, k - PROJ_XA - PROJ_XI) - TP[P_MSRATE + k - PROJ_XA - PROJ_XI].min);
     }
     return (int)proj_ext_byte(lk, proj_ext_at(j, k));
+}
+static int proj_x9_get(const plock_t *lk, uint32_t j, uint32_t k)   /* (0.9) track j's VINTAGE / LOOP, or -1 */
+{
+    uint32_t i;
+    for (i = 0; i < NLOCK; i++)
+        if (lk[i].step != LOCK_FREE)
+            return -1;
+    if (proj_ext_byte(lk, PROJ_X9_MARK) != CLIPPER_PROJ_MARK_09)
+        return -1;
+    return (int)proj_ext_byte(lk, PROJ_X9_AT + PROJ_X9 * j + k);
 }
 static int proj_ms_get(const plock_t *lk, uint32_t j, track_t *t)   /* track j's steps from track 4's: 0, -1 none */
 {
@@ -579,12 +599,15 @@ static void proj_apply(const project_t *p, int all)
                                     i >= P_E0 && i <= P_E7 ? &ENGINES[e]->edit[i - P_E0] : &TP[i];
             int32_t v = i < PROJ_E0 ? s->p[i] : i >= P_E0 ? s->p[PROJ_E0 + i - P_E0] : d->def;
 #if CLIPPER_SYNTH
-            if (i >= PROJ_E0 && i < P_E0 && k < 2u && p->rsv[0] == CLIPPER_PROJ_MARK) {
+            if (i >= P_VINT && i < P_E0 && k < 2u && p->rsv[0] == CLIPPER_PROJ_MARK) {
+                int x = proj_x9_get(p->t[3].lock, k, i - P_VINT);   /* (0.9: in track 4) */
+                v = x < 0 ? d->def : x + d->min;
+            } else if (i >= PROJ_E0 && i < P_E0 && k < 2u && p->rsv[0] == CLIPPER_PROJ_MARK) {
                 int x = proj_ext_get(p->t[2].lock, k, i - PROJ_E0);   /* Clipper: tracks 1 and 2's, in track 3 */
                 v = x < 0 ? d->def : x + d->min;
             } else if (i >= PROJ_E0 && i < P_ITYPE && k < 2u && p->rsv[0] == CLIPPER_PROJ_MARK_04) {
                 v = p->t[k + 2u].p[i - PROJ_E0];        /* (0.4's first build: in tracks 3 and 4's p[]) */
-            } else if (i >= P_ITYPE && i < P_E0 && k == 0u && p->rsv[0] != CLIPPER_PROJ_MARK && proj_v6_ins_ok[proj_v6_at(p)]) {
+            } else if (i >= P_ITYPE && i <= P_IMIX && k == 0u && p->rsv[0] != CLIPPER_PROJ_MARK && proj_v6_ins_ok[proj_v6_at(p)]) {
                 v = proj_v6_ins[proj_v6_at(p)][i - P_ITYPE];   /* (a SLOOP 2.6 project: its track 1's INSERT) */
             } else if (i < PROJ_XA + PROJ_XI && k >= 2u && p->rsv[0] == CLIPPER_PROJ_MARK_04) {
                 v = d->def;                             /* (there, theirs were not stored) */
@@ -788,24 +811,53 @@ typedef struct {
     uint16_t fav[FAV_N];
     uint32_t crc;
 } clip_side_t;
-_Static_assert(sizeof(clip_side_t) == 44u && sizeof(clip_side_t) <= ST_SIDE_MAX, "the side record");
-static clip_side_t side_out, side_saved;
-static void side_fill(clip_side_t *r)                /* what the side record holds now */
+/* 0.9: then the TUNING (voice.c tune_cfg), its own magic and CRC (0.7 / 0.8 read their part and pass over it; their
+ * saves leave it erased: EQUAL) */
+#if CLIPPER_SYNTH
+#define TUNE_SIDE_MAGIC 0x394E5554u                  /* "TUN9" */
+typedef struct {
+    uint32_t magic;
+    tune_t t;
+    uint32_t crc;
+} tune_side_t;
+#endif
+typedef struct {
+    clip_side_t a;
+#if CLIPPER_SYNTH
+    tune_side_t tu;
+#endif
+} side2_t;
+_Static_assert(sizeof(clip_side_t) == 44u && sizeof(side2_t) <= ST_SIDE_MAX, "the side record");
+static side2_t side_out, side_saved;
+static void side_fill(side2_t *s)                    /* what the side record holds now */
 {
-    memset(r, 0, sizeof *r);
+    clip_side_t *r = &s->a;
+    memset(s, 0, sizeof *s);
     r->magic = CLIP_SIDE_MAGIC;
     r->usb_rate = (uint8_t)(usb_rate % 3u);
     r->clk_out = (uint8_t)(clk_out != 0u);
     memcpy(r->fav, fav, sizeof fav);
     r->crc = st_crc32(r, sizeof *r - 4u);
+#if CLIPPER_SYNTH
+    s->tu.magic = TUNE_SIDE_MAGIC;
+    s->tu.t = tune_cfg;
+    s->tu.crc = st_crc32(&s->tu, sizeof s->tu - 4u);
+#endif
 }
-static void side_take(const clip_side_t *r)          /* a side record read back: when it checks out */
+static void side_take(const side2_t *s)              /* a side record read back: each part when it checks out */
 {
-    if (r->magic != CLIP_SIDE_MAGIC || r->crc != st_crc32(r, sizeof *r - 4u))
-        return;
-    usb_rate = (uint8_t)(r->usb_rate % 3u);
-    clk_out = (uint8_t)(r->clk_out & 1u);
-    memcpy(fav, r->fav, sizeof fav);
+    const clip_side_t *r = &s->a;
+    if (r->magic == CLIP_SIDE_MAGIC && r->crc == st_crc32(r, sizeof *r - 4u)) {
+        usb_rate = (uint8_t)(r->usb_rate % 3u);
+        clk_out = (uint8_t)(r->clk_out & 1u);
+        memcpy(fav, r->fav, sizeof fav);
+    }
+#if CLIPPER_SYNTH
+    if (s->tu.magic == TUNE_SIDE_MAGIC && s->tu.crc == st_crc32(&s->tu, sizeof s->tu - 4u)) {
+        tune_cfg = s->tu.t;
+        tune_build();
+    }
+#endif
 }
 /* settings + learned panel table: one flash object. The flash copy wins at
  * boot (the .noinit copies are garbage after a power-off). */
@@ -880,7 +932,7 @@ static void persist_boot(void)                    /* before settings_init / pane
 #endif
             persist_saved = p;
             {   /* 0.7: the favourites and USB RATE, in the side record of the same copy */
-                clip_side_t r;
+                side2_t r;
                 if (st_side_load(OBJ_SETTINGS, &r, sizeof r) == 0)
                     side_take(&r);
                 side_fill(&side_saved);

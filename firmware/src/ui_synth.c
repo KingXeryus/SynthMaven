@@ -18,6 +18,7 @@ enum { X_LYMODE, X_LYSOUND, X_LYSPLIT, X_LYLEVEL, X_LYOCT, X_LYPAN, X_LYFILT, X_
        X_FTO, X_FFROM, X_FAMT, X_FOUT, X_FDTN, X_FFIX, X_FPEG, X_FPTIM, X_FSLOT, X_FSTORE,
        X_HPOS, X_HCMP,                                 /* 0.7: UNDO (the place in the sound's history), COMPARE */
        X_QLANE, X_QSTEP, X_QVAL, X_QFILL,              /* 0.8: the MOD SEQ: the lane, the step, its value, a SHAPE */
+       X_TSYS, X_TROOT,                                /* 0.9: the TUNING (voice.c tune_cfg; kept with the settings) */
        X_COUNT };
 static void mseq_fill(struct track *t, uint32_t l, uint32_t f);
 static const char *const N_QFILL[] = {"--", "RAMP+", "RAMP-", "TRI", "SINE", "SQR", "RND", "FLAT", "INVRT", "SHIFT"};
@@ -31,7 +32,7 @@ static const char *const N_FRATIO[32] = {"0.5", "1", "2", "3", "4", "5", "6", "7
                                          "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26",
                                          "27", "28", "29", "30", "31"};
 static const char *const N_FFIXC[4] = {"1Hz", "10Hz", "100Hz", "1kHz"};
-_Static_assert(X_FOP == 19 && X_FSTORE == 40 && X_HPOS == 41 && X_QLANE == 43 && QF_N == NELEM(N_QFILL),
+_Static_assert(X_FOP == 19 && X_FSTORE == 40 && X_HPOS == 41 && X_QLANE == 43 && X_TSYS == 47 && QF_N == NELEM(N_QFILL),
                "params.c PAGES: FMX's ids, UNDO's, MOD SEQ's");
 static const char *const N_CMP[] = {"EDIT", "ORIG"};
 static param_desc_t xd_sound = {"SOUND", F_INT, 0, 0, 0, 0, 0};   /* (its range: the list's length, syn_desc) */
@@ -76,6 +77,8 @@ static const param_desc_t XD[X_COUNT] = {
     [X_QSTEP] = PD("STEP", F_INT, 1, 16, 1),
     [X_QVAL] = PD("VALUE", F_INT, -8, 7, 0),
     [X_QFILL] = PE("SHAPE", N_QFILL, 0),
+    [X_TSYS] = PE("TUNE", N_TUNE, 0),
+    [X_TROOT] = PE("ROOT", N_NOTE, 0),
     [X_FSTORE] = PE("STORE", N_GO, 0),
     [X_HPOS] = PD("UNDO", F_INT, -16, 0, 0),
     [X_HCMP] = PE("CMP", N_CMP, 0),
@@ -563,6 +566,8 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
         return &hd;
     }
     case X_HCMP: xv[X_HCMP] = hist_cmp_on; *valp = &xv[X_HCMP]; break;
+    case X_TSYS: xv[X_TSYS] = (int16_t)(tune_cfg.sys % TU_N); *valp = &xv[X_TSYS]; break;
+    case X_TROOT: xv[X_TROOT] = (int16_t)(tune_cfg.root % 12u); *valp = &xv[X_TROOT]; break;
     case X_QVAL:                                      /* (0.8) the selected step of the selected lane */
         xv[X_QVAL] = TSEL->ms[clamp(xv[X_QLANE], 1, 4) - 1][clamp(xv[X_QSTEP], 1, 16) - 1];
         *valp = &xv[X_QVAL];
@@ -688,6 +693,15 @@ static void syn_changed(uint32_t id, int16_t *vp)
     case X_QVAL:
         TSEL->ms[clamp(xv[X_QLANE], 1, 4) - 1][clamp(xv[X_QSTEP], 1, 16) - 1] = (int8_t)clamp(*vp, -8, 7);
         ui.force = 1;
+        break;
+    case X_TSYS:
+    case X_TROOT:                                     /* (0.9) the TUNING: the table again, saved with the settings */
+        if (id == X_TSYS)
+            tune_cfg.sys = (uint8_t)clamp(*vp, 0, TU_N - 1);
+        else
+            tune_cfg.root = (uint8_t)clamp(*vp, 0, 11);
+        tune_build();
+        settings_later = 1;
         break;
     case X_QFILL:
         mseq_fill(TSEL, (uint32_t)clamp(xv[X_QLANE], 1, 4) - 1u, (uint32_t)clamp(*vp, 0, QF_N - 1));

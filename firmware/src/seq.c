@@ -1166,7 +1166,7 @@ static void arp_remove(track_t *t, uint32_t note)
  * CHORD all the held notes together (the first 4), an octave higher each step through OCT. ORD (Felucca 1.4) always
  * plays the notes in the order they were pressed (up to 2.6 it played as UP unless ARP 2 ORD was PLAY) */
 enum { AM_OFF, AM_UP, AM_DN, AM_UPDN, AM_RND, AM_ORD, AM_REPEAT, AM_DNUP, AM_UP8, AM_CONV, AM_DIVG, AM_PINKY,
-       AM_THUMB, AM_WALK, AM_CHORD };
+       AM_THUMB, AM_WALK, AM_CHORD, AM_TURING };
 
 /* the arp's note list (its length returned, 0: nothing to play; up to 64, + 1 for UP+8): the held notes as they play
  * now (#191), each once (*cnt of them), sorted or as played, over OCT octaves */
@@ -1280,6 +1280,15 @@ static void arp_play(track_t *t, uint32_t n, uint32_t vel)
  * turned (another variation). A note may rest (up to 1 in 6), jump an octave (up to 1 in 4, mostly up), and its
  * velocity and gate move (up to +-63, x 0.05 .. 1.95). What is stored is never changed */
 typedef struct { uint8_t skip; int8_t oct; uint8_t vel, gate; } spice_t;   /* gate: x / 64 */
+static uint32_t spice_loop(const track_t *t)            /* (0.9) LOOP: the variation comes round every LOOP notes */
+{
+#if CLIPPER_SYNTH
+    return (uint32_t)clamp(t->p[P_SLOOP], 1, 16);
+#else
+    (void)t;
+    return 16u;
+#endif
+}
 static uint32_t spice_gate = 64u;                    /* (the arp's last note: arp_tick's gate) */
 static int spice_of(const track_t *t, uint32_t k, uint32_t vel, spice_t *o)
 {
@@ -1339,6 +1348,37 @@ static void mseq_tick(track_t *t, uint32_t adv)
 }
 #endif
 
+/* 0.9, the arp's TURNG (after Music Thing Modular's Turing Machine): a shift register of LOOP bits (SPICE page) turns
+ * one step a note; the bit that comes round is flipped with the chance MUTAT (SPICE: 0 a locked loop, 127 nearly a
+ * coin toss), and the register read as a number picks the note from the held notes over OCT octaves (low to high),
+ * its velocity from two more bits. SEED (DICE) chooses the loop it starts from: the same SEED, the same loop. The
+ * notes are always the held ones: in key whatever it plays */
+static uint32_t turing_step(track_t *t, uint32_t len, uint32_t *vel)
+{
+#if CLIPPER_SYNTH
+    uint32_t loop = (uint32_t)clamp(t->p[P_SLOOP], 1, 16), mut = (uint32_t)clamp(t->p[P_SPICE], 0, 127);
+    int32_t seed = clamp(t->p[P_DICE], 0, 127) + 1;
+#else
+    uint32_t loop = 16u, mut = 0;
+    int32_t seed = 1;
+#endif
+    uint32_t mask = (1u << loop) - 1u, r = t->tm_reg, bit, v8;
+    if (t->tm_seed != seed) {                           /* a new SEED: its loop */
+        uint32_t h = (uint32_t)seed * 0x9E3779B1u;
+        h ^= h >> 15, h *= 0x2C1B3C6Du, h ^= h >> 13;
+        t->tm_seed = (int16_t)seed;
+        r = (h >> 8) & 0xFFFFu;
+    }
+    bit = (r >> (loop - 1u)) & 1u;
+    if (mut && (rng() & 255u) < mut)
+        bit ^= 1u;
+    r = ((r << 1) | bit) & mask;
+    t->tm_reg = (uint16_t)r;
+    v8 = loop >= 8u ? r & 255u : (r << (8u - loop)) & 255u;
+    *vel = 88u + ((r >> 1) & 3u) * 12u;                 /* 88 .. 124 */
+    return (v8 * len) >> 8;
+}
+
 /* an arp step: the next note of the list by MODE, or (CHORD) the first 4 notes together, OCT octaves in turn. 1: it
  * plays (arp_note set), 0: nothing to play */
 static int arp_step(track_t *t)
@@ -1348,7 +1388,14 @@ static int arp_step(track_t *t)
         return 0;
     spice_t sp;
     t->arp_idx++;
-    spice_of(t, t->arp_idx % 16u, 100u, &sp);           /* (0.8) SPICE: this note's variation */
+    if (t->p[P_AMODE] == AM_TURING) {                   /* (0.9) TURNG: its register picks the note */
+        uint32_t vel, k = turing_step(t, len, &vel);
+        spice_gate = 64u;
+        t->arp_note = (uint8_t)list[k < len ? k : len - 1u];
+        arp_play(t, t->arp_note, vel);
+        return 1;
+    }
+    spice_of(t, t->arp_idx % spice_loop(t), 100u, &sp);   /* (0.8) SPICE: this note's variation (0.9: every LOOP) */
     spice_gate = sp.gate;
     if (t->p[P_AMODE] != AM_CHORD) {
         uint32_t nt = list[arp_pick(t, list, len)];
@@ -2207,7 +2254,7 @@ static void seq_step(track_t *t, const step_t *s, uint32_t slen, uint32_t skip)
     if (t->p[P_SPICE] && s->time == ST_NOTE && s->n && !s->rat && !(s->flags & SF_CONT_ALL)) {
         spice_t sp;
         int32_t base = (s->flags & SF_ACCENT) ? 127 : (s->vel ? s->vel : 96);
-        spice_of(t, t->seq_idx, 100u, &sp);
+        spice_of(t, t->seq_idx % spice_loop(t), 100u, &sp);
         if (sp.skip) {
             seq_release(t);
             return;

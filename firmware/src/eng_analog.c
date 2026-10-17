@@ -22,9 +22,8 @@ static void analog_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
     uint32_t wave = (uint32_t)p[P_E0], i;
     int32_t det = p[P_E1], mix = p[P_E2], noise = p[P_E3];
     int32_t cut = (p[P_E4] << 8) + m->cutoff + (p[P_E7] * (v->pitch16 - 60 * 16) >> 4);
-    tsvf_t flt;
-    ladder_t lad;
-    int moog = CLIPPER_SYNTH && t->p[P_FMODEL] == FM_MOOG;      /* Clipper: the 24 dB ladder (P_FMODEL) */
+    fmod_t fm;                                                   /* Clipper: the filter MODEL (P_FMODEL, dsp.c) */
+    int32_t model = fm_model(t);
     int32_t drive = 32768 + p[P_E6] * 768;                       /* 1x .. 4x */
     int32_t dw = p[P_E6] * 258;                                  /* DRV: dry -> driven (a clean range low) */
     uint32_t inc1 = m->inc;
@@ -36,12 +35,9 @@ static void analog_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
     int32_t m2 = mix * 258, m1 = 32767 - m2;                    /* osc mix Q15 */
     int32_t nz = noise * 200, drv = p[P_E6];
     uint32_t ph0 = v->ph[0], ph1 = v->ph[1];                  /* state in locals: out[] may alias v->s[] */
-    int32_t ic1 = v->s[0], ic2 = v->s[1], nst = v->s[2];
+    int32_t sv[2] = {v->s[0], v->s[1]}, nst = v->s[2];
     int32_t ls[4] = {v->s[3], v->s[4], v->s[5], v->s[6]};      /* (MOOG's stages, in locals too) */
-    if (moog)
-        ladder_coef(&lad, cut, p[P_E5]);
-    else
-        tsvf_coef(&flt, cut, p[P_E5]);
+    fmod_coef(&fm, model, cut, p[P_E5]);
     if (det == 0)
         inc2 = inc1;
     for (i = 0; i < n; i++) {
@@ -81,7 +77,8 @@ static void analog_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
         if (drv)                                      /* pre-shifts: drive is up to 4x, no overflow */
             s += mulq15(softclip(((s >> 2) * (drive >> 2)) >> 11) - s, dw);
         {   /* filter: linear up to half scale, then a soft knee (only resonance peaks saturate) */
-            int32_t y = moog ? ladder_tick(&lad, s, ls) >> 1 : tsvf_lp(&flt, s >> 1, &ic1, &ic2), a = y < 0 ? -y : y;
+            int32_t y = model == FM_SVF ? tsvf_lp(&fm.sv, s >> 1, &sv[0], &sv[1]) : fmod_tick(&fm, s, sv, ls);
+            int32_t a = y < 0 ? -y : y;
             if (a > 16000) {
                 a = 16000 + (softclip((a - 16000) * 2) >> 1);
                 y = y < 0 ? -a : a;
@@ -92,8 +89,8 @@ static void analog_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
     }
     v->ph[0] = ph0;
     v->ph[1] = ph1;
-    v->s[0] = ic1;
-    v->s[1] = ic2;
+    v->s[0] = sv[0];
+    v->s[1] = sv[1];
     v->s[3] = ls[0], v->s[4] = ls[1], v->s[5] = ls[2], v->s[6] = ls[3];
     v->s[2] = nst;
 }

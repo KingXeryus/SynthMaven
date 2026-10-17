@@ -72,7 +72,13 @@ static int ed_fmx_handle(uint32_t cmd, const uint8_t *a, uint32_t n)
  *   MSEQ_GET  part              -> part, rc, 64 bytes (lane 1's 16 steps, then lane 2's ..: each value + 8, 0..15)
  *   MSEQ_PUT  part, 64 bytes    -> part, rc        the part's steps at once (each clamped to -8..7)
  * rc: 0 ok, 1 bad request */
-enum { ED_MSEQ_GET = 93, ED_MSEQ_PUT };
+enum { ED_MSEQ_GET = 93, ED_MSEQ_PUT, ED_TUNE_GET, ED_TUNE_PUT };
+/* v14 (Clipper 0.9): the TUNING (voice.c tune_cfg), kept with the settings
+ *   TUNE_GET                                   -> rc, system, root, n, period (3 x 7 bits), n - 1 degrees (3 x 7 bits)
+ *   TUNE_PUT  system, root, n, period, degrees -> rc     (the USER scale: n 1..48 degrees of a period, 1/16 cent, each
+ *             above the one before; from a Scala .scl: the editor converts it)
+ * rc: 0 ok, 1 bad request */
+static uint32_t ed_u21(const uint8_t *a) { return (uint32_t)(a[0] & 127u) | (uint32_t)(a[1] & 127u) << 7 | (uint32_t)(a[2] & 127u) << 14; }
 static int ed_mseq_handle(uint32_t cmd, const uint8_t *a, uint32_t n)
 {
     uint32_t i, rc;
@@ -85,6 +91,42 @@ static int ed_mseq_handle(uint32_t cmd, const uint8_t *a, uint32_t n)
             for (i = 0; i < MSEQ_LANES * MSEQ_STEPS; i++)
                 ed_b((uint32_t)(trk[a[0]].ms[i / MSEQ_STEPS][i % MSEQ_STEPS] + 8));
         return 1;
+    case ED_TUNE_GET:
+        ed_b(0);
+        ed_b(tune_cfg.sys);
+        ed_b(tune_cfg.root);
+        ed_b(tune_cfg.n);
+        for (i = 0; i < 3u; i++)
+            ed_b((tune_cfg.period >> (7u * i)) & 127u);
+        for (i = 1; i < tune_cfg.n && i < TU_MAXDEG; i++) {
+            uint32_t k;
+            for (k = 0; k < 3u; k++)
+                ed_b((tune_cfg.deg[i] >> (7u * k)) & 127u);
+        }
+        return 1;
+    case ED_TUNE_PUT: {
+        tune_t c = tune_cfg;
+        uint32_t nd = n >= 6u ? a[2] : 0u, prev = 0;
+        rc = n < 6u || a[0] >= TU_N || a[1] > 11u || nd < 1u || nd > TU_MAXDEG || n != 6u + 3u * (nd - 1u);
+        if (!rc) {
+            c.sys = a[0], c.root = a[1], c.n = (uint8_t)nd;
+            c.period = (uint16_t)clamp((int32_t)ed_u21(a + 3), 16, 65535);
+            memset(c.deg, 0, sizeof c.deg);
+            for (i = 1; i < nd && !rc; i++) {
+                uint32_t d = ed_u21(a + 6u + 3u * (i - 1u));
+                rc = d <= prev || d >= c.period;        /* (each above the one before, inside the period) */
+                c.deg[i] = (uint16_t)d, prev = d;
+            }
+        }
+        if (!rc) {
+            tune_cfg = c;
+            tune_build();
+            settings_later = 1;
+            ui.force = 1;
+        }
+        ed_b(rc);
+        return 1;
+    }
     case ED_MSEQ_PUT:
         rc = n != 1u + MSEQ_LANES * MSEQ_STEPS || a[0] >= NPART;
         if (!rc) {

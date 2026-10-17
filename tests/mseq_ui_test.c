@@ -175,6 +175,42 @@ int main(int argc, char **argv)
            "INSERT: JUNO1 JUNO2 JUN12, their A B C: WIDTH TONE NOISE");
         t->p[P_ITYPE] = 0;
     }
+    {   /* 0.9: TUNING (GLO), VINTAGE (VOICE 2), the filter MODELs (FILTER), TURNG's labels (SPICE) */
+        set_engine_of(t, 0);
+        apply_preset_to(t, 0);
+        frames(3);
+        ok(go_page("TUNING") && PAGES[ui.page].fam == FAM_GLO, "TUNING: a page of the GLO family");
+        knob(0, 1);
+        ok(tune_cfg.sys == TU_JUST && tun_on, "TUNING: KNOB 1 to JUST: the table on");
+        knob(1, 2);
+        ok(tune_cfg.root == 2u, "TUNING: KNOB 2: ROOT D");
+        ppm("tune-page");
+        knob(0, -1);
+        ok(tune_cfg.sys == TU_EQUAL && !tun_on, "TUNING: back to EQUAL: off");
+        knob(1, -2);
+        go_page("VOICE 2");
+        ok(PAGES[ui.page].id[3] == P_VINT, "VINTAGE: VOICE 2's fourth knob");
+        knob(3, 30);
+        ok(t->p[P_VINT] == 30, "VINTAGE turned");
+        ppm("vint-page");
+        t->p[P_VINT] = 0;
+        go_page("FILTER");
+        knob(1, 2);
+        ok(t->p[P_FMODEL] == FM_MS20, "FILTER MODL: SVF MOOG MS20 ..");
+        ppm("filter-ms20");
+        knob(1, 6);
+        ok(t->p[P_FMODEL] == FM_HP, "FILTER MODL: up to HP");
+        knob(1, -10);
+        ok(t->p[P_FMODEL] == FM_SVF, "FILTER MODL: down to SVF");
+        t->p[P_AMODE] = AM_TURING;
+        go_page("SPICE");
+        ok(!strcmp(track_desc(t, P_SPICE)->label, "MUTAT") && !strcmp(track_desc(t, P_DICE)->label, "SEED") &&
+           !strcmp(track_desc(t, P_SLOOP)->label, "LOOP"), "SPICE page in TURNG: MUTAT SEED LOOP");
+        ppm("turing-spice");
+        t->p[P_AMODE] = 0;
+        frame();
+        ok(!strcmp(track_desc(t, P_SPICE)->label, "SPICE"), "SPICE page otherwise: SPICE DICE LOOP");
+    }
     printf(fails ? "mseq_ui: %d FAILED\n" : "mseq_ui: all passed\n", fails);
     return fails;
 }

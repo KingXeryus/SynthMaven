@@ -100,7 +100,7 @@ static void t_insert(void)
         for (i = 0; i < CTL; i++)
             b[i] = c[i] = cl[ncap - CTL + i];
         t->p[P_ITYPE] = IT_FUZZ, t->p[P_IMIX] = 0;
-        track_insert(t, b, CTL);
+        track_insert(t, b, CTL, 0);
         for (i = 0; i < CTL; i++)
             same &= b[i] == c[i];
         ok(same && !t->ins_run && !ins[0].w, "INSERT: MIX 0 is the sound bit for bit as with TYPE OFF (nothing runs)");

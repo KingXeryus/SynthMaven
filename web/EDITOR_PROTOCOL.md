@@ -481,6 +481,29 @@ START (ids 83..86) and SPICE, DICE (87, 88: the arp's and the sequencer's notes 
 - 0.8 also has the engines JUNO (21) and VECTOR (22), and the INSERT's types JUNO1, JUNO2, JUN12 (9..11: the JUNO
   chorus on any sound; A WIDTH, B TONE, C NOISE).
 
+## v14: the TUNING (Clipper 0.9)
+
+INFO ends with 14. 0.9 adds two parameters before P_E0: VINTAGE (89, VOICE 2: each voice's own tuning, drift and
+cutoff, 0..127) and LOOP (90, the SPICE page: 1..16, how many notes SPICE / DICE and the TURNG arp repeat); P_E0 is 91,
+P_COUNT 99. The filter's MODL (ANALOG, WAVE, VECTOR) goes SVF, MOOG, MS20, DIODE, SEM, NOTCH, BP, HP (1..8); the arp's
+MODE gains TURNG (15: a Turing machine over the held notes; SPICE its MUTATion, DICE its SEED, LOOP its length).
+
+The FM-1's tuning (GLO > TUNING: the system and its ROOT, every sound) is kept with the settings; the USER system plays
+a scale sent here (a Scala .scl file: the editor reads it):
+
+| cmd | name | request | reply |
+|---|---|---|---|
+| 95 | TUNE_GET | - | rc, system, root, n, period (3 bytes), n - 1 degrees (3 bytes each) |
+| 96 | TUNE_PUT | system, root, n, period (3 bytes), n - 1 degrees (3 bytes each) | rc |
+
+- system 0..13: EQUAL, JUST, PYTHA, MEANT, WERCK (Werckmeister III), KIRNB (Kirnberger III), RAST, BAYAT, SLEND,
+  PELOG, 19EDO, 24EDO, 31EDO, USER. root 0..11 (C..B): the note that is 1/1 (the tables) or C4 + root (USER).
+- The USER scale: n 1..48 degrees (the first, 0, not sent), the period and the degrees in 1/16 cent, each 21 bits as
+  3 bytes of 7 bits (low first). The degrees rise and stay below the period (16..65535). Each key plays the next degree;
+  a period other than 1200 cents (the tritave of Bohlen-Pierce, ...) is kept as it is.
+- rc 0 ok, 1 bad request (a system / root out of range, n 0 or above 48, the bytes not as n says, degrees not rising).
+  TUNE_PUT keeps the scale even when another system plays (USER plays it); the settings are written a few seconds later.
+
 ## Notes for the editor
 
 - **One request at a time.** Wait for the reply, about 10–50 ms, before sending the next.

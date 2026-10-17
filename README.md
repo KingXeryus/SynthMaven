@@ -7,9 +7,20 @@ Free and open source (GPL-3.0). It grew out of <a href="https://github.com/isod8
 
 ---
 
-> **Status: 0.8, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
+> **Status: 0.9, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
 
-SLOOP is a groovebox. **Clipper is a synthesizer** with 23 engines and 392 sounds, one instrument (two in MULTI) like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine, no song mode and no built-in samples. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
+SLOOP is a groovebox. **Clipper is a synthesizer** with 23 engines and 395 sounds, one instrument (two in MULTI) like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine, no song mode and no built-in samples. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
+
+## New in 0.9: filter models, VINTAGE, microtuning, a Turing machine, and a clean sound
+
+- **Filter models** (FILTER → **MODL**, on ANALOG, WAVE and VECTOR; HYBRID keeps its own two filters): **SVF** (12 dB, as before), **MOOG** (the 24 dB ladder), **MS20** (2-pole Sallen-Key style with the diode clipping in the feedback: it screams at high RES and stays stable), **DIODE** (the 4-pole diode ladder of the TB-303 / EMS family: rubbery, less bass loss), **SEM** (Oberheim's 12 dB state variable, gentle resonance), **NOTCH**, **BP** and **HP**. Zero-delay-feedback models, integer DSP; each costs between 0.6 and 1.4 times the old filter. A model changed under a held note dips and comes back (no click).
+- **VINTAGE** (VOICE 2 → **VINTG**, every engine): the voices of an analog poly are never quite alike. Each voice gets its own small tuning error and filter offset (its "voice card", fixed), a slow random drift of its pitch, and each note a little of its own. At 127: the card ±6 cents, the drift ±5, the note ±2, the cutoff ±1.5 steps. 0: bit for bit as before.
+- **TUNING** (GLO → **TUNING**, for every sound, kept with the settings): **EQUAL**, **JUST** (5-limit), **PYTHA**gorean, **MEANT**one (1/4 comma), **WERCK**meister III, **KIRNB**erger III, the maqams **RAST** and **BAYAT**i (neutral thirds), the gamelan's **SLEND**ro and **PELOG**, **19**, **24** and **31-EDO**, and **USER**: any **Scala .scl** scale (up to 48 notes per period, any period: Bohlen-Pierce's tritave too) sent from the web editor. ROOT sets the tonic. A glide moves through the scale.
+- **TURNG**, a Turing machine in the arpeggiator (ARP MODE → TURNG, after Music Thing's Turing Machine): a looping shift register picks among the held notes. On the SPICE page, **MUTAT** is how often a bit flips (0 locked, 127 random), **SEED** another pattern, **LOOP** its length (1..16). **LOOP** also sets how many notes SPICE / DICE vary before repeating.
+- **A clean sound, no clicks** (a new test, 45 cases, renders every change and checks that no sample jumps): the master limiter's gain now moves on an S-curve; the sends (CHOR / DLY / REV) and the INSERT's DIST glide instead of jumping; the delay's TIME cross-fades the old and new tap; the chorus DEPTH glides; the master FILT goes through the middle when it crosses from LP to HP; FLANG / CHOR in the INSERT wait for their line to fill; a WAVE table, an FMX patch or a filter model changed under a held note dips and comes back.
+- **3 new sounds** (TURING JUNO, MS20 VECTOR, DIODE VS BASS), and VINTAGE on a few JUNO pads. **395 sounds, 23 engines.**
+- **Fixed**: a SLOOP 2.6 project loaded on Clipper read its MOD SEQ / SPICE values from past the end of its INSERT's (now their defaults).
+- **The web editor** (protocol 14): a **Tuning** card (system, root, load a .scl), and the new knobs (VINTG, LOOP, MODL's models, TURNG).
 
 ## New in 0.8: JUNO and its chorus, VECTOR, a modulation sequencer, SPICE / DICE
 
@@ -138,7 +149,7 @@ The voices are a build option: 8 (the default, as SLOOP), 12 or 16 (`INSTALL-CLI
 
 ## Tests
 
-`HOST_ONLY=1 tests/run_tests.sh` runs everything that does not need the JieLi toolchain (0.8: JUNO and its chorus, VECTOR, the MOD SEQ, SPICE / DICE, their pages; 0.7: the voices on both cores in every mode of the host double of core 1, and under ThreadSanitizer; UNDO, COMPARE, FAV, KBD HOLD): the synth mode (HOME, presets, keys, pages, one instrument, MIDI omni), the HYBRID tests (the pitch of every oscillator, the filters, the matrix, the controllers, 300 random patches, the cost per voice), the editor's commands, golden renders of every sound, ASan and UBSan, a soak test, and the web pages.
+`HOST_ONLY=1 tests/run_tests.sh` runs everything that does not need the JieLi toolchain (0.9: the filter models, VINTAGE, the TUNING, TURNG, and the click test of 45 cases; 0.8: JUNO and its chorus, VECTOR, the MOD SEQ, SPICE / DICE, their pages; 0.7: the voices on both cores in every mode of the host double of core 1, and under ThreadSanitizer; UNDO, COMPARE, FAV, KBD HOLD): the synth mode (HOME, presets, keys, pages, one instrument, MIDI omni), the HYBRID tests (the pitch of every oscillator, the filters, the matrix, the controllers, 300 random patches, the cost per voice), the editor's commands, golden renders of every sound, ASan and UBSan, a soak test, and the web pages.
 
 ## Credits
 

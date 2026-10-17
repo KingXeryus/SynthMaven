@@ -3,7 +3,8 @@
 /* Parameter descriptors, formatting and the page table. */
 static const char *const N_LWAVE[] = {"SIN", "TRI", "SAW", "SQR", "S&H"};
 static const char *const N_AMODE[] = {"OFF", "UP", "DN", "UPDN", "RND", "ORD",   /* (append-only: seq.c AM_*) */
-                                       "REPEAT", "DNUP", "UP+8", "CONV", "DIVG", "PINKY", "THUMB", "WALK", "CHORD"};
+                                       "REPEAT", "DNUP", "UP+8", "CONV", "DIVG", "PINKY", "THUMB", "WALK", "CHORD",
+                                       "TURNG"};   /* (0.9: a Turing machine over the held notes) */
 static const char *const N_MOUT[] = {"KEYS", "SEQ"};
 static const char *const N_MIN[] = {"NOTES", "CLOCK"};  /* G_ROUTE: MIDI in, notes and clock, or the clock only (seq.c) */    /* G_MIDI: what goes to MIDI OUT (seq.c seq_out_on) */
 static const char *const N_DIV[] = {"1/4", "1/8", "1/16", "1/32", "8T", "16T"};
@@ -28,7 +29,7 @@ static const char *const N_DASH[] = {"--"};
 static const char *const N_SYNC[] = {"INT", "USB", "TRS"};   /* G_SYNC: the tempo and PLAY / STOP from (seq.c mclk) */
 static const char *const N_GO[] = {"--", "GO"};
 static const char *const N_SLCR[] = {"OFF", "GATE", "STUT"};             /* SL_OFF .. SL_STUT (slicer.c) */
-static const char *const N_FMODEL[] = {"SVF", "MOOG"};                  /* P_FMODEL: FM_SVF, FM_MOOG */
+static const char *const N_FMODEL[] = {"SVF", "MOOG", "MS20", "DIODE", "SEM", "NOTCH", "BP", "HP"};   /* P_FMODEL: FM_* */
 static const char *const N_SLDIV[] = {"1/8", "1/16", "1/32", "8T", "16T", "32T"};   /* SL_DEN */
 static const char *const N_CHORD[] = {"OFF", "TRIAD", "7TH", "9TH", "SUS4", "POWER"};   /* seq.c CHORD_DEG */
 static const char *const N_RTYPE[] = {"ROOM", "PLATE"};
@@ -115,7 +116,7 @@ static const param_desc_t TP[P_COUNT] = {
     [P_MUTE] = PE("MUTE", N_ONOFF, 0),
 #if CLIPPER_SYNTH                                  /* the sound's modulation (core.h P_VELF ..: voice.c) */
     [P_SLCR] = PD("VEL>F", F_BIPCT, -64, 63, 0),
-    [P_SLPAT] = {"MODL", F_ENUM, FM_SVF, FM_MOOG, FM_SVF, N_FMODEL, 0},   /* P_FMODEL (core.h) */
+    [P_SLPAT] = {"MODL", F_ENUM, FM_SVF, FM_LAST, FM_SVF, N_FMODEL, 0},   /* P_FMODEL (core.h; 0.9: + MS20 DIODE SEM NOTCH BP HP) */
     [P_SLRATE] = PE("MW>", N_MODDST, MD_VIB),
     [P_SLDEPTH] = PE("AT>", N_MODDST, MD_CUT),
 #else
@@ -154,6 +155,8 @@ static const param_desc_t TP[P_COUNT] = {
     [P_MSKEY] = PE("START", N_MSKEY, 1),
     [P_SPICE] = PD("SPICE", F_PCT, 0, 127, 0),
     [P_DICE] = PD("DICE", F_INT, 0, 127, 0),
+    [P_VINT] = PD("VINTG", F_PCT, 0, 127, 0),       /* 0.9 */
+    [P_SLOOP] = PD("LOOP", F_INT, 1, 16, 16),
 #endif
 };
 #if CLIPPER_SYNTH
@@ -264,6 +267,12 @@ static const param_desc_t *track_desc(const track_t *t, uint32_t id)
 {
     if(is_drum(t) && id==P_E0) return &DRUM_KIT_DESC;
 #if CLIPPER_SYNTH
+    if ((id == P_SPICE || id == P_DICE) && t->p[P_AMODE] == 15) {   /* (0.9) the arp's TURNG (seq.c AM_TURING) */
+        static param_desc_t d;
+        d = TP[id];
+        d.label = id == P_SPICE ? "MUTAT" : "SEED";
+        return &d;
+    }
     if (id >= P_IA && id <= P_IC)                     /* the INSERT's values as its TYPE names them */
         return ins_desc(t->p[P_ITYPE], id - P_IA);
     if (id >= P_M1SRC && id <= P_M6AMT && (id - P_M1SRC) % 3u == 1u) {   /* a matrix DST: the engine's own names */
@@ -506,7 +515,7 @@ static const page_t PAGES[] = {
 #endif
     {"VOICE", FAM_EDIT, SC_TRACK, GR_NONE, {P_VOICE, P_GLIDE, P_GLMODE, P_PRIO}},
 #if CLIPPER_SYNTH                                                        /* (one instrument: nothing to mute) */
-    {"VOICE 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_ALLOC, P_DETUNE, P_PAN, 0xFF}},
+    {"VOICE 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_ALLOC, P_DETUNE, P_PAN, P_VINT}},   /* (0.9: VINTAGE) */
     {"LAYER", FAM_EDIT, SC_SYN, GR_LAYER, {0, 1, 2, 3}},         /* X_LYMODE X_LYSOUND X_LYSPLIT X_LYLEVEL */
     {"LAYER 2", FAM_EDIT, SC_SYN, GR_LAYER, {4, 5, 6, 7}},       /* X_LYOCT X_LYPAN X_LYFILT X_LYSWAP */
     {"MORPH", FAM_EDIT, SC_SYN, GR_MORPH, {8, 9, 10, 0xFF}},     /* X_MORPH X_SETA X_SETB */
@@ -518,6 +527,7 @@ static const page_t PAGES[] = {
     {"GLOBAL", FAM_GLO, SC_GLOBAL, GR_NONE, {G_BPM, G_SWING, G_CLOCK, G_TUNE}},
 #if CLIPPER_SYNTH                                                        /* (no kick to duck to, no note repeat) */
     {"MASTER", FAM_GLO, SC_GLOBAL, GR_NONE, {G_DUST, G_FILT, 0xFF, 0xFF}},
+    {"TUNING", FAM_GLO, SC_SYN, GR_NONE, {47, 48, 0xFF, 0xFF}},   /* (0.9) X_TSYS X_TROOT: voice.c tune_cfg */
     {"SYSTEM", FAM_GLO, SC_GLOBAL, GR_NONE, {G_MIDI, G_SYNC, G_ROUTE, G_INFO}},
 #else
     {"MASTER", FAM_GLO, SC_GLOBAL, GR_NONE, {G_DUST, G_DUCK, G_FILT, G_ROLL}},
@@ -531,7 +541,8 @@ static const page_t PAGES[] = {
     {"ARP", FAM_ARP, SC_TRACK, GR_ARP, {P_AMODE, P_ARATE, P_AOCT, P_AGATE}},
     {"ARP 2", FAM_ARP, SC_TRACK, GR_NONE, {P_ASWING, P_APROB, P_AHOLD, P_AORDER}},
 #if CLIPPER_SYNTH
-    {"SPICE", FAM_ARP, SC_TRACK, GR_NONE, {P_SPICE, P_DICE, 0xFF, 0xFF}},   /* (0.8) the arp's and the steps' notes vary */
+    {"SPICE", FAM_ARP, SC_TRACK, GR_NONE, {P_SPICE, P_DICE, P_SLOOP, 0xFF}},   /* (0.8) the arp's and the steps' notes
+                                                                                * vary; (0.9) TURNG: MUTAT SEED LOOP */
 #endif
     {"STEP", FAM_SEQ, SC_STEP, GR_ROLL, {0, 1, 2, 3}},
     {"PATTERN", FAM_SEQ, SC_TRACK, GR_STEPS, {P_SLEN, P_SDIV, P_SSWING, P_SGATE}},

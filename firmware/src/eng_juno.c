@@ -86,7 +86,7 @@ static void juno_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const 
 static const preset_t JUNO_PRESETS[] = {
     /* {WAVE, PW, SUB, NOIS, HPF, CUT, RES, CHOR}, {A D S R}, ENV -> FILTER, mono; extras: the LFO on the PW */
     {"JUNO 106 PAD", {JW_SP, 40, 40, 0, 1, 88, 20, 1}, {70, 100, 115, 95}, 10, 0, FX(0, 0, 10, 40),
-     XP(P_LRATE + 1, 28, P_LD_SHP + 1, 40)},
+     XP(P_LRATE + 1, 28, P_LD_SHP + 1, 40, P_VINT + 1, 24)},
     {"JUNO BRASS", {JW_SAW, 0, 30, 0, 1, 62, 30, 0}, {14, 82, 100, 50}, 40, 0, FX(0, 0, 10, 30)},
     {"JUNO BASS", {JW_PLS, 50, 110, 0, 0, 58, 40, 0}, {0, 70, 70, 26}, 36, 1, FX(0, 0, 0, 8), XP(P_GLIDE + 1, 10)},
     {"JUNO STRINGS", {JW_SAW, 0, 0, 0, 2, 96, 10, 2}, {80, 100, 120, 96}, 0, 0, FX(0, 0, 10, 50),
@@ -97,7 +97,7 @@ static const preset_t JUNO_PRESETS[] = {
     {"80S HITS", {JW_SP, 20, 50, 0, 1, 56, 50, 1}, {0, 64, 0, 40}, 50, 0, FX(0, 0, 20, 30)},
     {"JUNO PIANO", {JW_PLS, 60, 30, 0, 2, 50, 20, 1}, {0, 90, 0, 70}, 50, 0, FX(0, 0, 10, 30)},
     {"DREAM PAD", {JW_SP, 50, 30, 10, 2, 92, 30, 3}, {90, 100, 120, 110}, 0, 0, FX(0, 0, 20, 70),
-     XP(P_LRATE + 1, 20, P_LD_SHP + 1, 50)},
+     XP(P_LRATE + 1, 20, P_LD_SHP + 1, 50, P_VINT + 1, 40)},
     {"SUB BASS 106", {JW_PLS, 0, 127, 0, 0, 40, 10, 0}, {0, 80, 110, 20}, 10, 1, FX(0, 0, 0, 4)},
     {"SYNTH BRASS 2", {JW_SP, 10, 40, 0, 1, 54, 36, 2}, {20, 86, 96, 56}, 46, 0, FX(0, 0, 12, 34)},
     {"ARP PLUCK", {JW_SAW, 0, 40, 0, 2, 44, 50, 1}, {0, 60, 0, 40}, 56, 0, FX(0, 0, 30, 30),
@@ -109,6 +109,9 @@ static const preset_t JUNO_PRESETS[] = {
      XP(P_GLIDE + 1, 20)},
     {"HOOVER JUNO", {JW_PLS, 80, 60, 0, 1, 76, 20, 3}, {0, 90, 110, 50}, 0, 1, FX(10, 0, 10, 30),
      XP(P_LRATE + 1, 60, P_LD_SHP + 1, 63, P_GLIDE + 1, 40)},
+    /* 0.9: the arp's TURNG (a Turing machine over the held notes: hold a chord), VINTAGE */
+    {"TURING JUNO", {JW_SAW, 0, 20, 0, 2, 64, 36, 1}, {0, 62, 24, 40}, 44, 0, FX(0, 0, 34, 40), ARP(15, 2, 2, 60),
+     XP(P_SPICE + 1, 16, P_SLOOP + 1, 8, P_VINT + 1, 30)},
 };
 
 static const engine_t ENG_JUNO = {

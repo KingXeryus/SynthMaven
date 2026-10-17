@@ -113,6 +113,9 @@ enum {                          /* per-track parameters */
                                                 * SYNC (the song's grid) / KEY (from each first key) */
     P_SPICE, P_DICE,                           /* .. SPICE / DICE (seq.c spice_*): how much the arp's and the sequencer's
                                                 * notes vary, and which variation */
+    P_VINT,                                    /* Clipper 0.9: VINTAGE, each voice a little its own (voice.c vintage) */
+    P_SLOOP,                                   /* .. LOOP: SPICE's variation comes round every LOOP notes; the arp's
+                                                * TURNG mode: its register's length (seq.c turing_step) */
 #endif
     P_E0, P_E1, P_E2, P_E3, P_E4, P_E5, P_E6, P_E7,
     P_COUNT
@@ -121,7 +124,7 @@ enum {                          /* per-track parameters */
  * their own (ANALOG): 1 SVF (12 dB, as before), 2 MOOG (the 24 dB ladder, dsp.c). The same slot: projects and user
  * presets keep it without a new format */
 #define P_FMODEL P_SLPAT
-enum { FM_SVF = 1, FM_MOOG = 2 };
+enum { FM_SVF = 1, FM_MOOG = 2, FM_MS20, FM_DIODE, FM_SEM, FM_NOTCH, FM_BP, FM_HP, FM_LAST = FM_HP };   /* (0.9: dsp.c fmod_*) */
 /* Clipper: two globals of the groovebox are free in the synth (no kick to duck to, no note repeat): the reverb's
  * TYPE (ROOM, PLATE: fx.c) and the plate's PRE-delay (ms) */
 #define G_RTYPE G_DUCK
@@ -202,6 +205,7 @@ typedef struct {
     int32_t env2;                /* ENV 2, Q24 */
     int16_t rnd, l2rnd;          /* a random value per note; LFO 2's S&H value */
     uint8_t e2st;                /* ENV 2: 0 off, 1 attack, 2 decay / sustain, 3 release */
+    int16_t vdrift, vdtgt;       /* (0.9) VINTAGE: the voice's slow pitch drift now, and where it goes (Q15) */
     uint8_t ch;                  /* the MIDI channel its note came on (MPE: its own bend, pressure, slide) */
 #endif
 } voice_t;
@@ -331,11 +335,16 @@ typedef struct track {
     uint8_t arp_walk;            /* (0.7) MODE WALK: the place in the note list it stands on */
     uint8_t arp_odd;             /* (0.7) stopped: the next arp step is an odd one (its SWG: late) */
     uint32_t arp_off;            /* units to its note-off */
+    uint16_t tm_reg;             /* (0.9) the arp's TURNG: its shift register */
+    int16_t tm_seed;             /* .. the DICE it was seeded with (+ 1; 0: not yet) */
 #if CLIPPER_SYNTH                /* Clipper 0.8: the MOD SEQ (voice.c mseq_*), part of the sound */
     int8_t ms[MSEQ_LANES][MSEQ_STEPS];   /* the steps, -8..7 */
     uint8_t ms_step, ms_held;    /* the step playing; keys held last block (KEY: the first one restarts it) */
     uint32_t ms_pos;             /* units into the step (free running: stopped, or KEY) */
     int32_t ms_cur[MSEQ_LANES];  /* each lane's value now (Q15, glided: SMTH) */
+    uint8_t fm_eff;              /* (0.9) the filter model the engines play (P_FMODEL after the duck: fx.c part_duck) */
+    uint8_t dk_phase, dk_pos;    /* .. the part's duck: 0 none, 1 out, 2 held silent, 3 in; samples into its half */
+    uint8_t dk_free, dk_hold;    /* .. a change may land now (silent, or held); blocks held */
 #endif
     /* sequencer: synth parts step[], the drum track dstep[] (16 lanes) */
     union {
@@ -387,6 +396,9 @@ typedef struct track {
     int32_t dist_hp, dist_lp1, dist_lp2;   /* DIST insert state (fx.c) */
     int32_t att;                 /* mute / solo fade: attenuation, Q15 (0 = heard; fx.c mix_part, drums_mix) */
     uint8_t dist_on;             /* DIST was on in the last block (its states restart when it comes on) */
+    int16_t dist_last;           /* (Clipper 0.9) DIST's amount while it fades out (turned to 0 under a sound) */
+    int32_t dist_w;              /* .. its wet share, Q15: DIST turned on or off under a sound fades (no click) */
+    int32_t snd_c, snd_d, snd_r; /* .. the sends of the last block: a change glides as LEVEL's does */
     uint8_t tail;                /* blocks to mix after the last voice (the DIST tail) */
     int16_t armp, aholdp;        /* P_AMODE / P_AHOLD as last seen by the ISR */
     /* engine switch (voice.c engine_block): the old engine's voices fade out, then it switches */

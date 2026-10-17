@@ -349,7 +349,8 @@ static void fmx_block(track_t *t)
         fmx_reload &= (uint8_t)~(1u << tr);
         fmx_slot_seen[tr] = 0;
     }
-    if (fmx_slot_seen[tr] != s + 1) {
+    if (fmx_slot_seen[tr] != s + 1 && (!fmx_slot_seen[tr] || t->dk_free)) {   /* (0.9: PTCH turned under a sound:
+                                                         * when the part's duck holds it silent, fx.c part_duck) */
         fmx_slot_seen[tr] = (int16_t)(s + 1);
         fmx_slot_patch((uint32_t)s, &fmx_cur[tr]);
         fmx_dirty[tr] = 1;

@@ -240,13 +240,13 @@ int main(int argc, char **argv)
         ok(!kh_any(t), "KBD HOLD off: the held notes end");
     }
     {
-        static const char *const want[15] = {"OFF", "UP", "DN", "UPDN", "RND", "ORD", "REPEAT", "DNUP", "UP+8", "CONV",
-                                             "DIVG", "PINKY", "THUMB", "WALK", "CHORD"};
+        static const char *const want[16] = {"OFF", "UP", "DN", "UPDN", "RND", "ORD", "REPEAT", "DNUP", "UP+8", "CONV",
+                                             "DIVG", "PINKY", "THUMB", "WALK", "CHORD", "TURNG"};
         const param_desc_t *d = &TP[P_AMODE];
-        int okm = d->max == 14;
-        for (i = 0; i < 15u && okm; i++)
+        int okm = d->max == 15;
+        for (i = 0; i < 16u && okm; i++)
             okm = !strcmp(d->names[i], want[i]);
-        ok(okm, "ARP: 15 modes (REPEAT DNUP UP+8 CONV DIVG PINKY THUMB WALK CHORD after UP .. ORD)");
+        ok(okm, "ARP: 16 modes (REPEAT DNUP UP+8 CONV DIVG PINKY THUMB WALK CHORD after UP .. ORD; 0.9: TURNG)");
     }
     {   /* a sound loaded under a running arp: the arp and its notes go on */
         t->p[P_AMODE] = 1;
