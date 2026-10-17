@@ -2552,7 +2552,7 @@ static const uint8_t MIDI_CC_MAP[][2] = {
 };
 /* Clipper: the performance controllers of a part (eng_hybrid.c part_ctl: the matrix's MW, AT, BEND, EXPR):
  * pitch bend (En, every engine: voice.c), channel and polyphonic pressure (Dn, An), and the CCs 1 (mod
- * wheel), 11 (expression), 64 (sustain pedal), 16..19 (HYBRID: the macros M1..M4) */
+ * wheel), 11 (expression), 64 (sustain pedal), 16..19 (HYBRID: the macros M1..M4; 1.0, the others: MACROS) */
 static void part_ctl_event(track_t *t, uint32_t st, uint32_t d1, uint32_t d2)
 {
     uint32_t p = (uint32_t)(t - trk), i;
@@ -2610,6 +2610,10 @@ static int part_ctl_cc(track_t *t, uint32_t cc, uint32_t value)   /* 1: taken */
     case 16: case 17: case 18: case 19:
         if (t->eng_req == ENGI_HYBRID)
             t->p[P_E4 + cc - 16u] = (int16_t)value;
+#if CLIPPER_SYNTH
+        else                                          /* (1.0) the other engines: the sound's MACROS (BRITE TIMBR: centred) */
+            t->p[P_MAC1 + cc - 16u] = (int16_t)(cc < 18u ? (int32_t)value - 64 : (int32_t)value);
+#endif
         return 1;
 #if CLIPPER_SYNTH
     case 20:                                          /* Clipper 0.3: MORPH (ui_synth.c, the UI applies it) */

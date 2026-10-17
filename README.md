@@ -7,7 +7,7 @@ Free and open source (GPL-3.0). It grew out of <a href="https://github.com/isod8
 
 ---
 
-> **Status: 0.9, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to the official V15 from the installer page, or to SLOOP with its own `INSTALL-SLOOP.bat`.
+> **Status: 1.0.** Tested on the host (the test suite below), not yet by many on the device. Install it at your own risk, and keep a backup made with the editor. You can go back to the official V15 from the installer page, or to SLOOP with its own `INSTALL-SLOOP.bat`.
 
 SLOOP is a groovebox. **Clipper is a synthesizer** with 23 engines and 409 sounds, one instrument (two in MULTI) like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine, no song mode and no built-in samples. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
 
@@ -40,9 +40,9 @@ SLOOP is a groovebox. **Clipper is a synthesizer** with 23 engines and 409 sound
 | **NOISE** | From analog hiss to metallic shift-register tones, through a resonant filter. |
 | **GRAIN** / **SAMPLE** | Granular clouds and sampled instruments: on four sources of Clipper's own (VOX, a small choir opening "oo" to "ah"; GLASS, a glass harmonica; PAD, seven saws whose filter opens; AIR, breath on the note's harmonics), synthesized, not recorded, or on your own samples (four slots, sent from the editor). |
 
-**Shaping the sound** (every engine): a six-slot **modulation matrix** (LFO 1 and 2, ENV 1 and 2, velocity, key, mod wheel, aftertouch, random, MPE slide, the **MOD SEQ**'s four lanes) onto pitch, cutoff, shape, amp, pan, LFO 2's rate and the engine's own eight values; **LFO 2**, **ENV 2**; the **MOD SEQ**, a four-lane modulation sequencer; **eight filter models** on ANALOG, WAVE and VECTOR (SVF, Moog ladder, MS-20, diode ladder, SEM, notch, band-pass, high-pass); **VINTAGE** (each voice drifts and differs, like an analog poly); an **INSERT** effect per sound (SOFT, HARD, FOLD, FUZZ, CRUSH, PHASER, FLANGER, CHORUS, and the JUNO chorus).
+**Shaping the sound** (every engine): a twelve-slot **modulation matrix** (LFO 1, 2 and 3, ENV 1 and 2, velocity, key, mod wheel, aftertouch, random, MPE slide, the **MOD SEQ**'s four lanes, the four macros) onto pitch, cutoff, shape, amp, pan, LFO 2's rate and the engine's own eight values; **LFO 2**, **LFO 3**, **ENV 2** (one-shot or looping); four **MACROS** (BRITE, TIMBR, MOTN, SPACE) on CC 16 to 19; **SPREAD**, each voice its own place in the stereo field; the **MOD SEQ**, a four-lane modulation sequencer; **eight filter models** on ANALOG, WAVE and VECTOR (SVF, Moog ladder, MS-20, diode ladder, SEM, notch, band-pass, high-pass); **VINTAGE** (each voice drifts and differs, like an analog poly); an **INSERT** effect per sound (SOFT, HARD, FOLD, FUZZ, CRUSH, PHASER, FLANGER, CHORUS, and the JUNO chorus).
 
-**Effects**: distortion, stereo chorus, tempo-synced delay, room and plate reverbs (after Dattorro), a DJ filter, a master three-band EQ, a bus compressor and a look-ahead limiter. Changes glide instead of clicking.
+**Effects**: distortion, stereo chorus, a tempo-synced delay (MONO, PING-PONG, TAPE), four reverbs (ROOM, PLATE and HALL after Dattorro, SHIMMER an octave up), a DJ filter, a master three-band EQ, a bus compressor and a look-ahead limiter. Changes glide instead of clicking.
 
 **Tuning**: equal, just, Pythagorean, meantone, Werckmeister III, Kirnberger III, the maqams Rast and Bayati, slendro, pelog, 19 / 24 / 31-EDO, and any **Scala `.scl`** scale from the editor.
 
@@ -51,6 +51,19 @@ SLOOP is a groovebox. **Clipper is a synthesizer** with 23 engines and 409 sound
 **Working**: **UNDO** and **COMPARE** on the FM-1, favourites, **MORPH** between two versions of a sound, a **randomizer** by section, user presets and projects that keep everything above.
 
 **The web editor** (Chrome or Edge, nothing to install): every parameter live; the whole HYBRID and FMX patches; the MOD SEQ's lanes; the tuning and `.scl` files; DX7 banks; wavetables and samples; a sound library, undo / compare / A-B / randomize tools; backups of the whole FM-1.
+
+## New in 1.0: a stereo voice, a deeper modulation, four macros, a hall and a shimmer
+
+- **SPREAD** (VOICE 3 → **SPRED**, every engine): each voice gets its own place between left and right (the outer voices first, the next ones between), so a chord opens across the stereo field and the voices of UNI2 / UNI4 fan out. The middle stays what it was (left + right is the sound without SPREAD, bit for bit at 0), and the side goes through the same DIST / INSERT level and track FILTER. The pads and the unison sounds come with a little of it (48).
+- **The matrix has 12 slots** (MATRIX 1 .. 12, on the FM-1 and in the editor), and new sources: **LFO 3** (LFO 3 page: RATE, WAVE, MODE FREE / KEY) and the four macros **MAC1 .. MAC4**.
+- **ENV 2 LOOP** (ENV 2 LOOP page): ONE as before, or **LOOP**: past its decay it starts its attack again, as long as the note is held: an envelope that cycles, a rhythmic modulator in the matrix.
+- **Four MACROS on every engine** (EDIT → **MACROS**; MIDI CC 16 .. 19; HYBRID keeps its own M1..M4): **BRITE** (the cutoff, ±2.5 octaves), **TIMBR** (the engine's shape), **MOTN** (a vibrato and LFO 3 on the cutoff: motion), **SPACE** (more reverb, delay and SPREAD). They are matrix sources too.
+- **HALL and SHIMMER** (REVERB → TYPE): HALL is the plate's tank made a room of stone (a longer decay, a pre-delay, a darker top); SHIMMER feeds it an octave up, the pitched tail of the ambient records. A change of TYPE fades the old tail out (no click).
+- **The delay has a MODE** (DLY 2 → **MODE**): **MONO** as before, **PING** (the first echo left at TIME, the next right at twice TIME, back and forth), **TAPE** (wow and flutter swing the echoes; the repeats saturate as they pile up). A change of MODE cross-fades.
+- **Kept with the sound**: user presets keep every 1.0 value in a tail after the bank (SLOOP and older Clipper versions read the bank as before and never see it); projects keep them in track 3's nudges while track 3 has no steps (a project whose track 3 has steps loads them at their defaults).
+- **Fixed**: the JUNO chorus (CHOR I / II / I+II, and the INSERT's JUNO types) cracked on a loud chord of many voices (its arithmetic wrapped round past 16 bits; now 64-bit products, and the line keeps an eighth of the sound instead of a quarter: no clipping either).
+- **Changed**: the undo history moved out of the 96 KB RAM region (the new buffers needed the room).
+- **The web editor**: the new pages (VOICE 3, LFO 3, ENV 2 LOOP, MACROS, DLY 2) and the matrix's 12 slots, with Clipper 1.0's layout (126 values, P_E0 118; still protocol 14). A 0.9 sound file loads into 1.0 with the new values left as they are.
 
 ## New in 0.9: filter models, VINTAGE, microtuning, a Turing machine, and a clean sound
 
@@ -180,7 +193,7 @@ A SLOOP project loads with only its first track playing. The four-track groovebo
 
 ## Playing it from a controller (new in Clipper, every engine)
 
-Pitch bend (±2 semitones, or the HYBRID patch's own range up to ±24), mod wheel (CC 1), expression (CC 11), sustain pedal (CC 64), channel and polyphonic aftertouch, and the macros M1-M4 on CC 16-19. SLOOP's CC map (7, 10, 71-75, 91, 93, 94) still works.
+Pitch bend (±2 semitones, or the HYBRID patch's own range up to ±24), mod wheel (CC 1), expression (CC 11), sustain pedal (CC 64), channel and polyphonic aftertouch, and the macros on CC 16-19 (HYBRID: M1-M4; every other engine: BRITE, TIMBR, MOTN, SPACE). SLOOP's CC map (7, 10, 71-75, 91, 93, 94) still works.
 
 ## Install and test
 
@@ -194,7 +207,7 @@ The voices are a build option: 8 (the default, as SLOOP), 12 or 16 (`INSTALL-CLI
 
 ## Tests
 
-`HOST_ONLY=1 tests/run_tests.sh` runs everything that does not need the JieLi toolchain (0.9: the filter models, VINTAGE, the TUNING, TURNG, and the click test of 46 cases; 0.8: JUNO and its chorus, VECTOR, the MOD SEQ, SPICE / DICE, their pages; 0.7: the voices on both cores in every mode of the host double of core 1, and under ThreadSanitizer; UNDO, COMPARE, FAV, KBD HOLD): the synth mode (HOME, presets, keys, pages, one instrument, MIDI omni), the HYBRID tests (the pitch of every oscillator, the filters, the matrix, the controllers, 300 random patches, the cost per voice), the editor's commands, golden renders of every sound, ASan and UBSan, a soak test, and the web pages.
+`HOST_ONLY=1 tests/run_tests.sh` runs everything that does not need the JieLi toolchain (1.0: SPREAD, the 12 slots, LFO 3, ENV 2 LOOP, the macros, HALL / SHIMMER, PING / TAPE, the stores' tail, the voices on both cores with SPREAD, and the click test of 55 cases; 0.9: the filter models, VINTAGE, the TUNING, TURNG; 0.8: JUNO and its chorus, VECTOR, the MOD SEQ, SPICE / DICE, their pages; 0.7: the voices on both cores in every mode of the host double of core 1, and under ThreadSanitizer; UNDO, COMPARE, FAV, KBD HOLD): the synth mode (HOME, presets, keys, pages, one instrument, MIDI omni), the HYBRID tests (the pitch of every oscillator, the filters, the matrix, the controllers, 300 random patches, the cost per voice), the editor's commands, golden renders of every sound, ASan and UBSan, a soak test, and the web pages.
 
 ## Credits
 

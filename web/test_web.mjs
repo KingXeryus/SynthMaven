@@ -802,10 +802,12 @@ async function editorV7() {
     for (const nm of (/enum \{\s*\/\* per-track parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/#(if|endif)[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) sy[nm] = k++;
     ok(sy.P_L2RATE === 53 && sy.P_E2ATK === 56 && sy.P_M1SRC === 60 && sy.P_M6AMT === 77 && sy.P_ITYPE === 78 && sy.P_IMIX === 82
       && sy.P_MSRATE === 83 && sy.P_MSKEY === 86 && sy.P_SPICE === 87 && sy.P_DICE === 88 && sy.P_VINT === 89 && sy.P_SLOOP === 90
-      && sy.P_E0 === 91 && sy.P_COUNT === 99
-      && E.lockable(sy.P_E0, 91) && E.lockable(sy.P_E7, 91) && !E.lockable(sy.P_L2RATE, 91) && !E.lockable(sy.P_M6AMT, 91)
-      && !E.lockable(sy.P_ITYPE, 91) && !E.lockable(sy.P_IMIX, 91) && !E.lockable(sy.P_MSRATE, 91) && !E.lockable(sy.P_DICE, 91) && !E.lockable(sy.P_SLOOP, 91),
-      "v7: Clipper's layout (LFO 2 53, ENV 2 56, MATRIX 60, INSERT 78, 0.8's MOD SEQ 83, SPICE 87, 0.9's VINTAGE 89 LOOP 90, P_E0 91): its EDIT values lockable, the rest not");
+      && sy.P_SPREAD === 91 && sy.P_L3RATE === 92 && sy.P_E2LOOP === 95 && sy.P_MAC1 === 96 && sy.P_MAC4 === 99 && sy.P_M7SRC === 100
+      && sy.P_M12AMT === 117 && sy.P_E0 === 118 && sy.P_COUNT === 126
+      && E.lockable(sy.P_E0, 118) && E.lockable(sy.P_E7, 118) && !E.lockable(sy.P_L2RATE, 118) && !E.lockable(sy.P_M6AMT, 118)
+      && !E.lockable(sy.P_ITYPE, 118) && !E.lockable(sy.P_IMIX, 118) && !E.lockable(sy.P_MSRATE, 118) && !E.lockable(sy.P_DICE, 118)
+      && !E.lockable(sy.P_SLOOP, 118) && !E.lockable(sy.P_SPREAD, 118) && !E.lockable(sy.P_MAC1, 118) && !E.lockable(sy.P_M12AMT, 118),
+      "v7: Clipper's layout (LFO 2 53, ENV 2 56, MATRIX 60, INSERT 78, 0.8's MOD SEQ 83, SPICE 87, 0.9's VINTAGE 89 LOOP 90, 1.0's SPREAD 91, LFO 3 92, ENV 2 LOOP 95, MACROS 96, slots 7..12 100, P_E0 118): its EDIT values lockable, the rest not");
   }
   {   /* (after SLOOP 2.6) SetGate: a value set again is sent once the last request is answered */
     const g = new E.SetGate();
@@ -1295,7 +1297,7 @@ function editorClipperPages() {
   const P = {}; let k = 0;
   for (const nm of (/enum \{\s*\/\* per-track parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/#(if|endif)[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) P[nm] = k++;
   const G = {}; k = 0;
-  for (const nm of (/enum \{\s*\/\* global parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) G[nm] = k++;
+  for (const nm of (/enum \{\s*\/\* global parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/#(if|endif)[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) G[nm] = k++;
   for (const [, a, b] of ch.matchAll(/#define ([PG]_\w+) ([PG]_\w+)/g)) (a[0] === "P" ? P : G)[a] = (b[0] === "P" ? P : G)[b];
   /* PAGES as the synth build has it: #if CLIPPER_SYNTH kept, its #else and #if !CLIPPER_SYNTH dropped */
   const src = pc.slice(pc.indexOf("static const page_t PAGES[]"), pc.indexOf("#define NPAGES"));
@@ -1315,14 +1317,18 @@ function editorClipperPages() {
   const devG = pages.filter((x) => x[1] === "SC_GLOBAL").flatMap((x) => x[2]).filter((id) => ![G.G_INFO, G.G_SLOT, G.G_LOAD, G.G_SAVE, G.G_CLRSEQ, G.G_INITSND, G.G_NEWPRJ].includes(id));
   const missP = [...devP].filter((id) => !p0.has(id)), missG = devG.filter((id) => !g1.has(id));
   const notOn = Array.from({ length: P.P_COUNT }, (_, i) => i).filter((i) => !p0.has(i));
-  ok(pages.length > 20 && P.P_E0 === 91 && P.P_COUNT === 99 && X.layoutKnown({ pcount: 99, pe0: 91, gcount: G.G_COUNT })
+  ok(pages.length > 20 && P.P_E0 === 118 && P.P_COUNT === 126 && G.G_COUNT === 34 && G.G_DMODE === 33
+    && X.layoutKnown({ pcount: 126, pe0: 118, gcount: G.G_COUNT }) && X.layoutKnown({ pcount: 99, pe0: 91, gcount: 33 })
     && !missP.length && !missG.length && js(notOn) === js([P.P_MUTE]) && all0.length === new Set(all0).size,
-    `editor: Clipper 0.9's pages hold every value of the device's (params.c PAGES; not on one: MUTE${missP.length || missG.length ? `; missing P ${missP} G ${missG}` : ""}${notOn.length !== 1 ? `; off the pages ${notOn}` : ""})`);
+    `editor: Clipper 1.0's pages hold every value of the device's (params.c PAGES; not on one: MUTE${missP.length || missG.length ? `; missing P ${missP} G ${missG}` : ""}${notOn.length !== 1 ? `; off the pages ${notOn}` : ""})`);
   const title = (id, s) => (L.flatMap((g) => g.pages).find((x) => x[1] === s && x[2].includes(id)) || [])[0];
   ok(title(P.P_FMODEL, 0) === "FILTER" && title(P.P_VELF, 0) === "MOD" && title(P.P_VINT, 0) === "VOICE 2" && title(P.P_SLOOP, 0) === "SPICE"
     && title(G.G_RTYPE, 1) === "REVERB" && title(G.G_RPRE, 1) === "REVERB" && title(G.G_EQLOW, 1) === "EQ+COMP" && title(G.G_SYNC, 1) === "SYSTEM"
-    && !L.some((g) => g.pages.some((x) => x[0] === "SLICER" || x[0] === "DRUMS")),
-    "editor: ... grouped as the device (FILTER MODL, LFO > MOD, VOICE 2 VINTG, SPICE LOOP, REVERB TYPE PRE, EQ+COMP, SYSTEM)");
+    && !L.some((g) => g.pages.some((x) => x[0] === "SLICER" || x[0] === "DRUMS"))
+    && title(P.P_SPREAD, 0) === "VOICE 3" && title(P.P_L3MODE, 0) === "LFO 3" && title(P.P_E2LOOP, 0) === "ENV 2 LOOP"
+    && title(P.P_MAC3, 0) === "MACROS" && title(P.P_M7SRC, 0) === "MATRIX 7" && title(P.P_M12AMT, 0) === "MATRIX 12"
+    && title(G.G_DMODE, 1) === "DLY 2" && X.LAYOUT(91).flatMap((g) => g.pages).filter((x) => /^MATRIX/.test(x[0])).length === 6,
+    "editor: ... grouped as the device (FILTER MODL, LFO > MOD, VOICE 2 VINTG, SPICE LOOP, REVERB TYPE PRE, EQ+COMP, SYSTEM; 1.0: VOICE 3 SPREAD, LFO 3, ENV 2 LOOP, MACROS, MATRIX 7..12, DLY 2 MODE; 0.9's: 6 slots)");
   /* the labels the device shows and DESC does not (params.c track_desc) */
   const pcs = (re) => ((re.exec(pc) || [])[1] || "").match(/"[^"]*"/g).map((x) => x.slice(1, -1));
   const amode = pcs(/N_AMODE\[\] = \{([^}]*)\}/), itype = pcs(/N_ITYPE\[\] = \{([^}]*)\}/), irate = pcs(/N_IRATE\[\] = \{([^}]*)\}/);
@@ -1344,12 +1350,18 @@ function editorClipperPages() {
   ok(d1.names[7] === "CUT" && d1.names[8] === "E2" && d1.names[14] === "PTCH" && dst.names[7] === "E1"
     && crB.label === "BITS" && E.fmtValue(crB, 0)[0] === "1" && E.fmtValue(crB, 127)[0] === "16" && E.fmtValue(crB, 64)[0] === "9"
     && crR.label === "RATE" && E.fmtValue(crR, 127).join() === "44k,Hz" && ju.label === "WIDTH" && ju.def === 127 && off === insA
-    && mu.label === "MUTAT" && sd.label === "SEED" && ch14 === spice && X.synDesc(87, spice, { pe0: 53 }, p, pd) === spice,
+    && mu.label === "MUTAT" && sd.label === "SEED" && ch14 === spice && X.synDesc(87, spice, { pe0: 53 }, p, pd) === spice
+    && X.synDesc(101, dst, info, p, pd) === dst && (() => { const q1 = []; q1[118] = { label: "CUT" };
+      return X.synDesc(101, dst, { pe0: 118 }, new Array(126).fill(0), q1).names[7] === "CUT" && X.synDesc(116, dst, { pe0: 118 }, new Array(126).fill(0), q1).names[7] === "CUT"; })(),
     "editor: Clipper's labels: a matrix DST as the engine's values, the INSERT's A B C by TYPE (CRUSH BITS 1..16), TURNG's MUTAT SEED");
   /* a Clipper 0.8 sound (97 values, P_E0 89) into 0.9 (99, 91): VINTAGE and LOOP left as the device has them */
   const v8 = Array.from({ length: 97 }, (_, i) => 3000 + i), q = E.patchByCount(v8, 89, 99, 91), r = E.patchByCount(q.map((x) => x ?? 0), 91, 97, 89);
   ok(q[88] === 3088 && q[89] === null && q[90] === null && q[91] === 3089 && q[98] === 3096 && r[88] === 3088 && r[89] === 3089 && r[96] === 3096,
     "patchByCount: Clipper 0.8 <-> 0.9: up to DICE by place, the engine's 8 by theirs, VINTAGE and LOOP left out");
+  /* a Clipper 0.9 sound (99 values, P_E0 91) into 1.0 (126, 118): SPREAD .. slot 12 left as the device has them */
+  const v9 = Array.from({ length: 99 }, (_, i) => 4000 + i), q9 = E.patchByCount(v9, 91, 126, 118), r9 = E.patchByCount(q9.map((x) => x ?? 0), 118, 99, 91);
+  ok(q9[90] === 4090 && q9[91] === null && q9[117] === null && q9[118] === 4091 && q9[125] === 4098 && r9[90] === 4090 && r9[91] === 4091 && r9[98] === 4098,
+    "patchByCount: Clipper 0.9 <-> 1.0: up to LOOP by place, the engine's 8 by theirs, 1.0's 27 left out");
 }
 
 /* ------------------------------------------------- editor icons (Fukiai) --- */

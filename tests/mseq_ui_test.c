@@ -131,8 +131,8 @@ int main(int argc, char **argv)
         frame();
     }
     {   /* the matrix names the lanes */
-        ok(!strcmp(N_MSRC[MS_SEQ1], "SEQ1") && !strcmp(N_MSRC[MS_SEQ4], "SEQ4") && MS_NSRC <= 16,
-           "MATRIX: SEQ1..SEQ4 among the sources (4 bits in the stores)");
+        ok(!strcmp(N_MSRC[MS_SEQ1], "SEQ1") && !strcmp(N_MSRC[MS_SEQ4], "SEQ4") && MS_SEQ4 < 16 &&
+           MS_NSRC <= 32, "MATRIX: SEQ1..SEQ4 among the sources (4 bits in the stores; 1.0: a fifth in the tail)");
     }
     {   /* JUNO and VECTOR in the browser and the engine list */
         uint32_t total, n, juno = 0, vec = 0;

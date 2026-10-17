@@ -18,7 +18,12 @@ static inline int32_t soft_knee(int32_t y, int32_t k)   /* linear up to k, then 
 /* 0.7: the second core renders some of a part's voices (voice.c track_render) into vs_buf while this core renders the
  * others: an engine's scratch that is not on the stack is one per core, picked by C1_IX(out) (1: the second core's) */
 static int32_t vs_buf[CTL] __attribute__((aligned(8)));
+#if CLIPPER_SYNTH                       /* (1.0) SPREAD: a voice alone into a scratch first (voice.c vrender), one a core */
+static int32_t vs_tmp[2][CTL] __attribute__((aligned(8)));
+#define C1_IX(out) ((out) == vs_buf || (out) == vs_tmp[1] ? 1u : 0u)
+#else
 #define C1_IX(out) ((out) == vs_buf ? 1u : 0u)
+#endif
 /* (0.9) the filter MODEL the engines with a low-pass of their own play (dsp.c fmod_*): P_FMODEL after the short duck
  * a change of it brings (fx.c mix_part1: no click), SVF in the groovebox */
 static inline int32_t fm_model(const track_t *t)

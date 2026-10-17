@@ -51,7 +51,7 @@ static const param_desc_t XD[X_COUNT] = {
     [X_RNDWHAT] = PE("WHAT", N_RNDWHAT, 1),
     [X_RNDGO] = PE("RAND", N_GO, 0),
     [X_RNDBACK] = PE("BACK", N_GO, 0),
-    [X_MSLOT] = PD("SLOT", F_INT, 1, 6, 1),
+    [X_MSLOT] = PD("SLOT", F_INT, 1, 12, 1),   /* (1.0: 12) */
     [X_FOP] = PD("OP", F_INT, 1, 6, 1),
     [X_FWAVE] = PE("WAVE", N_FMX_WAVE, 0),
     [X_FMODE] = PE("MODE", N_FMX_MODE, 0),
@@ -133,7 +133,8 @@ typedef struct {
     syn_snap_t s;
     fmx_patch_t fx;                                   /* (the part's FMX patch, eng_fmx.c fmx_cur) */
 } hist_t;
-static hist_t hist[HIST_N];                           /* a ring: hist_n steps back, then hist_r steps forward */
+static hist_t hist[HIST_N] __attribute__((section(".pool")));   /* a ring: hist_n steps back, then hist_r steps
+                                                                  * forward (1.0: in the pool, RAM is near full) */
 static hist_t hist_cur, hist_orig, hist_cmp;          /* the step now (committed), the sound as loaded, the edits */
 static uint32_t hist_head, hist_n, hist_r, hist_t0;   /* hist_head: the next free place; hist_t0: the last change */
 static uint8_t hist_pend, hist_ready, hist_cmp_on, hist_edited, hist_load_req;
@@ -386,7 +387,8 @@ static void syn_rnd_range(uint32_t i, const param_desc_t *d, int32_t *lo, int32_
     case P_DIST: *hi = 70; break;
     default: break;
     }
-    if (i >= P_M1SRC && i <= P_M6AMT) {               /* a matrix slot's amount: moderate, the pitch finer */
+    uint32_t mf;
+    if (mx_slot_of(i, &mf) >= 0) {                    /* a matrix slot's amount: moderate, the pitch finer */
         int32_t r = trk[0].p[i - 1u] == MT_PITCH ? 6 : 40;
         *lo = -r;
         *hi = r;
@@ -400,8 +402,10 @@ static int syn_rnd_in(uint32_t i, uint32_t what)
 {
     int edit = i >= P_E0 && i <= P_E7;
     int env = (i >= P_ATK && i <= P_REL) || (i >= P_ED_FLT && i <= P_ED_SHP) || (i >= P_E2ATK && i <= P_E2REL);
+    uint32_t mf;
     int mod = (i >= P_LRATE && i <= P_LD_AMP) || i == P_VELF || (i >= P_L2RATE && i <= P_L2MODE) ||
-              (i >= P_M1SRC && i <= P_M6AMT && (i - P_M1SRC) % 3u == 2u && trk[0].p[i - 2u] != MS_OFF && trk[0].p[i - 1u] != MT_OFF);
+              (i >= P_L3RATE && i <= P_L3MODE) ||       /* (1.0: LFO 3, slots 7..12) */
+              (mx_slot_of(i, &mf) >= 0 && mf == 2u && trk[0].p[i - 2u] != MS_OFF && trk[0].p[i - 1u] != MT_OFF);
     int fx = (i >= P_DIST && i <= P_REV) || (trk[0].p[P_ITYPE] && i >= P_IA && i <= P_IMIX);   /* (0.7: the INSERT's
                                                          * values, its TYPE kept) */
     switch (what) {
@@ -587,7 +591,7 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
     case X_MSRC:
     case X_MDST:
     case X_MAMT: {                                    /* the slot's own values, the selected sound's */
-        uint32_t pid = P_M1SRC + 3u * (uint32_t)(clamp(xv[X_MSLOT], 1, 6) - 1) + (id - X_MSRC);
+        uint32_t pid = mx_pid((uint32_t)(clamp(xv[X_MSLOT], 1, (int32_t)MX_SLOTS) - 1)) + (id - X_MSRC);
         *valp = &TSEL->p[pid];
         return track_desc(TSEL, pid);
     }
@@ -978,18 +982,19 @@ static void graph_mseq(void)
 static void graph_matrix(void)
 {
     const track_t *t = TSEL;
-    uint32_t k, sel = (uint32_t)clamp(xv[X_MSLOT], 1, 6) - 1u;
-    for (k = 0; k < MX_SLOTS; k++) {
-        uint32_t id = P_M1SRC + 3u * k;
+    uint32_t k, sel = (uint32_t)clamp(xv[X_MSLOT], 1, (int32_t)MX_SLOTS) - 1u, k0 = sel / 6u * 6u;   /* (1.0: the six
+                                                         * of the selected one: 1..6 or 7..12) */
+    for (k = k0; k < k0 + 6u; k++) {
+        uint32_t id = mx_pid(k);
         int32_t sr = clamp(t->p[id], 0, MS_NSRC - 1), ds = clamp(t->p[id + 1u], 0, MT_COUNT - 1), a = t->p[id + 2u];
         const param_desc_t *dd = track_desc(t, id + 1u);
         int on = sr && ds && a;
         uint16_t c = k == sel ? C_WHITE : on ? C_GRAY : C_DIM;
-        char nb[2] = {(char)('1' + k), 0}, val[12];
+        char nb[3] = {k >= 9u ? '1' : (char)('1' + k), k >= 9u ? (char)('0' + k - 9u) : 0, 0}, val[12];
         const char *unit = 0;
-        int32_t y = 2 + (int32_t)k * 14;
-        cv_text(8, y, &FONT_S, nb, k == sel ? C_HI : C_DIM);
-        cv_text(24, y, &FONT_S, N_MSRC[sr], c);
+        int32_t y = 2 + (int32_t)(k - k0) * 14;
+        cv_text(k >= 9u ? 2 : 10, y, &FONT_S, nb, k == sel ? C_HI : C_DIM);   /* (1.0: 10..12 right-aligned) */
+        cv_text(28, y, &FONT_S, N_MSRC[sr], c);
         cv_text(84, y, &FONT_S, ">", C_DIM);
         cv_text(98, y, &FONT_S, dd->names[ds], c);
         param_format(&TP[id + 2u], a, val, &unit);

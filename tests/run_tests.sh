@@ -180,8 +180,13 @@ run "Clipper 0.9: the filter MODELs (SVF MOOG MS20 DIODE SEM NOTCH BP HP: bounde
 if $SYN_UB -o "$OUT/synth9_ub" tests/synth9_test.c -lm 2>/dev/null; then
     run "Clipper 0.9 under ASan + UBSan" sh -c "'$OUT/synth9_ub' >/dev/null && echo clean"
 fi
+$SYN -o "$OUT/synth10_test" tests/synth10_test.c -lm
+run "Clipper 1.0: SPREAD (left = right at 0, the middle kept), the matrix's 12 slots, LFO 3, ENV 2 LOOP, the MACROS (and CC 16..19), HALL and SHIMMER, the delay's PING and TAPE (a change of MODE: no click), projects and user presets (the tail), the pages" "$OUT/synth10_test"
+if $SYN_UB -o "$OUT/synth10_ub" tests/synth10_test.c -lm 2>/dev/null; then
+    run "Clipper 1.0 under ASan + UBSan" sh -c "'$OUT/synth10_ub' >/dev/null && echo clean"
+fi
 $SYN -o "$OUT/clean_test" tests/clean_test.c -lm
-run "Clipper 0.9 audio: no click or crackle (46 cases: presets of every engine, steals, mute, level, pan, INSERT, DIST, the sends, FILT, MODL, CHOR, VINTAGE, delay TIME, reverb SIZE, EQ, WAVE TABL, FMX PTCH, engine switch, TUNING, LAYER, MOD SEQ)" "$OUT/clean_test"
+run "Clipper 1.0 audio: no click or crackle (55 cases: presets of every engine, steals, mute, level, pan, INSERT, DIST, the sends, FILT, MODL, CHOR, VINTAGE, delay TIME and MODE, reverb SIZE and TYPE, EQ, WAVE TABL, FMX PTCH, engine switch, TUNING, LAYER, MOD SEQ, SPREAD, the MACROS)" "$OUT/clean_test"
 if $SYN_UB -o "$OUT/clean_ub" tests/clean_test.c -lm 2>/dev/null; then
     run "Clipper 0.9 audio under ASan + UBSan" sh -c "'$OUT/clean_ub' >/dev/null && echo clean"
 fi

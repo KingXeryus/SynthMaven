@@ -6,7 +6,8 @@
  *   a sound loaded (every engine's first presets, one into the next), VOICE steals (12 notes on 8 voices), MUTE on and
  *   off, LEVEL and PAN jumped, the INSERT's TYPE turned through every type, the master FILT jumped, MODEL (the duck),
  *   CHOR of JUNO, the MOD SEQ's SMTH to the cutoff, LFO 2 KEY, VINTAGE turned up, the TUNING changed (a pitch step:
- *   the phase goes on), the LAYER turned on and off.
+ *   the phase goes on), the LAYER turned on and off; 1.0: SPREAD, BRITE, TIMBR, MOTN and SPACE jumped, the reverb's
+ *   TYPE (ROOM PLATE HALL SHIMMER) and the delay's MODE (MONO PING TAPE) turned through.
  * Bound: the change's mark under 2 x the steady one + 400 (about -38 dB of the limiter's ceiling). */
 #define main hostsim_main
 #include "hostsim.c"
@@ -136,6 +137,13 @@ static void ch_layer(track_t *t, uint32_t k)
     (void)t;
     trk[1].p[P_LYMODE] = (int16_t)(k & 1u ? LY_OFF : LY_LAYER);
 }
+static void ch_spread(track_t *t, uint32_t k) { t->p[P_SPREAD] = (int16_t)(k & 1u ? 0 : 127); }   /* (1.0) */
+static void ch_brite(track_t *t, uint32_t k) { t->p[P_MAC1] = (int16_t)(k & 1u ? -64 : 63); }
+static void ch_timbr(track_t *t, uint32_t k) { t->p[P_MAC2] = (int16_t)(k & 1u ? -64 : 63); }
+static void ch_motn(track_t *t, uint32_t k) { t->p[P_MAC3] = (int16_t)(k & 1u ? 0 : 127); }
+static void ch_space(track_t *t, uint32_t k) { t->p[P_REV] = 60; t->p[P_DLY] = 60; t->p[P_MAC4] = (int16_t)(k & 1u ? 0 : 127); }
+static void ch_rtype(track_t *t, uint32_t k) { t->p[P_REV] = 100; song.g[G_RTYPE] = (int16_t)((k + 1u) % 4u); }
+static void ch_dmode(track_t *t, uint32_t k) { t->p[P_DLY] = 100; song.g[G_DFDBK] = 90; song.g[G_DMODE] = (int16_t)((k + 1u) % 3u); }
 static void ch_mseq(track_t *t, uint32_t k)
 {
     t->p[P_M1SRC] = MS_SEQ2, t->p[P_M1DST] = MT_CUT, t->p[P_M1AMT] = 40;
@@ -210,6 +218,15 @@ int main(void)
     check("HYBRID: the LAYER on and off", ENGI_HYBRID, 1, ch_layer, 6, 40);
     trk[1].p[P_LYMODE] = LY_OFF;
     check("JUNO: the MOD SEQ (SMTH 60 / 120) on the cutoff", ENGI_JUNO, 0, ch_mseq, 6, 60);
+    check("ANALOG: SPREAD jumped 0 / 127 (1.0)", 0, 13, ch_spread, 6, 40);
+    check("ANALOG: BRITE jumped -64 / +63 (1.0)", 0, 13, ch_brite, 6, 40);
+    check("WAVE: TIMBR jumped -64 / +63 (1.0)", ENGI_WAVE, 2, ch_timbr, 6, 40);
+    check("ANALOG: MOTN jumped 0 / 127 (1.0)", 0, 13, ch_motn, 6, 40);
+    check("ANALOG: SPACE jumped 0 / 127 (REV, DLY sends on) (1.0)", 0, 13, ch_space, 6, 40);
+    check("ANALOG: the reverb's TYPE through ROOM PLATE HALL SHIMMER (1.0)", 0, 13, ch_rtype, 8, 40);
+    song.g[G_RTYPE] = GP[G_RTYPE].def;
+    check("ANALOG: the delay's MODE through MONO PING TAPE (1.0)", 0, 13, ch_dmode, 6, 60);
+    song.g[G_DMODE] = GP[G_DMODE].def, song.g[G_DFDBK] = GP[G_DFDBK].def;
     printf("clean: %d cases\n", cases);
     printf(fails ? "clean: %d FAILED\n" : "clean: all passed\n", fails);
     return fails;

@@ -3,7 +3,8 @@
 /* Clipper 0.7, the voices on both cores (voice.c track_render, vs_finish): every preset of every engine, a chord of
  * six notes at six velocities, held then released, rendered with the split (cpu1_units -1) and without (0): the same
  * output, bit for bit. Half the cases with a matrix slot moving an EDIT value (the late voices: after the wait; such a
- * part stays on this core), the others handed over (ACID: one voice, never).
+ * part stays on this core), the others handed over (ACID: one voice, never). (1.0) Half with SPREAD (the voices'
+ * side, rendered on either core), the matrix cases with the macros and LFO 3 in slot 7.
  * Run under every mode of the host double of core 1 (tests/cpu1_host.c): CORES=1 (inline at the wait), CORES=2 (a
  * thread; with -fsanitize=thread: no race), CHAOS=N (an erratic thread), CPU1_TIMEOUT_AT=K (a lost job: held, its
  * voices rendered here, once). Each case in a child process: the same state from power-on for both renders.
@@ -31,7 +32,12 @@ static uint64_t render_case(uint32_t e, uint32_t pi, int matrix, int32_t units, 
         trk[0].p[P_M1SRC] = MS_LFO1, trk[0].p[P_M1DST] = MT_E1 + 1, trk[0].p[P_M1AMT] = 40;
         trk[0].p[P_M2SRC] = MS_VEL, trk[0].p[P_M2DST] = MT_E1 + 4, trk[0].p[P_M2AMT] = -30;
         trk[0].p[P_LRATE] = 90;
+        trk[0].p[P_MAC1] = 30, trk[0].p[P_MAC3] = 90;   /* (1.0: the macros, LFO 3, slot 7) */
+        trk[0].p[P_M7SRC] = MS_LFO3, trk[0].p[P_M7DST] = MT_E1 + 2, trk[0].p[P_M7AMT] = 25;
+        trk[0].p[P_L3RATE] = 70;
     }
+    if (pi & 2u)                                    /* (1.0) SPREAD: each voice's side, on either core */
+        trk[0].p[P_SPREAD] = 110;
     cpu1_units = units;
     for (b = 0; b < 4u; b++)
         mix_block(o, CTL);
@@ -92,8 +98,8 @@ int main(int argc, char **argv)
             cases++;
             if (a != b || !a) {
                 bad++;
-                printf("split: %s preset %u (%s)%s: %016llx vs %016llx\n", en->name, pi, en->presets[pi].name,
-                       matrix ? " +matrix" : "", (unsigned long long)a, (unsigned long long)b);
+                printf("split: %s preset %u (%s)%s%s: %016llx vs %016llx\n", en->name, pi, en->presets[pi].name,
+                       matrix ? " +matrix" : "", (pi & 2u) ? " +spread" : "", (unsigned long long)a, (unsigned long long)b);
             }
             if (jb && jb != 0xFFFFFFFFu)
                 handed++, split_cases++;

@@ -1,16 +1,16 @@
-# Clipper — démarrage rapide (version de test 0.9)
+# Clipper — démarrage rapide (version 1.0)
 
 **Clipper** est un firmware de **synthétiseur** pour le M-VAVE FM-1 : un seul instrument, comme le firmware d'origine, Felucca ou Baudgirl. Ce n'est plus une groovebox : pas de pistes, pas de boîte à rythmes, pas de mode song, pas de samples intégrés. Il garde de SLOOP les 12 moteurs, les effets, l'arpégiateur, le séquenceur de pas, l'audio USB et le MIDI. Il ajoute **HYBRID**, une voix à 3 oscillateurs, 2 filtres et une matrice de modulation de 16 slots, avec 32 sons d'usine. Il ajoute aussi le pitch bend, la molette, l'aftertouch et la pédale de sustain sur tous les moteurs.
 
-> **C'est une version de test.** Avant d'installer, fais une **sauvegarde** dans l'éditeur (celui de Clipper ou de SLOOP, selon ce qui est installé) : Projects → Backup → *Save a backup*.
+> **Version 1.0, testée sur ordinateur (toute la suite de tests), encore peu sur la FM-1.** Avant d'installer, fais une **sauvegarde** dans l'éditeur (celui de Clipper ou de SLOOP, selon ce qui est installé) : Projects → Backup → *Save a backup*.
 
 ## En bref
 
 **23 moteurs, 409 sons**, tous au même niveau :
 
 - **HYBRID** (3 oscillateurs, 2 filtres, matrice de 16 slots, 4 macros), **FMX** (6 opérateurs façon opsix, routage libre, PM / FM / RING), **FM6** (DX7, banques `.syx`), **DIGITAL** (FM 4 opérateurs), **WAVE** (tables d'ondes, et les tiennes), **WSEQ** (wave sequencing façon Wavestation), **VECTOR** (Prophet VS / joystick du Wavestation), **JUNO** (Juno-6 / 60 / 106 et son chorus I / II / I+II), **ANALOG** (analogique virtuel, 8 modèles de filtre), **ACID** (303), **STRINGS** (string machine), **MACRO** (façon Plaits), **PHASE** (façon CZ), **VPS** (vector phaseshaping), **TERRAIN** (wave terrain), **PHYS** (modèles physiques), **TRIO** (puce 8 bits), **LOFI** (chiptune), **WHEEL** (orgue à roues phoniques), **VOICE** (voyelles chantées), **NOISE**, **GRAIN** et **SAMPLE** (sur quatre sources synthétisées de Clipper, VOX, GLASS, PAD et AIR, ou sur tes propres samples).
-- **Sculpter le son** (tous les moteurs) : une **matrice de modulation** de 6 slots, **LFO 2**, **ENV 2**, le **MOD SEQ** (séquenceur de modulation à 4 pistes), **8 modèles de filtre** sur ANALOG, WAVE et VECTOR (SVF, ladder Moog, MS-20, ladder à diodes, SEM, notch, passe-bande, passe-haut), **VINTAGE** (chaque voix dérive comme sur un vrai polyphonique analogique), un effet **INSERT** par son (SOFT, HARD, FOLD, FUZZ, CRUSH, PHASER, FLANGER, CHORUS et le chorus JUNO).
-- **Effets** : distorsion, chorus stéréo, delay synchronisé, réverbs room et plate, filtre DJ, EQ 3 bandes, compresseur de bus et limiteur. Les réglages glissent au lieu de claquer.
+- **Sculpter le son** (tous les moteurs) : une **matrice de modulation** de 12 slots, **LFO 2**, **LFO 3**, **ENV 2** (simple ou en boucle), quatre **MACROS** (BRITE, TIMBR, MOTN, SPACE, aussi en CC 16 à 19), **SPREAD** (chaque voix à sa place dans la stéréo), le **MOD SEQ** (séquenceur de modulation à 4 pistes), **8 modèles de filtre** sur ANALOG, WAVE et VECTOR (SVF, ladder Moog, MS-20, ladder à diodes, SEM, notch, passe-bande, passe-haut), **VINTAGE** (chaque voix dérive comme sur un vrai polyphonique analogique), un effet **INSERT** par son (SOFT, HARD, FOLD, FUZZ, CRUSH, PHASER, FLANGER, CHORUS et le chorus JUNO).
+- **Effets** : distorsion, chorus stéréo, delay synchronisé (MONO, PING-PONG, TAPE), quatre réverbs (ROOM, PLATE, HALL, SHIMMER à l'octave), filtre DJ, EQ 3 bandes, compresseur de bus et limiteur. Les réglages glissent au lieu de claquer.
 - **Accordage** : égal, juste, Pythagore, mésotonique, Werckmeister III, Kirnberger III, maqams Rast et Bayati, slendro, pelog, 19 / 24 / 31-EDO, et toute gamme **Scala `.scl`** envoyée depuis l'éditeur.
 - **Jouer** : 8 voix (12 ou 16 en option, sur les deux cœurs), POLY, MONO, LEGATO, UNISON et unisson polyphonique, glide ; **LAYER**, **SPLIT** et **MULTI** (deux parties sur deux canaux MIDI) ; un **arpégiateur** à 15 modes, dont une **machine de Turing** (TURNG), et les variations **SPICE / DICE** ; le séquenceur de pas avec accords et enregistrement ; gammes et accords sur les touches, KBD HOLD ; **MPE** ; MIDI USB et TRS ; interface audio USB.
 - **Travailler** : **UNDO** et **COMPARE** sur la FM-1, favoris, **MORPH** entre deux versions d'un son, **randomiseur** par section, presets utilisateur et projets qui gardent tout.
@@ -27,7 +27,7 @@ Clipper vit dans son propre dossier, **`CLIPPER`**, à côté de celui de SLOOP.
 | Adresse | http://localhost:**8766** | http://localhost:**8767** |
 | Écran de démarrage | voilier, « sloop » | trois-mâts, « clipper » |
 
-Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maintenu) → SYS → ABOUT, qui affiche **CLIPPER 0.9**.
+Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maintenu) → SYS → ABOUT, qui affiche **CLIPPER 1.0**.
 
 ## 1. Compiler et installer
 
@@ -35,6 +35,19 @@ Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maint
 2. Double-clique sur **`INSTALL-CLIPPER.bat`**. Il utilise les mêmes outils que SLOOP (WSL MinUI-Build, la chaîne JieLi). La première fois, il copie les trois fichiers du SDK depuis `..\SLOOP\build\deps\ac79`. S'il ne les trouve pas, copie ce dossier `build\deps\ac79` de SLOOP dans `CLIPPER\build\deps\`.
 3. La page d'installation s'ouvre sur http://localhost:8767/webapp/installer/ (Chrome ou Edge, FM-1 en USB). Clique sur **Install**.
 4. La FM-1 redémarre sur l'écran **clipper**. Tes projets, presets, samples et réglages de SLOOP sont toujours là.
+
+## Nouveau dans la 1.0 : une voix stéréo, plus de modulation, quatre macros, un hall et un shimmer
+
+- **SPREAD** (VOICE 3 → **SPRED**, tous les moteurs) : chaque voix a sa place entre gauche et droite (les voix extérieures d'abord, les suivantes entre elles) : un accord s'ouvre dans la stéréo, les voix de UNI2 / UNI4 s'écartent. Le centre ne change pas (gauche + droite = le son sans SPREAD, au bit près à 0). Les nappes et les sons en unisson en ont un peu d'origine (48).
+- **La matrice a 12 slots** (MATRIX 1 à 12, sur la FM-1 et dans l'éditeur) et de nouvelles sources : **LFO 3** (page LFO 3 : RATE, WAVE, MODE FREE / KEY) et les quatre macros **MAC1 à MAC4**.
+- **ENV 2 LOOP** (page ENV 2 LOOP) : ONE comme avant, ou **LOOP** : arrivée au bout de sa décroissance, elle repart en attaque tant que la note est tenue : une enveloppe qui cycle, un modulateur rythmique dans la matrice.
+- **Quatre MACROS sur tous les moteurs** (EDIT → **MACROS** ; CC MIDI 16 à 19 ; HYBRID garde ses M1..M4) : **BRITE** (la coupure, ±2,5 octaves), **TIMBR** (la forme du moteur), **MOTN** (un vibrato et le LFO 3 sur la coupure : du mouvement), **SPACE** (plus de réverb, de delay et de SPREAD). Ce sont aussi des sources de la matrice.
+- **HALL et SHIMMER** (REVERB → TYPE) : HALL, c'est la plaque devenue une grande salle de pierre (décroissance longue, pré-délai, aigus plus sombres) ; SHIMMER la nourrit à l'octave au-dessus, la traîne qui monte des disques d'ambient. Changer de TYPE fait disparaître l'ancienne traîne en fondu (pas de clic).
+- **Le delay a un MODE** (DLY 2 → **MODE**) : **MONO** comme avant, **PING** (le premier écho à gauche à TIME, le suivant à droite à deux fois TIME, et ainsi de suite), **TAPE** (le pleurage et le scintillement font bouger les échos ; les répétitions saturent en s'empilant). Changer de MODE se fait en fondu.
+- **Gardé avec le son** : les presets utilisateur gardent toutes les valeurs de la 1.0 dans une « queue » après la banque (SLOOP et les anciennes versions de Clipper lisent la banque comme avant et ne la voient pas) ; les projets les gardent dans les nudges de la piste 3 tant que la piste 3 n'a pas de pas (un projet dont la piste 3 a des pas les charge à leurs valeurs par défaut).
+- **Corrigé** : le chorus du JUNO (CHOR I / II / I+II, et les types JUNO de l'INSERT) craquait sur un accord fort de beaucoup de voix (son calcul débordait au-delà de 16 bits ; maintenant en 64 bits, et la ligne garde un huitième du son au lieu d'un quart : plus d'écrêtage non plus).
+- **Changé** : l'historique UNDO est sorti de la zone RAM de 96 Ko (les nouveaux buffers avaient besoin de la place).
+- **L'éditeur web** : les nouvelles pages (VOICE 3, LFO 3, ENV 2 LOOP, MACROS, DLY 2) et les 12 slots de la matrice (toujours le protocole 14). Un fichier de son de la 0.9 se charge dans la 1.0, les nouvelles valeurs restant comme elles sont.
 
 ## Nouveau dans la 0.9 : modèles de filtre, VINTAGE, micro-accordage, une machine de Turing, un son propre
 

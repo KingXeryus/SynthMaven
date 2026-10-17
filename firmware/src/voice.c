@@ -316,10 +316,12 @@ static void voice_start(track_t *t, voice_t *v, uint32_t note, uint32_t vel, int
             v->env2 = 0;
         v->e2st = 1;
         v->l2ph = 0;
+        v->l3ph = 0;                                    /* (1.0) LFO 3 KEY: from the note's start */
         seed = seed * 1664525u + 1013904223u;
         v->rnd = (int16_t)(seed >> 16);
         seed = seed * 1664525u + 1013904223u;
         v->l2rnd = (int16_t)(seed >> 16);
+        v->l3rnd = v->l2rnd;
         v->ch = mpe_cur_ch;
     }
 #endif
@@ -884,6 +886,9 @@ static int32_t env2_tick(const int16_t *p, voice_t *v)
         break;
     case 2:
         v->env2 += mulq16(((int32_t)p[P_E2SUS] << 17) - v->env2, ENV_EXP[p[P_E2DEC] & 127]);
+        if (p[P_E2LOOP] && v->env2 - ((int32_t)p[P_E2SUS] << 17) < (1 << 18))
+            v->e2st = 1;                                /* (1.0) LOOP: close to the sustain, the attack again (from
+                                                         * there: no jump), until the note is let go */
         break;
     case 3:
         v->env2 -= mulq16(v->env2, ENV_EXP[p[P_E2REL] & 127]);
@@ -914,7 +919,8 @@ static void mx_load(const int16_t *p, mx_t *x)
     uint32_t k;
     x->n = x->srcs = x->dsts = 0;
     for (k = 0; k < MX_SLOTS; k++) {
-        int32_t sr = p[P_M1SRC + 3u * k], ds = p[P_M1DST + 3u * k], a = p[P_M1AMT + 3u * k];
+        uint32_t id = mx_pid(k);                        /* (1.0: 12 slots, 7..12 at P_M7SRC) */
+        int32_t sr = p[id], ds = p[id + 1u], a = p[id + 2u];
         if (sr <= MS_OFF || sr >= MS_NSRC || ds <= MT_OFF || ds >= MT_COUNT || !a)
             continue;
         if (ds == MT_L2RATE && sr == MS_LFO2)
@@ -1065,6 +1071,33 @@ static voice_t *vsl_v[NVOICE];                       /* the late ones and their 
 static vmod_t vsl_m[NVOICE];
 static int16_t vsl_p[NVOICE][8];
 static uint32_t vsl_n;
+/* (1.0) SPREAD: each voice's place in the stereo field. The part renders its voices' sum (the mid, as before: bit for
+ * bit without SPREAD) and, when SPREAD is up, part_side: each voice times its gain (its place x SPREAD, gliding
+ * through the block), which fx.c mix_part1 adds to the left and takes from the right. A voice alone into a scratch
+ * first (vs_tmp, one per core: engines.c C1_IX) */
+static int32_t part_side[CTL], vs_side1[CTL];
+static uint8_t part_side_on, vs_side1_on;
+static int32_t vs_g0[NVOICE], vs_g1[NVOICE], vsl_g0[NVOICE], vsl_g1[NVOICE];
+/* the places, Q15: neighbours (the voices one note after the other take) left and right, the outer ones first */
+static const int16_t VS_POS[16] = {-32767, 32767, -16384, 16384, -24576, 24576, -8192, 8192,
+                                   -29491, 29491, -19661, 19661, -11469, 11469, -3277, 3277};
+static void vrender(track_t *t, const engine_t *e, voice_t *v, int32_t *out, uint32_t n, const vmod_t *m, int32_t g0,
+                    int32_t g1, int32_t *side, int32_t *tmp)
+{
+    uint32_t i;
+    if (!g0 && !g1) {
+        e->render(t, v, out, n, m);
+        return;
+    }
+    for (i = 0; i < n; i++)
+        tmp[i] = 0;
+    e->render(t, v, tmp, n, m);
+    for (i = 0; i < n; i++) {
+        int32_t g = g0 + (((g1 - g0) * (int32_t)i) >> CTL_LOG2);
+        out[i] += tmp[i];
+        side[i] += ((tmp[i] >> 4) * g) >> 11;          /* (>> 4 first: 32 bits) */
+    }
+}
 static struct { track_t *t; const engine_t *e; uint32_t n, a, b; } vsj;
 static uint32_t vs_jobs, vs_split;                  /* (console, tests: blocks handed over, voices rendered there) */
 static void vs_job(uint32_t arg)                    /* on core 1 */
@@ -1072,9 +1105,12 @@ static void vs_job(uint32_t arg)                    /* on core 1 */
     uint32_t i;
     (void)arg;
     for (i = 0; i < vsj.n; i++)
-        vs_buf[i] = 0;
-    for (i = vsj.a; i < vsj.b; i++)
-        vsj.e->render(vsj.t, vs_v[i], vs_buf, vsj.n, &vs_m[i]);
+        vs_buf[i] = vs_side1[i] = 0;
+    vs_side1_on = 0;
+    for (i = vsj.a; i < vsj.b; i++) {
+        vs_side1_on |= vs_g0[i] || vs_g1[i];
+        vrender(vsj.t, vsj.e, vs_v[i], vs_buf, vsj.n, &vs_m[i], vs_g0[i], vs_g1[i], vs_side1, vs_tmp[1]);
+    }
 }
 static int vs_ok(const engine_t *e)                 /* its render may run on two cores at once, for two voices */
 {
@@ -1094,14 +1130,17 @@ static void vs_finish(track_t *t, const engine_t *e, int32_t *out, uint32_t n)
             h = vs_n;
     }
     for (k = 0; k < h; k++)
-        e->render(t, vs_v[k], out, n, &vs_m[k]);
+        vrender(t, e, vs_v[k], out, n, &vs_m[k], vs_g0[k], vs_g1[k], part_side, vs_tmp[0]);
     if (handed) {
         if (cpu1_wait() < 0) {                      /* late: held from now on (cpu1.c); its voices here */
             for (k = h; k < vs_n; k++)
-                e->render(t, vs_v[k], out, n, &vs_m[k]);
+                vrender(t, e, vs_v[k], out, n, &vs_m[k], vs_g0[k], vs_g1[k], part_side, vs_tmp[0]);
         } else {
             for (i = 0; i < n; i++)
                 out[i] += vs_buf[i];
+            if (vs_side1_on)
+                for (i = 0; i < n; i++)
+                    part_side[i] += vs_side1[i];
             vs_jobs++;
             vs_split += vs_n - h;
         }
@@ -1113,7 +1152,7 @@ static void vs_finish(track_t *t, const engine_t *e, int32_t *out, uint32_t n)
             keep[j] = t->p[P_E0 + j];
             t->p[P_E0 + j] = vsl_p[k][j];
         }
-        e->render(t, vsl_v[k], out, n, &vsl_m[k]);
+        vrender(t, e, vsl_v[k], out, n, &vsl_m[k], vsl_g0[k], vsl_g1[k], part_side, vs_tmp[0]);
         for (j = 0; j < 8u; j++)
             t->p[P_E0 + j] = keep[j];
     }
@@ -1143,8 +1182,14 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
     vib = osc_sine(vib_ph[(uint32_t)(t - trk) % NPART]);
     /* Clipper 0.4: the matrix (mx_load); sv: its sources (the part's here, the voice's in the loop) */
     mx_t mx;
-    int32_t sv[MS_NSRC], l2free, pan_new = 0, vint = clamp(t->p[P_VINT], 0, 127);
+    int32_t sv[MS_NSRC], l2free, l3free, pan_new = 0, vint = clamp(t->p[P_VINT], 0, 127);
     uint32_t pan_age = 0, catr = part_ctl[pc].at;
+    /* (1.0) the macros: BRITE (the cutoff, +-) and TIMBR (the shape, +-), MOTN (a vibrato and LFO 3 on the cutoff),
+     * SPACE (fx.c: the reverb and delay sends, and SPREAD); SPREAD: the voices' gains from the last block's to this
+     * one's */
+    int32_t mac1 = clamp(t->p[P_MAC1], -64, 63), mac2 = clamp(t->p[P_MAC2], -64, 63), mac3 = clamp(t->p[P_MAC3], 0, 127);
+    int32_t spr = clamp(t->p[P_SPREAD] + clamp(t->p[P_MAC4], 0, 127) / 2, 0, 127), spr0 = t->spr;
+    int sided = (uint32_t)(t - trk) < NPART && (spr || spr0);
 #endif
     /* TUNE in cents: whole 1/16 semitones in the pitch, the rest as a fine factor (no dead zone) */
     int32_t tune = song.g[G_TUNE] >= 0 ? song.g[G_TUNE] * 16 / 100 : -((-song.g[G_TUNE] * 16 + 99) / 100);
@@ -1154,6 +1199,11 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
 #if CLIPPER_SYNTH
     int split = vs_ok(e) && cpu1_units != 0 && cpu1_on();   /* (0.7) the voices on both cores */
     vs_n = vsl_n = 0;
+    part_side_on = (uint8_t)sided;
+    if (sided)
+        for (i = 0; i < n; i++)
+            part_side[i] = 0;
+    t->spr = (int16_t)spr;
 #endif
     for (i = 0; i < n; i++)
         out[i] = 0;
@@ -1178,6 +1228,16 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
         if (t->l2ph < old)
             t->l2rnd = (int16_t)(rng() >> 16);
         l2free = lfo_wave_n(p[P_L2WAVE], t->l2ph, t->l2rnd);
+    }
+    {   /* (1.0) LFO 3 FREE, and the macros as sources */
+        uint32_t old = t->l3ph;
+        t->l3ph += LFO_INC[clamp(p[P_L3RATE], 0, 127)];
+        if (t->l3ph < old)
+            t->l3rnd = (int16_t)(rng() >> 16);
+        l3free = lfo_wave_n(p[P_L3WAVE], t->l3ph, t->l3rnd);
+        sv[MS_LFO3] = l3free;
+        sv[MS_MAC1] = mac1 * 512, sv[MS_MAC2] = mac2 * 512;
+        sv[MS_MAC3] = mac3 * 258, sv[MS_MAC4] = clamp(p[P_MAC4], 0, 127) * 258;
     }
 #endif
     if (e->block)                                       /* the engine's per-part work (DRAWBAR: bars, rotor) */
@@ -1234,6 +1294,15 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
                     sv[MS_LFO2] = lfo_wave_n(p[P_L2WAVE], v->l2ph, v->l2rnd);
                 } else {
                     sv[MS_LFO2] = l2free;
+                }
+                if (p[P_L3MODE] == L2_KEY && (mx.srcs & (1u << MS_LFO3))) {   /* (1.0) LFO 3 KEY: the note's own */
+                    uint32_t old = v->l3ph;
+                    v->l3ph += LFO_INC[clamp(p[P_L3RATE], 0, 127)];
+                    if (v->l3ph < old)
+                        v->l3rnd = (int16_t)(rng() >> 16);
+                    sv[MS_LFO3] = lfo_wave_n(p[P_L3WAVE], v->l3ph, v->l3rnd);
+                } else {
+                    sv[MS_LFO3] = l3free;
                 }
                 for (k = 0; k < mx.n; k++) {
                     int32_t x = sv[mx.src[k]] * mx.amt[k] >> 6;   /* Q15 x AMT / 64 */
@@ -1305,6 +1374,8 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
                 if (vd)
                     q += (vib * (vd > 127 ? 127 : vd)) >> 11;
                 q += clamp(mpit, -24 * 4096, 24 * 4096);   /* the matrix */
+                if (mac3)                               /* (1.0) MOTN: a vibrato up to +-35 cents */
+                    q += (vib * mac3) >> 12;
                 if (mpe)                                /* MPE: the note's own bend */
                     q += (mpe_bend[v->ch & 15u] * (int32_t)MPE_RANGE[mpe_mode % MPE_MODES]) >> 3;
                 if (tun_on)                             /* (0.9) the TUNING: the note's own pitch (glides too) */
@@ -1344,6 +1415,10 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
             if (p[P_ATDST] == MD_SHP)
                 m.shape += a * 128;
             m.cutoff += clamp(mcut, -32767, 32767);    /* the matrix */
+            m.cutoff += mac1 * 160;                     /* (1.0) BRITE: +-40 steps (about +-2.5 octaves) */
+            if (mac3)                                   /* .. MOTN: LFO 3 on the cutoff, up to +-24 steps */
+                m.cutoff += (l3free * mac3) >> 10;
+            m.shape = clamp(m.shape + mac2 * 128, 0, 127 << 8);   /* .. TIMBR: +-32 steps of the shape */
             if (vint)                                   /* (0.9) VINTAGE: each voice's filter a little off */
                 m.cutoff += ((vcard((uint32_t)(t - trk) * NVOICE + i, 1u) * 400) >> 15) * vint >> 7;
             if (mshp)
@@ -1360,7 +1435,10 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
                     vsl_p[vsl_n][k] = (int16_t)clamp(t->p[P_E0 + k] + ((clamp(med[k], -32767, 32767) * (d->max - d->min)) >> 15),
                                                    d->min, d->max);
             }
-            vsl_v[vsl_n] = v, vsl_m[vsl_n] = m, vsl_n++;
+            vsl_v[vsl_n] = v, vsl_m[vsl_n] = m;
+            vsl_g0[vsl_n] = sided ? (VS_POS[i % 16u] * spr0 * 23) >> 12 : 0;
+            vsl_g1[vsl_n] = sided ? (VS_POS[i % 16u] * spr * 23) >> 12 : 0;
+            vsl_n++;
             nr++;
             continue;
         }
@@ -1374,17 +1452,25 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
                     t->p[P_E0 + k] = (int16_t)clamp(keep[k] + ((clamp(med[k], -32767, 32767) * (d->max - d->min)) >> 15),
                                                      d->min, d->max);
             }
-            e->render(t, v, out, n, &m);
+            vrender(t, e, v, out, n, &m, sided ? (VS_POS[i % 16u] * spr0 * 23) >> 12 : 0,
+                    sided ? (VS_POS[i % 16u] * spr * 23) >> 12 : 0, part_side, vs_tmp[0]);
             for (k = 0; k < 8u; k++)
                 t->p[P_E0 + k] = keep[k];
             nr++;
             continue;
         }
         if (split) {                                    /* (0.7) rendered after the loop, on both cores */
-            vs_v[vs_n] = v, vs_m[vs_n] = m, vs_n++;
+            vs_v[vs_n] = v, vs_m[vs_n] = m;
+            vs_g0[vs_n] = sided ? (VS_POS[i % 16u] * spr0 * 23) >> 12 : 0;
+            vs_g1[vs_n] = sided ? (VS_POS[i % 16u] * spr * 23) >> 12 : 0;
+            vs_n++;
             nr++;
             continue;
         }
+        vrender(t, e, v, out, n, &m, sided ? (VS_POS[i % 16u] * spr0 * 23) >> 12 : 0,
+                sided ? (VS_POS[i % 16u] * spr * 23) >> 12 : 0, part_side, vs_tmp[0]);
+        nr++;
+        continue;
 #endif
         e->render(t, v, out, n, &m);
         nr++;

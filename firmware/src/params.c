@@ -32,7 +32,9 @@ static const char *const N_SLCR[] = {"OFF", "GATE", "STUT"};             /* SL_O
 static const char *const N_FMODEL[] = {"SVF", "MOOG", "MS20", "DIODE", "SEM", "NOTCH", "BP", "HP"};   /* P_FMODEL: FM_* */
 static const char *const N_SLDIV[] = {"1/8", "1/16", "1/32", "8T", "16T", "32T"};   /* SL_DEN */
 static const char *const N_CHORD[] = {"OFF", "TRIAD", "7TH", "9TH", "SUS4", "POWER"};   /* seq.c CHORD_DEG */
-static const char *const N_RTYPE[] = {"ROOM", "PLATE"};
+static const char *const N_RTYPE[] = {"ROOM", "PLATE", "HALL", "SHIMR"};   /* (1.0: HALL, SHIMMER) */
+static const char *const N_DMODE[] = {"MONO", "PING", "TAPE"};          /* (1.0) G_DMODE */
+static const char *const N_E2LOOP[] = {"ONE", "LOOP"};
 static const char *const N_MODDST[] = {"OFF", "VIB", "CUT", "SHP", "WAH", "TREM"};   /* MD_OFF .. MD_TREM */
 #if CLIPPER_SYNTH
 /* Clipper 0.6: the INSERT's types (fx.c IT_*; SLOOP 2.6's, same order: a SLOOP 2.6 sound keeps its INSERT). Its three
@@ -48,7 +50,8 @@ static const char *const N_IRATE[] = {"689", "919", "1.1k", "1.4k", "1.8k", "2.2
 static const char *const N_LYMODE[] = {"OFF", "LAYER", "SPLIT", "MULTI"};   /* LY_OFF .. LY_MULTI */
 static const char *const N_L2MODE[] = {"FREE", "KEY"};                  /* L2_FREE, L2_KEY */
 static const char *const N_MSRC[] = {"OFF", "LFO1", "LFO2", "ENV1", "ENV2", "VEL", "KEY", "MW", "AT", "RAND", "SLIDE",
-                                     "SEQ1", "SEQ2", "SEQ3", "SEQ4"};   /* (0.8: the MOD SEQ's lanes) */
+                                     "SEQ1", "SEQ2", "SEQ3", "SEQ4",   /* (0.8: the MOD SEQ's lanes) */
+                                     "LFO3", "MAC1", "MAC2", "MAC3", "MAC4"};   /* (1.0) */
 static const char *const N_MSRATE[] = {"1/32", "16T", "1/16", "8T", "1/8", "1/4", "1/2", "BAR", "2 BAR"};
 static const char *const N_MSKEY[] = {"SYNC", "KEY"};
 static const char *const N_MDST[] = {"OFF", "PITCH", "CUT", "SHAPE", "AMP", "PAN", "LFO2",
@@ -140,6 +143,7 @@ static const param_desc_t TP[P_COUNT] = {
 #define MXP(n) [P_M##n##SRC] = PE("SRC", N_MSRC, MS_OFF), [P_M##n##DST] = PE("DST", N_MDST, MT_OFF), \
                [P_M##n##AMT] = PD("AMT", F_BIPCT, -64, 63, 0)
     MXP(1), MXP(2), MXP(3), MXP(4), MXP(5), MXP(6),
+    MXP(7), MXP(8), MXP(9), MXP(10), MXP(11), MXP(12),   /* 1.0 */
 #undef MXP
     /* Clipper 0.6: the sound's INSERT (fx.c track_insert, SLOOP 2.6's): TYPE OFF = as before. A B C as the editor
      * protocol names them; the device shows the type's own labels (ins_desc) */
@@ -157,6 +161,16 @@ static const param_desc_t TP[P_COUNT] = {
     [P_DICE] = PD("DICE", F_INT, 0, 127, 0),
     [P_VINT] = PD("VINTG", F_PCT, 0, 127, 0),       /* 0.9 */
     [P_SLOOP] = PD("LOOP", F_INT, 1, 16, 16),
+    /* Clipper 1.0 */
+    [P_SPREAD] = PD("SPRED", F_PCT, 0, 127, 0),
+    [P_L3RATE] = PD("RATE", F_LFOHZ, 0, 127, 40),
+    [P_L3WAVE] = PE("WAVE", N_LWAVE, 0),
+    [P_L3MODE] = PE("MODE", N_L2MODE, L2_FREE),
+    [P_E2LOOP] = PE("LOOP", N_E2LOOP, 0),
+    [P_MAC1] = PD("BRITE", F_BIPCT, -64, 63, 0),
+    [P_MAC2] = PD("TIMBR", F_BIPCT, -64, 63, 0),
+    [P_MAC3] = PD("MOTN", F_PCT, 0, 127, 0),
+    [P_MAC4] = PD("SPACE", F_PCT, 0, 127, 0),
 #endif
 };
 #if CLIPPER_SYNTH
@@ -168,6 +182,7 @@ static void clipper_proj_neutral(void)
     song.g[G_EQMID] = EQ_MID_C;
     song.g[G_EQHIGH] = EQ_HIGH_C;
     song.g[G_COMP] = 0;
+    song.g[G_DMODE] = 0;
     for (k = 0; k < NPART; k++) {
         trk[k].p[P_VELF] = TP[P_VELF].def;
         trk[k].p[P_MWDST] = TP[P_MWDST].def;
@@ -183,11 +198,23 @@ static void clipper_proj_neutral(void)
 static void preset_extras(int16_t *p, const preset_t *pr)
 {
     uint32_t i;
+#if CLIPPER_SYNTH
+    int own = 0;
+#endif
     for (i = 0; i + 1u < 8u; i += 2u) {
         int32_t id = pr->x[i] - 1;
         if (id >= 0 && id < P_E0)
             p[id] = (int16_t)clamp(pr->x[i + 1u], TP[id].min, TP[id].max);
+#if CLIPPER_SYNTH
+        own |= id == P_SPREAD;
+#endif
     }
+#if CLIPPER_SYNTH
+    /* (1.0) the pads (a slow attack, a long release) and the unison sounds spread their voices a little, unless the
+     * preset sets SPREAD itself */
+    if (!own)
+        p[P_SPREAD] = (int16_t)((pr->env[0] >= 50u && pr->env[3] >= 80u) || p[P_VOICE] >= V_UNISON ? 48 : TP[P_SPREAD].def);
+#endif
 }
 
 
@@ -238,6 +265,7 @@ static const param_desc_t GP[G_COUNT] = {
     [G_NEWPRJ] = PE("NEW", N_GO, 0),
 #if CLIPPER_SYNTH
     [G_DRDLY] = PD("COMP", F_PCT, 0, 127, 0),         /* G_COMP */
+    [G_DMODE] = PE("MODE", N_DMODE, 0),                /* 1.0 */
 #else
     [G_DRDLY] = PD("DLY", F_INT, 0, 127, 0),
 #endif
@@ -472,12 +500,14 @@ static const page_t PAGES[] = {
     {"ENV DEST", FAM_ENV, SC_TRACK, GR_NONE, {P_ED_FLT, P_ED_PIT, P_ED_SHP, 0xFF}},   /* (P_ED_FX: the level trim, no page) */
 #if CLIPPER_SYNTH
     {"ENV 2", FAM_ENV, SC_TRACK, GR_NONE, {P_E2ATK, P_E2DEC, P_E2SUS, P_E2REL}},   /* (a modulation source: MATRIX) */
+    {"ENV 2 LOOP", FAM_ENV, SC_TRACK, GR_NONE, {P_E2LOOP, 0xFF, 0xFF, 0xFF}},       /* (1.0) */
 #endif
     {"LFO", FAM_LFO, SC_TRACK, GR_LFO, {P_LRATE, P_LWAVE, P_LPHASE, P_LFADE}},
     {"LFO DEST", FAM_LFO, SC_TRACK, GR_NONE, {P_LD_PIT, P_LD_FLT, P_LD_SHP, P_LD_AMP}},
 #if CLIPPER_SYNTH                                                        /* (velocity, mod wheel, aftertouch) */
     {"MOD", FAM_LFO, SC_TRACK, GR_NONE, {P_VELF, P_MWDST, P_ATDST, 0xFF}},
     {"LFO 2", FAM_LFO, SC_TRACK, GR_NONE, {P_L2RATE, P_L2WAVE, P_L2MODE, 0xFF}},
+    {"LFO 3", FAM_LFO, SC_TRACK, GR_NONE, {P_L3RATE, P_L3WAVE, P_L3MODE, 0xFF}},   /* (1.0) */
     {"MATRIX", FAM_LFO, SC_SYN, GR_MATRIX, {15, 16, 17, 18}},   /* X_MSLOT X_MSRC X_MDST X_MAMT (ui_synth.c) */
     {"MOD SEQ", FAM_LFO, SC_SYN, GR_MSEQ, {43, 44, 45, 46}},    /* (0.8) X_QLANE X_QSTEP X_QVAL X_QFILL */
     {"MOD SEQ 2", FAM_LFO, SC_TRACK, GR_MSEQ, {P_MSRATE, P_MSLEN, P_MSSMTH, P_MSKEY}},
@@ -494,6 +524,9 @@ static const page_t PAGES[] = {
     {"SLICER", FAM_FX, SC_TRACK, GR_SLCR, {P_SLCR, P_SLPAT, P_SLRATE, P_SLDEPTH}},   /* drum track too */
 #endif
     {"DLY", FAM_FX, SC_GLOBAL, GR_NONE, {G_DTIME, G_DFDBK, G_DCOLOR, G_DMIX}},
+#if CLIPPER_SYNTH
+    {"DLY 2", FAM_FX, SC_GLOBAL, GR_NONE, {G_DMODE, 0xFF, 0xFF, 0xFF}},          /* (1.0: MONO PING TAPE) */
+#endif
 #if CLIPPER_SYNTH                                                        /* (the plate: TYPE and PRE-delay) */
     {"REVERB", FAM_FX, SC_GLOBAL, GR_NONE, {G_RTYPE, G_RSIZE, G_RDAMP, G_RPRE}},
     {"CHORUS", FAM_FX, SC_GLOBAL, GR_NONE, {G_CRATE, G_CDEPTH, 0xFF, 0xFF}},
@@ -516,6 +549,8 @@ static const page_t PAGES[] = {
     {"VOICE", FAM_EDIT, SC_TRACK, GR_NONE, {P_VOICE, P_GLIDE, P_GLMODE, P_PRIO}},
 #if CLIPPER_SYNTH                                                        /* (one instrument: nothing to mute) */
     {"VOICE 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_ALLOC, P_DETUNE, P_PAN, P_VINT}},   /* (0.9: VINTAGE) */
+    {"VOICE 3", FAM_EDIT, SC_TRACK, GR_NONE, {P_SPREAD, 0xFF, 0xFF, 0xFF}},      /* (1.0: SPREAD) */
+    {"MACROS", FAM_EDIT, SC_TRACK, GR_NONE, {P_MAC1, P_MAC2, P_MAC3, P_MAC4}},   /* (1.0) */
     {"LAYER", FAM_EDIT, SC_SYN, GR_LAYER, {0, 1, 2, 3}},         /* X_LYMODE X_LYSOUND X_LYSPLIT X_LYLEVEL */
     {"LAYER 2", FAM_EDIT, SC_SYN, GR_LAYER, {4, 5, 6, 7}},       /* X_LYOCT X_LYPAN X_LYFILT X_LYSWAP */
     {"MORPH", FAM_EDIT, SC_SYN, GR_MORPH, {8, 9, 10, 0xFF}},     /* X_MORPH X_SETA X_SETB */

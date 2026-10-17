@@ -30,6 +30,11 @@ static struct {
     uint32_t dl_cur, dl_old;            /* (0.9) the delay's TIME now and the one it fades from (DL_XF samples) */
     uint32_t dl_x;                      /* .. samples into that fade (DL_XF: none) */
     int32_t cdep;                       /* (0.9) the chorus's DEPTH now (glides: a jump moved its taps at once) */
+#if CLIPPER_SYNTH
+    uint32_t dm_cur, dm_old, dm_x;      /* (1.0) the delay's MODE now, the one it fades from, samples into that fade */
+    uint32_t tw_ph, tf_ph;              /* (1.0) TAPE: the wow's and the flutter's phases */
+    int32_t tp0, tpd;                   /* .. the swing of the tap (Q8 samples, more delay) at the block's start, a step */
+#endif
 } fx;
 #define DL_XF 1024u                     /* a new delay TIME: the old tap fades out as the new one fades in, 23 ms (a jump
                                          * of the read point was a crack) */
@@ -289,13 +294,38 @@ static inline int32_t pl_mod_ap(uint32_t k, int32_t x, int32_t c, int32_t pos)  
     pl_put(k, v);
     return d + mulq15(v, c);
 }
-/* one tank step (22.05 kHz) on x: the left and right outputs */
-static void plate_step(int32_t x, int32_t decay, int32_t damp, uint32_t pre, int32_t *yl, int32_t *yr)
+/* (1.0) SHIMMER: the tank's output an octave up, back into its input (the Eno / Lanois shimmer): a delay line read
+ * twice as fast as it is written by two taps half a window apart, each faded in and out (a triangle), at 22.05 kHz */
+#define PS_LEN 1024u                                   /* 46 ms */
+#define PS_WIN 896u                                    /* the window the taps sweep, samples */
+static int16_t ps_buf[PS_LEN] __attribute__((section(".pool")));
+static struct { uint32_t w, ph; int32_t lp; } ps;
+static int32_t shimmer_step(int32_t in)
+{
+    uint32_t k;
+    int32_t y = 0;
+    ps_buf[ps.w & (PS_LEN - 1u)] = (int16_t)clamp(in, -32768, 32767);
+    for (k = 0; k < 2u; k++) {                         /* delay = WIN - phase: it shrinks one a step (twice the speed) */
+        uint32_t ph = (ps.ph + k * (PS_WIN / 2u)) % PS_WIN, d = PS_WIN - ph + 2u;
+        int32_t g = ph < PS_WIN / 2u ? (int32_t)(ph * 65536u / PS_WIN) : (int32_t)((PS_WIN - ph) * 65536u / PS_WIN);
+        y += (ps_buf[(ps.w - d) & (PS_LEN - 1u)] * g) >> 15;   /* (the two triangles sum to 1) */
+    }
+    ps.w++;
+    ps.ph = (ps.ph + 1u) % PS_WIN;
+    ps.lp += mulq15(y - ps.lp, 16000);                 /* (a little softer: the octave of a bright tail is harsh) */
+    return ps.lp;
+}
+/* one tank step (22.05 kHz) on x: the left and right outputs. (1.0) bw: the input's bandwidth (HALL darker), shim:
+ * the octave-up share of the tail fed back in (SHIMMER), Q15 */
+static void plate_step(int32_t x, int32_t decay, int32_t damp, uint32_t pre, int32_t bw, int32_t shim, int32_t *yl,
+                       int32_t *yr)
 {
     int32_t a, b, ma, mb;
     pl_put(PL_PRE, x);
     x = pre ? pl_tap(PL_PRE, pre) : x;
-    pl.bw += mulq15(x - pl.bw, 26000);                          /* bandwidth (~6 kHz at 22.05) */
+    if (shim)
+        x += mulq15(shimmer_step((pl.end[0] + pl.end[1]) >> 1), shim);
+    pl.bw += mulq15(x - pl.bw, bw);                             /* bandwidth (~6 kHz at 22.05; HALL ~3.5 kHz) */
     x = pl_ap(PL_AP1, pl.bw, 24576);                            /* 0.75 */
     x = pl_ap(PL_AP2, x, 24576);
     x = pl_ap(PL_AP3, x, 20480);                                /* 0.625 */
@@ -322,32 +352,84 @@ static void plate_step(int32_t x, int32_t decay, int32_t damp, uint32_t pre, int
     *yr = pl_tap(PL_DB1, 262) + pl_tap(PL_DB1, 2687) - pl_tap(PL_AB, 910) + pl_tap(PL_DB2, 1980) -
           pl_tap(PL_DA1, 1564) - pl_tap(PL_AA, 248) - pl_tap(PL_DA2, 90);
 }
+#ifndef SH_DECAY
+#define SH_DECAY 27000
+#define SH_DAMP 28000
+#define SH_GAIN 8192
+#endif
 /* the plate over a block: rev_in (the reverb sends) -> + wet_l, wet_r */
-static void plate_run(const int32_t *rev_in, int32_t *wet_l, int32_t *wet_r, uint32_t n)
+static void plate_run(const int32_t *rev_in, int32_t *wet_l, int32_t *wet_r, uint32_t n, int32_t rg0, int32_t rg1)
 {
-    int32_t decay = 6554 + song.g[G_RSIZE] * 155;               /* 0.2 .. 0.8: RT60 ~0.8 .. 5 s (twice a half) */
+    int32_t rt = song.g[G_RTYPE], hall = rt >= RT_HALL;
+    int32_t decay = hall ? 16384 + song.g[G_RSIZE] * 104          /* (1.0) HALL: 0.5 .. 0.9, RT60 ~2 .. 10 s */
+                         : 6554 + song.g[G_RSIZE] * 155;        /* 0.2 .. 0.8: RT60 ~0.8 .. 5 s (twice a half) */
     int32_t damp = 32767 - song.g[G_RDAMP] * 193;               /* the damping low-pass: open .. 0.25 */
-    uint32_t pre = (uint32_t)clamp(song.g[G_RPRE], 0, 100) * 2205u / 100u;   /* ms -> 22.05 kHz samples */
+    if (rt == RT_SHIMMER) {                                     /* (the octave line feeds the tank: kept under a loop gain
+                                                                 * of 1, the top always damped a little) */
+        decay = decay > SH_DECAY ? SH_DECAY : decay;
+        damp = damp > SH_DAMP ? SH_DAMP : damp;
+    }
+    uint32_t pre = (uint32_t)clamp(song.g[G_RPRE] + (hall ? 18 : 0), 0, 100) * 2205u / 100u;   /* ms -> 22.05 kHz
+                                                                 * samples (HALL: 18 ms more, a big room's) */
+    int32_t bw = hall ? 18000 : 26000, shim = rt == RT_SHIMMER ? SH_GAIN : 0;   /* (SHIMMER: some of the tail an octave up) */
     uint32_t i;
+    static uint32_t pre_cur;                                    /* (1.0) the pre-delay glides (a jump: a step in) */
     if (!pl.ready)
-        plate_clear();
+        plate_clear(), pre_cur = pre;
     for (i = 0; i < n; i++) {
-        int32_t x = mulq15(rev_in[i], 13000);                   /* (as the room's input) */
+        int32_t x = mulq15(rev_in[i], 13000), wl, wr;           /* (as the room's input) */
+        int32_t g = rg0 + (((rg1 - rg0) * (int32_t)i) >> CTL_LOG2);
         if (!pl.half) {
             pl.acc = x;
-            wet_l[i] += (pl.y0l + pl.y1l) >> 1;                 /* between the last two steps */
-            wet_r[i] += (pl.y0r + pl.y1r) >> 1;
+            wl = (pl.y0l + pl.y1l) >> 1;                        /* between the last two steps */
+            wr = (pl.y0r + pl.y1r) >> 1;
         } else {
             int32_t yl, yr;
-            plate_step((pl.acc + x) >> 1, decay, damp, pre, &yl, &yr);
+            pre_cur += pre_cur < pre ? 1u : pre_cur > pre ? (uint32_t)-1 : 0u;
+            plate_step((pl.acc + x) >> 1, decay, damp, pre_cur, bw, shim, &yl, &yr);
             pl.y0l = pl.y1l, pl.y0r = pl.y1r;
             pl.y1l = (yl * 19661) >> 14, pl.y1r = (yr * 19661) >> 14;   /* x 1.2: the paper's 0.6, as loud as ROOM */
-            wet_l[i] += pl.y0l;
-            wet_r[i] += pl.y0r;
+            wl = pl.y0l, wr = pl.y0r;
         }
+        if (g != 32767)
+            wl = mulq15(wl, g), wr = mulq15(wr, g);
+        wet_l[i] += wl;
+        wet_r[i] += wr;
         pl.half ^= 1u;
     }
 }
+#endif
+
+#if CLIPPER_SYNTH
+/* (1.0) the half-rate line read q (Q8) samples back: entry e ~ sample 2e, linear between entries */
+static inline int32_t dly_rd(uint32_t q)
+{
+    uint32_t s = (fx.dly_w << 8) - q, e = s >> 9, fr = (s >> 1) & 255u;
+    int32_t a = dly_buf[e & (DLY_LEN - 1u)], b = dly_buf[(e + 1u) & (DLY_LEN - 1u)];
+    return a + (((b - a) * (int32_t)fr) >> 8);
+}
+/* (1.0) the taps of a MODE at a TIME d, sample i of the block: left, right, and the one fed back */
+static inline void dly_taps(uint32_t m, uint32_t d, uint32_t i, int32_t *l, int32_t *r, int32_t *f)
+{
+    if (m == DM_PING) {
+        uint32_t d2 = 2u * d;
+        if (d2 > DLY_SPAN - 4u)
+            d2 = DLY_SPAN - 4u;
+        *l = dly_rd(d << 8);
+        *r = *f = dly_rd(d2 << 8);
+    } else if (m == DM_TAPE) {
+        uint32_t q = (d << 8) + (uint32_t)(fx.tp0 + fx.tpd * (int32_t)i);
+        if (q > ((DLY_SPAN - 4u) << 8))
+            q = (DLY_SPAN - 4u) << 8;
+        *l = *r = *f = dly_rd(q);
+    } else {
+        uint32_t p = fx.dly_w - d, e = p >> 1;
+        int32_t a = dly_buf[e & (DLY_LEN - 1u)];
+        *l = *r = *f = (p & 1u) ? (a + dly_buf[(e + 1u) & (DLY_LEN - 1u)]) >> 1 : a;
+    }
+}
+#define TW_INC 1558299u                 /* (a block's turn: 0.5 Hz, the wow) */
+#define TF_INC 20257887u                /* (6.5 Hz, the flutter) */
 #endif
 
 /* process the three buses for one block; sends in, wet out (stereo). The LFOs (chorus, reverb line)
@@ -361,19 +443,38 @@ static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t
     int32_t g = 17000 + song.g[G_RSIZE] * 104, lpk = 32767 - song.g[G_RDAMP] * 200;   /* loop gain (RT60 ~0.4..4 s), damping */
     int32_t cdepth = song.g[G_CDEPTH] * 6, cdep0;
     int32_t ca0, ca1, cb0, cb1, ma, mb, dca, dcb;
-    int plate = CLIPPER_SYNTH && song.g[G_RTYPE] == RT_PLATE;   /* Clipper: the plate instead of the room */
+    int plate = CLIPPER_SYNTH && song.g[G_RTYPE] >= RT_PLATE;   /* Clipper: the plate (1.0: HALL, SHIMMER: its tank)
+                                                                 * instead of the room */
     const uint32_t L0 = REV_LINE[0] + REV_MOD + 2u, B1 = L0, B2 = B1 + REV_LINE[1], B3 = B2 + REV_LINE[2];
+    int32_t rg0 = 32767, rg1 = 32767;                   /* (1.0) the reverb's share over the block (a change of type) */
 #if CLIPPER_SYNTH
-    {   /* a change of type: the other one starts from silence (no old tail bursting out of its lines) */
-        static int was_plate = -1;
-        if (plate != was_plate) {
-            if (plate)
-                pl.ready = 0;
-            else
-                for (k = 0; k < NELEM(rev_line); k++)
-                    rev_line[k] = 0;
-            was_plate = plate;
+    {   /* a change between the room and the plate's tank (PLATE, HALL, SHIMMER share it: they change on the fly): the
+         * old one fades out over 6 blocks (1.0: it was cut, a click on a ringing tail), then the other starts from
+         * silence (no old tail bursting out of its lines) */
+        static int fam_used = -1, was_shim;
+        static uint8_t rv_fade;
+        int shim = song.g[G_RTYPE] == RT_SHIMMER;
+        if (fam_used < 0)
+            fam_used = plate;
+        if (plate != fam_used) {
+            if (!rv_fade)
+                rv_fade = 6;
+            rg0 = rv_fade * 5461, rg1 = (rv_fade - 1) * 5461;   /* (32767 / 6) */
+            plate = fam_used;                           /* (this block: the old one) */
+            if (!--rv_fade) {
+                if (fam_used)
+                    for (k = 0; k < NELEM(rev_line); k++)
+                        rev_line[k] = 0;
+                else
+                    pl.ready = 0;
+                fam_used = !fam_used;
+            }
         }
+        if (shim && !was_shim) {                        /* (the octave line from silence) */
+            memset(ps_buf, 0, sizeof ps_buf);
+            ps.lp = 0;
+        }
+        was_shim = shim;
     }
 #endif
     if (!fx.dl_cur)
@@ -381,6 +482,20 @@ static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t
     if (dl != fx.dl_cur && fx.dl_x >= DL_XF)            /* (0.9) a new TIME: the fade starts (one at a time) */
         fx.dl_old = fx.dl_cur, fx.dl_cur = dl, fx.dl_x = 0;
     dl = fx.dl_cur, dlo = fx.dl_old;
+#if CLIPPER_SYNTH
+    {   /* (1.0) a new MODE: the fade starts (one at a time); TAPE's swing at both ends of the block */
+        uint32_t dm = song.g[G_DMODE] <= DM_TAPE ? song.g[G_DMODE] : DM_MONO;
+        int32_t dw = (int32_t)((dl * 197u) >> 8) + 1536, t1;   /* (wow: 0.3 % of TIME + 6 samples; flutter: 2) */
+        if (fx.dm_x == 0 && fx.dm_old == fx.dm_cur)
+            fx.dm_x = DL_XF;                            /* (from the start: nothing to fade) */
+        if (dm != fx.dm_cur && fx.dm_x >= DL_XF)
+            fx.dm_old = fx.dm_cur, fx.dm_cur = dm, fx.dm_x = 0;
+        fx.tp0 = dw + 512 + ((dw * osc_sine(fx.tw_ph)) >> 15) + ((512 * osc_sine(fx.tf_ph)) >> 15);
+        fx.tw_ph += TW_INC, fx.tf_ph += TF_INC;
+        t1 = dw + 512 + ((dw * osc_sine(fx.tw_ph)) >> 15) + ((512 * osc_sine(fx.tf_ph)) >> 15);
+        fx.tpd = (t1 - fx.tp0) >> CTL_LOG2;
+    }
+#endif
     cdep0 = fx.cdep;                                    /* (0.9) DEPTH glides: ~60 ms over its range */
     fx.cdep += clamp(cdepth - fx.cdep, -10, 10);
     {   /* the chorus' two read points (Q8 samples back) and line 0's extra length, at both ends of the block */
@@ -395,7 +510,10 @@ static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t
         dca = (ca1 - ca0) >> CTL_LOG2, dcb = (cb1 - cb0) >> CTL_LOG2;
     }
     for (i = 0; i < n; i++) {
-        int32_t yl, yr, x, a, o0, o1, o2, o3;
+        int32_t yl, yr, a, o0, o1, o2, o3;
+#if !CLIPPER_SYNTH
+        int32_t x;
+#endif
         /* chorus: two modulated short delays, 5..15 ms, the LFO half a turn apart: left and right move apart */
         cho_buf[fx.cho_w & (CHO_LEN - 1u)] = (int16_t)clamp(cho_in[i] >> 1, -32768, 32767);
         {
@@ -409,24 +527,38 @@ static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t
         fx.cho_w++;
         /* delay with a low-passed feedback (in the middle) */
 #if CLIPPER_SYNTH
-        {   /* half rate: an entry is the mean of two samples (entry e ~ sample 2e); an odd position reads between
-             * two entries */
-            uint32_t p = fx.dly_w - dl, e = p >> 1;
-            int32_t a = dly_buf[e & (DLY_LEN - 1u)], v;
-            x = (p & 1u) ? (a + dly_buf[(e + 1u) & (DLY_LEN - 1u)]) >> 1 : a;
-            if (fx.dl_x < DL_XF) {                      /* (0.9) the old TIME's tap fading out */
-                int32_t xo;
-                p = fx.dly_w - dlo, e = p >> 1, a = dly_buf[e & (DLY_LEN - 1u)];
-                xo = (p & 1u) ? (a + dly_buf[(e + 1u) & (DLY_LEN - 1u)]) >> 1 : a;
-                x = xo + (((x - xo) * (int32_t)fx.dl_x) >> 10);
+        {   /* half rate: an entry is the mean of two samples (entry e ~ sample 2e); a position between two entries
+             * reads between them. (1.0) MONO: one tap in the middle; PING: the echoes left (TIME) and right (2 x
+             * TIME), the feedback from the right; TAPE: the tap swung by wow and flutter, the feedback saturating.
+             * A change of MODE: the old one's taps fade out as the new one's fade in (DL_XF) */
+            int32_t xl, xr, xf, v, ol, or_, of;
+            uint32_t m = fx.dm_cur;
+            dly_taps(m, dl, i, &xl, &xr, &xf);
+            if (fx.dl_x < DL_XF) {                      /* (0.9) the old TIME's taps fading out */
+                dly_taps(m, dlo, i, &ol, &or_, &of);
+                xl = ol + (((xl - ol) * (int32_t)fx.dl_x) >> 10);
+                xr = or_ + (((xr - or_) * (int32_t)fx.dl_x) >> 10);
+                xf = of + (((xf - of) * (int32_t)fx.dl_x) >> 10);
                 fx.dl_x++;
             }
-            fx.dly_lp += mulq15(x - fx.dly_lp, col);
+            if (fx.dm_x < DL_XF) {                      /* (1.0) the old MODE's taps fading out */
+                dly_taps(fx.dm_old, dl, i, &ol, &or_, &of);
+                xl = ol + (((xl - ol) * (int32_t)fx.dm_x) >> 10);
+                xr = or_ + (((xr - or_) * (int32_t)fx.dm_x) >> 10);
+                xf = of + (((xf - of) * (int32_t)fx.dm_x) >> 10);
+                fx.dm_x++;
+            }
+            fx.dly_lp += mulq15(xf - fx.dly_lp, col);
             v = (dly_in[i] >> 1) + mulq15(fx.dly_lp, fb);
+            if (m == DM_TAPE)
+                v = softclip(v);                        /* (a tape's: the repeats round off as they pile up) */
             if (fx.dly_w & 1u)
                 dly_buf[(fx.dly_w >> 1) & (DLY_LEN - 1u)] = (int16_t)clamp((fx.dly_acc + v) >> 1, -32768, 32767);
             else
                 fx.dly_acc = v;
+            fx.dly_w++;
+            yl += mulq15(xl << 1, dmix);
+            yr += mulq15(xr << 1, dmix);
         }
 #else
         x = dly_buf[(fx.dly_w - dl) & (DLY_LEN - 1u)];
@@ -438,11 +570,11 @@ static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t
         fx.dly_lp += mulq15(x - fx.dly_lp, col);
         dly_buf[fx.dly_w & (DLY_LEN - 1u)] =
             (int16_t)clamp((dly_in[i] >> 1) + mulq15(fx.dly_lp, fb), -32768, 32767);
-#endif
         fx.dly_w++;
         x = mulq15(x << 1, dmix);
         yl += x;
         yr += x;
+#endif
         /* reverb: two diffusers, then the four lines (Clipper: or the plate, after the loop) */
         if (plate) {
             wet_l[i] = yl;
@@ -486,12 +618,16 @@ static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t
             if (++fx.line_i[2] >= REV_LINE[2]) fx.line_i[2] = 0;
             if (++fx.line_i[3] >= REV_LINE[3]) fx.line_i[3] = 0;
         }
+        if (rg0 != 32767 || rg1 != 32767) {             /* (1.0) fading out (a change of type) */
+            int32_t g = rg0 + (((rg1 - rg0) * (int32_t)i) >> CTL_LOG2);
+            o0 = mulq15(o0, g), o1 = mulq15(o1, g), o2 = mulq15(o2, g), o3 = mulq15(o3, g);
+        }
         wet_l[i] = yl + o0 + o2;
         wet_r[i] = yr + o1 - o3;
     }
 #if CLIPPER_SYNTH
     if (plate)
-        plate_run(rev_in, wet_l, wet_r, n);
+        plate_run(rev_in, wet_l, wet_r, n, rg0, rg1);
 #endif
 }
 
@@ -925,19 +1061,20 @@ static __attribute__((noinline)) int juno_chorus(track_t *t, int32_t *b, uint32_
         l1 += ((v1 - l1) * k) >> 15;                    /* the BBD's dark */
         l2 += ((v2 - l2) * k) >> 15;
         {
-            int32_t in = clamp(x >> 2, -32767, 32767);
+            int32_t in = clamp(x >> 3, -32767, 32767);  /* (1.0: an eighth, was a quarter: 8 loud voices clipped) */
             if (hiss) {
                 c->nz = c->nz * 1664525u + 1013904223u;
-                in += (((int32_t)(c->nz >> 16) - 32768) * hiss) >> 15;
+                in += (((int32_t)(c->nz >> 16) - 32768) * hiss) >> 16;
             }
             line[wp] = (int16_t)clamp(in, -32767, 32767);
         }
         wp = (wp + 1u) & (JC_LEN - 1u);
         g = 32768 - ((w * 9830) >> 15);                 /* 1 dry .. 0.7 at full wet */
-        md = x + mulq15((l1 + l2) << 1, w);             /* dry + (tap 1 + tap 2) / 2 (the taps at a quarter) */
-        sd = mulq15(mulq15((l1 - l2) << 1, w), width);  /* (tap 1 - tap 2) / 2 */
-        b[i] = mulq15(md, g);
-        jc_side[i] = mulq15(sd, g);
+        /* (1.0: 64-bit products: a loud chord's x passes 2^16, and x * g wrapped round: a crack at a chord change) */
+        md = x + (int32_t)(((int64_t)((l1 + l2) << 2) * w) >> 15);   /* dry + (tap 1 + tap 2) / 2 (the taps at an eighth) */
+        sd = (int32_t)(((int64_t)(((int64_t)((l1 - l2) << 2) * w) >> 15) * width) >> 15);   /* (tap 1 - tap 2) / 2 */
+        b[i] = (int32_t)(((int64_t)md * g) >> 15);
+        jc_side[i] = (int32_t)(((int64_t)sd * g) >> 15);
     }
     c->w = w, c->ph = ph, c->wp = (uint16_t)wp, c->l1 = l1, c->l2 = l2;
     if (!w && c->mode != m)
@@ -987,7 +1124,7 @@ static void part_apply(track_t *t, int32_t fmw)
     else
         wt_tab_eff[k] = 0;
 }
-static void part_duck(track_t *t, int32_t *b, uint32_t n, int32_t fmw)
+static void part_duck(track_t *t, int32_t *b, int32_t *b2, uint32_t n, int32_t fmw)   /* (1.0: b2, SPREAD's side, too) */
 {
     uint32_t k;
     if (t->dk_phase == 2u) {                            /* held silent until the change has landed (50 ms at most) */
@@ -995,6 +1132,9 @@ static void part_duck(track_t *t, int32_t *b, uint32_t n, int32_t fmw)
         int ready = !part_pending(t, fmw) && (ENGINES[t->engine % NENGINES] != &ENG_WAVE || wt_have == wt_tab_eff[p] - 1);
         for (k = 0; k < n; k++)
             b[k] = 0;
+        if (b2)
+            for (k = 0; k < n; k++)
+                b2[k] = 0;
         if (ready || ++t->dk_hold > 68u)
             t->dk_phase = 3, t->dk_pos = 0, t->dk_hold = 0;
         return;
@@ -1003,11 +1143,16 @@ static void part_duck(track_t *t, int32_t *b, uint32_t n, int32_t fmw)
         int32_t x = t->dk_phase == 1u ? 32768 - t->dk_pos * 256 : t->dk_pos * 256, x2 = (x * x) >> 15;
         int32_t g = 3 * x2 - 2 * ((x2 * x) >> 15);      /* smoothstep, Q15 */
         if (t->dk_pos >= 128u) {
-            if (t->dk_phase == 1u)
+            if (t->dk_phase == 1u) {
                 b[k] = 0;
+                if (b2)
+                    b2[k] = 0;
+            }
             continue;
         }
         b[k] = (int32_t)(((int64_t)b[k] * g) >> 15);
+        if (b2)
+            b2[k] = (int32_t)(((int64_t)b2[k] * g) >> 15);
         t->dk_pos++;
     }
     if (t->dk_pos >= 128u) {
@@ -1065,7 +1210,7 @@ static void mix_part1(track_t *t, uint32_t n)
 #endif
 #if CLIPPER_SYNTH
     if (t->dk_phase)
-        part_duck(t, b, n, fmw);
+        part_duck(t, b, part_side_on ? part_side : 0, n, fmw);
 #endif
     if (!g0 && !g1) {                                   /* silent (MUTE / SOLO): the voices run, nothing is heard */
         slicer_track(t, 0, n);
@@ -1078,6 +1223,14 @@ static void mix_part1(track_t *t, uint32_t n)
 #endif
         int32_t gl = 4096 - (pan > 0 ? pan * 64 : 0), gr = 4096 + (pan < 0 ? pan * 64 : 0);
         int32_t c = t->p[P_CHOR] * 258, d = t->p[P_DLY] * 258, r = t->p[P_REV] * 258, pk = t->peak;
+#if CLIPPER_SYNTH
+        int32_t sa = 0;                                 /* (1.0) |the part| before DIST and the INSERT (SPREAD's side
+                                                         * follows their level: they run on the mid) */
+        {   /* (1.0) SPACE: more reverb and delay */
+            int32_t sp = clamp(t->p[P_MAC4], 0, 127);
+            r = clamp(t->p[P_REV] + sp, 0, 127) * 258, d = clamp(t->p[P_DLY] + sp / 2, 0, 127) * 258;
+        }
+#endif
         int32_t xmax, c0, d0, r0, dsc, dsd, dsr;
         int32_t ga = mulq15(g0, duck.g0), gb = mulq15(g1, duck.g1);   /* mute x duck, ramped over the block */
         if (!t->mix_on || fresh)                        /* (0.9) the sends glide as LEVEL does (a jump: a crack in the
@@ -1090,6 +1243,11 @@ static void mix_part1(track_t *t, uint32_t n)
         xmax = xmax > r0 ? xmax : r0;
         xmax = xmax > c ? xmax : c, xmax = xmax > d ? xmax : d, xmax = xmax > r ? xmax : r;
         xmax = 0x7FFFFFFF / (xmax | 1);                 /* sends: loud chords at a high LEVEL */
+#if CLIPPER_SYNTH
+        if (part_side_on && (t->p[P_DIST] | t->dist_w | t->p[P_ITYPE] | t->ins_run))
+            for (i = 0; i < n; i++)
+                sa += b[i] < 0 ? -(b[i] >> 6) : b[i] >> 6;
+#endif
         track_dist(t, b, n, fresh);
 #if CLIPPER_SYNTH
         if (t->p[P_ITYPE] | t->ins_run) {
@@ -1102,11 +1260,38 @@ static void mix_part1(track_t *t, uint32_t n)
         {
             tsvf_t fc;                                  /* the track's FILTER (P_TFLT), after the SLICER */
             djf_t *f = &tflt[(uint32_t)(t - trk) % NTRK];
-            if (djf_block(f, t->p[P_TFLT], &fc))
+            if (djf_block(f, t->p[P_TFLT], &fc)) {
                 tflt_run(f, &fc, b, n, 0);
+#if CLIPPER_SYNTH
+                if (part_side_on)                       /* (1.0) SPREAD's side through the same filter (its own state) */
+                    tflt_run(f, &fc, part_side, n, 1);
+#endif
+            }
         }
 #if CLIPPER_SYNTH
+        if (part_side_on && sa) {                       /* (1.0) the side as loud as DIST / the INSERT left the mid */
+            int32_t sb = 0, g, g0s = t->sd_g ? t->sd_g : 32768;
+            for (i = 0; i < n; i++)
+                sb += b[i] < 0 ? -(b[i] >> 6) : b[i] >> 6;
+            while (sb > 65535 || sa > 65535)            /* (32 bits: no 64-bit divide) */
+                sb >>= 1, sa >>= 1;
+            g = (int32_t)(((uint32_t)sb << 15) / (uint32_t)(sa + 1));
+            g = clamp(g, 0, 65535);
+            t->sd_g = g;
+            for (i = 0; i < n; i++) {
+                int32_t gi = g0s + (((g - g0s) * (int32_t)i) >> CTL_LOG2);
+                part_side[i] = (int32_t)(((int64_t)part_side[i] * gi) >> 15);
+            }
+        } else {
+            t->sd_g = 0;
+        }
         const int32_t *side = juno_chorus(t, b, n) ? jc_side : 0;   /* (0.8) the JUNO chorus: stereo */
+        if (part_side_on) {                             /* (1.0) + SPREAD's */
+            if (side)
+                for (i = 0; i < n; i++)
+                    part_side[i] += jc_side[i];
+            side = part_side;
+        }
 #endif
         int32_t lvl0, dl, gl0, dgl, gr0, dgr;          /* (0.7, after SLOOP 2.7) LEVEL (and a new sound's trim) and PAN
                                                          * glide (mix_glide), ramped sample by sample inside the block */

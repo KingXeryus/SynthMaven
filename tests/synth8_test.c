@@ -66,6 +66,7 @@ static void plain(track_t *t, uint32_t eng, uint32_t pi)
     t->p[P_LD_PIT] = t->p[P_LD_FLT] = t->p[P_LD_SHP] = t->p[P_LD_AMP] = t->p[P_ED_PIT] = t->p[P_ED_FLT] = 0;
     t->p[P_ATK] = 0, t->p[P_SUS] = 127, t->p[P_REL] = 10, t->p[P_VOICE] = V_POLY, t->p[P_PAN] = 0, t->p[P_GLIDE] = 0;
     t->p[P_MWDST] = t->p[P_ATDST] = MD_OFF;
+    t->p[P_SPREAD] = 0;                                 /* (1.0: the pads come with some) */
     t->p[P_AMODE] = 0;
     t->p[P_ITYPE] = 0, t->p[P_IMIX] = 127;
 }

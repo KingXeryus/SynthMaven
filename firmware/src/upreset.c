@@ -54,7 +54,7 @@ _Static_assert(P_COUNT < 128, "user preset record: P_COUNT");
 static const uint8_t UP_XW[UP_NX] = {7, 3, 1, 7, 7, 7, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7,
                                      4, 7, 7, 7, 7};   /* bits (0.6: + the INSERT's TYPE, A, B, C, MIX) */
 _Static_assert(UP_NX == 30u && P_L2RATE == UP_E0V && P_ITYPE == UP_E0V + UP_NX4 && P_IMIX + 1 == P_MSRATE &&
-               P_SLOOP == P_E0 - 1, "the packed parameters, in order");
+               P_SLOOP == P_SPREAD - 1, "the packed parameters, in order");
 #define UP_XMS 161u                              /* (0.8) a bit of the stream: note / flags hold the MOD SEQ's steps */
 /* bit k of the packed stream: the record's p[UP_NP + k / 16] for k < 160, then p[71]'s high byte */
 static int16_t *up_xword(int16_t *p, uint32_t k, uint32_t *sh)
@@ -74,6 +74,8 @@ static void up_xpack(int16_t *p, const int16_t *x)   /* x: P_L2RATE .. P_IMIX ->
     p[UP_PMAX - 1u] = UP_XMAGIC6;
     for (i = 0; i < UP_NX; i++) {
         uint32_t v = (uint32_t)clamp(x[i] - TP[UP_E0V + i].min, 0, (1 << UP_XW[i]) - 1);
+        if (UP_E0V + i >= P_M1SRC && UP_E0V + i <= P_M6AMT && (UP_E0V + i - P_M1SRC) % 3u == 0u)
+            v = (uint32_t)clamp(x[i], 0, MS_NSRC - 1) & 15u;   /* (1.0: a source's fifth bit in the tail) */
         for (j = 0; j < UP_XW[i]; j++, bit++)
             if ((v >> j) & 1u) {
                 int16_t *w = up_xword(p, bit, &sh);
@@ -110,7 +112,7 @@ static up_bank_t up_bank[UP_SLOTS / UP_PER_BANK] __attribute__((section(".pool")
  * minimum; a slot without them (an older save, SLOOP's) loads their defaults. The steps: the record's note / flags
  * (16 + 16 bytes, two steps a byte, + 8: SLOOP stores its pattern there and loads none of it), marked by UP_XMS */
 /* 0.9: + VINTAGE and LOOP (UP_NS 8): a slot's v[0] 2; 0.8's side (UPS8, 8 bytes a slot, v[0] 1, 6 values) still read */
-#define UP_NS ((uint32_t)P_E0 - P_MSRATE)
+#define UP_NS ((uint32_t)P_SPREAD - P_MSRATE)
 #define UP_NS8 6u                                /* (0.8's) */
 #define UP_SIDE_MAGIC 0x39535055u                /* "UPS9" */
 #define UP_SIDE_MAGIC8 0x38535055u               /* "UPS8" (0.8) */
@@ -127,6 +129,28 @@ typedef struct {
 _Static_assert(UP_NS == 8u && sizeof(up_side_t) == 168u && sizeof(up_side8_t) == 136u, "the user presets' side record");
 static up_side_t up_side[UP_SLOTS / UP_PER_BANK];
 static uint8_t up_xs[10];                        /* the side bytes of the record up_rec_set made last (up_put's) */
+/* 1.0: SPREAD .. the matrix's slot 12 (UP_NT values) ride in the bank's tail (storage.c st_tail: after the payload, in
+ * the rest of its sector: SLOOP and older versions never see it, their save erases it), with the fifth bit of slots
+ * 1..6's sources (the record keeps four: LFO 3 and the macros are 15..19). A slot's bytes: v[0] 1 (set), v[1] the
+ * fifth bits (slot k: bit k), then each value - its minimum; a slot without them loads their defaults */
+#define UP_NT ((uint32_t)P_E0 - P_SPREAD)
+#define UP_TAIL_MAGIC 0x30315055u                /* "UP10" */
+typedef struct {
+    uint32_t magic;
+    uint8_t v[UP_PER_BANK][UP_NT + 2u];
+    uint32_t crc;
+} up_tail_t;
+_Static_assert(UP_NT == 27u && sizeof(up_tail_t) + sizeof(up_bank_t) <= 3840u, "the user presets' tail fits the sector");
+static up_tail_t up_tail[UP_SLOTS / UP_PER_BANK] __attribute__((section(".pool")));
+static uint8_t up_xt[UP_NT + 2u];                /* the tail bytes of the record up_rec_set made last */
+static const uint8_t *up_tail_of(const up_rec_t *r)   /* a record's tail bytes, 0 = none */
+{
+    uint32_t b;
+    for (b = 0; b < UP_SLOTS / UP_PER_BANK; b++)
+        if (r >= up_bank[b].r && r < up_bank[b].r + UP_PER_BANK)
+            return up_tail[b].magic == UP_TAIL_MAGIC && up_tail[b].v[r - up_bank[b].r][0] == 1u ? up_tail[b].v[r - up_bank[b].r] : 0;
+    return up_xt[0] == 1u ? up_xt : 0;
+}
 static const uint8_t *up_side_of(const up_rec_t *r)   /* a record's side bytes, 0 = none */
 {
     uint32_t b;
@@ -193,6 +217,13 @@ static void up_rec_set(up_rec_t *r, const int16_t *v)
     up_xs[0] = 2;
     for (i = 0; i < UP_NS; i++)
         up_xs[1u + i] = (uint8_t)clamp(v[P_MSRATE + i] - TP[P_MSRATE + i].min, 0, 255);
+    up_xt[0] = 1;                                       /* (1.0) the tail's */
+    up_xt[1] = 0;
+    for (i = 0; i < MX_SLOTS6; i++)
+        if (clamp(v[mx_pid(i)], 0, MS_NSRC - 1) & 16)
+            up_xt[1] |= (uint8_t)(1u << i);
+    for (i = 0; i < UP_NT; i++)
+        up_xt[2u + i] = (uint8_t)clamp(v[P_SPREAD + i] - TP[P_SPREAD + i].min, 0, 255);
 #else
     r->np = P_COUNT;
     for (i = 0; i < P_COUNT; i++)
@@ -220,6 +251,15 @@ static void up_params(const up_rec_t *r, int16_t *out, const int16_t *def)
         for (i = 0; i < UP_NS; i++)
             out[P_MSRATE + i] = i < nv ? (int16_t)(sd[1u + i] + TP[P_MSRATE + i].min) : def[P_MSRATE + i];
     }
+    {
+        const uint8_t *tl = up_xrec(r) ? up_tail_of(r) : 0;   /* (1.0) SPREAD .. slot 12, the sources' fifth bits */
+        for (i = 0; i < UP_NT; i++)
+            out[P_SPREAD + i] = tl ? (int16_t)(tl[2u + i] + TP[P_SPREAD + i].min) : def[P_SPREAD + i];
+        if (tl)
+            for (i = 0; i < MX_SLOTS6; i++)
+                if ((tl[1] >> i) & 1u)
+                    out[mx_pid(i)] = (int16_t)(out[mx_pid(i)] | 16);
+    }
 #endif
 }
 
@@ -237,6 +277,7 @@ static int up_bank_import(uint32_t b, const uint8_t *src, int len)
 {
     up_bank_t *bk = &up_bank[b];
     const up_bank_t *h = (const up_bank_t *)src;
+    memset(&up_tail[b], 0, sizeof up_tail[b]);          /* (1.0: the tail is the sector's; up_boot loads it after) */
     if (len == (int)(8u + UP_PER_BANK * UP_RSIZE_04) && h->magic == UP_BANK_MAGIC && h->rsize == UP_RSIZE_04 &&
         h->nslot == UP_PER_BANK) {
         uint32_t k, i;
@@ -395,6 +436,10 @@ static void up_boot(void)                      /* persist_boot: the banks from f
             }
         }
     }
+        memset(&up_tail[b], 0, sizeof up_tail[b]);       /* (1.0) the tail, when it is ours and whole */
+        if (flash_ok && (st_tail_load(OBJ_UPRESET0 + b, &up_tail[b], sizeof up_tail[b]) ||
+                         up_tail[b].magic != UP_TAIL_MAGIC || up_tail[b].crc != st_crc32(&up_tail[b], sizeof up_tail[b] - 4u)))
+            memset(&up_tail[b], 0, sizeof up_tail[b]);
 #else
         up_bank_check(b, flash_ok ? st_load(OBJ_UPRESET0 + b, &up_bank[b], sizeof up_bank[b]) : -1);
 #endif
@@ -424,6 +469,17 @@ static int up_put(uint32_t k, const up_rec_t *r)
             memset(sd->v[k % UP_PER_BANK], 0, sizeof sd->v[0]);
         sd->crc = st_crc32(sd, sizeof *sd - 4u);
     }
+    {   /* (1.0) its tail bytes the same */
+        up_tail_t *tl = &up_tail[k / UP_PER_BANK];
+        if (tl->magic != UP_TAIL_MAGIC)
+            memset(tl, 0, sizeof *tl);
+        tl->magic = UP_TAIL_MAGIC;
+        if (r)
+            memcpy(tl->v[k % UP_PER_BANK], up_xt, sizeof up_xt);
+        else
+            memset(tl->v[k % UP_PER_BANK], 0, sizeof tl->v[0]);
+        tl->crc = st_crc32(tl, sizeof *tl - 4u);
+    }
 #endif
     if (!r) {
         uint32_t i;
@@ -438,9 +494,12 @@ static int up_put(uint32_t k, const up_rec_t *r)
 #if CLIPPER_SYNTH
         st_side = &up_side[k / UP_PER_BANK];
         st_side_len = sizeof(up_side_t);
+        st_tail = &up_tail[k / UP_PER_BANK];
+        st_tail_len = sizeof(up_tail_t);
 #endif
         rc = st_save(OBJ_UPRESET0 + k / UP_PER_BANK, bk, sizeof *bk);
         st_side = 0;
+        st_tail = 0;
         return rc ? 2 : 0;
     }
 #endif

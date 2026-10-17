@@ -98,11 +98,11 @@ static void slots_off(track_t *t)
 {
     uint32_t k;
     for (k = 0; k < MX_SLOTS; k++)
-        t->p[P_M1SRC + 3u * k] = MS_OFF, t->p[P_M1DST + 3u * k] = MT_OFF, t->p[P_M1AMT + 3u * k] = 0;
+        t->p[mx_pid(k)] = MS_OFF, t->p[mx_pid(k) + 1u] = MT_OFF, t->p[mx_pid(k) + 2u] = 0;
 }
 static void slot(track_t *t, uint32_t k, uint32_t src, uint32_t dst, int32_t amt)
 {
-    t->p[P_M1SRC + 3u * k] = (int16_t)src, t->p[P_M1DST + 3u * k] = (int16_t)dst, t->p[P_M1AMT + 3u * k] = (int16_t)amt;
+    t->p[mx_pid(k)] = (int16_t)src, t->p[mx_pid(k) + 1u] = (int16_t)dst, t->p[mx_pid(k) + 2u] = (int16_t)amt;
 }
 /* ANALOG, plain: a saw (E0 0) or a sine (3) through the filter at cut, no effects, no modulation, full sustain */
 static void analog(uint32_t wave, int32_t cut)
@@ -365,6 +365,12 @@ static int16_t xval(uint32_t j, uint32_t k)
     const param_desc_t *d = &TP[PROJ_E0 + k];
     return (int16_t)(d->min + (int32_t)(k * (j ? 5u : 7u) + (j ? 1u : 3u)) % (d->max - d->min + 1));
 }
+static int16_t xv04(uint32_t j, uint32_t k)   /* (0.4's: its sources were 0..15) */
+{
+    uint32_t f;
+    int16_t v = xval(j, k);
+    return (int16_t)(mx_slot_of(PROJ_E0 + k, &f) >= 0 && f == 0u ? v & 15 : v);
+}
 static void t_project(void)
 {
     track_t *a = &trk[0], *b = &trk[1];
@@ -414,7 +420,7 @@ static void t_project(void)
     {   /* the first 0.4 build's projects (0xC4: in tracks 3 and 4's p[]) */
         proj_capture(&pj);
         pj.rsv[0] = CLIPPER_PROJ_MARK_04;
-        for (k = 0; k < PROJ_NX; k++)
+        for (k = 0; k < P_ITYPE - PROJ_E0; k++)          /* (0.4's 25: LFO 2, ENV 2, the matrix) */
             pj.t[2].p[k] = xval(1, k), pj.t[3].p[k] = xval(0, k);   /* (swapped: tell them apart) */
         proj_apply(&pj, 1);
         for (k = 0, same = 1; k < PROJ_NX; k++)       /* (0.6's INSERT: not in them, at its defaults) */
@@ -424,7 +430,7 @@ static void t_project(void)
     }
     proj_capture(&pj);
     pj.rsv[0] = 0xC3;                                  /* as Clipper 0.3 wrote it: tracks 3 and 4 its own values */
-    for (k = 0; k < PROJ_NX; k++)
+    for (k = 0; k < NELEM(pj.t[2].p); k++)              /* (1.0: PROJ_NX passed the record's 61) */
         pj.t[2].p[k] = TP[k].max, pj.t[3].p[k] = TP[k].min;
     proj_apply(&pj, 1);
     for (k = 0, same = 1; k < PROJ_NX; k++)
@@ -537,7 +543,7 @@ static void t_userbank(void)
         o[0] = k % 3u ? UP_USED : 0u, o[1] = UP_VER, o[2] = (uint8_t)(k % NENGINES), o[3] = 86u;   /* (0.4: P_COUNT 86, */
         snprintf((char *)o + 4, 12, "OLD %u", k);                                                /* P_E0 78) */
         for (i = 0; i < 86u; i++)
-            p[i] = (int16_t)(i < PROJ_E0 ? k * 100u + i : i < 78u ? xval(k & 1u, i - PROJ_E0) : k * 100u + i - 78u + P_E0);
+            p[i] = (int16_t)(i < PROJ_E0 ? k * 100u + i : i < 78u ? xv04(k & 1u, i - PROJ_E0) : k * 100u + i - 78u + P_E0);
         memcpy(o + 16, p, sizeof p);
         for (i = 0; i < 16u; i++)
             o[16 + 184 + i] = (uint8_t)(40u + k + i), o[32 + 184 + i] = (uint8_t)(i & 7u);
@@ -551,7 +557,7 @@ static void t_userbank(void)
         good &= up_valid(r) && r->np == 61 && r->engine == k % NENGINES && r->note[5] == 45u + k && r->flags[7] == 7u;
         up_params(r, out, def);
         for (i = 0; i < P_COUNT; i++)
-            good &= out[i] == (int16_t)(i < PROJ_E0 ? k * 100u + i : i < P_ITYPE ? xval(k & 1u, i - PROJ_E0) :
+            good &= out[i] == (int16_t)(i < PROJ_E0 ? k * 100u + i : i < P_ITYPE ? xv04(k & 1u, i - PROJ_E0) :
                                         i < P_E0 ? TP[i].def : k * 100u + i);
         {
             char nm[13];

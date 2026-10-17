@@ -518,7 +518,7 @@ static void t_pages4(void)
     uint32_t k;
     ok(page_idx("LFO 2") >= 0 && page_idx("ENV 2") >= 0 && page_idx("MATRIX") >= 0, "0.4: the pages LFO 2, ENV 2, MATRIX");
     for (k = 0; k < MX_SLOTS; k++)
-        t->p[P_M1SRC + 3u * k] = MS_OFF, t->p[P_M1DST + 3u * k] = MT_OFF, t->p[P_M1AMT + 3u * k] = 0;
+        t->p[mx_pid(k)] = MS_OFF, t->p[mx_pid(k) + 1u] = MT_OFF, t->p[mx_pid(k) + 2u] = 0;
     go_page("MATRIX");
     knob(1, 2), knob(2, 2), knob(3, 30);
     snprintf(w, sizeof w, "MATRIX: slot 1 turned to LFO2 > CUT +30 (%d %d %d)", t->p[P_M1SRC], t->p[P_M1DST], t->p[P_M1AMT]);
@@ -539,7 +539,7 @@ static void t_pages4(void)
     ok(t->p[P_E2SUS] > 0, w);
     ppm("synth4-env2");
     for (k = 0; k < MX_SLOTS; k++)
-        t->p[P_M1SRC + 3u * k] = MS_OFF, t->p[P_M1DST + 3u * k] = MT_OFF, t->p[P_M1AMT + 3u * k] = 0;
+        t->p[mx_pid(k)] = MS_OFF, t->p[mx_pid(k) + 1u] = MT_OFF, t->p[mx_pid(k) + 2u] = 0;
     t->p[P_L2MODE] = L2_FREE;
     mpe_mode = 4;
     k = lights_word();

@@ -116,6 +116,17 @@ enum {                          /* per-track parameters */
     P_VINT,                                    /* Clipper 0.9: VINTAGE, each voice a little its own (voice.c vintage) */
     P_SLOOP,                                   /* .. LOOP: SPICE's variation comes round every LOOP notes; the arp's
                                                 * TURNG mode: its register's length (seq.c turing_step) */
+    P_SPREAD,                                  /* Clipper 1.0: the voices across the stereo field (voice.c vspread) */
+    P_L3RATE, P_L3WAVE, P_L3MODE,              /* .. LFO 3 (as LFO 2), a matrix source */
+    P_E2LOOP,                                  /* .. ENV 2: ONE (an ADSR) / LOOP (attack and decay over and over) */
+    P_MAC1, P_MAC2, P_MAC3, P_MAC4,            /* .. the sound's four macros: BRITE TIMBR (+-) MOTN SPACE (0..127), each
+                                                * a matrix source too (voice.c, fx.c) */
+    P_M7SRC, P_M7DST, P_M7AMT,                 /* .. the matrix's slots 7 to 12 (mx_pid) */
+    P_M8SRC, P_M8DST, P_M8AMT,
+    P_M9SRC, P_M9DST, P_M9AMT,
+    P_M10SRC, P_M10DST, P_M10AMT,
+    P_M11SRC, P_M11DST, P_M11AMT,
+    P_M12SRC, P_M12DST, P_M12AMT,
 #endif
     P_E0, P_E1, P_E2, P_E3, P_E4, P_E5, P_E6, P_E7,
     P_COUNT
@@ -129,7 +140,8 @@ enum { FM_SVF = 1, FM_MOOG = 2, FM_MS20, FM_DIODE, FM_SEM, FM_NOTCH, FM_BP, FM_H
  * TYPE (ROOM, PLATE: fx.c) and the plate's PRE-delay (ms) */
 #define G_RTYPE G_DUCK
 #define G_RPRE G_ROLL
-enum { RT_ROOM, RT_PLATE };
+enum { RT_ROOM, RT_PLATE, RT_HALL, RT_SHIMMER };   /* (1.0: HALL and SHIMMER: the plate's tank, fx.c) */
+enum { DM_MONO, DM_PING, DM_TAPE };   /* (1.0) G_DMODE */
 /* Clipper 0.3: the drum globals are the master bus (bus.c): EQ LOW / MID / HIGH, dB around their centre (so a SLOOP
  * project, its drum level 100, reverb 16, channel 10, loads flat), and COMP (the drums' delay send: 0 = off) */
 #define G_EQLOW G_DRLVL
@@ -154,9 +166,25 @@ enum { MD_OFF, MD_VIB, MD_CUT, MD_SHP, MD_WAH, MD_TREM };
 #define P_LYCH P_SLEN            /* Clipper 0.6, MULTI: the MIDI channel (1..16) the layer's sound answers on its own */
 enum { LY_OFF, LY_LAYER, LY_SPLIT, LY_MULTI };   /* MULTI (0.6): two parts, the layer on its own channel (bi-timbral) */
 /* Clipper 0.4: the matrix's sources and destinations (P_MnSRC, P_MnDST; voice.c mod_matrix) */
-#define MX_SLOTS 6u
+#define MX_SLOTS 12u             /* (1.0: 12; slots 1..6 at P_M1SRC, 7..12 at P_M7SRC: mx_pid) */
+#define MX_SLOTS6 6u
 enum { MS_OFF, MS_LFO1, MS_LFO2, MS_ENV1, MS_ENV2, MS_VEL, MS_KEY, MS_MW, MS_AT, MS_RAND, MS_SLIDE,
-       MS_SEQ1, MS_SEQ2, MS_SEQ3, MS_SEQ4, MS_NSRC };   /* (0.8: the MOD SEQ's four lanes; 4 bits in the stores) */
+       MS_SEQ1, MS_SEQ2, MS_SEQ3, MS_SEQ4,      /* (0.8: the MOD SEQ's four lanes) */
+       MS_LFO3, MS_MAC1, MS_MAC2, MS_MAC3, MS_MAC4, MS_NSRC };   /* (1.0: LFO 3, the macros; 5 bits: the user presets'
+                                                * record keeps 4 of slots 1..6's, the fifth in the bank's tail) */
+#if CLIPPER_SYNTH
+/* a matrix slot's first parameter (its source; + 1 destination, + 2 amount) */
+#define mx_pid(k) ((uint32_t)((k) < MX_SLOTS6 ? P_M1SRC + 3u * (k) : P_M7SRC + 3u * ((k) - MX_SLOTS6)))
+/* the matrix slot (0..11) of a parameter, -1: none; *f its field (0 source, 1 destination, 2 amount) */
+static inline int mx_slot_of(uint32_t i, uint32_t *f)
+{
+    if (i >= P_M1SRC && i <= P_M6AMT)
+        return *f = (i - P_M1SRC) % 3u, (int)((i - P_M1SRC) / 3u);
+    if (i >= P_M7SRC && i <= P_M12AMT)
+        return *f = (i - P_M7SRC) % 3u, (int)(MX_SLOTS6 + (i - P_M7SRC) / 3u);
+    return -1;
+}
+#endif
 #define MSEQ_LANES 4u            /* Clipper 0.8: the MOD SEQ, per sound: 4 lanes of 16 steps, -8..7 each */
 #define MSEQ_STEPS 16u
 enum { MT_OFF, MT_PITCH, MT_CUT, MT_SHAPE, MT_AMP, MT_PAN, MT_L2RATE, MT_E1, MT_COUNT = MT_E1 + 8 };
@@ -180,6 +208,10 @@ enum {                          /* global parameters */
     G_ROLL,                     /* note repeat rate (ARP + key, seq.c) */
     G_NEWPRJ,                   /* TOOLS > NEW: a new project (GO) */
     G_DRDLY,                    /* SLOOP 2.5: the drums' delay send (GLO > DRUMS; a project keeps it in its own byte) */
+#if CLIPPER_SYNTH
+    G_DMODE,                    /* Clipper 1.0: the delay MONO / PING (ping-pong) / TAPE (wow, flutter, saturation)
+                                 * (a project keeps it with 1.0's values, project.c) */
+#endif
     G_COUNT
 };
 
@@ -205,6 +237,8 @@ typedef struct {
     int32_t env2;                /* ENV 2, Q24 */
     int16_t rnd, l2rnd;          /* a random value per note; LFO 2's S&H value */
     uint8_t e2st;                /* ENV 2: 0 off, 1 attack, 2 decay / sustain, 3 release */
+    uint32_t l3ph;               /* (1.0) LFO 3 in KEY mode */
+    int16_t l3rnd;               /* .. its S&H value */
     int16_t vdrift, vdtgt;       /* (0.9) VINTAGE: the voice's slow pitch drift now, and where it goes (Q15) */
     uint8_t ch;                  /* the MIDI channel its note came on (MPE: its own bend, pressure, slide) */
 #endif
@@ -411,6 +445,10 @@ typedef struct track {
     uint32_t l2ph;               /* Clipper 0.4: LFO 2 in FREE mode (one for the part) */
     int16_t l2rnd;               /* its S&H value */
     int16_t panmod;              /* the matrix's PAN, from the part's sources (fx.c mix_part) */
+    uint32_t l3ph;               /* (1.0) LFO 3 in FREE mode */
+    int16_t l3rnd;
+    int16_t spr;                 /* (1.0) SPREAD as the last block had it (a change glides through the block) */
+    int32_t sd_g;                /* (1.0) the side's gain after DIST / the INSERT (Q15, 0: none yet) */
     uint8_t ins_run;             /* Clipper 0.6: the INSERT ran (or faded out) in the last block (fx.c track_insert) */
     uint8_t ins_xt;              /* .. blocks it ran on after the last voice (its tail: a flanger's feedback) */
     uint16_t ins_res;            /* .. |its last sample| (a tail still ringing) */

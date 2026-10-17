@@ -31,7 +31,8 @@
 #define PROJ_NG 32u                            /* the globals of formats 4 and 5 (G_COUNT until 2.4). SLOOP 2.5's
                                                 * G_DRDLY rides in the byte after sel (0 in older projects: off),
                                                 * so the format and its size do not change */
-_Static_assert(G_DRDLY == PROJ_NG && G_COUNT == PROJ_NG + 1u, "the globals a project holds, then G_DRDLY");
+_Static_assert(G_DRDLY == PROJ_NG && G_COUNT == PROJ_NG + 1u + (CLIPPER_SYNTH ? 1u : 0u),
+               "the globals a project holds, then G_DRDLY (Clipper 1.0: then G_DMODE, with the 1.0 values)");
 /* the parameters a track holds: P_COUNT of SLOOP 2.4 / 2.5 (P_E0 was 53). Clipper 0.4 added PROJ_NX before P_E0
  * (LFO 2, ENV 2, the matrix: core.h); the synth never uses tracks 3 and 4, so tracks 1 and 2's are kept in track 3's
  * lock slots: free ones (step LOCK_FREE), which SLOOP (and any firmware) passes over, a byte a value in their param
@@ -41,7 +42,7 @@ _Static_assert(G_DRDLY == PROJ_NG && G_COUNT == PROJ_NG + 1u, "the globals a pro
 #define PROJ_NP 61u
 #define PROJ_E0 53u
 #define PROJ_NX (P_E0 - PROJ_E0)
-_Static_assert(P_COUNT == PROJ_NP || (CLIPPER_SYNTH && P_COUNT == PROJ_NP + PROJ_NX && PROJ_NX <= PROJ_E0 && NTRK == 4),
+_Static_assert(P_COUNT == PROJ_NP || (CLIPPER_SYNTH && P_COUNT == PROJ_NP + PROJ_NX && P_COUNT < 128 && NTRK == 4),
                "a track's parameters as stored (Clipper: track 3's lock slots hold the rest: PROJ_XM3 below)");
 #if CLIPPER_SYNTH
 /* tracks 1 and 2's LFO 2, ENV 2 and matrix (0.4: PROJ_XA values each) and INSERT (0.6: PROJ_XI each) <-> bytes in the
@@ -57,7 +58,7 @@ _Static_assert(P_COUNT == PROJ_NP || (CLIPPER_SYNTH && P_COUNT == PROJ_NP + PROJ
 #define PROJ_XS ((uint32_t)(P_VINT - P_MSRATE))
 /* 0.9: VINTAGE and LOOP of both (PROJ_X9 each, value - its minimum) in track 4, after the steps' mark, then
  * CLIPPER_PROJ_MARK_09 */
-#define PROJ_X9 ((uint32_t)(P_E0 - P_VINT))
+#define PROJ_X9 ((uint32_t)(P_SPREAD - P_VINT))
 #define PROJ_X9_AT (PROJ_MS_MARK + 1u)
 #define PROJ_X9_MARK (PROJ_X9_AT + 2u * PROJ_X9)
 #define CLIPPER_PROJ_MARK_09 0xC9u
@@ -194,6 +195,42 @@ typedef struct {                               /* one track; the drum track igno
     plock_t lock[NLOCK];                       /* and its parameter locks (step LOCK_FREE = none) */
     uint8_t fill[NSTEP / 4];                   /* and its fill condition, 2 bits a step (FC_*) */
 } proj_trk_t;
+#if CLIPPER_SYNTH
+/* 1.0: SPREAD .. the matrix's slot 12 of both (PROJ_X10 each, value - its minimum) and G_DMODE, in track 3's nudges
+ * (micro: SLOOP plays them on track 3's steps; Clipper writes them only while track 3 has none, so they nudge nothing
+ * there): byte 0 CLIPPER_PROJ_MARK_10, then track 1's, track 2's, G_DMODE, a check byte */
+#define PROJ_X10 ((uint32_t)(P_E0 - P_SPREAD))
+#define PROJ_X10_DM (1u + 2u * PROJ_X10)
+#define PROJ_X10_CK (PROJ_X10_DM + 1u)
+#define CLIPPER_PROJ_MARK_10 0xCAu
+_Static_assert(PROJ_X10 == 27u && PROJ_X10_CK < NSTEP, "1.0's values in track 3's nudges");
+static uint32_t proj_x10_ck(const int8_t *m)
+{
+    uint32_t i, c = 0x5Au;
+    for (i = 0; i < PROJ_X10_CK; i++)
+        c = ((c << 1) | (c >> 7)) ^ (uint8_t)m[i];
+    return c & 255u;
+}
+static void proj_x10_put(proj_trk_t *d, const step_t *st)   /* (track 3's own steps: none, or nothing put) */
+{
+    uint32_t j, n;
+    int8_t *m = d->micro;
+    for (n = 0; n < NSTEP; n++)
+        if (st[n].n)
+            return;
+    memset(m, 0, NSTEP);
+    m[0] = (int8_t)CLIPPER_PROJ_MARK_10;
+    for (j = 0; j < 2u; j++)
+        for (n = 0; n < PROJ_X10; n++)
+            m[1u + PROJ_X10 * j + n] = (int8_t)(uint8_t)clamp(trk[j].p[P_SPREAD + n] - TP[P_SPREAD + n].min, 0, 255);
+    m[PROJ_X10_DM] = (int8_t)(uint8_t)clamp(song.g[G_DMODE], GP[G_DMODE].min, GP[G_DMODE].max);
+    m[PROJ_X10_CK] = (int8_t)proj_x10_ck(m);
+}
+static int proj_x10_ok(const int8_t *m)
+{
+    return (uint8_t)m[0] == CLIPPER_PROJ_MARK_10 && (uint8_t)m[PROJ_X10_CK] == proj_x10_ck(m);
+}
+#endif
 typedef struct {
     uint32_t magic, size;
     int16_t g[PROJ_NG];
@@ -571,6 +608,10 @@ static void proj_capture(project_t *p)        /* what is playing now, as a proje
         memcpy(p->t[i].step, trk[i].step, sizeof trk[i].step);
         memcpy(p->t[i].micro, trk[i].micro, sizeof trk[i].micro);
         memcpy(p->t[i].fill, trk[i].fill, sizeof trk[i].fill);
+#if CLIPPER_SYNTH
+        if (i == 2u)                                   /* (1.0: tracks 1 and 2's SPREAD .. slot 12, G_DMODE) */
+            proj_x10_put(&p->t[2], trk[2].step);
+#endif
     }
     p->sum = proj_sum(p);
 }
@@ -599,7 +640,10 @@ static void proj_apply(const project_t *p, int all)
                                     i >= P_E0 && i <= P_E7 ? &ENGINES[e]->edit[i - P_E0] : &TP[i];
             int32_t v = i < PROJ_E0 ? s->p[i] : i >= P_E0 ? s->p[PROJ_E0 + i - P_E0] : d->def;
 #if CLIPPER_SYNTH
-            if (i >= P_VINT && i < P_E0 && k < 2u && p->rsv[0] == CLIPPER_PROJ_MARK) {
+            if (i >= P_SPREAD && i < P_E0 && k < 2u) {    /* (1.0: in track 3's nudges) */
+                v = p->rsv[0] == CLIPPER_PROJ_MARK && proj_x10_ok(p->t[2].micro) ?
+                    (uint8_t)p->t[2].micro[1u + PROJ_X10 * k + (i - P_SPREAD)] + d->min : d->def;
+            } else if (i >= P_VINT && i < P_E0 && k < 2u && p->rsv[0] == CLIPPER_PROJ_MARK) {
                 int x = proj_x9_get(p->t[3].lock, k, i - P_VINT);   /* (0.9: in track 4) */
                 v = x < 0 ? d->def : x + d->min;
             } else if (i >= PROJ_E0 && i < P_E0 && k < 2u && p->rsv[0] == CLIPPER_PROJ_MARK) {
@@ -619,6 +663,15 @@ static void proj_apply(const project_t *p, int all)
         memcpy(t->step, s->step, sizeof t->step);
         for (i = 0; i < NSTEP; i++)                     /* the nudges and locks, each inside its range */
             t->micro[i] = (int8_t)clamp(s->micro[i], MICRO_MIN, MICRO_MAX);
+#if CLIPPER_SYNTH
+        if (k == 2u && p->rsv[0] == CLIPPER_PROJ_MARK && proj_x10_ok(s->micro)) {
+            memset(t->micro, 0, sizeof t->micro);       /* (1.0's values, not nudges) */
+            if (all)
+                song.g[G_DMODE] = (int16_t)clamp((uint8_t)s->micro[PROJ_X10_DM], GP[G_DMODE].min, GP[G_DMODE].max);
+        } else if (k == 2u && all) {
+            song.g[G_DMODE] = GP[G_DMODE].def;
+        }
+#endif
         for (i = 0; i < NSTEP / 4u; i++) {              /* the conditions: 3 means normal (0) */
             uint32_t b = s->fill[i], j;
             for (j = 0; j < 4u; j++)

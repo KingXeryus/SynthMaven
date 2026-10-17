@@ -142,5 +142,33 @@ int main(void)
                      !memcmp(back, ff, sizeof ff));
         bad += check("0.7 side record: none bigger than its room", st_side_load(OBJ_SETTINGS, got, ST_SIDE_MAX + 1u) < 0);
     }
+    {   /* Clipper 1.0: a tail after the payload (user presets: 3080 B + 472), the payload's length and CRC as before;
+         * an older save (none) leaves it erased; no tail past the sector */
+        static uint8_t big[3080], tail[472], back[472], ff[472], gb[3600];
+        uint32_t i;
+        for (i = 0; i < sizeof big; i++)
+            big[i] = (uint8_t)(i * 7u + 3u);
+        for (i = 0; i < sizeof tail; i++)
+            tail[i] = (uint8_t)(i * 13u + 1u);
+        memset(ff, 0xFF, sizeof ff);
+        st_tail = tail;
+        st_tail_len = sizeof tail;
+        bad += check("1.0 tail: saved after the payload (no page wraps)", st_save(OBJ_SETTINGS, big, sizeof big) == 0);
+        st_tail = 0;
+        n = st_load(OBJ_SETTINGS, gb, sizeof gb);
+        bad += check("1.0 tail: the payload as before (length, CRC)", n == (int)sizeof big && !memcmp(gb, big, sizeof big));
+        bad += check("1.0 tail: read back as written",
+                     st_tail_load(OBJ_SETTINGS, back, sizeof back) == 0 && !memcmp(back, tail, sizeof tail));
+        bad += check("1.0 tail: an older save (none) leaves it erased",
+                     st_save(OBJ_SETTINGS, big, sizeof big) == 0 && st_tail_load(OBJ_SETTINGS, back, sizeof back) == 0 &&
+                     !memcmp(back, ff, sizeof ff));
+        bad += check("1.0 tail: none past the sector", st_tail_load(OBJ_SETTINGS, back, ST_PAYLOAD_MAX) < 0);
+        st_tail = tail;
+        st_tail_len = sizeof tail;
+        memcpy(gb, big, sizeof big);
+        bad += check("1.0 tail: a payload too big for it: saved without", st_save(OBJ_SETTINGS, gb, 3500) == 0 &&
+                     st_load(OBJ_SETTINGS, gb, sizeof gb) == 3500 && st_tail_load(OBJ_SETTINGS, back, sizeof back) < 0);
+        st_tail = 0;
+    }
     return bad != 0;
 }

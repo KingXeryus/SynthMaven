@@ -504,6 +504,24 @@ a scale sent here (a Scala .scl file: the editor reads it):
 - rc 0 ok, 1 bad request (a system / root out of range, n 0 or above 48, the bytes not as n says, degrees not rising).
   TUNE_PUT keeps the scale even when another system plays (USER plays it); the settings are written a few seconds later.
 
+## Clipper 1.0: the same protocol (14), a larger layout
+
+No new command: INFO still ends with 14 and reports the layout. 1.0 adds 27 parameters before P_E0 and one global:
+
+| ids | what |
+|---|---|
+| 91 | SPREAD (VOICE 3, 0..127: each voice's place in the stereo field) |
+| 92..94 | LFO 3: RATE, WAVE (SIN TRI SAW SQR S&H), MODE (FREE, KEY) |
+| 95 | ENV 2 LOOP (ONE, LOOP) |
+| 96..99 | the MACROS: BRITE, TIMBR (-64..63), MOTN, SPACE (0..127) |
+| 100..117 | the matrix's slots 7..12 (SRC, DST, AMT each, as slots 1..6 at 60..77) |
+| global 33 | G_DMODE, the delay's MODE (DLY 2: MONO, PING, TAPE) |
+
+P_E0 is 118, P_COUNT 126, G_COUNT 34. The matrix's sources gain LFO3 (15) and MAC1..MAC4 (16..19), in every slot. The
+reverb's TYPE (global 28) goes ROOM, PLATE, HALL, SHIMMER (0..3). A sound of an older layout maps by count (the editor's
+patchByCount: the common values by place up to the older P_E0, the engine's 8 by theirs, the rest left as the device has
+them). UP_PUT carries P_COUNT values as before (126).
+
 ## Notes for the editor
 
 - **One request at a time.** Wait for the reply, about 10–50 ms, before sending the next.

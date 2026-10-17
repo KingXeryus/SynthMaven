@@ -132,6 +132,11 @@ static int st_load(uint32_t obj, void *dst, uint32_t max)
 #define ST_SIDE_MAX (ST_PAYLOAD_OFF - ST_SIDE_OFF)
 static const void *st_side;                         /* the next save's side record (0: none), for one save */
 static uint32_t st_side_len;
+/* (Clipper 1.0) a tail: bytes right after the payload, in the rest of the copy's sector, outside the payload's length
+ * and CRC (an older version reads the payload as before and never sees them; its save erases them). The tail checks
+ * itself (upreset.c: a magic and a CRC) */
+static const void *st_tail;                         /* the next save's tail (0: none), for one save */
+static uint32_t st_tail_len;
 _Static_assert(sizeof(st_hdr_t) <= ST_SIDE_OFF, "the side record starts after the header");
 /* the current copy's side bytes (n <= ST_SIDE_MAX) into dst: 0, or -1 (no valid copy) */
 static int st_side_load(uint32_t obj, void *dst, uint32_t n)
@@ -141,6 +146,15 @@ static int st_side_load(uint32_t obj, void *dst, uint32_t n)
     if (c < 0 || n > ST_SIDE_MAX)
         return -1;
     return st_read(st_sector(obj, (uint32_t)c) + ST_SIDE_OFF, dst, n) ? -1 : 0;
+}
+/* (1.0) the current copy's tail (n bytes after its payload) into dst: 0, or -1 (no valid copy, no room) */
+static int st_tail_load(uint32_t obj, void *dst, uint32_t n)
+{
+    st_hdr_t h;
+    int c = st_current(obj, &h);
+    if (c < 0 || h.len + n > ST_PAYLOAD_MAX)
+        return -1;
+    return st_read(st_sector(obj, (uint32_t)c) + ST_PAYLOAD_OFF + h.len, dst, n) ? -1 : 0;
 }
 
 /* an object in up to three parts, src then src2 then src3 (SLOOP 2.5: the settings and the SYN kits after them; SLOOP
@@ -164,12 +178,17 @@ static int st_save3(uint32_t obj, const void *src, uint32_t len, const void *src
     for (off = 0; off < len3; off++)
         st_buf[len + off] = ((const uint8_t *)src3)[off];
     len += len3;
-    if ((rc = st_erase(base)) != 0)
-        return rc;
-    for (off = 0; off < len; off += 256u) {
-        uint32_t n = len - off > 256u ? 256u : len - off;
-        if ((rc = st_prog(base + ST_PAYLOAD_OFF + off, st_buf + off, n)) != 0)
+    {   /* (1.0) the tail right after the payload, programmed with it (whole pages: none wraps) */
+        uint32_t tl = st_tail && st_tail_len && len + st_tail_len <= ST_PAYLOAD_MAX ? st_tail_len : 0u, all = len + tl;
+        for (off = 0; off < tl; off++)
+            st_buf[len + off] = ((const uint8_t *)st_tail)[off];
+        if ((rc = st_erase(base)) != 0)
             return rc;
+        for (off = 0; off < all; off += 256u) {
+            uint32_t n = all - off > 256u ? 256u : all - off;
+            if ((rc = st_prog(base + ST_PAYLOAD_OFF + off, st_buf + off, n)) != 0)
+                return rc;
+        }
     }
     if (st_side && st_side_len && st_side_len <= ST_SIDE_MAX) {   /* (0.7) the side record, before the header */
         uint8_t sb[ST_SIDE_MAX];
