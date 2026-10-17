@@ -39,7 +39,7 @@ static inline int32_t str_reg(uint32_t ph, uint32_t inc, int32_t x)
 static void strings_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const vmod_t *m)
 {
     const int16_t *p = t->p;
-    static int32_t acc[CTL];
+    int32_t acc[CTL];                                /* (0.7: on the stack: two cores) */
     uint32_t part = (uint32_t)(t - trk) % NPART, i, k;
     int32_t g16 = p[P_E0] * 34, g8 = p[P_E1] * 34, g4 = p[P_E2] * 34;  /* Q15 / 7.5 (three taps, three
                                                                          * registers: headroom for chords) */

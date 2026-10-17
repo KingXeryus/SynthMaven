@@ -15,6 +15,10 @@ static inline int32_t soft_knee(int32_t y, int32_t k)   /* linear up to k, then 
     a = k + (softclip((a - k) * 2) >> 1);
     return y < 0 ? -a : a;
 }
+/* 0.7: the second core renders some of a part's voices (voice.c track_render) into vs_buf while this core renders the
+ * others: an engine's scratch that is not on the stack is one per core, picked by C1_IX(out) (1: the second core's) */
+static int32_t vs_buf[CTL] __attribute__((aligned(8)));
+#define C1_IX(out) ((out) == vs_buf ? 1u : 0u)
 /* (pitch_inc: felucca_tables.h, SLOOP 2.5: from the top octave) */
 #include "eng_analog.c"
 #include "eng_digital.c"

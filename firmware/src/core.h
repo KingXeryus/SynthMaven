@@ -258,6 +258,12 @@ typedef struct {
 enum { ST_NOTE, ST_TIE, ST_REST };
 #define SF_ACCENT 1u
 #define SF_SLIDE 2u
+/* (0.7, after SLOOP 2.7) bits 3..6 of a NOTE step's flags: note k goes on from the step before (not triggered, not
+ * released), so notes held in the pattern carry on under a note recorded over them (seq.c rec_note, seq_step). An
+ * older version ignores them (the notes play again there). Bit 2 stays free (the user presets' patterns use 4 for a tie) */
+#define SF_CONT0 8u
+#define SF_CONT(k) (SF_CONT0 << (k))
+#define SF_CONT_ALL (15u * SF_CONT0)
 /* the dynamics of a note or a drum hit (2 bits each in the steps): played without velocity
  * (OCT- / OCT+ held on the drum track, the step page) or from a MIDI velocity */
 enum { LV_NORM, LV_GHOST, LV_SOFT, LV_HARD };
@@ -312,6 +318,9 @@ typedef struct track {
     uint32_t arp_idx;
     uint8_t arp_note;            /* sounding arp note, 0 = none */
     uint8_t arp_new;             /* a chord just started: its first note now */
+    uint8_t arp_ch[3];           /* (0.7, after SLOOP 2.7) MODE CHORD: the other notes sounding with arp_note, 0 = none */
+    uint8_t arp_walk;            /* (0.7) MODE WALK: the place in the note list it stands on */
+    uint8_t arp_odd;             /* (0.7) stopped: the next arp step is an odd one (its SWG: late) */
     uint32_t arp_off;            /* units to its note-off */
     /* sequencer: synth parts step[], the drum track dstep[] (16 lanes) */
     union {
@@ -357,6 +366,8 @@ typedef struct track {
     uint8_t rr;                  /* POLY ROTATE: next voice to try */
     /* mix runtime */
     int32_t lvl;                 /* the LEVEL gain (Q12) of the last block: a change is ramped (fx.c) */
+    int32_t gpl, gpr;            /* (0.7) the PAN gains (Q12) of the last block: a change glides too */
+    uint8_t mix_on;              /* (0.7) lvl / gpl / gpr hold a block's values (0: the first block starts at its own) */
     int32_t peak;
     int32_t dist_hp, dist_lp1, dist_lp2;   /* DIST insert state (fx.c) */
     int32_t att;                 /* mute / solo fade: attenuation, Q15 (0 = heard; fx.c mix_part, drums_mix) */

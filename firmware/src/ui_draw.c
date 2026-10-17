@@ -80,6 +80,8 @@ static void draw_head(void)
     if (CLIPPER_SYNTH) {                              /* Clipper: no tracks; the arpeggiator when it runs */
         if (TSEL->p[P_AMODE])
             cv_text(150, 1, &FONT_S, TSEL->p[P_AHOLD] ? "ARP H" : "ARP", C_HI);
+        else if (TSEL->p[P_AHOLD])                    /* (0.7) KBD HOLD: the notes held */
+            cv_text(150, 1, &FONT_S, "HOLD", C_HI);
     } else if (FELUCCA_ICONS) {                       /* the selected track: tape + number */
         cv_icon(156, 2, ICON_TAPE, C_GRAY);
         b[0] = (char)('1' + song.sel);
@@ -382,6 +384,12 @@ static uint32_t graph_signature(void)
     if (pg->scope == SC_SYN)                         /* the layer's sound, A and B */
         h ^= syn_sig() * 2246822519u;
 #endif
+    if (pg->graph == GR_BROWSE) {                    /* (0.7) the favourites: the PRESETS list and its FAV column */
+        uint32_t q;
+        for (q = 0; q < FAV_N; q++)
+            h = h * 31u + fav[q];
+        h ^= (uint32_t)(fav_at + 1) * 2654435761u;
+    }
     if (pg->graph == GR_SLCR && t->p[P_SLCR])        /* the SLICER's step playing */
         h ^= (sl[song.sel].idx + 1u) * 2654435761u;
     if (pg->graph == GR_SLOTS)                       /* (a checksum over each slot) */
@@ -670,7 +678,13 @@ static void graph_home(uint16_t c)
     fmt_int(b, (int32_t)cur + 1);
     str_cpy(b + str_len(b), "/", 4);
     fmt_int(b + str_len(b), (int32_t)total);
-    cv_text(x + 8, 36, &FONT_S, b, C_GRAY);
+    x = cv_text(x + 8, 36, &FONT_S, b, C_GRAY);
+#if CLIPPER_SYNTH
+    if (hist_cmp_on)                                 /* (0.7) COMPARE: the sound as loaded; else edited since */
+        cv_text(x + 8, 36, &FONT_S, "ORIG", C_AMB);
+    else if (hist_edited)
+        cv_text(x + 8, 36, &FONT_S, "EDITED", C_AMB);
+#endif
     cv_text(236 - text_w(&FONT_S, e->name), 36, &FONT_S, e->name, C_HI);
     for (i = 0; i < SCOPE_N; i++) {                  /* the scope, auto-scaled, triggered on a rising zero */
         snap[i] = scope_buf[(w + i) & (SCOPE_N - 1u)];
@@ -793,6 +807,9 @@ static void draw_graph(void)
             break;
         case GR_MATRIX:
             graph_matrix();
+            break;
+        case GR_HIST:
+            graph_hist();
             break;
 #endif
         default:
@@ -951,7 +968,7 @@ static void draw_columns(void)
         draw_column(0, "No.", val, u, VAL(0u), -1, ICON_NONE);
         draw_column(1, "ENG", ENGINES[TSEL->eng_req]->name, "", VAL(1u), -1, engine_icon(ENGINES[TSEL->eng_req]->name));
         draw_column(2, "", "", "", C_HI, -1, ICON_AUTO);
-        draw_column(3, "", "", "", C_HI, -1, ICON_AUTO);
+        draw_column(3, "FAV", fav_has(fav_key()) ? "ON" : "--", "", VAL(3u), -1, ICON_NONE);   /* (0.7) KNOB 4 */
         return;
     }
     if (cur_page()->graph == GR_USER) {                  /* SLOT, then three GO buttons */

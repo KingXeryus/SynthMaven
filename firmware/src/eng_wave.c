@@ -250,7 +250,8 @@ static void wave_osc(int32_t *acc, uint32_t n, uint32_t *php, uint32_t inc, cons
 static void wave_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const vmod_t *m)
 {
     const int16_t *p = t->p;
-    static int32_t acc[CTL], pos[CTL];               /* (static: the audio ISR's stack stays small) */
+    static int32_t acc_[2][CTL], pos_[2][CTL];       /* (static: the audio ISR's stack stays small; 0.7: one per core) */
+    int32_t *acc = acc_[C1_IX(out)], *pos = pos_[C1_IX(out)];
     uint32_t want = (uint32_t)p[P_E0] % WT_NALL, i, inc1 = m->inc, inc2;
     int32_t det = p[P_E2], sub = p[P_E3] * 258, drive = 32768 + p[P_E6] * 768, dw = p[P_E6] * 258, drv = p[P_E6];
     int32_t cut = (p[P_E4] << 8) + m->cutoff + (p[P_E7] * (v->pitch16 - 60 * 16) >> 4);

@@ -30,11 +30,11 @@ const HERE = fileURLToPath(new URL(".", import.meta.url));
 const html = readFileSync(join(HERE, "editor.html"), "utf8");
 const proto = html.slice(html.indexOf("/*PROTO-BEGIN*/"), html.indexOf("/*PROTO-END*/"));
 const E = vm.runInNewContext(proto + `
-;({ frame, unframe, parse, req, Link, parseWav, resample, normalize, rootFromName, buildSlot, makeMockDevice, CMD, SMP,
+;({ frame, unframe, parse, req, Link, parseWav, resample, normalize, rootFromName, buildSlot, LOOP, makeMockDevice, CMD, SMP,
    CHOP, chopNovelty, chopHits, chopSnap, chopGrid, chopEqual, chopList, chopPick, chopFit, chopZones, wavFile, zipStore, crc32,
    UP, bank, capturePatch, auditionPatch, startWatch, libraryFile, readLibraryFile, paramKeys, patternFromSteps, stepsFromPattern, upName,
    mixer, GM_DRUM, drumName, parseNotes, fmtValue, F, DRUM_LANES, LV_NAMES, emptyDrum, lockable, MICRO, FC, fillGet, fillSet, pack7, unpack7,
-   backupCapture, backupRestore, backupObjects, b64enc, b64dec, FM6, KIT, kitPad, kitZones, kitLen, kitBytes, kitFit, kitSplit, kitLaneOf, kitPlace, zipRead, ROLL, SMF, ARR, mockSettings, fm6CartWrite, fm6CartPreset, fm6CartSlots, fm6CartPresets, DSYN, DSYN_MOCK_NAMES, DSYN_MOCK_KITS, HY, FX, WT, SetGate, patchByCount, bkProjFormat, bkDevFormat, bkFwAtLeast })`,
+   backupCapture, backupRestore, backupObjects, b64enc, b64dec, FM6, KIT, kitPad, kitZones, kitLen, kitBytes, kitFit, kitSplit, kitLaneOf, kitPlace, zipRead, ROLL, SMF, ARR, mockSettings, fm6CartWrite, fm6CartPreset, fm6CartSlots, fm6CartPresets, DSYN, DSYN_MOCK_NAMES, DSYN_MOCK_KITS, HY, FX, WT, SetGate, patchByCount, bkProjFormat, bkDevFormat, bkFwAtLeast, FM1_PORT_ED: FM1_PORT, fm1Ports })`,
 { setTimeout, clearTimeout, setInterval, clearInterval, console, TextEncoder, TextDecoder, Blob, Response, DecompressionStream });
 
 async function editorMock() {
@@ -1455,6 +1455,41 @@ class FakeFM1 {
   }
 }
 
+/* (0.7, after SLOOP 2.7) the editor finds the FM-1 by the installer's names (a port name kept from another firmware) */
+async function editorPorts() {
+  const { FM1_PORT } = await import("./fm1ota.js");
+  ok(E.FM1_PORT_ED.source === FM1_PORT.source && E.FM1_PORT_ED.flags === FM1_PORT.flags, "editor: its FM1_PORT is the installer's");
+  const port = (name, type, state = "connected") => ({ id: `${type}-${name}`, name, type, state });
+  const acc = (names, gone = []) => ({
+    inputs: new Map([...names, ...gone].map((n) => [n, port(n, "input", gone.includes(n) ? "disconnected" : "connected")])),
+    outputs: new Map([...names, ...gone].map((n) => [n, port(n, "output", gone.includes(n) ? "disconnected" : "connected")])),
+  });
+  const pn = (a) => E.fm1Ports(a).map((x) => x.input.name + "/" + x.output.name).join(",");
+  ok(pn(acc(["X0X FM-1"])) === "X0X FM-1/X0X FM-1", "editor: a port named after another firmware (X0X FM-1) is found");
+  ok(pn(acc(["Arturia KeyStep Pro", "USB-MIDI", "X0X FM-1", "Clipper"], ["SLOOP"])) ===
+     "Clipper/Clipper,X0X FM-1/X0X FM-1,USB-MIDI/USB-MIDI",
+     "editor: Clipper first, then FM-1, then generic names; other gear and unplugged ports left out");
+  ok(pn(acc(["Arturia KeyStep Pro", "loopMIDI Port"])) === "", "editor: no FM-1 name: nothing to try");
+}
+
+/* (0.7, after SLOOP 2.7) a file's loop: LOOP (the whole file while held), LOOP+TAIL (its points, on zero crossings) */
+function sampleLoops() {
+  const n = 8000, s = Int16Array.from({ length: n }, (_, i) => Math.round(12000 * Math.sin(i * 2 * Math.PI / 100)));
+  const one = E.buildSlot("one", [{ s, root: 60 }]);
+  ok(one.hdr[32 + 27] === 0, "loop: ONE SHOT, looped 0 in the header");
+  const lp = E.buildSlot("lp", [{ s, root: 60, loop: 1 }]);
+  const v = new DataView(lp.hdr.buffer);
+  ok(lp.hdr[32 + 27] === 2 && v.getUint32(32 + 8, true) === 0 && v.getUint32(32 + 12, true) === n - 1, "loop: LOOP, the whole file, held (looped 2)");
+  const [a, b] = E.LOOP.snapRange(s, 1234, 5678);
+  ok(s[a - 1] < 0 && s[a] >= 0 && s[b] < 0 && s[b + 1] >= 0, `loop: LOOP+TAIL's points on rising zero crossings (${a}, ${b})`);
+  const lt = E.buildSlot("lt", [{ s, root: 60, loop: 2, ls: a, le: b }]);
+  const w = new DataView(lt.hdr.buffer);
+  ok(lt.hdr[32 + 27] === 2 && w.getUint32(32 + 8, true) === a && w.getUint32(32 + 12, true) === b, "loop: LOOP+TAIL, its points in the header");
+  const pv = E.LOOP.preview({ s, loop: 2, ls: a, le: b });
+  ok(pv.length === n + 2 * (b - a + 1), "loop: the preview plays the loop twice more, then the tail");
+  ok(E.LOOP.range({ s: s.slice(0, 100), loop: 2, ls: 10, le: 20 })[0] === 0, "loop: a file too short for LOOP+TAIL: the whole of it");
+}
+
 async function updater() {
   const image = Uint8Array.from({ length: 0x2000 }, (_, i) => (i * 7) & 0xFF);
   const dev = new FakeFM1(image);
@@ -1510,6 +1545,8 @@ await editorMixer();
 await editorTrackParam();
 await editorV5();
 hybridPatch();
+await editorPorts();
+sampleLoops();
 await fmxPatch();
 await wavetables();
 await editorV7();

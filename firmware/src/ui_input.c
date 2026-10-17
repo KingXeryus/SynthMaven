@@ -251,13 +251,33 @@ static void ui_leds(void)
 }
 
 /* ---------------------------------------------------------- input --- */
+/* Knob acceleration (0.7, SLOOP 2.7's, after JIANT FM by juanjiant-bit, github.com/juanjiant-bit/JIANT, GPL-3.0): a slow
+ * turn is fine tuning, one value a detent; the faster the turn the wider the sweep, progressively: the speed is the time
+ * per detent, ACC_RATE / ms -> 40 ms x2, 27 ms x3, 20 ms x4, 10 ms x8, 5 ms x16, capped by the range (x2 up to 32
+ * values, x4 up to 64, x8 up to 100, x16 above). Only the longer of this read's and the previous read's time counts,
+ * and only while the turn goes on in one direction (both under ACC_GAP ms): a slow turn, the first two detents of a
+ * turn, a single quick detent and a reversal are one value a detent, so turning back to correct never jumps. Ranges of
+ * 16 values or fewer, and lists of names (callers pass 0), never accelerate. MENU > KNOB ACCEL OFF: one value a detent
+ * everywhere. (Before 0.7: x3 or x6 at once past 60 ms a detent.) ui.enc_t[role]: bits 0..23 the ms of its last read,
+ * bit 24 its direction (+1), 25..31 its ms per detent (127 slow) */
+#define ACC_GAP 60u
+#define ACC_RATE 80u
 static int32_t accel(uint32_t role, int32_t s, int32_t range)
 {
-    uint32_t now = fm1_ticks(), dt = now - ui.enc_t[role];
-    ui.enc_t[role] = now;
-    if (range > 40 && dt < 60u * 1000u * FM1_TICKS_PER_US)
-        return s * (range > 150 ? 6 : 3);
-    return s;
+    uint32_t now = fm1_ms & 0xFFFFFFu, st = ui.enc_t[role], up = s > 0, pi = st >> 25, a, i, m = 1;
+    if (knob_accel_off || range <= 16 || !s)
+        return s;
+    a = (uint32_t)(s < 0 ? -s : s);
+    i = ((now - st) & 0xFFFFFFu) / a;                   /* ms per detent of this read */
+    if (!st || ((st >> 24) & 1u) != up || i >= ACC_GAP)
+        i = 127u;                                       /* a new turn, or reversed */
+    else if (pi < ACC_GAP) {
+        m = ACC_RATE / (i > pi ? i : pi ? pi : 1u);
+        a = range > 100 ? 16u : range > 64 ? 8u : range > 32 ? 4u : 2u;   /* (the cap) */
+        m = m < 1u ? 1u : m > a ? a : m;
+    }
+    ui.enc_t[role] = now | up << 24 | (i ? i : 1u) << 25;
+    return s * (int32_t)m;
 }
 
 /* TRACKS page: KNOB 1 SWING (the groove of every track, MPC 50..75 %), 2 LEVEL (0 = mute; the drum
@@ -290,7 +310,7 @@ static void tracks_edit(uint32_t slot, int32_t steps)
         d = &TP[P_PAN];
         break;
     }
-    *vp = (int16_t)clamp(*vp + accel(EN_K1 + slot, steps, d->max - d->min), d->min, d->max);
+    *vp = (int16_t)clamp(*vp + accel(EN_K1 + slot, steps, d->names ? 0 : d->max - d->min), d->min, d->max);
 }
 
 static void step_edit(uint32_t slot, int32_t steps)
@@ -313,6 +333,7 @@ static void step_edit(uint32_t slot, int32_t steps)
         for (i = 0; i < st->n; i++)
             st->note[i] = (uint8_t)clamp(st->note[i] + steps, 1, 127);
         st->time = ST_NOTE;
+        st->flags &= (uint8_t)~SF_CONT_ALL;              /* (0.7: new pitches start here, not held over from before) */
         last_note = st->note[0];
         break;
     case 2:
@@ -379,6 +400,8 @@ static void edit_param(uint32_t slot, int32_t steps)
                 preset_go((uint32_t)(((int32_t)cur + steps % (int32_t)total + (int32_t)total) % (int32_t)total));
         } else if (slot == 1u && !is_drum(TSEL)) {
             select_engine((TSEL->eng_req + (steps > 0 ? 1u : NENGINES - 1u)) % NENGINES);
+        } else if (slot == 3u && !is_drum(TSEL)) {          /* (0.7) KNOB 4: FAV, right adds the sound, left removes it */
+            fav_toggle(steps > 0);
         }
         return;
     }
@@ -404,7 +427,7 @@ static void edit_param(uint32_t slot, int32_t steps)
     d = page_desc(pg, slot, &vp);
     if (!d || !vp || d->max == d->min)
         return;
-    v = clamp(*vp + accel(EN_K1 + slot, steps, d->max - d->min), d->min, d->max);
+    v = clamp(*vp + accel(EN_K1 + slot, steps, d->names ? 0 : d->max - d->min), d->min, d->max);
     *vp = (int16_t)v;
 #if CLIPPER_SYNTH
     if (pg->scope == SC_SYN) {                            /* the layer, MORPH, RANDOM (ui_synth.c) */
@@ -488,6 +511,7 @@ static void seq_entry(uint32_t pressed)
             undo_mark(t, (undo_sess += 4u) | 3u);
             st->n = 0;
             st->lvl = st->rat = 0;
+            st->flags &= (uint8_t)~SF_CONT_ALL;      /* (0.7: step entry: the step's own notes only) */
             st->time = ST_NOTE;
         }
         if (t->p[P_CHORD] && voice_poly(t->p[P_VOICE])) {            /* chord mode (2.4.1): the chord as it sounded (CHORD+,
@@ -752,7 +776,11 @@ static void rec_knobs(void)
         settings_later = 1;
         ui.hot_col = 2, ui.hot_t = 40;
     }
-    panel_enc(EN_K4);
+    if ((s = panel_enc(EN_K4)) != 0) {                 /* (2.7) QUANT: right ON, left OFF (the timing kept as nudges) */
+        rec_quant_off = (uint8_t)(s < 0);
+        settings_later = 1;
+        ui.hot_col = 3, ui.hot_t = 40;
+    }
 }
 
 /* REC: acts on the press (no lag). Held 0.7 s the press is undone and a ring fills: held on to the
@@ -983,7 +1011,7 @@ static void ui_input(void)
         if (ui.home) {
             int16_t *vp;
             const param_desc_t *d = home_param(k, &vp);
-            *vp = (int16_t)clamp(*vp + accel(EN_K1 + k, s, d->max - d->min), d->min, d->max);
+            *vp = (int16_t)clamp(*vp + accel(EN_K1 + k, s, d->names ? 0 : d->max - d->min), d->min, d->max);
             if (!is_drum(TSEL) && p_lockable(ENGINES[TSEL->eng_req % NENGINES]->macro[k & 3u]))
                 ui.lock_par = ENGINES[TSEL->eng_req % NENGINES]->macro[k & 3u];
         } else {

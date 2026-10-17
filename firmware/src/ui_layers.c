@@ -200,7 +200,7 @@ static void steps_held_edit(uint32_t knob, int32_t s)
             int k = lock_find(t, idx, id, 0);
             const param_desc_t *d = lock_desc(t, id);
             int32_t v = k >= 0 ? t->lock[k].val : t->p[id];
-            if (!lock_set(t, idx, id, v + accel(EN_PRESET, s, d->max - d->min)))
+            if (!lock_set(t, idx, id, v + accel(EN_PRESET, s, d->names ? 0 : d->max - d->min)))
                 ui_message(p_lockable(id) ? "NO LOCK LEFT" : "NOT LOCKABLE");
             continue;
         }

@@ -940,6 +940,76 @@ static uint32_t mx_l2rate(const int16_t *p, const mx_t *x, const int32_t *sv)
 #endif
 
 /* render one block of a part into out (cleared here); returns the voices rendered */
+#if CLIPPER_SYNTH
+/* 0.7, the voices on both cores. The second core of the FM-1 (cpu1.c, after SLOOP 2.7 and X0X) takes some of a part's
+ * voices: track_render works out every voice's modulation here as before, keeps the render calls of an engine that
+ * may split (vs_ok: its render touches its voice, its output and what it only reads), hands the second half to core
+ * 1 (into vs_buf), renders the first half here, waits, adds. A voice whose EDIT values the matrix moves renders after
+ * the wait (it writes the part's values for its call). Integer sums: the same output, bit for bit, whoever renders
+ * what (tests: CORES=1 / 2, the golden renders). Core 1 late (8 ms): it is held and its voices render here, once */
+static voice_t *vs_v[NVOICE];
+static vmod_t vs_m[NVOICE];
+static uint32_t vs_n;
+static voice_t *vsl_v[NVOICE];                       /* the late ones and their EDIT values */
+static vmod_t vsl_m[NVOICE];
+static int16_t vsl_p[NVOICE][8];
+static uint32_t vsl_n;
+static struct { track_t *t; const engine_t *e; uint32_t n, a, b; } vsj;
+static uint32_t vs_jobs, vs_split;                  /* (console, tests: blocks handed over, voices rendered there) */
+static void vs_job(uint32_t arg)                    /* on core 1 */
+{
+    uint32_t i;
+    (void)arg;
+    for (i = 0; i < vsj.n; i++)
+        vs_buf[i] = 0;
+    for (i = vsj.a; i < vsj.b; i++)
+        vsj.e->render(vsj.t, vs_v[i], vs_buf, vsj.n, &vs_m[i]);
+}
+static int vs_ok(const engine_t *e)                 /* its render may run on two cores at once, for two voices */
+{
+    return e == &ENG_HYBRID || e == &ENG_FMX || e == &ENG_WAVE || e == &ENG_ANALOG || e == &ENG_FM6 || e == &ENG_VPS ||
+           e == &ENG_TERRAIN || e == &ENG_WSEQ || e == &ENG_MACRO || e == &ENG_STRINGS || e == &ENG_TRIO ||
+           e == &ENG_PHASE || e == &ENG_DIGITAL || e == &ENG_LOFI || e == &ENG_ACID;
+}
+static void vs_finish(track_t *t, const engine_t *e, int32_t *out, uint32_t n)
+{
+    uint32_t k, i, h = vs_n, handed = 0;
+    if (vs_n >= 2u && n <= CTL && cpu1_units != 0) {
+        h = vs_n / 2u;                              /* core 1 the second half (the bigger one when odd: this core
+                                                     * also works out the modulation, the mix and the effects) */
+        vsj.t = t, vsj.e = e, vsj.n = n, vsj.a = h, vsj.b = vs_n;
+        handed = (uint32_t)cpu1_run(vs_job, 0);
+        if (!handed)
+            h = vs_n;
+    }
+    for (k = 0; k < h; k++)
+        e->render(t, vs_v[k], out, n, &vs_m[k]);
+    if (handed) {
+        if (cpu1_wait() < 0) {                      /* late: held from now on (cpu1.c); its voices here */
+            for (k = h; k < vs_n; k++)
+                e->render(t, vs_v[k], out, n, &vs_m[k]);
+        } else {
+            for (i = 0; i < n; i++)
+                out[i] += vs_buf[i];
+            vs_jobs++;
+            vs_split += vs_n - h;
+        }
+    }
+    for (k = 0; k < vsl_n; k++) {                    /* the matrix's EDIT values: this voice's own, for its call */
+        int16_t keep[8];
+        uint32_t j;
+        for (j = 0; j < 8u; j++) {
+            keep[j] = t->p[P_E0 + j];
+            t->p[P_E0 + j] = vsl_p[k][j];
+        }
+        e->render(t, vsl_v[k], out, n, &vsl_m[k]);
+        for (j = 0; j < 8u; j++)
+            t->p[P_E0 + j] = keep[j];
+    }
+    vs_n = vsl_n = 0;
+}
+#endif
+
 static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
 {
     const engine_t *e = ENGINES[t->engine];
@@ -970,6 +1040,10 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
     int32_t tune_fine = (song.g[G_TUNE] * 16 - tune * 100) * 2367 / 16000;   /* rest, in 1/4096 (1 ct = 2.367) */
     uint32_t nr = 0, fade = t->xf_on && t->xf;
     int16_t pe_new[8];
+#if CLIPPER_SYNTH
+    int split = vs_ok(e) && cpu1_units != 0 && cpu1_on();   /* (0.7) the voices on both cores */
+    vs_n = vsl_n = 0;
+#endif
     for (i = 0; i < n; i++)
         out[i] = 0;
     if (fade)                                           /* engine switch: the old engine, its own values */
@@ -1158,6 +1232,19 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
             if (mpe && !(mx.srcs & (1u << MS_SLIDE)))  /* MPE: SLIDE to the cutoff when no slot takes it */
                 m.cutoff += mpe_slide[v->ch & 15u] * 200;   /* (+-64: about +-3 octaves) */
         }
+        if (medm && split) {                            /* (0.7) after the wait: they write the part's values */
+            uint32_t k;
+            for (k = 0; k < 8u; k++) {
+                const param_desc_t *d = &e->edit[k];
+                vsl_p[vsl_n][k] = t->p[P_E0 + k];
+                if ((medm >> k) & 1u && d->fmt != F_ENUM && d->max > d->min)
+                    vsl_p[vsl_n][k] = (int16_t)clamp(t->p[P_E0 + k] + ((clamp(med[k], -32767, 32767) * (d->max - d->min)) >> 15),
+                                                   d->min, d->max);
+            }
+            vsl_v[vsl_n] = v, vsl_m[vsl_n] = m, vsl_n++;
+            nr++;
+            continue;
+        }
         if (medm) {                                     /* the EDIT values the matrix moves: this voice's own */
             int16_t keep[8];
             uint32_t k;
@@ -1174,10 +1261,19 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
             nr++;
             continue;
         }
+        if (split) {                                    /* (0.7) rendered after the loop, on both cores */
+            vs_v[vs_n] = v, vs_m[vs_n] = m, vs_n++;
+            nr++;
+            continue;
+        }
 #endif
         e->render(t, v, out, n, &m);
         nr++;
     }
+#if CLIPPER_SYNTH
+    if (split)
+        vs_finish(t, e, out, n);
+#endif
 #if CLIPPER_SYNTH
     {   /* the matrix's PAN (fx.c mix_part): to the newest note's, 4 steps a block at most (no click) */
         int32_t tgt = (mx.dsts & (1u << MT_PAN)) ? clamp(pan_new >> 9, -64, 64) : 0;

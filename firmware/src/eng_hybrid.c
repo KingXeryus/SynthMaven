@@ -119,6 +119,8 @@ typedef struct {
     int32_t lval[2], lprev[2], lnext[2], lfade[2];
     int32_t rnd;                 /* RAND: one value per note, Q15 bipolar */
     int32_t drift, dtgt;         /* drift: 1/4096 semitone, and where it is going */
+    uint32_t rs;                 /* (0.7) the voice's own random numbers while it renders (S&H, drift): rng() is one
+                                  * for the whole firmware, and the second core renders some of the voices */
     int32_t nz;                  /* noise state */
 } hy_voice_t;
 typedef struct {
@@ -286,6 +288,11 @@ static int32_t hy_env(int32_t *e, uint8_t *st, const uint8_t *adsr, int gate)
 }
 
 /* a voice LFO's value now (Q15 bipolar); advances it one control tick */
+static uint32_t hy_vr(hy_voice_t *hv)               /* (0.7) the voice's own LCG (rs), seeded at its note */
+{
+    hv->rs = hv->rs * 1664525u + 1013904223u;
+    return hv->rs;
+}
 static int32_t hy_lfo(const hy_lfo_t *L, hy_voice_t *hv, uint32_t k, int32_t rate_mod)
 {
     uint32_t inc, old = hv->lph[k];
@@ -301,7 +308,7 @@ static int32_t hy_lfo(const hy_lfo_t *L, hy_voice_t *hv, uint32_t k, int32_t rat
     hv->lph[k] += inc;
     if (hv->lph[k] < old) {                          /* a new cycle: the next random value */
         hv->lprev[k] = hv->lnext[k];
-        hv->lnext[k] = (int32_t)(rng() >> 16) - 32768;
+        hv->lnext[k] = (int32_t)(hy_vr(hv) >> 16) - 32768;
     }
     switch (L->wave) {
     case HW_TRI: y = osc_tri(hv->lph[k]); break;
@@ -415,7 +422,8 @@ static void hy_osc_run(const hy_osc_t *o, hy_voice_t *hv, uint32_t k, uint32_t i
         uint32_t sinc[HY_SUPER - 1u], j;
         for (j = 0; j < HY_SUPER - 1u; j++)
             sinc[j] = inc + (uint32_t)(int32_t)(((int64_t)(int32_t)(inc >> 4) * mulq16(SUPER_OFF[j], (uint32_t)d)) >> 12);
-        static int32_t acc[CTL];                     /* (the side saws one at a time: their phase stays in a register) */
+        int32_t acc[CTL];                            /* (the side saws one at a time: their phase stays in a register;
+                                                      * 0.7: on the stack, the voices render on two cores) */
         for (i = 0; i < n; i++)
             acc[i] = 0;
         for (j = 0; j < HY_SUPER - 1u; j++) {
@@ -637,6 +645,7 @@ static void hybrid_note_on(track_t *t, voice_t *v)
                 hv->lprev[k] = hv->lnext[k] = (int32_t)(rng() >> 16) - 32768;
         }
     hv->rnd = (int32_t)(rng() >> 16) - 32768;
+    hv->rs = (uint32_t)hv->rnd * 2654435761u ^ hv->ph[0] ^ (uint32_t)v->note << 24;   /* (0.7: no rng() more) */
 }
 
 /* the source values of the matrix for this voice and tick (Q15) */
@@ -671,7 +680,9 @@ static void hybrid_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
     const hy_patch_t *P = &hy_cur[part];
     hy_voice_t *hv = hy_voice(t, v);
     int32_t src[HS_N], md[HD_N], e2, e3, l2, l3;
-    static int32_t buf[HY_NOSC][CTL], a[CTL], b[CTL];   /* (static: the audio ISR's stack stays small) */
+    static int32_t buf_[2][HY_NOSC][CTL], a_[2][CTL], b_[2][CTL];   /* (static: the audio ISR's stack stays small;
+                                                                  * 0.7: one set per core, engines.c C1_IX) */
+    int32_t (*buf)[CTL] = buf_[C1_IX(out)], *a = a_[C1_IX(out)], *b = b_[C1_IX(out)];
     uint32_t inc[HY_NOSC];
     hsvf_t fc[2], fc2[2];
     ladder_t lc[2];
@@ -702,8 +713,8 @@ static void hybrid_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
     hv->lrm[1] = (md[HD_LR3] * 127) >> 15;
     /* drift: a slow random walk of the pitch, per voice (up to ~+-25 cents at 127) */
     if (P->drift) {
-        if (!(rng() & 63u))
-            hv->dtgt = (int32_t)((rng() >> 16) & 0xFFFFu) - 32768;
+        if (!(hy_vr(hv) & 63u))
+            hv->dtgt = (int32_t)((hy_vr(hv) >> 16) & 0xFFFFu) - 32768;
         hv->drift += (hv->dtgt - hv->drift) >> 6;
     } else {
         hv->drift = 0;
@@ -729,6 +740,7 @@ static void hybrid_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
      * rendered (its phase runs on) unless the ring or the FM of the next one reads it */
     {
         uint32_t ph1 = hv->ph[0];
+        int32_t f3[CTL];                             /* (0.7: on the stack, the voices render on two cores) */
         for (k = 0; k < HY_NOSC; k++) {
             const hy_osc_t *o = &P->osc[k];
             int32_t shp = ((int32_t)o->shape << 8) + ((md[HD_SH1 + k] * 127) >> 7);
@@ -744,10 +756,9 @@ static void hybrid_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
                 continue;
             }
             if (!k && o->type == HO_FM) {            /* osc 1's FM: from osc 3's last sample, as a constant offset */
-                static int32_t fb3[CTL];
                 for (i = 0; i < n; i++)
-                    fb3[i] = hv->fb[2];
-                prev = fb3;
+                    f3[i] = hv->fb[2];
+                prev = f3;
             }
             hy_osc_run(o, hv, k, inc[k], shp, buf[k], n, prev, ph1, inc[0]);
         }

@@ -11,12 +11,14 @@
 #include "fm1_audio.h"
 #include "fm1_adc.h"
 #include "fm1_lcd_hw.h"
+#include "fm1_cpu1.h"      /* (0.7) the second core (X0X, via SLOOP 2.7): started in main.c, half the voices (voice.c) */
 #include "felucca_tables.h"
 
 #include "libc.c"
 #include "lcd.c"
 #include "gfx.c"
 #include "core.h"
+#include "cpu1.h"           /* the second core's job API (defined in cpu1.c; the host tests have their own) */
 #include "engines.c"
 #include "drums.c"
 #include "params.c"
@@ -31,6 +33,9 @@
 #endif
 #ifndef FELUCCA_ID
 #define FELUCCA_ID "FM-1_900"    /* package identity (build.py: the .fwsc marker string) */
+#endif
+#ifndef FELUCCA_CPU1
+#define FELUCCA_CPU1 1          /* (0.7) the second core (cpu1.c); 0: one core, as before */
 #endif
 #ifndef FELUCCA_CDC
 #define FELUCCA_CDC 1            /* USB CDC-ACM serial console */
@@ -52,6 +57,7 @@
 #include "arranger.c"
 #include "seq.c"
 #include "audio.c"
+#include "cpu1.c"           /* the second core: boot, self-test, state (ABOUT, console) */
 #include "panel.c"
 #include "ui.c"
 #include "ui_song.c"

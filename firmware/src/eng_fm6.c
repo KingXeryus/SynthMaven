@@ -327,6 +327,7 @@ static int fm6_done(track_t *t, voice_t *v)
     return 1;
 }
 
+static int32_t fm6_mbus[2][2][FM6_N];               /* (0.7) the operators' modulator buses, one pair per core */
 static void fm6_render(track_t *t, voice_t *v, int32_t *out, uint32_t len, const vmod_t *m)
 {
     fm6_note_t *n = fm6_note_of(t, v);
@@ -341,7 +342,8 @@ static void fm6_render(track_t *t, voice_t *v, int32_t *out, uint32_t len, const
     lf = fm6_note_logfreq(m->pitch16 + (p[FP_TRNSP] - 24) * 16, m->fine);
     fb = clamp(fm6_eff[tr].fb + ((m->shape - (64 << 8)) >> 11), 0, 7);
     lvl = clamp(t->p[P_E2], -64, 63) * 24 + clamp(m->cutoff >> 8, -150, 150) * 16;   /* microsteps */
-    if (!fm6_note_compute(n, p, bus, fm6_lfo_v[tr], fm6_lfo_d[tr], lf, fm6_eff[tr].alg, fb, fm6_eff[tr].dt, lvl << 16))
+    if (!fm6_note_compute(n, p, bus, fm6_mbus[C1_IX(out)], fm6_lfo_v[tr], fm6_lfo_d[tr], lf, fm6_eff[tr].alg, fb,
+                          fm6_eff[tr].dt, lvl << 16))
         return;                                         /* every carrier below the threshold */
     /* the voice's amplitude ramp x VOICE_FS (one carrier at full: VOICE_FS / 2), six voices in unison ~ one */
     k = t->p[P_VOICE] == V_UNISON ? VOICE_FS * 2 / 5 : VOICE_FS;

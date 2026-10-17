@@ -690,10 +690,10 @@ int main(int argc, char **argv)
         check(ui.menu_sel == MI_LIGHTS, "menu: PRESETS moves the cursor round the section's rows");
         encs[panel.enc[EN_SELECT]] = 1; frame(); ui.force = 1; frame(); ppm("menu-audio");
         check(mi_sec(ui.menu_sel) == MS_AUDIO, "menu: SELECT right: AUDIO (LOWCUT, USB AUDIO, USB SERIAL)");
-        encs[panel.enc[EN_SELECT]] = 5; frame();
+        encs[panel.enc[EN_SELECT]] = 5; frame(); encs[panel.enc[EN_SELECT]] = 5; frame(); encs[panel.enc[EN_SELECT]] = 5; frame();
         sec = mi_sec(ui.menu_sel);
-        check(sec == MS_SYSTEM, "menu: SELECT stops at the last section, SYSTEM");
-        encs[panel.enc[EN_K2]] = 1; frame();
+        check(sec == MS_SYSTEM, "menu: SELECT stops at the last section, SYS (0.7: after MIDI)");
+        encs[panel.enc[EN_K3]] = 1; frame();                  /* (0.7: SYS is 2ND CORE, CALIBRATION, ABOUT) */
         check(ui.menu == 1 && ui.menu_sel == MI_ABOUT, "menu SYSTEM: a knob does not open ABOUT, it moves the cursor");
         tap(B_OCTUP);
         check(ui.menu == 2, "menu SYSTEM: OCT+ on ABOUT opens it");

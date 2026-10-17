@@ -19,7 +19,8 @@ static int16_t cho_buf[CHO_LEN] __attribute__((section(".pool")));
 #define REV_MOD 12               /* samples the modulated line moves (+-) */
 static const uint16_t REV_LINE[4] = {1559, 1931, 2389, 2791};   /* 35..63 ms, coprime */
 static const uint16_t REV_AP[2] = {556, 441};
-static int16_t rev_line[1559 + 1931 + 2389 + 2791 + REV_MOD + 2];   /* (.bss: the pool is full) */
+static int16_t rev_line[1559 + 1931 + 2389 + 2791 + REV_MOD + 2] __attribute__((section(".lowram")));   /* (the pool is
+                                                                      * full; .lowram: the SRAM below the RAM region, app.ld) */
 static int16_t rev_ap[556 + 441] __attribute__((section(".pool")));
 static struct {
     uint32_t dly_w, cho_w, cho_ph, rev_ph;
@@ -783,6 +784,15 @@ static __attribute__((noinline)) void ins_rest(track_t *t)
 }
 #endif
 
+/* (0.7, SLOOP 2.7's, after JIANT FM 0.6.8, github.com/juanjiant-bit/JIANT) LEVEL and PAN glide: a knob's detent (or a
+ * new sound's trim) moves a quarter of the way each block of CTL samples (0.73 ms), ~3 ms in all, instead of a step a
+ * detent. The last few units: at once */
+static int32_t mix_glide(int32_t from, int32_t to)
+{
+    int32_t d = to - from;
+    return d <= 8 && d >= -8 ? to : from + d / 4;
+}
+
 /* one synth part into the dry mix and the sends; a part with no voice sounding costs
  * the LFO tick and a cleared buffer only (after the DIST tail has run out) */
 static void mix_part1(track_t *t, uint32_t n)
@@ -839,8 +849,13 @@ static void mix_part1(track_t *t, uint32_t n)
             if (djf_block(f, t->p[P_TFLT], &fc))
                 tflt_run(f, &fc, b, n, 0);
         }
-        int32_t lvl0 = t->lvl ? t->lvl : lvl, dl = (lvl - lvl0) >> CTL_LOG2;   /* a new sound's trim: ramped */
-        t->lvl = lvl;
+        int32_t lvl0, dl, gl0, dgl, gr0, dgr;          /* (0.7, after SLOOP 2.7) LEVEL (and a new sound's trim) and PAN
+                                                         * glide (mix_glide), ramped sample by sample inside the block */
+        if (!t->mix_on)
+            t->lvl = lvl, t->gpl = gl, t->gpr = gr, t->mix_on = 1;
+        lvl0 = t->lvl, gl0 = t->gpl, gr0 = t->gpr;
+        t->lvl = mix_glide(lvl0, lvl), t->gpl = mix_glide(gl0, gl), t->gpr = mix_glide(gr0, gr);
+        dl = (t->lvl - lvl0) >> CTL_LOG2, dgl = t->gpl - gl0, dgr = t->gpr - gr0;
         for (i = 0; i < n; i++) {
 #if NVOICE > 8                                          /* Clipper: 12 / 16 loud voices: one more bit of headroom */
             int32_t x = ((b[i] >> 3) * (lvl0 + dl * (int32_t)i)) >> 9, a;
@@ -860,6 +875,7 @@ static void mix_part1(track_t *t, uint32_t n)
                 send_d[i] += mulq15(xs, d);
             if (r)
                 send_r[i] += mulq15(xs, r);
+            gl = gl0 + ((dgl * (int32_t)i) >> CTL_LOG2), gr = gr0 + ((dgr * (int32_t)i) >> CTL_LOG2);   /* (0.7) */
             mix_l[i] += ((x >> 4) * gl) >> 8;           /* (x may pass 2^19: >> 4 first) */
             mix_r[i] += ((x >> 4) * gr) >> 8;
         }

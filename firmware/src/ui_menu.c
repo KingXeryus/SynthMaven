@@ -6,22 +6,33 @@
  * its row), PRESETS moves the cursor; OCT+ steps the cursor's setting round or opens it (CALIBRATION, ABOUT),
  * OCT- closes (from ABOUT: back to the section). */
 /* ------------------------------------------------------------ menu --- */
-#if CLIPPER_SYNTH                                  /* Clipper 0.4: MPE (SYSTEM: OFF or the member channels' bend range) */
-enum { MI_COLOR, MI_ZOOM, MI_LIGHTS, MI_KEYS, MI_NOTES, MI_LOWCUT, MI_USB, MI_SERIAL, MI_MPE, MI_PANEL, MI_ABOUT, MI_COUNT };
-static const char *const MI_NAME[MI_COUNT] = {"COLOR", "ZOOM", "LIGHTS", "KEYS", "NOTES", "SPEAKER LOWCUT", "USB AUDIO",
-                                              "USB SERIAL", "MPE (CH 2-16)", "HARDWARE CALIBRATION", "ABOUT"};
+/* 0.7 (after SLOOP 2.7): SCREEN + KNOB ACCEL, AUDIO + USB RATE (four rows: the fourth takes the help's place), MIDI
+ * (CLOCK OUT, MPE), SYS (2ND CORE, CALIBRATION, ABOUT) */
+#if CLIPPER_SYNTH                                  /* Clipper 0.4: MPE (MIDI: OFF or the member channels' bend range) */
+enum { MI_COLOR, MI_ZOOM, MI_ACCEL, MI_LIGHTS, MI_KEYS, MI_NOTES, MI_LOWCUT, MI_USB, MI_SERIAL, MI_RATE, MI_CLKOUT, MI_MPE,
+       MI_CPU1, MI_PANEL, MI_ABOUT, MI_COUNT };
+static const char *const MI_NAME[MI_COUNT] = {"COLOR", "ZOOM", "KNOB ACCEL", "LIGHTS", "KEYS", "NOTES", "SPEAKER LOWCUT",
+                                              "USB AUDIO", "USB SERIAL", "USB RATE", "CLOCK OUT (USB)", "MPE (CH 2-16)",
+                                              "2ND CORE", "HARDWARE CALIBRATION", "ABOUT"};
 #else
-enum { MI_COLOR, MI_ZOOM, MI_LIGHTS, MI_KEYS, MI_NOTES, MI_LOWCUT, MI_USB, MI_SERIAL, MI_PANEL, MI_ABOUT, MI_COUNT };
-static const char *const MI_NAME[MI_COUNT] = {"COLOR", "ZOOM", "LIGHTS", "KEYS", "NOTES", "SPEAKER LOWCUT", "USB AUDIO",
-                                              "USB SERIAL", "HARDWARE CALIBRATION", "ABOUT"};
+enum { MI_COLOR, MI_ZOOM, MI_ACCEL, MI_LIGHTS, MI_KEYS, MI_NOTES, MI_LOWCUT, MI_USB, MI_SERIAL, MI_RATE, MI_CLKOUT, MI_CPU1,
+       MI_PANEL, MI_ABOUT, MI_COUNT };
+static const char *const MI_NAME[MI_COUNT] = {"COLOR", "ZOOM", "KNOB ACCEL", "LIGHTS", "KEYS", "NOTES", "SPEAKER LOWCUT",
+                                              "USB AUDIO", "USB SERIAL", "USB RATE", "CLOCK OUT (USB)", "2ND CORE",
+                                              "HARDWARE CALIBRATION", "ABOUT"};
 #endif
-enum { MS_SCREEN, MS_LIGHTS, MS_AUDIO, MS_SYSTEM, MS_COUNT };
-static const char *const MS_NAME[MS_COUNT] = {"SCREEN", "LIGHTS", "AUDIO", "SYSTEM"};   /* (AUDIO: and USB) */
-#if CLIPPER_SYNTH
-static const uint8_t MS_FIRST[MS_COUNT + 1] = {MI_COLOR, MI_LIGHTS, MI_LOWCUT, MI_MPE, MI_COUNT};   /* rows of each */
+enum { MS_SCREEN, MS_LIGHTS, MS_AUDIO, MS_MIDI, MS_SYSTEM, MS_COUNT };
+static const char *const MS_NAME[MS_COUNT] = {"SCREEN", "LIGHTS", "AUDIO", "MIDI", "SYS"};   /* (AUDIO: and USB) */
+static const uint8_t MS_FIRST[MS_COUNT + 1] = {MI_COLOR, MI_LIGHTS, MI_LOWCUT, MI_CLKOUT, MI_CPU1, MI_COUNT};   /* rows of each */
+static int mi_cpu1_have(void)                      /* the second core is running (cpu1.c; the host tests have none) */
+{
+#if FELUCCA_CPU1
+    return cpu1_state == CPU1_OK;
 #else
-static const uint8_t MS_FIRST[MS_COUNT + 1] = {MI_COLOR, MI_LIGHTS, MI_LOWCUT, MI_PANEL, MI_COUNT};   /* rows of each */
+    return 0;
 #endif
+}
+static const char *const USB_RATE_NAME[3] = {"AUTO", "44.1 KHZ", "48 KHZ"};
 static const char *const LIGHTS_NAME[LIGHTS_N] = {"OFF", "LOW", "MID", "HIGH"};   /* every button lit, the labels readable */
 static const char *const KEYS_NAME[KEYS_N] = {"OFF", "C KEYS", "WHITE KEYS", "ALL KEYS"};      /* keys lit too, at the LIGHTS level */
 #define MI_Y0 26                                   /* the first row, under the section tabs */
@@ -51,6 +62,10 @@ static const char *mi_value(uint32_t i, uint16_t *c)
     case MI_LOWCUT: return settings.lowcut ? "ON" : "OFF";
     case MI_USB: return usb_full ? "FULL" : "MASTER";
     case MI_SERIAL: return usb_serial ? "ON" : "OFF";
+    case MI_ACCEL: return knob_accel_off ? "OFF" : "ON";   /* (0.7) the knobs speed up with a fast turn */
+    case MI_RATE: return USB_RATE_NAME[usb_rate % 3u];     /* (0.7) for hosts that record one rate badly */
+    case MI_CPU1: return cpu1_off ? "OFF" : "ON";          /* (0.7) the second core renders half the voices */
+    case MI_CLKOUT: return clk_out ? "ON" : "OFF";         /* (0.7) the MIDI clock out on USB while SYNC is INT */
 #if CLIPPER_SYNTH
     case MI_MPE: return MPE_NAME[mpe_mode % MPE_MODES];
 #endif
@@ -65,7 +80,8 @@ static void draw_menu(void)
     uint32_t i, pass, sec = mi_sec(ui.menu_sel % MI_COUNT);
     uint32_t sig = ui.menu * 7u + ui.menu_sel * 131u + settings.palette * 1009u + settings.lowcut * 7919u +
                    settings.zoom * 104729u + lights_lvl * 1299709u + lights_keys * 15485863u +
-                   lights_notes * 32452843u + usb_full * 49979687u + usb_serial * 86028121u
+                   lights_notes * 32452843u + usb_full * 49979687u + usb_serial * 86028121u +
+                   knob_accel_off * 179424673u + usb_rate * 373587883u + cpu1_off * 674506111u + clk_out * 982451653u
 #if CLIPPER_SYNTH
                    + mpe_mode * 2654435761u
 #endif
@@ -102,6 +118,9 @@ static void draw_menu(void)
             cv_text(4, 88, &FONT_S, "H\xDCGELTON INSTRUMENTS", C_HI);   /* Latin-1 U-umlaut */
             cv_text(4, 104, &FONT_S, "HUGELTON.COM", C_AMB);
             cv_text(4, 119, &FONT_S, "GPL-3.0, NO WARRANTY", C_HI);
+#if FELUCCA_CPU1                                    /* (the host tests include this file without cpu1.c) */
+            cv_text(236 - text_w(&FONT_S, cpu1_label()), 119, &FONT_S, cpu1_label(), C_AMB);   /* 2 CORES / 1 CORE */
+#endif
             cv_text(4, 132, &FONT_S, "GITHUB.COM/ISOD89/CLIPPER-FM1", C_AMB);   /* (the source of this firmware) */
             cv_text(4, 146, &FONT_S, "FONT: TERMINUS (OFL)", C_DIM);
 #if CLIPPER_SYNTH                                            /* (no built-in samples: the DSP's sources) */
@@ -146,9 +165,15 @@ static void draw_menu(void)
                 }
                 if (i == MI_SERIAL && usb_serial != usb_cdc_now())
                     cv_text(xv + 8, y + 30, &FONT_S, "RESTART", C_AMB);   /* (usb.c: at the next start) */
+                if (i == MI_RATE && usb_rate != usb_rate_now())
+                    cv_text(xv + 8, y + 30, &FONT_S, "RESTART", C_AMB);
+                if (i == MI_CPU1 && !cpu1_off && !mi_cpu1_have())
+                    cv_text(xv + 8, y + 30, &FONT_S, "NOT RUNNING", C_AMB);   /* (cpu1.c: ABOUT says 1 CORE) */
             }
-            cv_text(4, MI_Y0 + 3 * MI_DY + 6, &FONT_S, "SELECT SECTION  KNOB SETS", C_DIM);
-            cv_text(4, MI_Y0 + 3 * MI_DY + 22, &FONT_S, "OCT+ OK   OCT- CLOSE", C_DIM);   /* (rows .. 218) */
+            if (MS_FIRST[sec + 1u] - MS_FIRST[sec] <= 3u) {   /* (a section of four rows: its fourth takes the help's place) */
+                cv_text(4, MI_Y0 + 3 * MI_DY + 6, &FONT_S, "SELECT SECTION  KNOB SETS", C_DIM);
+                cv_text(4, MI_Y0 + 3 * MI_DY + 22, &FONT_S, "OCT+ OK   OCT- CLOSE", C_DIM);   /* (rows .. 218) */
+            }
         }
         cv_oy = 0;
         cv_blit(0, H_HEAD + 1 + pass * 124u);
@@ -193,6 +218,26 @@ static void mi_set(uint32_t i, int32_t s)
         break;
     case MI_SERIAL:
         usb_serial = (uint8_t)(s > 0 ? 1u : s < 0 ? 0u : !usb_serial);
+        break;
+    case MI_ACCEL:                                     /* (0.7) right ON, left OFF; OCT+ toggles */
+        knob_accel_off = (uint8_t)(s > 0 ? 0u : s < 0 ? 1u : !knob_accel_off);
+        break;
+    case MI_RATE:                                      /* (0.7) AUTO, 44.1, 48 (stops at the ends); OCT+ steps round */
+        if (s > 0 && usb_rate < 2u)
+            usb_rate++;
+        else if (s < 0 && usb_rate > 0u)
+            usb_rate--;
+        else if (!s)
+            usb_rate = (uint8_t)((usb_rate + 1u) % 3u);
+        break;
+    case MI_CLKOUT:                                    /* (0.7) right ON, left OFF; OCT+ toggles */
+        clk_out = (uint8_t)(s > 0 ? 1u : s < 0 ? 0u : !clk_out);
+        break;
+    case MI_CPU1:                                      /* (0.7) right ON, left OFF; OCT+ toggles: live (the next block) */
+        cpu1_off = (uint8_t)(s > 0 ? 0u : s < 0 ? 1u : !cpu1_off);
+        cpu1_units = cpu1_off ? 0 : -1;
+        if (!cpu1_off && !cpu1_on())                   /* (core 1 starts at power-on only) */
+            ui_message("AT THE NEXT POWER-ON");
         break;
 #if CLIPPER_SYNTH
     case MI_MPE:                                       /* OFF, then the bend range; OCT+ steps round */

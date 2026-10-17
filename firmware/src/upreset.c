@@ -391,9 +391,19 @@ static int up_load_to(track_t *t, uint32_t k)
     r = up_rec(k);
     up_values(r, v);
     for (i = 0; i < P_COUNT; i++)                       /* (LEN etc. of a kept pattern changed too, and */
-        if (param_kept(i))                              /* a preset pattern then counted as edited) */
-            v[i] = t->p[i];
+        if (param_kept(i) || (t->p[P_AMODE] && i >= P_AMODE && i <= P_AORDER) ||   /* a preset pattern then counted as */
+            (i == P_AHOLD && !t->p[P_AMODE] && t->p[P_AHOLD]))   /* edited; 0.7: the arp that runs goes on, KBD HOLD */
+            v[i] = t->p[i];                             /* stays on, ui.c apply_preset_to) */
+    if (!v[P_AMODE] && !t->p[P_AMODE])
+        v[P_AHOLD] = t->p[P_AHOLD];                     /* (0.7) KBD HOLD (HOLD with the arp OFF) is the part's, not the
+                                                         * preset's (an older preset's HOLD meant nothing there) */
+#if CLIPPER_SYNTH
+    if (t == &trk[0])
+        hist_before_load();                             /* (0.7: the edits a step of their own, ui_synth.c) */
+#endif
     sound_fade_begin(t);
+    if (t->p[P_AMODE])
+        arp_keep_req |= (uint8_t)(1u << trk_index(t));  /* (0.7: its notes too) */
     panic_req |= (uint8_t)(1u << trk_index(t));
     fm1_irq_off();                                      /* the audio ISR must not see half a sound */
     t->eng_req = r->engine;

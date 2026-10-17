@@ -2,7 +2,8 @@
  * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
 /* Parameter descriptors, formatting and the page table. */
 static const char *const N_LWAVE[] = {"SIN", "TRI", "SAW", "SQR", "S&H"};
-static const char *const N_AMODE[] = {"OFF", "UP", "DN", "UPDN", "RND", "ORD"};
+static const char *const N_AMODE[] = {"OFF", "UP", "DN", "UPDN", "RND", "ORD",   /* (append-only: seq.c AM_*) */
+                                       "REPEAT", "DNUP", "UP+8", "CONV", "DIVG", "PINKY", "THUMB", "WALK", "CHORD"};
 static const char *const N_MOUT[] = {"KEYS", "SEQ"};
 static const char *const N_MIN[] = {"NOTES", "CLOCK"};  /* G_ROUTE: MIDI in, notes and clock, or the clock only (seq.c) */    /* G_MIDI: what goes to MIDI OUT (seq.c seq_out_on) */
 static const char *const N_DIV[] = {"1/4", "1/8", "1/16", "1/32", "8T", "16T"};
@@ -435,7 +436,7 @@ enum { FAM_HOME, FAM_ENV, FAM_LFO, FAM_FX, FAM_SCL, FAM_EDIT, FAM_GLO, FAM_SAVE,
        FAM_COUNT };
 enum { SC_TRACK, SC_GLOBAL, SC_ENGINE, SC_STEP, SC_TRK, SC_SONG, SC_DRUM, SC_SYN };   /* SC_SYN: ui_synth.c */
 enum { GR_NONE, GR_ADSR, GR_LFO, GR_STEPS, GR_ARP, GR_SCALE, GR_FX, GR_ROLL, GR_BROWSE, GR_SLOTS, GR_USER, GR_TRK,
-       GR_SLCR, GR_LAYER, GR_MORPH, GR_MATRIX, GR_FMX };
+       GR_SLCR, GR_LAYER, GR_MORPH, GR_MATRIX, GR_FMX, GR_HIST };
 
 typedef struct {
     const char *title;
@@ -494,6 +495,7 @@ static const page_t PAGES[] = {
     {"LAYER 2", FAM_EDIT, SC_SYN, GR_LAYER, {4, 5, 6, 7}},       /* X_LYOCT X_LYPAN X_LYFILT X_LYSWAP */
     {"MORPH", FAM_EDIT, SC_SYN, GR_MORPH, {8, 9, 10, 0xFF}},     /* X_MORPH X_SETA X_SETB */
     {"RANDOM", FAM_EDIT, SC_SYN, GR_NONE, {11, 12, 13, 14}},     /* X_RNDAMT X_RNDWHAT X_RNDGO X_RNDBACK */
+    {"UNDO", FAM_EDIT, SC_SYN, GR_HIST, {41, 42, 0xFF, 0xFF}},   /* (0.7) X_HPOS X_HCMP: the sound's history, COMPARE */
 #else
     {"VOICE 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_ALLOC, P_DETUNE, P_PAN, P_MUTE}},
 #endif

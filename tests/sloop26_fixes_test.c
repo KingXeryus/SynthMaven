@@ -125,6 +125,13 @@ static void t_fm6(void)
     trk_all_off(t);
 }
 
+/* (0.7: the arp's next note through arp_list, SLOOP 2.7's: the held notes as they play now, the first of them) */
+static uint32_t arp_first(track_t *t)
+{
+    uint32_t l[65], c;
+    return arp_list(t, l, &c) ? l[0] : KB_SILENT;
+}
+
 static void t_arp(void)
 {
     track_t *t = &trk[0];
@@ -139,10 +146,10 @@ static void t_arp(void)
     in_key = 0;
     arp_remove(t, n);                                   /* (let go: latched) */
     t->p[P_TRANS] = 3;
-    x = arp_next(t);
+    x = arp_first(t);
     ok(x == n + 3u, "ARP (#191): a latched note follows TRN changed after it (+3)");
     t->p[P_TRANS] = 0, t->p[P_ROOT] = 2;
-    x = arp_next(t);
+    x = arp_first(t);
     ok(x == kb_pitch(t, k, 0) && x != n, "ARP (#191): and ROOT (the key walks the new scale)");
     t->p[P_AMODE] = 0, t->p[P_AHOLD] = 0, t->p[P_ROOT] = 0, t->p[P_QUANT] = 0;
     t->nheld = 0;

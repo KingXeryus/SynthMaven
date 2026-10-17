@@ -248,7 +248,8 @@ static void t_fuzz(uint32_t nframes)
         }
     song.rec = 0; rec_wait = 0;
     transport_req = 2;
-    for (k = 0; k < NTRK; k++) trk[k].p[P_AMODE] = 0;
+    for (k = 0; k < NTRK; k++) trk[k].p[P_AMODE] = 0, trk[k].p[P_AHOLD] = 0;   /* (0.7: HOLD off too, else KBD HOLD
+                                                                              * keeps what the keys left sounding) */
     for (f = 0; f < 30u * 1000u / 16u; f++) {           /* (a slow FM6 release, R4 35: several seconds) */
         uint32_t a = 0;
         sframe();

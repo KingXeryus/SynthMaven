@@ -154,6 +154,19 @@ run "Clipper 0.6 WSEQ: steps at the tempo and their pitches, FWD / BACK / PING /
 mkdir -p "$OUT/fmx_ui"
 $SYN -o "$OUT/fmx_ui_test" tests/fmx_ui_test.c -lm
 run "Clipper 0.6 FMX on the FM-1: its pages on FMX only, OP / ROUTE / templates / a sound loaded" "$OUT/fmx_ui_test" "$OUT/fmx_ui"
+mkdir -p "$OUT/hist_ui"
+$SYN -o "$OUT/hist_ui_test" tests/hist_ui_test.c -lm -lpthread
+run "Clipper 0.7 on the FM-1: UNDO (steps, back, forward), COMPARE, EDITED, a sound loaded, RANDOM by section and FMX's operators, FAV, KBD HOLD, 15 arp modes, the arp kept" "$OUT/hist_ui_test" "$OUT/hist_ui"
+$SYN -o "$OUT/split_test" tests/split_test.c -lm -lpthread
+run "Clipper 0.7, the voices on both cores: every preset, the same output with and without the split (one core, inline)" "$OUT/split_test"
+run "Clipper 0.7, the voices on both cores: core 1 as a thread (CORES=2)" env CORES=2 "$OUT/split_test"
+run "Clipper 0.7, the voices on both cores: an erratic core 1 (CORES=2 CHAOS=5)" env CORES=2 CHAOS=5 "$OUT/split_test" 16
+run "Clipper 0.7, the voices on both cores: a lost job (held, its voices here, once)" env CPU1_TIMEOUT_AT=40 "$OUT/split_test" 16
+if ${CC_TSAN:-gcc} -O1 -g -w -fsanitize=thread -DCLIPPER_SYNTH=1 -Ibuild/gen -Ifirmware/src -Ifirmware/hal -o "$OUT/split_tsan" tests/split_test.c -lm -lpthread 2>/dev/null; then
+    run "Clipper 0.7, the voices on both cores under ThreadSanitizer (CORES=2: no race)" env CORES=2 TSAN_OPTIONS=halt_on_error=1 "$OUT/split_tsan" 12
+else
+    echo "(split under ThreadSanitizer: this compiler has none, skipped)"
+fi
 $SYN -o "$OUT/engines3_test" tests/engines3_test.c -lm
 run "Clipper 0.5 VPS (vector phaseshaping: pitch, formant, D, no DC, no aliasing, no step) and TERRAIN (every surface pitched, RAD, DRIFT, no aliasing), bounded, cost" "$OUT/engines3_test" build/eng3_demo
 if $SYN_UB -o "$OUT/engines3_ub" tests/engines3_test.c -lm 2>/dev/null; then

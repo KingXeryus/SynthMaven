@@ -698,6 +698,36 @@ static void autosave_resume(void)              /* power-on: the project as it wa
 #endif
 }
 
+/* 0.7: Clipper's side record of the settings (storage.c st_side): what has no place in the settings word (whose free
+ * bits SLOOP uses) nor in the payload (whose length older versions check): the favourites (ui.c fav), USB RATE and
+ * CLOCK OUT (seq.c clk_out),
+ * with a magic and a CRC. SLOOP 2.7 writes its own (its theme first): each firmware takes only its own back */
+#define CLIP_SIDE_MAGIC 0x37504C43u                  /* "CLP7" */
+typedef struct {
+    uint32_t magic;
+    uint8_t usb_rate, clk_out, rsv[2];
+    uint16_t fav[FAV_N];
+    uint32_t crc;
+} clip_side_t;
+_Static_assert(sizeof(clip_side_t) == 44u && sizeof(clip_side_t) <= ST_SIDE_MAX, "the side record");
+static clip_side_t side_out, side_saved;
+static void side_fill(clip_side_t *r)                /* what the side record holds now */
+{
+    memset(r, 0, sizeof *r);
+    r->magic = CLIP_SIDE_MAGIC;
+    r->usb_rate = (uint8_t)(usb_rate % 3u);
+    r->clk_out = (uint8_t)(clk_out != 0u);
+    memcpy(r->fav, fav, sizeof fav);
+    r->crc = st_crc32(r, sizeof *r - 4u);
+}
+static void side_take(const clip_side_t *r)          /* a side record read back: when it checks out */
+{
+    if (r->magic != CLIP_SIDE_MAGIC || r->crc != st_crc32(r, sizeof *r - 4u))
+        return;
+    usb_rate = (uint8_t)(r->usb_rate % 3u);
+    clk_out = (uint8_t)(r->clk_out & 1u);
+    memcpy(fav, r->fav, sizeof fav);
+}
 /* settings + learned panel table: one flash object. The flash copy wins at
  * boot (the .noinit copies are garbage after a power-off). */
 typedef struct {
@@ -770,6 +800,12 @@ static void persist_boot(void)                    /* before settings_init / pane
                 p.arrangement = arrangement;
 #endif
             persist_saved = p;
+            {   /* 0.7: the favourites and USB RATE, in the side record of the same copy */
+                clip_side_t r;
+                if (st_side_load(OBJ_SETTINGS, &r, sizeof r) == 0)
+                    side_take(&r);
+                side_fill(&side_saved);
+            }
         } else if (n == (int)(8u + sizeof(panel_t)) && p.magic == 0x50455231u) {   /* "PER1": palette, panel */
             const uint32_t *w = (const uint32_t *)&p;
             panel_t old;
@@ -815,10 +851,17 @@ static uint32_t set_tail_n;
 _Static_assert(sizeof(persist_t) + sizeof(dsu_bank_t) + SET_TAIL_MAX <= ST_PAYLOAD_MAX, "the settings object");
 static int settings_write(const persist_t *p)
 {
+    int rc;
     if (!dsu_valid(&dsu))
         dsu_defaults();
-    if (st_save3(OBJ_SETTINGS, p, sizeof *p, &dsu, sizeof dsu, set_tail, set_tail_n))
+    side_fill(&side_out);
+    st_side = &side_out;
+    st_side_len = sizeof side_out;
+    rc = st_save3(OBJ_SETTINGS, p, sizeof *p, &dsu, sizeof dsu, set_tail, set_tail_n);
+    st_side = 0;
+    if (rc)
         return -1;
+    side_saved = side_out;
     dsu_dirty = 0;
     return 0;
 }
@@ -862,8 +905,9 @@ static void settings_save(void)
     if (!flash_ok)
         return;
     persist_fill(&p);
-    if (!memcmp(&p, &persist_saved, sizeof p))
-        return;                                    /* unchanged: no erase cycle */
+    side_fill(&side_out);
+    if (!memcmp(&p, &persist_saved, sizeof p) && !memcmp(&side_out, &side_saved, sizeof side_out))
+        return;                                    /* unchanged: no erase cycle (0.7: the side record too) */
     if (settings_write(&p) == 0)
         persist_saved = p;
 #endif

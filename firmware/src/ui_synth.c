@@ -15,8 +15,11 @@ enum { X_LYMODE, X_LYSOUND, X_LYSPLIT, X_LYLEVEL, X_LYOCT, X_LYPAN, X_LYFILT, X_
        X_MSLOT, X_MSRC, X_MDST, X_MAMT,                /* (X_MSRC..X_MAMT: the slot's P_MnSRC..P_MnAMT) */
        /* 0.6: FMX (eng_fmx.c): the selected operator's values, the routing, the patch, STORE (the part's patch) */
        X_FOP, X_FWAVE, X_FMODE, X_FRATIO, X_FFINE, X_FLEVEL, X_FVEL, X_FKSC, X_FATK, X_FDEC, X_FSUS, X_FREL,
-       X_FTO, X_FFROM, X_FAMT, X_FOUT, X_FDTN, X_FFIX, X_FPEG, X_FPTIM, X_FSLOT, X_FSTORE, X_COUNT };
-static const char *const N_RNDWHAT[] = {"EDIT", "+ENV", "ALL"};
+       X_FTO, X_FFROM, X_FAMT, X_FOUT, X_FDTN, X_FFIX, X_FPEG, X_FPTIM, X_FSLOT, X_FSTORE,
+       X_HPOS, X_HCMP,                                 /* 0.7: UNDO (the place in the sound's history), COMPARE */
+       X_COUNT };
+static const char *const N_RNDWHAT[] = {"EDIT", "+ENV", "ALL", "ENV", "MOD", "FX", "OPS"};   /* (0.7: one section, as the
+                                                        * Hydrasynth's; OPS: FMX's operators, opsix style) */
 static const char *const N_OCTS[] = {"-2", "-1", "0", "+1", "+2"};
 static int16_t xv[X_COUNT] = {[X_RNDAMT] = 40, [X_RNDWHAT] = 1, [X_MSLOT] = 1, [X_FOP] = 1, [X_FTO] = 1, [X_FFROM] = 2,
                               [X_FSLOT] = 1};
@@ -24,7 +27,8 @@ static const char *const N_FRATIO[32] = {"0.5", "1", "2", "3", "4", "5", "6", "7
                                          "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26",
                                          "27", "28", "29", "30", "31"};
 static const char *const N_FFIXC[4] = {"1Hz", "10Hz", "100Hz", "1kHz"};
-_Static_assert(X_FOP == 19 && X_FSTORE == 40, "params.c PAGES: FMX's ids");
+_Static_assert(X_FOP == 19 && X_FSTORE == 40 && X_HPOS == 41, "params.c PAGES: FMX's ids, UNDO's");
+static const char *const N_CMP[] = {"EDIT", "ORIG"};
 static param_desc_t xd_sound = {"SOUND", F_INT, 0, 0, 0, 0, 0};   /* (its range: the list's length, syn_desc) */
 static const param_desc_t XD[X_COUNT] = {
     [X_LYMODE] = PE("MODE", N_LYMODE, LY_OFF),
@@ -64,6 +68,8 @@ static const param_desc_t XD[X_COUNT] = {
     [X_FPTIM] = PD("PTIM", F_TIME, 0, 127, 40),
     [X_FSLOT] = PD("SLOT", F_INT, 1, FM6_BANK_N, 1),
     [X_FSTORE] = PE("STORE", N_GO, 0),
+    [X_HPOS] = PD("UNDO", F_INT, -16, 0, 0),
+    [X_HCMP] = PE("CMP", N_CMP, 0),
 };
 
 /* ---- a sound (engine + every parameter) as a snapshot */
@@ -98,6 +104,204 @@ static void snap_put(track_t *t, const syn_snap_t *s)
     fm1_irq_on();
     fm6_track_loaded(t);
     ui.force = 1;
+}
+
+/* ---- 0.7: the sound's history (UNDO page) and COMPARE. What researchers of synth users hear most: "no undo, no
+ * compare, my edits are lost". Every change of the sound (a knob, the editor, RANDOM, MORPH, a sound loaded) becomes a
+ * step once it rests HIST_REST ms (a sweep of a knob is one step), or at once before a sound is loaded; up to HIST_N
+ * steps back (UNDO turned left), and forward again (right) until something new is changed. The FMX patch goes with
+ * the steps. COMPARE: the sound as it was loaded (ORIG) against the edits (EDIT); a change made while comparing ends
+ * it (the edits stay one step back). HOME marks an edited sound with a star; PRESETS asks before it leaves one */
+#define HIST_N 16u
+#define HIST_REST 900u
+typedef struct {
+    syn_snap_t s;
+    fmx_patch_t fx;                                   /* (the part's FMX patch, eng_fmx.c fmx_cur) */
+} hist_t;
+static hist_t hist[HIST_N];                           /* a ring: hist_n steps back, then hist_r steps forward */
+static hist_t hist_cur, hist_orig, hist_cmp;          /* the step now (committed), the sound as loaded, the edits */
+static uint32_t hist_head, hist_n, hist_r, hist_t0;   /* hist_head: the next free place; hist_t0: the last change */
+static uint8_t hist_pend, hist_ready, hist_cmp_on, hist_edited, hist_load_req;
+static int16_t hist_pos;                              /* the UNDO knob: 0 the newest, -k k steps back */
+static void hist_take(hist_t *h)
+{
+    snap_take(&h->s, &trk[0]);
+    h->fx = fmx_cur[0];
+}
+static int hist_same(const hist_t *a, const hist_t *b)  /* the same sound (its mix, pattern and key aside) */
+{
+    uint32_t i;
+    if (a->s.eng != b->s.eng)
+        return 0;
+    for (i = 0; i < P_COUNT; i++)
+        if ((i >= P_E0 || !param_kept(i)) && i != P_ED_FX && a->s.p[i] != b->s.p[i])
+            return 0;
+    return a->s.eng != ENGI_FMX || !memcmp(&a->fx, &b->fx, sizeof a->fx);
+}
+static void hist_put(const hist_t *h)
+{
+    snap_put(&trk[0], &h->s);
+    if (h->s.eng == ENGI_FMX) {                       /* its patch as it was (not PTCH's again: fmx_block) */
+        fm1_irq_off();
+        fmx_cur[0] = h->fx;
+        fmx_dirty[0] = 1;
+        fmx_slot_seen[0] = (int16_t)(clamp(h->s.p[P_E0], 0, (int32_t)FMX_NSLOT - 1) + 1);
+        fmx_reload &= (uint8_t)~1u;
+        fm1_irq_on();
+    }
+}
+static void hist_push(void)                           /* hist_cur one step back; nothing forward any more */
+{
+    hist[hist_head % HIST_N] = hist_cur;
+    hist_head = (hist_head + 1u) % HIST_N;
+    if (hist_n < HIST_N)
+        hist_n++;
+    hist_r = 0;
+}
+static void hist_commit(void)                         /* what changed since the last step: a step */
+{
+    hist_t now;
+    hist_take(&now);
+    if (hist_ready && !hist_same(&now, &hist_cur)) {
+        hist_push();
+        hist_cur = now;
+    }
+    hist_pend = 0;
+}
+/* before a sound is loaded (ui.c apply_preset_to, upreset.c up_load_to): the edits a step of their own, and the
+ * sound loaded the new ORIG (hist_poll, the next frame) */
+static void hist_before_load(void)
+{
+    if (!CLIPPER_SYNTH || !hist_ready || hist_load_req)
+        return;                                       /* (a load under way this frame: one step for all of it) */
+    if (hist_cmp_on)                                  /* (comparing: the edits back first, as a step) */
+        hist_cur = hist_cmp, hist_cmp_on = 0;
+    hist_commit();
+    hist_load_req = 1;
+}
+static void hist_poll(void)                           /* once a UI frame */
+{
+    hist_t now;
+    if (!hist_ready) {
+        hist_take(&hist_cur);
+        hist_orig = hist_cur;
+        hist_ready = 1;
+        return;
+    }
+    hist_take(&now);
+    if (hist_load_req) {                              /* a sound loaded: a step, and the new ORIG */
+        hist_load_req = 0;
+        if (!hist_same(&now, &hist_cur)) {
+            hist_push();
+            hist_cur = now;
+        }
+        hist_orig = now;
+        hist_pend = 0;
+        hist_edited = 0;
+        hist_pos = 0;
+        return;
+    }
+    if (hist_cmp_on) {                                /* comparing: a change ends it (the edits a step back) */
+        hist_edited = 0;
+        if (!hist_same(&now, &hist_orig)) {
+            hist_cmp_on = 0;
+            xv[X_HCMP] = 0;
+            hist_cur = hist_cmp;
+            hist_push();
+            hist_cur = now;
+            ui_message("COMPARE OFF");
+        }
+        return;
+    }
+    {
+        static hist_t seen;                           /* the sound last frame: still moving, the rest from now */
+        if (!hist_same(&now, &seen))
+            hist_t0 = fm1_ms;
+        seen = now;
+    }
+    if (!hist_same(&now, &hist_cur)) {
+        hist_pend = 1;
+        if (fm1_ms - hist_t0 >= HIST_REST) {
+            hist_push();
+            hist_cur = now;
+            hist_pend = 0;
+            hist_pos = 0;
+        }
+    } else {
+        hist_pend = 0;
+    }
+    hist_edited = (uint8_t)!hist_same(&now, &hist_orig);
+}
+static void hist_step(int32_t d)                      /* d < 0: undo -d steps; > 0: redo */
+{
+    if (hist_cmp_on)
+        return;
+    hist_commit();
+    while (d < 0 && hist_n) {                         /* back: hist_cur forward (redo), the newest back step now */
+        hist_head = (hist_head + HIST_N - 1u) % HIST_N;
+        hist_t prev = hist[hist_head];
+        hist[hist_head] = hist_cur;                   /* (the ring keeps it: hist_r counts it as forward) */
+        hist_cur = prev;
+        hist_n--, hist_r++;
+        d++;
+    }
+    while (d > 0 && hist_r) {
+        hist_t next = hist[hist_head];
+        hist[hist_head] = hist_cur;
+        hist_head = (hist_head + 1u) % HIST_N;
+        hist_cur = next;
+        hist_n++, hist_r--;
+        d--;
+    }
+    hist_put(&hist_cur);
+    hist_pos = (int16_t)-(int32_t)hist_r;
+}
+static void hist_compare(int on)
+{
+    if (on == hist_cmp_on)
+        return;
+    if (on) {
+        hist_commit();
+        hist_cmp = hist_cur;
+        hist_cmp_on = 1;
+        hist_put(&hist_orig);
+        ui_message("COMPARE: AS LOADED");
+    } else {
+        hist_cmp_on = 0;
+        hist_put(&hist_cmp);
+        ui_message("COMPARE: YOUR EDITS");
+    }
+}
+/* what changed from step a to step b, in a few letters: the first two values that differ (their labels) */
+static void hist_label(const hist_t *a, const hist_t *b, char *out, uint32_t cap)
+{
+    uint32_t i, n = 0;
+    out[0] = 0;
+    if (a->s.eng != b->s.eng || a->s.preset != b->s.preset || a->s.user != b->s.user) {
+        const engine_t *e = ENGINES[b->s.eng % NENGINES];
+        if (b->s.user && b->s.user <= UP_SLOTS && up_used(b->s.user - 1u))
+            up_name(b->s.user - 1u, out);
+        else
+            str_cpy(out, e->npresets ? e->presets[b->s.preset % e->npresets].name : e->name, cap);
+        return;
+    }
+    for (i = 0; i < P_COUNT; i++)
+        if ((i >= P_E0 || !param_kept(i)) && i != P_ED_FX && a->s.p[i] != b->s.p[i]) {
+            const param_desc_t *d = i >= P_E0 ? &ENGINES[b->s.eng % NENGINES]->edit[i - P_E0] : track_desc(&trk[0], i);
+            if (n < 2u && d && d->label) {
+                if (n)
+                    str_cpy(out + str_len(out), " ", cap - str_len(out));
+                str_cpy(out + str_len(out), d->label, cap - str_len(out));
+            }
+            n++;
+        }
+    if (!n && b->s.eng == ENGI_FMX)
+        str_cpy(out, "FMX PATCH", cap);
+    else if (n > 2u) {
+        char k[8] = " +";
+        fmt_int(k + 2, (int32_t)n - 2);
+        str_cpy(out + str_len(out), k, cap - str_len(out));
+    }
 }
 
 /* a value's kind for MORPH and RANDOM: 1 a switch (the names), 0 a continuous one */
@@ -175,17 +379,57 @@ static void syn_rnd_range(uint32_t i, const param_desc_t *d, int32_t *lo, int32_
 }
 static int syn_rnd_in(uint32_t i, uint32_t what)
 {
-    if (i >= P_E0 && i <= P_E7)
-        return 1;
-    if (what >= 1u && ((i >= P_ATK && i <= P_REL) || (i >= P_ED_FLT && i <= P_ED_SHP)))
-        return 1;
-    if (what >= 2u && ((i >= P_LRATE && i <= P_LD_AMP) || (i >= P_DIST && i <= P_REV) || i == P_VELF))
-        return 1;
-    if (what >= 2u && ((i >= P_L2RATE && i <= P_L2MODE) || (i >= P_E2ATK && i <= P_E2REL)))
-        return 1;                                     /* (0.4: LFO 2, ENV 2, the amounts of the slots in use) */
-    if (what >= 2u && i >= P_M1SRC && i <= P_M6AMT && (i - P_M1SRC) % 3u == 2u)
-        return trk[0].p[i - 2u] != MS_OFF && trk[0].p[i - 1u] != MT_OFF;
-    return 0;
+    int edit = i >= P_E0 && i <= P_E7;
+    int env = (i >= P_ATK && i <= P_REL) || (i >= P_ED_FLT && i <= P_ED_SHP) || (i >= P_E2ATK && i <= P_E2REL);
+    int mod = (i >= P_LRATE && i <= P_LD_AMP) || i == P_VELF || (i >= P_L2RATE && i <= P_L2MODE) ||
+              (i >= P_M1SRC && i <= P_M6AMT && (i - P_M1SRC) % 3u == 2u && trk[0].p[i - 2u] != MS_OFF && trk[0].p[i - 1u] != MT_OFF);
+    int fx = (i >= P_DIST && i <= P_REV) || (trk[0].p[P_ITYPE] && i >= P_IA && i <= P_IMIX);   /* (0.7: the INSERT's
+                                                         * values, its TYPE kept) */
+    switch (what) {
+    case 0: return edit;
+    case 1: return edit || ((i >= P_ATK && i <= P_REL) || (i >= P_ED_FLT && i <= P_ED_SHP));
+    case 3: return env;                                  /* 0.7: one section */
+    case 4: return mod;
+    case 5: return fx;
+    case 6: return trk[0].eng_req == ENGI_FMX ? 0 : edit;   /* (OPS: the FMX patch, syn_rnd_fmx; another engine: EDIT) */
+    default: return edit || env || mod || fx;            /* ALL (0.4: LFO 2, ENV 2, the amounts of the slots in use) */
+    }
+}
+/* 0.7, RANDOM > WHAT OPS on FMX: the operators of the part's patch, as the opsix's randomizer: ratios from the musical
+ * ones, the modulators' levels, the envelopes, now and then a wave; the carriers' levels and the routing's shape kept,
+ * its amounts moved. AMT how far */
+static void syn_rnd_fmx(int32_t amt)
+{
+    static const uint8_t RAT[12] = {1, 1, 1, 2, 2, 3, 4, 5, 6, 7, 8, 14};
+    static const uint8_t WV[6] = {FXW_SINE, FXW_SINE, FXW_SINE, FXW_TRI, FXW_HALF, FXW_SAW};
+    fmx_patch_t p = fmx_cur[0];
+    uint32_t k, j;
+    for (k = 0; k < FMX_NOP; k++) {
+        fmx_op_t *o = &p.op[k];
+        int carrier = p.out[k] != 0;
+        if (!(o->mode & 4u) && (int32_t)(syn_rnd() % 128u) < amt)
+            o->coarse = RAT[syn_rnd() % 12u];
+        if ((int32_t)(syn_rnd() % 128u) < amt / 2)
+            o->fine = (uint8_t)((int32_t)(syn_rnd() % 128u) < amt / 3 ? syn_rnd() % 100u : 0u);
+        if (!carrier && o->level)
+            o->level = (uint8_t)clamp(o->level + ((40 + (int32_t)(syn_rnd() % 76u) - o->level) * amt) / 127, 1, 127);
+        for (j = 0; j < 4u; j++) {
+            int32_t lo = j == 0 ? 0 : 10, hi = j == 0 ? (carrier ? 40 : 70) : j == 2 ? 127 : 100;
+            int32_t u = lo + (int32_t)(syn_rnd() % (uint32_t)(hi - lo + 1));
+            o->adsr[j] = (uint8_t)clamp(o->adsr[j] + ((u - o->adsr[j]) * amt) / 127, 0, 127);
+        }
+        if ((int32_t)(syn_rnd() % 384u) < amt)
+            o->wave = WV[syn_rnd() % 6u];
+        for (j = 0; j < FMX_NOP; j++)                    /* the routing: where there is a connection */
+            if (p.mod[k][j])
+                p.mod[k][j] = (uint8_t)clamp(p.mod[k][j] + ((20 + (int32_t)(syn_rnd() % 108u) - p.mod[k][j]) * amt) / 127, 1, 127);
+    }
+    p.alg = 0;                                           /* (no template any more: the patch as it is) */
+    fmx_sanitize(&p);
+    fm1_irq_off();
+    fmx_cur[0] = p;
+    fmx_dirty[0] = 1;
+    fm1_irq_on();
 }
 static void syn_randomize(void)
 {
@@ -212,6 +456,8 @@ static void syn_randomize(void)
         }
         t->p[i] = (int16_t)clamp(v, d->min, d->max);
     }
+    if (what == 6u && t->eng_req == ENGI_FMX)
+        syn_rnd_fmx(amt);                               /* (0.7) the operators */
     t->user = 0;
     ui.force = 1;
 }
@@ -233,7 +479,7 @@ static uint32_t layer_pos(uint32_t *total)
 }
 static void layer_load(uint32_t n)
 {
-    uint32_t k, e = preset_at(n, &k);
+    uint32_t k, e = base_at(n, &k);                     /* (0.7: the list without the favourites) */
     track_t *t = &trk[1];
     if (e == NENGINES) {
         up_load_to(t, k);
@@ -290,6 +536,15 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
     track_t *l = &trk[1];
     switch (id) {
     case X_LYMODE: *valp = &l->p[P_LYMODE]; break;
+    case X_HPOS: {                                    /* 0.7: the place in the history, 0 the newest */
+        static param_desc_t hd = {"UNDO", F_INT, 0, 0, 0, 0, 0};
+        hd.min = (int16_t)-(int32_t)(hist_n + hist_r);
+        hd.max = 0;
+        xv[X_HPOS] = (int16_t)-(int32_t)hist_r;
+        *valp = &xv[X_HPOS];
+        return &hd;
+    }
+    case X_HCMP: xv[X_HCMP] = hist_cmp_on; *valp = &xv[X_HCMP]; break;
     case X_LYSPLIT:
         if (layer_multi()) {                          /* 0.6, MULTI: no split; the knob is the layer's channel */
             static const param_desc_t ch = {"CH", F_INT, 1, 16, 2, 0, 0};
@@ -471,9 +726,20 @@ static void syn_changed(uint32_t id, int16_t *vp)
     case X_RNDGO:
         if (*vp) {
             *vp = 0;
+            hist_commit();                            /* (0.7: the sound before it, a step: UNDO goes back) */
             syn_randomize();
             ui_message("RANDOM");
         }
+        break;
+    case X_HPOS: {                                    /* 0.7: left back, right forward */
+        int32_t d = *vp - (int32_t)-(int32_t)hist_r;
+        if (d)
+            hist_step(d);
+        ui_message(hist_r ? "UNDO" : "LATEST");
+        break;
+    }
+    case X_HCMP:
+        hist_compare(*vp != 0);
         break;
     case X_RNDBACK:
         if (*vp) {
@@ -492,6 +758,7 @@ static void syn_changed(uint32_t id, int16_t *vp)
 /* once a UI frame: MIDI CC 20 moves MORPH */
 static void syn_tick(void)
 {
+    hist_poll();                                      /* (0.7) the sound's history */
     int16_t r = syn_morph_req;
     if (r >= 0) {
         syn_morph_req = -1;
@@ -557,6 +824,53 @@ static void graph_morph(void)
     cv_text(8, 56, &FONT_S, "A", C_DIM);
     cv_text(226, 56, &FONT_S, "B", C_DIM);
 }
+/* 0.7, the graph of the UNDO page: the sound's steps, the newest on top, the one playing lit */
+static void graph_hist(void)
+{
+    uint32_t rows = 6u, k, total = hist_n + hist_r + 1u, now = hist_n;   /* index 0 the oldest; now: hist_cur */
+    uint32_t top = total - 1u;
+    if (hist_cmp_on) {
+        cv_text(8, 6, &FONT_S, "COMPARING:", C_GRAY);
+        cv_text(8, 24, &FONT_S, "THE SOUND AS LOADED", C_WHITE);
+        cv_text(8, 50, &FONT_S, "CMP EDIT: YOUR EDITS BACK", C_DIM);
+        return;
+    }
+    if (top >= rows && now + rows / 2u < top)
+        top = now + rows / 2u < rows - 1u ? rows - 1u : now + rows / 2u;
+    for (k = 0; k < rows && k <= top; k++) {
+        uint32_t i = top - k, y = 2u + k * 15u;
+        const hist_t *h, *older;
+        char lab[15], tag[6];                         /* (14 letters: EDITED stays clear on the right) */
+        if (i == now) {
+            h = &hist_cur;
+        } else if (i < now) {
+            h = &hist[(hist_head + HIST_N - (now - i)) % HIST_N];
+        } else {
+            h = &hist[(hist_head + (i - now - 1u)) % HIST_N];
+        }
+        if (!i) {
+            str_cpy(lab, "(OLDEST)", sizeof lab);
+        } else {
+            uint32_t j = i - 1u;
+            older = j == now ? &hist_cur : j < now ? &hist[(hist_head + HIST_N - (now - j)) % HIST_N]
+                                                   : &hist[(hist_head + (j - now - 1u)) % HIST_N];
+            hist_label(older, h, lab, sizeof lab);
+        }
+        if (i == now)
+            str_cpy(tag, "NOW", sizeof tag);
+        else {
+            tag[0] = i < now ? '-' : '+';
+            fmt_int(tag + 1, (int32_t)(i < now ? now - i : i - now));
+        }
+        if (i == now)
+            cv_rect(4, (int32_t)y + 6, 3, 3, C_WHITE);
+        cv_text(12, (int32_t)y, &FONT_S, tag, i == now ? C_WHITE : C_DIM);
+        cv_text(52, (int32_t)y, &FONT_S, lab, i == now ? C_WHITE : i < now ? C_GRAY : C_DIM);
+    }
+    if (hist_edited)
+        cv_text(184, 2, &FONT_S, "EDITED", C_AMB);
+}
+
 /* the graph of the MATRIX page: the six slots, source > destination and amount, the one turned lit */
 static void graph_matrix(void)
 {
@@ -643,5 +957,6 @@ static uint32_t syn_sig(void)
     const track_t *l = &trk[1];
     return fmx_sig() + (uint32_t)l->eng_req * 131u + l->preset * 7u + l->user * 3u + (uint32_t)l->p[P_LYMODE] * 17u +
            (uint32_t)l->p[P_LYSPLIT] * 257u + (uint32_t)xv[X_MORPH] * 65537u + syn_a.ok * 11u + syn_b.ok * 13u +
-           syn_a.eng * 101u + syn_b.eng * 103u + syn_a.preset * 107u + syn_b.preset * 109u + (uint32_t)xv[X_MSLOT] * 6007u;
+           syn_a.eng * 101u + syn_b.eng * 103u + syn_a.preset * 107u + syn_b.preset * 109u + (uint32_t)xv[X_MSLOT] * 6007u +
+           (hist_n * 31u + hist_r * 977u + hist_cmp_on * 7919u + hist_edited * 104729u + hist_head) * 2654435761u;
 }

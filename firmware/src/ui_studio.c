@@ -672,7 +672,8 @@ static void rec_screen_draw(void)
     }
     foot = 0;
     /* armed / counting in: what happens next */
-    sig = 2000003u + empty * 7u + free * 11u + rec_count * 13u + count * 17u + ci_beat * 19u + blink * 31u;
+    sig = 2000003u + empty * 7u + free * 11u + rec_count * 13u + count * 17u + ci_beat * 19u + blink * 31u +
+          rec_quant_off * 37u;
     if (ui.force || sig != body) {
         static const char *const L1[3] = {"play freely", "play a note", "press play"};
         static const char *const L2[3] = {"then rec on the 1", "it starts the loop", "4 clicks, then rec"};
@@ -697,11 +698,11 @@ static void rec_screen_draw(void)
     rec_rows(rt, 0u, 106u, &rows);
     {   /* the dials: how it records */
         static char v[3][10];
-        static const char *const LAB_E[4] = {"mode", "length", "start", ""};
-        static const char *const LAB_F[4] = {"mode", "", "", ""};
-        static const char *const LAB_N[4] = {"", "length", "start", ""};
+        static const char *const LAB_E[4] = {"mode", "length", "start", "quant"};
+        static const char *const LAB_F[4] = {"mode", "", "", "quant"};
+        static const char *const LAB_N[4] = {"", "length", "start", "quant"};
         static const char *const LAB_0[4] = {"", "", "", ""};
-        const char *val[4] = {v[0], v[1], v[2], ""};
+        const char *val[4] = {v[0], v[1], v[2], rec_quant_off ? "off" : "on"};   /* (2.7) QUANT */
         int32_t ratio[4] = {0, 0, 0, 0};
         uint32_t len = (uint32_t)clamp(TSEL->p[P_SLEN], 1, 64);
         str_cpy(v[0], rec_tempo ? "tempo" : "free", sizeof v[0]);
@@ -716,6 +717,7 @@ static void rec_screen_draw(void)
         ratio[0] = rec_tempo ? 1000 : 0;
         ratio[1] = (int32_t)(len - 1u) * 1000 / 63;
         ratio[2] = rec_count ? 1000 : 0;
+        ratio[3] = rec_quant_off ? 0 : 1000;
         {
             const char *const *lab = count ? LAB_0 : !empty ? LAB_N : free ? LAB_F : LAB_E;
             uint32_t k;

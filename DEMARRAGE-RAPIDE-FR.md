@@ -1,4 +1,4 @@
-# Clipper — démarrage rapide (version de test 0.5)
+# Clipper — démarrage rapide (version de test 0.7)
 
 **Clipper** est un firmware de **synthétiseur** pour le M-VAVE FM-1 : un seul instrument, comme le firmware d'origine, Felucca ou Baudgirl. Ce n'est plus une groovebox : pas de pistes, pas de boîte à rythmes, pas de mode song, pas de samples intégrés. Il garde de SLOOP les 12 moteurs, les effets, l'arpégiateur, le séquenceur de pas, l'audio USB et le MIDI. Il ajoute **HYBRID**, une voix à 3 oscillateurs, 2 filtres et une matrice de modulation de 16 slots, avec 24 sons d'usine. Il ajoute aussi le pitch bend, la molette, l'aftertouch et la pédale de sustain sur tous les moteurs.
 
@@ -15,7 +15,7 @@ Clipper vit dans son propre dossier, **`CLIPPER`**, à côté de celui de SLOOP.
 | Adresse | http://localhost:**8766** | http://localhost:**8767** |
 | Écran de démarrage | voilier, « sloop » | trois-mâts, « clipper » |
 
-Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maintenu) → SYSTEM → ABOUT, qui affiche **CLIPPER 0.5**.
+Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maintenu) → SYS → ABOUT, qui affiche **CLIPPER 0.7**.
 
 ## 1. Compiler et installer
 
@@ -23,6 +23,15 @@ Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maint
 2. Double-clique sur **`INSTALL-CLIPPER.bat`**. Il utilise les mêmes outils que SLOOP (WSL MinUI-Build, la chaîne JieLi). La première fois, il copie les trois fichiers du SDK depuis `..\SLOOP\build\deps\ac79`. S'il ne les trouve pas, copie ce dossier `build\deps\ac79` de SLOOP dans `CLIPPER\build\deps\`.
 3. La page d'installation s'ouvre sur http://localhost:8767/webapp/installer/ (Chrome ou Edge, FM-1 en USB). Clique sur **Install**.
 4. La FM-1 redémarre sur l'écran **clipper**. Tes projets, presets, samples et réglages de SLOOP sont toujours là.
+
+## Nouveau dans la 0.7 : les deux cœurs, l'historique du son, et le meilleur de SLOOP 2.7
+
+- **Le 2e cœur de la FM-1 calcule la moitié des voix.** Le démarrage du 2e cœur vient de X0X (Charles Vestal), via SLOOP 2.7 (Andre Rezemini), avec le correctif de la 2.7.1. SLOOP partage par piste ; Clipper joue un seul son, donc il partage **les voix d'un même son** : le 1er cœur calcule les modulations, donne la 2e moitié des voix au 2e cœur, calcule la 1re moitié, attend et additionne. Le son est identique au bit près (prouvé par les tests sur ordinateur pour chaque preset). Moteurs partagés : HYBRID, FMX, WAVE, ANALOG, FM6, VPS, TERRAIN, WSEQ, MACRO, STRINGS, TRIO, PHASE, DIGITAL, LOFI. **MENU → SYS → 2ND CORE** ON / OFF ; ABOUT affiche **2 CORES** ou **1 CORE**.
+- **UNDO et COMPARE sur la FM-1** (EDIT → **UNDO**) : chaque changement du son devient une étape dès qu'il s'arrête (un balayage de knob = une étape), un son chargé aussi. KNOB 1 recule (gauche) et avance (droite) sur 16 étapes ; la page les liste. KNOB 2 **CMP** : ORIG fait entendre le son tel qu'il a été chargé, EDIT tes modifications. HOME affiche **EDITED** quand le son a été modifié, et charger un autre son ne perd jamais tes modifications : UNDO les ramène.
+- **RANDOM par section** : WHAT propose aussi **ENV**, **MOD**, **FX** et **OPS** (sur FMX : les opérateurs eux-mêmes, comme le randomizer de l'opsix).
+- **Favoris** : page PRESETS, KNOB 4 à droite met le son en haut de la liste (16 max), à gauche le retire.
+- **De SLOOP 2.7** : **KBD HOLD** (ARP 2 → HOLD ON avec l'arpège OFF : les notes continuent de sonner, l'accord suivant les remplace), **15 modes d'arpège**, le **swing de l'arpège** marche aussi à l'arrêt, un son chargé pendant que l'arpège joue le garde, **CC 74** sur le cutoff propre à chaque moteur, **REC QUANT OFF** (KNOB 4 de l'écran REC), l'overdub sur des notes tenues, **l'accélération des knobs** (MENU → SCREEN → KNOB ACCEL), le **glissement de LEVEL et PAN**, les samples qui **bouclent tant que la touche est tenue**, **USB RATE** (MENU → AUDIO, pour Android), **CLOCK OUT** MIDI sur USB (MENU → MIDI).
+- **L'éditeur web** : une carte **Sound tools** avec **Undo / Redo** (Ctrl+Z), **Compare with loaded**, **A / B**, un **randomizer par section** avec un dosage, la liste **de ce qui a changé** et **l'enveloppe dessinée**. La page Samples règle la **boucle** de chaque fichier (ONE SHOT, LOOP, LOOP+TAIL, ou la boucle du WAV lui-même). L'éditeur trouve la FM-1 même si Windows a gardé un autre nom de port.
 
 ## Nouveau dans la 0.6 : deux parties, un effet insert par son, FMX et le wave sequencing
 
@@ -120,21 +129,17 @@ Un projet garde le PTCH, mais pas le patch modifié : exporte-le pour le garder.
 
 Pour essayer l'éditeur sans la FM-1, ouvre `web/editor.html?mock=1` dans Chrome.
 
-## 5. Le test dont j'ai besoin : la charge processeur
+## 5. Le test dont j'ai besoin : les deux cœurs et la charge processeur
 
 C'est ce qui décide combien de voix Clipper peut jouer. La FM-1 doit être branchée en USB à l'ordinateur, sinon la case CPU affiche l'état USB à la place.
 
-1. Choisis le son **CLIPPER** avec PRESETS.
-2. Va sur **GLO → SYSTEM** : la 4e case affiche **CPU %**.
-3. Tiens **8 notes** (les deux mains, ou un accord depuis un clavier MIDI) et note le chiffre.
-4. Refais la même chose avec **POLY PAD**, **TRANCE**, puis **HARMONIUM** (MACRO) et **ENSEMBLE** (STRINGS).
-5. Nouveau en 0.3 : mets **EQ+COMP** (FX) à LOW +3 et COMP 60, puis un **LAYER** (EDIT → LAYER : MODE LAYER, SOUND OMNI STR) sous CLIPPER, et tiens 8 notes.
-   Nouveau en 0.4 : sur CLIPPER, remplis les six slots de **MATRIX** (par exemple LFO2 → CUT, ENV2 → PITCH, KEY → AMP, RAND → PAN, VEL → un réglage EDIT, MW → SHAPE) et tiens 8 notes.
-6. Si tout reste sous ~70 %, ferme la fenêtre, puis lance **`INSTALL-CLIPPER.bat 12`**. Ça compile la version à **12 voix**. Réinstalle et refais la mesure avec 12 notes.
+1. Après l'installation, tiens HOME (le menu) → **SYS** → **ABOUT** : il doit afficher **2 CORES**. Si c'est **1 CORE**, dis-le-moi.
+2. Choisis le son **CLIPPER** avec PRESETS, va sur **GLO → SYSTEM** : la 4e case alterne **CPU**, **LATE** et **PEAK**.
+3. Tiens **8 notes** et note CPU et PEAK. Puis MENU → SYS → **2ND CORE OFF**, et refais la même mesure : la différence, c'est le gain du 2e cœur. Remets **ON**.
+4. Refais avec **POLY PAD**, **TRANCE**, un son **FMX** (FMX EP) et **ENSEMBLE** (STRINGS).
+5. Si PEAK reste sous ~70 % et LATE ne monte pas, ferme la fenêtre, puis lance **`INSTALL-CLIPPER.bat 12`** (12 voix) et refais la mesure avec 12 notes. Si ça tient encore, essaie **`INSTALL-CLIPPER.bat 16`**.
 
-Envoie-moi les chiffres. Signale aussi un son qui craque, une note qui reste coincée ou un écran bizarre.
-
-Mes estimations, mesurées sur ordinateur : une voix typique coûte environ 2,5 % du processeur, et CLIPPER (le plus lourd) environ 6,6 %, donc environ 53 % pour 8 voix.
+Envoie-moi les chiffres (avec et sans 2ND CORE). Signale aussi un son qui craque, une note qui reste coincée, un écran **FELUCCA CRASH** (prends-le en photo : il reste 10 s) ou un écran bizarre.
 
 ## Revenir en arrière
 

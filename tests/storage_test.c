@@ -124,5 +124,23 @@ int main(void)
         bad += check("2.5: ... too big for a sector: refused", st_save2(OBJ_SETTINGS, p2, 3000, p2, 1000) == -1);
     }
     printf("%s\n", bad ? "STORAGE TEST FAILED" : "storage test passed");
+    {   /* 0.7 (SLOOP 2.7's layout): a side record with its copy, before the header; an older save leaves it erased */
+        uint8_t side[44], back[44], ff[44];
+        memset(side, 0x5A, sizeof side);
+        side[0] = 'C';
+        memset(ff, 0xFF, sizeof ff);
+        st_side = side;
+        st_side_len = sizeof side;
+        bad += check("0.7 side record: saved with its copy", st_save(OBJ_SETTINGS, a, 100) == 0);
+        st_side = 0;
+        bad += check("0.7 side record: read back as written",
+                     st_side_load(OBJ_SETTINGS, back, sizeof back) == 0 && !memcmp(back, side, sizeof side));
+        n = st_load(OBJ_SETTINGS, got, sizeof got);
+        bad += check("0.7 side record: the payload untouched", n == 100 && !memcmp(got, a, 100));
+        bad += check("0.7 side record: an older save (none) leaves it erased",
+                     st_save(OBJ_SETTINGS, b, 100) == 0 && st_side_load(OBJ_SETTINGS, back, sizeof back) == 0 &&
+                     !memcmp(back, ff, sizeof ff));
+        bad += check("0.7 side record: none bigger than its room", st_side_load(OBJ_SETTINGS, got, ST_SIDE_MAX + 1u) < 0);
+    }
     return bad != 0;
 }

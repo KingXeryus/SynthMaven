@@ -7,9 +7,18 @@ Free and open source (GPL-3.0). It grew out of <a href="https://github.com/isod8
 
 ---
 
-> **Status: 0.6, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
+> **Status: 0.7, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
 
 SLOOP is a groovebox. **Clipper is a synthesizer** with 21 engines and 360 sounds, one instrument (two in MULTI) like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine, no song mode and no built-in samples. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
+
+## New in 0.7: both cores, a history of the sound, and SLOOP 2.7's best
+
+- **The FM-1's second processor core renders half the voices.** After SLOOP 2.7 (the second core's start-up is [X0X](https://github.com/charlesvestal/fm1-x0x)'s, Charles Vestal, after [Melodee](https://github.com/keremimo/melodee); the HAL came to SLOOP through Andre Rezemini's dualcore branch, 2.7.1's safe hold included). SLOOP splits by track; Clipper plays one sound, so it splits **a sound's voices**: this core works out every voice's modulation, hands the second half of the voices to core 1, renders the first half, waits, adds. Bit for bit the same sound whoever renders what (the host tests prove it for every preset, one core or two, a slow second core, a lost job, under ThreadSanitizer). Engines that may split: HYBRID, FMX, WAVE, ANALOG, FM6, VPS, TERRAIN, WSEQ, MACRO, STRINGS, TRIO, PHASE, DIGITAL, LOFI (the others stay on one core). MENU → SYS → **2ND CORE** ON / OFF; ABOUT says **2 CORES** or **1 CORE**. This is what should make 12 or 16 voices possible: measure with GLO → SYSTEM (CPU, LATE, PEAK).
+- **UNDO and COMPARE on the FM-1** (EDIT → **UNDO**): every change of the sound becomes a step once it rests (a knob sweep is one step), a sound loaded too; KNOB 1 goes back (left) and forward (right) through up to 16 steps, the page lists them ("-1 CUT RES", "-2 MOOG BASS"); FMX's patch goes with them. KNOB 2 **CMP**: ORIG plays the sound as it was loaded, EDIT your edits again. HOME says **EDITED** when the sound differs from what was loaded, and loading another sound never loses your edits: UNDO brings them back.
+- **RANDOM by section**: WHAT now also offers **ENV**, **MOD** (LFOs, matrix amounts), **FX** (and the INSERT's values) and **OPS**: on FMX, the operators themselves (musical ratios, the modulators' levels, envelopes, now and then a wave, the routing's amounts), as the opsix's randomizer.
+- **Favourites**: PRESETS page, KNOB 4 right puts the sound at the top of the list (up to 16), left takes it out; kept with the FM-1's settings.
+- **SLOOP 2.7's gifts**: **KBD HOLD** (ARP 2 → HOLD ON with the arp OFF: the notes go on sounding, the next chord replaces them; HOME shows HOLD), **15 arp modes** (REPEAT, DNUP, UP+8, CONV, DIVG, PINKY, THUMB, WALK, CHORD after UP DN UPDN RND ORD), **ARP SWG** works stopped too (#52), a sound loaded while the arp runs keeps the arp and its notes, **CC 74** sweeps the engine's own cutoff or brightness, **REC QUANT OFF** (KNOB 4 of the REC screen: your timing kept as nudges), overdub over held notes, **knob acceleration** that grows with the speed of the turn (MENU → SCREEN → KNOB ACCEL), **LEVEL and PAN glide** (no zipper), user samples that **loop while held** (LOOP, LOOP+TAIL), **USB RATE** (AUTO, 44.1, 48 kHz: MENU → AUDIO), **MIDI CLOCK OUT** on USB (MENU → MIDI), the crash screen with the stack, 10 s.
+- **The web editor**: a **Sound tools** card: **Undo / Redo** (Ctrl+Z, Ctrl+Shift+Z), **Compare with loaded**, **Store A / Store B / Toggle A / B**, a **randomizer by section** with an amount, **what changed since loaded** (a table), and the **envelope drawn** (ENV, and ENV 2 dashed). The Samples page sets each file's **loop** (ONE SHOT, LOOP, LOOP+TAIL with its points on zero crossings, a WAV's own loop read from its smpl chunk). The editor finds the FM-1 under any of its port names (a port kept from another firmware, e.g. "X0X FM-1").
 
 ## New in 0.6: two parts, an insert per sound, FMX and wave sequencing
 
@@ -114,15 +123,17 @@ Projects, user presets, samples and settings stay in the same flash places as SL
 
 ## Polyphony
 
-The voices are a build option: 8 (the default, as SLOOP), 12 or 16 (`INSTALL-CLIPPER.bat 12`). The host measurements put a typical HYBRID voice at about 2.5 % of the FM-1's CPU and the heaviest factory patch (CLIPPER, two SUPERs) at about 6.6 %. GLO → SYSTEM → CPU shows the real load on the device: those readings decide the default.
+The voices are a build option: 8 (the default, as SLOOP), 12 or 16 (`INSTALL-CLIPPER.bat 12`). Since 0.7 the second core renders half of a sound's voices (MENU → SYS → 2ND CORE), which is what 12 or 16 voices need. The host measurements put a typical HYBRID voice at about 2.5 % of the FM-1's CPU and the heaviest factory patch (CLIPPER, two SUPERs) at about 6.6 %. GLO → SYSTEM → CPU shows the real load on the device: those readings decide the default.
 
 ## Tests
 
-`HOST_ONLY=1 tests/run_tests.sh` runs everything that does not need the JieLi toolchain: the synth mode (HOME, presets, keys, pages, one instrument, MIDI omni), the HYBRID tests (the pitch of every oscillator, the filters, the matrix, the controllers, 300 random patches, the cost per voice), the editor's commands, golden renders of every sound, ASan and UBSan, a soak test, and the web pages.
+`HOST_ONLY=1 tests/run_tests.sh` runs everything that does not need the JieLi toolchain (0.7: the voices on both cores in every mode of the host double of core 1, and under ThreadSanitizer; UNDO, COMPARE, FAV, KBD HOLD): the synth mode (HOME, presets, keys, pages, one instrument, MIDI omni), the HYBRID tests (the pitch of every oscillator, the filters, the matrix, the controllers, 300 random patches, the cost per voice), the editor's commands, golden renders of every sound, ASan and UBSan, a soak test, and the web pages.
 
 ## Credits
 
 - **[Felucca](https://github.com/hugelton/Felucca)** by Leo Kuroshita (@kurogedelic) / Hügelton Instruments: the platform, the engines, the editor and the installer.
+- **The second core** (0.7): its HAL (`firmware/hal/fm1_cpu1.{h,S}`) is Charles Vestal's ([X0X](https://github.com/charlesvestal/fm1-x0x)), after Kerem Kilic's [Melodee](https://github.com/keremimo/melodee); brought to SLOOP by Andre Rezemini ([sloop-lab](https://github.com/andrerezemini/sloop-lab), `cpu1.c`, `tests/cpu1_host.c`); 2.7.1's hold with the bus traps off after Felucca 1.6.1. Clipper's voice split is its own.
+- **Knob acceleration, LEVEL / PAN glide** (0.7): after [JIANT FM](https://github.com/juanjiant-bit/JIANT) by juanjiant-bit, through SLOOP 2.7.
 - **[SLOOP](https://github.com/isod89/sloop-fm1)** by 3dSam: everything Clipper starts from. Its manuals are in [docs/sloop](docs/sloop/).
 - The supersaw follows Adam Szabo's analysis of the JP-8000. The FM6 engine is msfa (Dexed), and PHYS comes from DaisySP and Mutable Instruments Rings: see [LICENSING.md](LICENSING.md).
 

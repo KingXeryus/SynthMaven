@@ -123,6 +123,26 @@ static int st_load(uint32_t obj, void *dst, uint32_t max)
     return (int)h.len;
 }
 
+/* 0.7 (SLOOP 2.7's layout): a side record in a copy's own sector, between the header (0..31) and the payload (256..):
+ * bytes ST_SIDE_OFF.. carry what an older version must never see in the payload (it checks the payload's exact length).
+ * st_save3 programs st_side there with the payload, before the header, so it is committed with its copy; an older save
+ * leaves the area erased (0xFF), and the record goes with that copy. The record checks itself (project.c: a magic and
+ * a CRC; SLOOP's has its own magic: each firmware reads only its own) */
+#define ST_SIDE_OFF 64u
+#define ST_SIDE_MAX (ST_PAYLOAD_OFF - ST_SIDE_OFF)
+static const void *st_side;                         /* the next save's side record (0: none), for one save */
+static uint32_t st_side_len;
+_Static_assert(sizeof(st_hdr_t) <= ST_SIDE_OFF, "the side record starts after the header");
+/* the current copy's side bytes (n <= ST_SIDE_MAX) into dst: 0, or -1 (no valid copy) */
+static int st_side_load(uint32_t obj, void *dst, uint32_t n)
+{
+    st_hdr_t h;
+    int c = st_current(obj, &h);
+    if (c < 0 || n > ST_SIDE_MAX)
+        return -1;
+    return st_read(st_sector(obj, (uint32_t)c) + ST_SIDE_OFF, dst, n) ? -1 : 0;
+}
+
 /* an object in up to three parts, src then src2 then src3 (SLOOP 2.5: the settings and the SYN kits after them; SLOOP
  * 2.6: then its MIDI settings, which Clipper keeps as they are: project.c set_tail) */
 static int st_save3(uint32_t obj, const void *src, uint32_t len, const void *src2, uint32_t len2, const void *src3,
@@ -149,6 +169,12 @@ static int st_save3(uint32_t obj, const void *src, uint32_t len, const void *src
     for (off = 0; off < len; off += 256u) {
         uint32_t n = len - off > 256u ? 256u : len - off;
         if ((rc = st_prog(base + ST_PAYLOAD_OFF + off, st_buf + off, n)) != 0)
+            return rc;
+    }
+    if (st_side && st_side_len && st_side_len <= ST_SIDE_MAX) {   /* (0.7) the side record, before the header */
+        uint8_t sb[ST_SIDE_MAX];
+        memcpy(sb, st_side, st_side_len);              /* (the driver wants RAM sources) */
+        if ((rc = st_prog(base + ST_SIDE_OFF, sb, st_side_len)) != 0)
             return rc;
     }
     h.magic = ST_MAGIC;

@@ -122,7 +122,7 @@ static void mac_additive(voice_t *v, int32_t *acc, uint32_t n, uint32_t inc, int
 
 static void mac_speech(voice_t *v, int32_t *acc, uint32_t n, uint32_t inc, int32_t harm, int32_t timb, int32_t morph)
 {
-    static int32_t src[CTL], b[CTL];
+    int32_t src[CTL], b[CTL];                        /* (0.7: on the stack: the voices render on two cores) */
     const uint8_t *w = MAC_WORD[harm * 8 / 128];
     uint32_t nv = w[0], i, k, seg;
     int32_t pos, fr, f[3];
@@ -166,7 +166,7 @@ static void mac_speech(voice_t *v, int32_t *acc, uint32_t n, uint32_t inc, int32
 static void macro_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const vmod_t *m)
 {
     const int16_t *p = t->p;
-    static int32_t acc[CTL];
+    int32_t acc[CTL];                                /* (0.7: on the stack: two cores) */
     uint32_t model = (uint32_t)p[P_E0] % 4u, part = (uint32_t)(t - trk) % NPART, i;
     int32_t env = v->s[7], lpg = p[P_E7] * 258, shut, gain, cut;
     if (n > CTL)

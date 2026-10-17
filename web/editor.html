@@ -144,6 +144,12 @@
   .group { background: var(--s1); border: 1px solid var(--line); padding: 14px 16px 12px; min-width: 0; break-inside: avoid; margin: 0 0 16px; }
   .group h3 { color: var(--dim); text-transform: uppercase; margin: 10px 0 6px; display: flex; align-items: center; }
   .group h2 + h3 { margin-top: 0; }
+  .envsvg { display: block; width: 100%; height: 72px; margin: 8px 0 2px; }
+  .floop { display: grid; gap: 4px; padding: 6px 0 10px 36px; } .floop canvas { width: 100%; max-width: 480px; height: 48px; }
+  .floop .bar { margin: 0; } .floop input[type=range] { flex: 1; max-width: 360px; }
+  .envsvg path { fill: none; stroke-width: 2; }
+  #stdiff table { border-collapse: collapse; width: 100%; } #stdiff td { padding: 2px 8px 2px 0; border-bottom: 1px solid var(--line); }
+  #stcmp[aria-pressed="true"], #stab.on { outline: 2px solid var(--t3); }
   .knobs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); }
   /* 2.5: the DRUM SYNTH page */
   .dslanes { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px; margin: 6px 0 10px; }
@@ -370,6 +376,7 @@
   .frow { --c: var(--t1); display: grid; grid-template-columns: 40px minmax(0, 1fr) 80px 120px 80px 40px; gap: 8px; align-items: center;
           background: var(--bg); padding: 4px 8px; border-left: 4px solid var(--c); }
   .frow.fhead { background: none; border-left-color: transparent; color: var(--dim); text-transform: lowercase; }
+  .frow.smpf { grid-template-columns: 40px minmax(0, 1fr) 80px 120px 80px 110px 40px; }   /* (0.7: + the loop) */
   .frow .fn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg); }
   .frow input.root { width: 72px; }
   .frow button { padding: 3px 0; }
@@ -437,6 +444,7 @@
     .dest, .dest.slots4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .frow { grid-template-columns: 32px minmax(0, 1fr) 64px 40px; }
     .frow > :nth-child(4), .frow > :nth-child(5) { display: none; }
+    .frow.smpf { grid-template-columns: 32px minmax(0, 1fr) 64px 100px 40px; }
     .dest button.big { grid-column: 1 / -1; }
   }
 </style>
@@ -524,6 +532,25 @@
           </div>
         </div>
         <p class="dim" id="drumnote" data-t="drumNote" hidden></p>
+      </div>
+      <!-- Clipper 0.7: sound tools: undo / redo, compare with the sound as loaded, A / B, a scoped randomizer, what changed -->
+      <div class="card" id="sndtools">
+        <h2 data-t="stTitle" data-ic="control_arrow_loop"></h2>
+        <p class="bar">
+          <button id="stundo" data-t="stUndo" title="Ctrl+Z"></button>
+          <button id="stredo" data-t="stRedo" title="Ctrl+Shift+Z"></button>
+          <span class="dim" id="sthist"></span>
+          <button id="stcmp" data-t="stCompare" aria-pressed="false"></button>
+          <button id="stseta" data-t="stSetA"></button> <button id="stsetb" data-t="stSetB"></button>
+          <button id="stab" data-t="stAB" disabled></button>
+          <span class="dim" id="stedited"></span>
+        </p>
+        <p class="bar">
+          <label><span data-t="stScope"></span> <select id="stscope"></select></label>
+          <label><span data-t="stAmt"></span> <input type="range" id="stamt" min="0" max="127" value="40"> <b id="stamtv">40</b></label>
+          <button id="strand" class="pri" data-t="stRandom"></button>
+        </p>
+        <details id="stdiffbox"><summary data-t="stDiff"></summary><div id="stdiff" class="dim"></div></details>
       </div>
       <div class="groups" id="groups"></div>
       <!-- the FM6 engine's patch (firmware protocol v9): only while the selected track plays FM6 -->
@@ -1314,7 +1341,7 @@ function parseWav(buf) {
   const d = new Uint8Array(buf), v = new DataView(d.buffer, d.byteOffset, d.byteLength);
   const id = (i) => String.fromCharCode(d[i], d[i + 1], d[i + 2], d[i + 3]);
   if (d.length < 12 || id(0) !== "RIFF" || id(8) !== "WAVE") throw new Error("not a WAV file");
-  let i = 12, fmt = null, data = null;
+  let i = 12, fmt = null, data = null, loop = null;
   while (i + 8 <= d.length) {
     const cid = id(i), n = v.getUint32(i + 4, true);
     if (cid === "fmt ") {
@@ -1324,7 +1351,8 @@ function parseWav(buf) {
       fmt = { tag, ch, sr, bits };
     } else if (cid === "data") {
       data = [i + 8, Math.min(d.length, i + 8 + n)];
-      break;
+    } else if (cid === "smpl" && n >= 60 && i + 8 + 60 <= d.length && v.getUint32(i + 8 + 28, true)) {
+      loop = [v.getUint32(i + 8 + 44, true), v.getUint32(i + 8 + 48, true)];   /* (0.7, after SLOOP 2.7) its first loop, frames */
     }
     i += 8 + n + (n & 1);
   }
@@ -1346,7 +1374,7 @@ function parseWav(buf) {
     }
     x[f] = acc / ch;
   }
-  return { sr, x };
+  return { sr, x, loop };
 }
 
 /* Clipper 0.2: a wavetable for WAVE (firmware eng_wave.c): a WAV of single cycles one after the other (Serum's 2048
@@ -1440,12 +1468,49 @@ function rootFromName(name) {
 }
 
 /* zones: [{s: Int16Array (22050 Hz), root, lo?, hi?}] -> {hdr (480 B), data, zones} (sampleio.user_slot) */
+/* 0.7 (after SLOOP 2.7): a file's loop (the Samples page): 0 ONE SHOT; 1 LOOP, the whole file again while the key is
+   held, let go it ends its round; 2 LOOP+TAIL, the start, then [ls, le] again while held, let go the rest to the end.
+   Both are the zone's looped = 2 (SMP_LOOP_HELD, firmware eng_sample.c) */
+const LOOP = {
+  NAMES: ["ONE SHOT", "LOOP", "LOOP+TAIL"], MIN: 64, SNAP: 512,
+  range(z) {                                          /* the loop's [ls, le] of a file of n samples */
+    const n = z.s.length;
+    if (z.loop === 1 || n < 2 * LOOP.MIN) return [0, n - 1];
+    const ls = Math.max(0, Math.min(n - LOOP.MIN - 1, Math.round(z.ls ?? 0)));
+    return [ls, Math.max(ls + LOOP.MIN - 1, Math.min(n - 1, Math.round(z.le ?? n - 1)))];
+  },
+  snap(s, i) {                                        /* the nearest rising zero crossing to i, within SNAP samples, else i */
+    for (let d = 0; d <= LOOP.SNAP; d++)
+      for (const j of d ? [i - d, i + d] : [i])
+        if (j >= 1 && j < s.length && s[j - 1] < 0 && s[j] >= 0) return j;
+    return i;
+  },
+  snapRange(s, ls, le) {                              /* both points on crossings: the jump back lands where the wave goes */
+    const n = s.length, a = Math.max(0, Math.min(n - LOOP.MIN - 1, LOOP.snap(s, ls)));
+    let b = LOOP.snap(s, le + 1) - 1;
+    if (b < a + LOOP.MIN - 1 || b > n - 1) b = Math.max(a + LOOP.MIN - 1, Math.min(n - 1, le));
+    return [a, b];
+  },
+  preview(z) {                                        /* what a held key plays: the start, the loop twice more, the tail */
+    if (!z.loop) return z.s;
+    const [a, b] = LOOP.range(z), seg = z.s.slice(a, b + 1);
+    const out = new Int16Array((b + 1) + 2 * seg.length + (z.loop === 2 ? z.s.length - b - 1 : 0));
+    out.set(z.s.slice(0, b + 1), 0);
+    out.set(seg, b + 1);
+    out.set(seg, b + 1 + seg.length);
+    if (z.loop === 2) out.set(z.s.slice(b + 1), b + 1 + 2 * seg.length);
+    return out;
+  },
+};
+
 function buildSlot(name, zonesIn) {
   const zones = [], parts = [];
   let len = 0;
   for (const z of zonesIn) {
-    const e = imaEncode(z.s, 0);
-    zones.push({ off: len, n: z.s.length, ls: 0, le: z.s.length - 1, root: z.root, lo: z.lo ?? null, hi: z.hi ?? null, pred: e.pred, idx: e.idx });
+    const [ls, le] = z.loop ? LOOP.range(z) : [0, z.s.length - 1];
+    const e = imaEncode(z.s, ls);                    /* (the decoder's state at the loop start) */
+    zones.push({ off: len, n: z.s.length, ls, le, looped: z.loop ? 2 : 0, root: z.root, lo: z.lo ?? null, hi: z.hi ?? null,
+      pred: e.pred, idx: e.idx });
     parts.push(e.data);
     len += e.data.length;
   }
@@ -1475,7 +1540,7 @@ function buildSlot(name, zonesIn) {
     [z.off, z.n, z.ls, z.le, rate].forEach((x, k) => v.setUint32(b + k * 4, x >>> 0, true));
     v.setInt16(b + 20, z.root * 16, true);
     v.setInt16(b + 22, z.pred, true);
-    hdr[b + 24] = z.idx; hdr[b + 25] = z.lo; hdr[b + 26] = z.hi; hdr[b + 27] = 0;
+    hdr[b + 24] = z.idx; hdr[b + 25] = z.lo; hdr[b + 26] = z.hi; hdr[b + 27] = z.looped || 0;
   });
   return { hdr, data, zones };
 }
@@ -3818,6 +3883,22 @@ const DSYN = {
 const DSYN_MOCK_NAMES = ["808", "909", "606", "80S", "VINTAGE", "TRAP", "DRILL", "BOOMBAP", "LO-FI", "PHONK", "HOUSE", "D.HOUSE", "TECHNO", "MINIMAL", "ELECTRO", "DISCO", "GARAGE", "JUNGLE", "DUBSTEP", "DEMBOW", "AMAPIANO", "AFRO", "LATIN", "TRIBAL", "SYNTHWV", "CHIP", "ARCADE", "GLITCH", "INDUSTR", "HYPER", "AMBIENT", "JAZZ"];
 const DSYN_MOCK_KITS = "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";
 
+/* (Clipper 0.7, after SLOOP 2.7) the FM-1's MIDI ports. Every FM-1 firmware has the same USB IDs, so Windows and macOS
+ * often keep the port name of the first firmware they saw ("X0X FM-1", "USB-MIDI"...): the names the installer accepts
+ * (fm1ota.js FM1_PORT, the same list), as in/out pairs of one name, "Clipper" / "Felucca" first, then FM-1, then the
+ * generic names. connect() keeps the first pair that answers INFO, so a generic name of other gear is tried and left */
+const FM1_PORT = /fm-1|felucca|sloop|clipper|ota|composite|sinco|usb-midi/i;
+function fm1Ports(access) {
+  const live = (p) => p.state !== "disconnected" && FM1_PORT.test(p.name || "");
+  const ins = [...access.inputs.values()].filter(live), outs = [...access.outputs.values()].filter(live);
+  const rank = (n) => (/clipper|felucca|sloop/i.test(n) ? 0 : /fm-1/i.test(n) ? 1 : 2);
+  const pairs = [];
+  for (const input of ins) {
+    const output = outs.find((o) => o.name === input.name) || (outs.length === 1 ? outs[0] : null);
+    if (output) pairs.push({ input, output });
+  }
+  return pairs.sort((a, b) => rank(a.input.name || "") - rank(b.input.name || ""));
+}
 /* (after SLOOP 2.6) the editor's SET per control: the last value asked for, and when the user last moved it. A value is
    skipped only while the request carrying it is still queued or in flight; once answered the same value is sent again
    (it was skipped for good: a value set on one track, then the same on another, or set again after a knob moved it on
@@ -3918,6 +3999,12 @@ const TEXT = {
   ja: {
     other: "English", connect: "接続", disconnect: "切断", mock: "モック（実機なし）",
     sound: "音色", engine: "エンジン", presets: "プリセット", initSound: "音色を初期化",
+    stTitle: "音色ツール", stUndo: "元に戻す", stRedo: "やり直す", stCompare: "比較（読み込み時）", stSetA: "A に記憶", stSetB: "B に記憶",
+    stAB: "A / B 切替", stScope: "ランダム範囲", stAmt: "量", stRandom: "ランダム", stDiff: "読み込み時からの変更",
+    stEdited: "編集済み", stSteps: "ステップ", stNoDiff: "変更なし", stScopes: ["エンジン", "エンベロープ", "モジュレーション", "エフェクト", "すべて"],
+    stCmpOn: "比較中: 読み込み時の音色", stCmpOff: "編集した音色に戻しました",
+    smpLoop: "ループ", smpLoopHelp: "ONE SHOT: 最後まで 1 回。LOOP: 鍵盤を押している間ファイル全体をくり返す。LOOP+TAIL: 頭のあと、押している間ループ部分をくり返し、離すと残り（テール）を最後まで鳴らす。",
+    smpLoopStart: "ループ開始", smpLoopEnd: "ループ終了", smpLoopTail: "押している間ループ、離すとテール。点はゼロクロスに合わせます。",
     track: "トラック", drum: "ドラム",
     saveFile: "ファイルに保存", loadFile: "ファイルを読み込む", projects: "プロジェクト",
     load: "読込", save: "保存", used: "使用中", empty: "空", unknown: "—",
@@ -4130,6 +4217,12 @@ const TEXT = {
   en: {
     other: "日本語", connect: "Connect", disconnect: "Disconnect", mock: "Mock device (no hardware)",
     sound: "Sound", engine: "Engine", presets: "Presets", initSound: "Init sound",
+    stTitle: "Sound tools", stUndo: "Undo", stRedo: "Redo", stCompare: "Compare with loaded", stSetA: "Store A", stSetB: "Store B",
+    stAB: "Toggle A / B", stScope: "randomize", stAmt: "amount", stRandom: "Randomize", stDiff: "Changed since loaded",
+    stEdited: "edited", stSteps: "steps", stNoDiff: "nothing changed", stScopes: ["Engine", "Envelopes", "Modulation", "Effects", "All"],
+    stCmpOn: "Comparing: the sound as loaded", stCmpOff: "Back to your edits",
+    smpLoop: "Loop", smpLoopHelp: "ONE SHOT: plays once to the end. LOOP: the whole file again and again while the key is held; let go, it ends its round. LOOP+TAIL: the start, then the loop again and again while held; let go, the rest (the tail) to the end.",
+    smpLoopStart: "Loop start", smpLoopEnd: "Loop end", smpLoopTail: "Loops while the key is held, the tail when you let go. The points snap to a zero crossing (no click).",
     track: "Track", drum: "Drums",
     saveFile: "Save to file", loadFile: "Load file", projects: "Projects",
     load: "Load", save: "Save", used: "used", empty: "empty", unknown: "—",
@@ -4517,19 +4610,29 @@ async function connect() {
       }
       access.onstatechange = onState;
     }
-    const isF = (p) => /clipper|felucca/i.test(p.name || "") && p.state !== "disconnected";
-    const input = [...access.inputs.values()].find(isF);
-    const output = [...access.outputs.values()].find(isF);
-    if (!input || !output) { sayK("nodevice"); return; }
-    const link = new Link((d) => output.send(d), {
-      timeout: 300,
-      onUnknown: (f) => console.debug("ignored reply", f),
-      onTimeout: () => sayK("noreply"),
-      onPush: (f) => onPush(f),
-      onGap: () => { rewatch = true; },
-    });
-    input.onmidimessage = (e) => link.receive(e.data);
-    if (input.open) await input.open().catch(() => {});
+    const pairs = fm1Ports(access);
+    if (!pairs.length) { sayK("nodevice"); return; }
+    let link = null, input = null, output = null;
+    for (const pr of pairs) {                        /* the first pair that answers (a generic name may be other gear) */
+      const l = new Link((d) => pr.output.send(d), {
+        timeout: 300,
+        onUnknown: (f) => console.debug("ignored reply", f),
+        onTimeout: () => sayK("noreply"),
+        onPush: (f) => onPush(f),
+        onGap: () => { rewatch = true; },
+      });
+      pr.input.onmidimessage = (e) => l.receive(e.data);
+      if (pr.input.open) await pr.input.open().catch(() => {});
+      try {
+        await l.request(req.info(), { timeout: 500, retries: 3, quiet: true });   /* (the first frame can be lost) */
+        link = l, input = pr.input, output = pr.output;
+        break;
+      } catch (e) {
+        l.close();
+        pr.input.onmidimessage = null;
+      }
+    }
+    if (!link) { sayK("noreply"); return; }
     sets.clear();                                    /* (another FM-1, maybe) */
     dev = { link, input, output, info: null, pdesc: [], gdesc: [], names: [], dump: null, steps: [], slotUsed: [null, null, null, null],
       keys: null, watch: false, bank: null };
@@ -4549,6 +4652,8 @@ async function connect() {
 }
 
 function disconnect(reasonKey = "disconnected") {
+  ST.hist.length = ST.fut.length = 0;                /* (0.7: another FM-1 next: its own history) */
+  ST.orig = ST.a = ST.b = ST.cmp = null;
   if (dev) {
     dev.link.close();
     dev.input.onmidimessage = null;
@@ -4569,7 +4674,7 @@ function disconnect(reasonKey = "disconnected") {
 
 function onState(e) {
   const p = e.port;
-  if (!p || !/clipper|felucca/i.test(p.name || "")) return;
+  if (!p || !FM1_PORT.test(p.name || "")) return;
   if (dev && p.state === "disconnected" && (p.id === dev.input.id || p.id === dev.output.id)) {
     disconnect("lost");
   } else if (!dev && wantConnected && p.state === "connected" && p.type === "output") {
@@ -4641,6 +4746,7 @@ async function load(d) {
     renderLib();
     renderBank();
     renderSysinfo();
+    stLoaded();                                     /* (0.7: the sound as it is now: COMPARE's, the diff's) */
     sayK("ready");
   } finally { busy--; }
 }
@@ -4912,6 +5018,7 @@ window.addEventListener("pointercancel", () => { dragging = null; });
 function userSet(s, id, v, final) {
   if (!dev) return;
   const k = key(s, id);
+  if (!s) stBefore(k);                               /* (0.7: the sound's history, the step before this change) */
   (s ? dev.dump.g : dev.dump.p)[id] = v;
   showValue(k, v, false);
   mixFromDump();
@@ -4943,6 +5050,7 @@ $("engine").addEventListener("change", () => choosePreset(+$("engine").value, 0)
 $("preset").addEventListener("change", () => { if (dev) choosePreset(dev.dump.engine, +$("preset").value); });
 async function choosePreset(e, p) {
   if (!dev) return;
+  stBeforeLoad();                                    /* (0.7: the edits a step of their own) */
   busy++;
   try {
     selfLoad();
@@ -4963,6 +5071,7 @@ async function afterSoundChange(msg = "ready") {
   await fm6Follow();                                /* FM6: the track's patch (a PTCH value may have loaded one) */
   await hyFollow();                                 /* Clipper: the HYBRID patch, the same */
   await fxFollow();                                 /* Clipper 0.6: the FMX patch, the same */
+  stLoaded();                                       /* (0.7: the sound as loaded: COMPARE's, the diff's) */
   sayK(msg);
 }
 $("init").addEventListener("click", async () => {
@@ -4972,9 +5081,192 @@ $("init").addEventListener("click", async () => {
   catch (err) { report(err); } finally { busy--; }
 });
 
+/* ---- Clipper 0.7: sound tools. What synth users ask an editor for most (after a librarian): undo, compare with the
+   sound as loaded, A / B, a randomizer by section, what changed. A step: the sound's values before a change, once the
+   last change rests (900 ms) or another control moves; a sound loaded: a step. The device keeps its own history too
+   (the UNDO page): these SETs reach it as edits. */
+const ST = { hist: [], fut: [], orig: null, a: null, b: null, ab: 0, cmp: null, last: 0, lastK: null, busy: false };
+const ST_REST = 900, ST_MAX = 50;
+/* the sound's values (scope 0): the LAYOUT's pages but the pattern, the key (SEL), LEVEL, PAN, MUTE */
+function stGroups() {
+  const out = { engine: [], env: [], mod: [], fx: [], other: [] };
+  if (!dev || !dev.info) return out;
+  const info = dev.info;
+  if (!layoutKnown(info)) { for (let i = info.pe0; i < info.pe0 + 8; i++) out.engine.push(i); return out; }
+  const skip = new Set([pPan(), pMute(), 0]);
+  for (const g of LAYOUT(info.pe0)) {
+    if (g.tab || g.t === "SEL") continue;
+    const dst = g.engine ? out.engine : g.t === "ENV" ? out.env : g.t === "LFO" ? out.mod : g.t === "FX" ? out.fx : out.other;
+    for (const [, sc, ids] of g.pages) if (!sc) for (const id of ids)
+      if (!skip.has(id) && visible(dev.pdesc[id]) && !(g.t === "ENV" && dev.pdesc[id].label === "FX")) dst.push(id);   /* (ENV > FX: the
+                                                       sound's level trim, the device's: not a sound value to move) */
+  }
+  return out;
+}
+const stIds = () => { const g = stGroups(); return [...g.engine, ...g.env, ...g.mod, ...g.fx, ...g.other]; };
+const stSnap = () => ({ e: dev.dump.engine, preset: dev.dump.preset, p: dev.dump.p.slice() });
+const stSame = (a, b) => a.e === b.e && stIds().every((i) => a.p[i] === b.p[i]);
+function stPush(snap) {
+  if (ST.hist.length && stSame(ST.hist[ST.hist.length - 1], snap)) return;
+  ST.hist.push(snap);
+  if (ST.hist.length > ST_MAX) ST.hist.shift();
+  ST.fut.length = 0;
+}
+function stBefore(k) {                                /* a user change of control k: maybe a new step first */
+  if (!dev || ST.busy || !stIds().includes(+k.split(":")[1])) return;
+  const now = performance.now();
+  if (now - ST.last > ST_REST || ST.lastK !== k) stPush(stSnap());
+  ST.last = now;
+  ST.lastK = k;
+  if (ST.cmp) { ST.cmp = null; $("stcmp").setAttribute("aria-pressed", "false"); }   /* (an edit while comparing: ends it) */
+  stLater();
+}
+function stBeforeLoad() { if (dev && dev.dump && !ST.busy) { stPush(stSnap()); ST.lastK = null; } }
+function stLoaded() { if (!ST.busy) { ST.orig = stSnap(); ST.cmp = null; $("stcmp").setAttribute("aria-pressed", "false"); } stRender(); }
+async function stApply(snap) {                        /* a snapshot's sound to the device (its engine first) */
+  if (!dev || !snap) return;
+  ST.busy = true;
+  try {
+    if (snap.e !== dev.dump.engine) {
+      busy++;
+      try { selfLoad(); parse[CMD.PRESET](await rq(req.preset(snap.e, snap.preset))); await afterSoundChange(); } finally { busy--; }
+    }
+    for (const id of stIds()) if (dev.dump.p[id] !== snap.p[id]) userSet(0, id, snap.p[id], true);
+  } finally { ST.busy = false; ST.last = 0; ST.lastK = null; }
+  stRender();
+}
+async function stUndo() {
+  if (!dev || !ST.hist.length) return;
+  const cur = stSnap(), prev = ST.hist.pop();
+  ST.fut.push(cur);
+  await stApply(prev);
+}
+async function stRedo() {
+  if (!dev || !ST.fut.length) return;
+  const cur = stSnap(), next = ST.fut.pop();
+  ST.hist.push(cur);
+  await stApply(next);
+}
+async function stCompare() {
+  if (!dev || !ST.orig) return;
+  if (!ST.cmp) {
+    ST.cmp = stSnap();
+    await stApply(ST.orig);
+    ST.cmp = ST.cmp || null;
+    $("stcmp").setAttribute("aria-pressed", "true");
+    sayK("stCmpOn");
+  } else {
+    const back = ST.cmp;
+    ST.cmp = null;
+    $("stcmp").setAttribute("aria-pressed", "false");
+    await stApply(back);
+    sayK("stCmpOff");
+  }
+}
+/* the randomizer: AMT how far from the sound now; the switches change with a chance of AMT; kept musical (no endless
+   attack, no pitch siren) as the device's RANDOM page */
+const ST_RANGE = { ATK: [0, 90], REL: [0, 105], DIST: [0, 70] };
+function stRandomValues(scope, amt, rnd = Math.random) {
+  const g = stGroups(), ids = scope === 4 ? stIds() : [g.engine, g.env, g.mod, g.fx][scope] || [];
+  const p = dev.dump.p.slice();
+  for (const id of ids) {
+    const d = dev.pdesc[id];
+    if (!visible(d)) continue;
+    let [lo, hi] = ST_RANGE[d.label] || [d.min, d.max];
+    if (/PIT/.test(d.label) && id < dev.info.pe0) [lo, hi] = [Math.max(d.min, -8), Math.min(d.max, 8)];
+    if (d.fmt === F.ENUM && d.names) while (hi > lo && /^USR/.test(d.names[hi - d.min] || "")) hi--;
+    lo = Math.max(lo, d.min); hi = Math.min(hi, d.max);
+    if (hi <= lo) continue;
+    const u = lo + Math.floor(rnd() * (hi - lo + 1));
+    if (d.fmt === F.ENUM || d.fmt === F.ONOFF || d.fmt === F.NOTE) { if (rnd() * 127 < amt) p[id] = u; }
+    else p[id] = Math.max(d.min, Math.min(d.max, Math.round(p[id] + ((u - p[id]) * amt) / 127)));
+  }
+  return p;
+}
+async function stRandom() {
+  if (!dev) return;
+  stPush(stSnap());
+  const p = stRandomValues(+$("stscope").value, +$("stamt").value);
+  await stApply({ e: dev.dump.engine, preset: dev.dump.preset, p });
+}
+function stDiffRows(a, b) {                          /* the values that differ between two snapshots: [label, a, b] */
+  const rows = [];
+  if (!a || !b || a.e !== b.e) return rows;
+  for (const id of stIds()) if (a.p[id] !== b.p[id]) {
+    const d = dev.pdesc[id];
+    const f = (v) => { const [x, u] = fmtValue(d, v); return `${x}${u ? " " + u : ""}`; };
+    rows.push([d.label + (id >= dev.info.pe0 ? ` (E${id - dev.info.pe0 + 1})` : ""), f(a.p[id]), f(b.p[id])]);
+  }
+  return rows;
+}
+let stTimer = 0;
+function stLater() { clearTimeout(stTimer); stTimer = setTimeout(stRender, 120); }
+function stRender() {
+  if (!$("sndtools")) return;
+  const on = !!dev && !!dev.dump && !isDrum();
+  $("sndtools").hidden = !on;
+  if (!on) return;
+  $("stundo").disabled = !ST.hist.length;
+  $("stredo").disabled = !ST.fut.length;
+  $("stab").disabled = !(ST.a && ST.b);
+  $("sthist").textContent = `${ST.hist.length} / ${ST.fut.length} ${t("stSteps")}`;
+  const sc = $("stscope");
+  if (sc.options.length !== 5) sc.replaceChildren(...t("stScopes").map((n, i) => el("option", { value: i, text: n })));
+  const rows = stDiffRows(ST.orig, stSnap());
+  $("stedited").textContent = rows.length && !ST.cmp ? `● ${t("stEdited")} (${rows.length})` : "";
+  $("stdiff").replaceChildren(rows.length ? el("table", {}, ...rows.map((r) => el("tr", {}, el("td", { text: r[0] }),
+    el("td", { text: r[1] }), el("td", { text: "→" }), el("td", { text: r[2] })))) : el("span", { text: t("stNoDiff") }));
+  envDraw();
+}
+$("stundo").addEventListener("click", stUndo);
+$("stredo").addEventListener("click", stRedo);
+$("stcmp").addEventListener("click", stCompare);
+$("stseta").addEventListener("click", () => { if (dev) { ST.a = stSnap(); stRender(); } });
+$("stsetb").addEventListener("click", () => { if (dev) { ST.b = stSnap(); stRender(); } });
+$("stab").addEventListener("click", async () => {
+  if (!ST.a || !ST.b) return;
+  stPush(stSnap());
+  ST.ab ^= 1;
+  $("stab").classList.toggle("on", !!ST.ab);
+  await stApply(ST.ab ? ST.b : ST.a);
+});
+$("strand").addEventListener("click", stRandom);
+$("stamt").addEventListener("input", () => { $("stamtv").textContent = $("stamt").value; });
+window.addEventListener("keydown", (e) => {
+  if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "z" || !dev) return;
+  const a = document.activeElement;
+  if (a && (a.tagName === "INPUT" && a.type === "text" || a.tagName === "TEXTAREA")) return;
+  e.preventDefault();
+  if (e.shiftKey) stRedo(); else stUndo();
+});
+/* the envelope as a picture (ENV: ATK DEC SUS REL; Clipper's ENV 2 dashed), under the ENV card's first page */
+function envShape(a, d, s, r) {                       /* 0..127 each: the path's points in a 300 x 64 box */
+  const w = (v) => 6 + (v / 127) ** 1.6 * 84, top = 6, bot = 62;
+  const x1 = w(a), x2 = x1 + w(d), x3 = x2 + 60, x4 = x3 + w(r), ys = bot - (s / 127) * (bot - top);
+  return `M0,${bot} L${x1.toFixed(1)},${top} Q${(x1 + 6).toFixed(1)},${ys.toFixed(1)} ${x2.toFixed(1)},${ys.toFixed(1)} ` +
+         `L${x3.toFixed(1)},${ys.toFixed(1)} Q${(x3 + 6).toFixed(1)},${bot} ${x4.toFixed(1)},${bot}`;
+}
+function envDraw() {
+  if (!dev || !dev.dump || !layoutKnown(dev.info)) return;
+  const g = [...$("groups").children].find((x) => x.querySelector("h2") && /ENV/.test(x.querySelector("h2").textContent));
+  if (!g) return;
+  let svg = g.querySelector("svg.envsvg");
+  if (!svg) {
+    svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "envsvg");
+    svg.setAttribute("viewBox", "0 0 400 64");
+    svg.setAttribute("preserveAspectRatio", "none");
+    g.querySelector("h2").after(svg);
+  }
+  const p = dev.dump.p, has2 = dev.info.pe0 >= 78;
+  const path = (ids, col, dash) => `<path d="${envShape(p[ids[0]], p[ids[1]], p[ids[2]], p[ids[3]])}" stroke="${col}"${dash ? ' stroke-dasharray="4 4"' : ""}/>`;
+  svg.innerHTML = (has2 ? path([56, 57, 58, 59], "var(--t2)", true) : "") + path([1, 2, 3, 4], "var(--t1)", false);
+}
+
 function refreshAll() {
   for (const [k, c] of ctl) showValue(k, c.scope ? dev.dump.g[c.id] : dev.dump.p[c.id], false);
   renderSteps();
+  stLater();
 }
 function report(err) { if (err && err.message !== "closed") { console.warn(err); sayK("error", err.message); } }
 
@@ -5954,10 +6246,11 @@ const draftBytes = (d) => d.files.reduce((a, f) => a + ((f.s.length + 1) >> 1), 
 
 async function decodeFile(f) {
   const buf = await f.arrayBuffer();
-  let x;
+  let x, wl = null;
   try {
     const w = parseWav(buf);
     x = resample(w.x, w.sr, SMP.RATE);
+    if (w.loop) wl = w.loop.map((p) => Math.round(p * SMP.RATE / w.sr));   /* (0.7) the file's own loop: LOOP+TAIL */
   } catch (e) {                                     /* not a plain WAV: let the browser decode it */
     const Ctx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
     const ab = await new Ctx(1, 1, SMP.RATE).decodeAudioData(buf.slice(0));
@@ -5965,7 +6258,10 @@ async function decodeFile(f) {
     for (let c = 0; c < ab.numberOfChannels; c++) { const d = ab.getChannelData(c); for (let i = 0; i < d.length; i++) x[i] += d[i] / ab.numberOfChannels; }
   }
   if (!x.length) throw new Error("no audio");
-  return { fname: f.name, s: normalize(x), root: rootFromName(f.name.replace(/\.[^.]*$/, "")) };
+  const z = { fname: f.name, s: normalize(x), root: rootFromName(f.name.replace(/\.[^.]*$/, "")) };
+  if (wl && wl[1] > wl[0] && wl[1] - wl[0] + 1 >= LOOP.MIN && z.s.length >= 4 * LOOP.MIN)
+    [z.loop, z.ls, z.le] = [2, ...LOOP.range({ s: z.s, loop: 2, ls: wl[0], le: wl[1] })];
+  return z;
 }
 
 
@@ -6129,8 +6425,8 @@ function renderSamples() {
   u.meterTxt.textContent = (bytes > SMP.MAX_DATA ? t("smpTooBig") + " · " : "") +
     t("kitUsed").replace("{s}", (d.files.reduce((a, f) => a + f.s.length, 0) / SMP.RATE).toFixed(1)).replace("{t}", (SMP.MAX_DATA * 2 / SMP.RATE).toFixed(1));
   u.keymap.hidden = u.list.hidden = !d.files.length;
-  u.list.replaceChildren(...(d.files.length ? [el("div", { class: "frow fhead" }, el("span"), el("span", { text: t("file") }), el("span", { text: t("smpNote") }),
-    el("span", { text: t("keys") }), el("span", { text: t("length") }), el("span"))] : []),
+  u.list.replaceChildren(...(d.files.length ? [el("div", { class: "frow smpf fhead" }, el("span"), el("span", { text: t("file") }), el("span", { text: t("smpNote") }),
+    el("span", { text: t("keys") }), el("span", { text: t("length") }), el("span", { text: t("smpLoop") }), el("span"))] : []),
     ...d.files.map((f, i) => {
       const root = el("input", { type: "text", class: "root", value: noteName(f.root), spellcheck: "false", title: t("smpNoteHelp") });
       root.addEventListener("change", () => {
@@ -6139,12 +6435,52 @@ function renderSamples() {
         f.root = nn;
         renderSamples();
       });
-      return el("div", { class: "frow", style: `--c:${TCOL[i % 4]}` },
-        el("button", { type: "button", title: t("kitPlay"), onclick: () => playInt16(f.s) }, "▶"),
+      const lsel = el("select", { title: t("smpLoopHelp"), "aria-label": t("smpLoop") },
+        ...LOOP.NAMES.map((nm, k) => el("option", { value: String(k), text: nm, disabled: k === 2 && f.s.length < 4 * LOOP.MIN })));
+      lsel.value = String(f.loop || 0);
+      lsel.addEventListener("change", () => {
+        f.loop = +lsel.value;
+        if (f.loop === 2 && f.ls == null) [f.ls, f.le] = LOOP.snapRange(f.s, Math.round(f.s.length / 4), Math.round(f.s.length * 3 / 4));
+        renderSamples();
+      });
+      const row = el("div", { class: "frow smpf", style: `--c:${TCOL[i % 4]}` },
+        el("button", { type: "button", title: t("kitPlay"), onclick: () => playInt16(LOOP.preview(f)) }, "▶"),
         el("span", { class: "fn", text: f.fname, title: f.fname }), root,
         el("span", { text: `${noteName(keys[i][0])}–${noteName(keys[i][1])}` }),
-        el("span", { class: "dim", text: `${(f.s.length / SMP.RATE).toFixed(2)} s` }),
+        el("span", { class: "dim", text: `${(f.s.length / SMP.RATE).toFixed(2)} s` }), lsel,
         el("button", { type: "button", class: "warn", title: t("remove"), disabled: smpBusy, onclick: () => { d.files.splice(i, 1); renderSamples(); } }, "×"));
+      if (f.loop !== 2) return row;
+      /* LOOP+TAIL: where the loop starts and ends (snapped to a zero crossing when let go), on the file's wave */
+      const n = f.s.length, ms = (x) => `${(x / SMP.RATE * 1000).toFixed(0)} ms`;
+      const cv = el("canvas", { class: "loopwave", width: 480, height: 48 });
+      const draw = () => {
+        const g = cv.getContext("2d"), [a, b] = LOOP.range(f), w = cv.width, h = cv.height, cs = getComputedStyle(cv);
+        g.clearRect(0, 0, w, h);
+        g.fillStyle = cs.getPropertyValue("--s2") || "#222";
+        g.fillRect((a / n) * w, 0, Math.max(1, ((b - a) / n) * w), h);
+        g.strokeStyle = TCOL[i % 4];
+        g.beginPath();
+        for (let x = 0; x < w; x++) {
+          let pk = 0;
+          for (let j = Math.floor((x / w) * n); j < Math.floor(((x + 1) / w) * n); j++) pk = Math.max(pk, Math.abs(f.s[j]));
+          g.moveTo(x + 0.5, h / 2 - (pk / 32768) * (h / 2)); g.lineTo(x + 0.5, h / 2 + (pk / 32768) * (h / 2));
+        }
+        g.stroke();
+      };
+      const mk = (key, idx) => {
+        const r = el("input", { type: "range", min: 0, max: n - 1, step: 1, value: String(LOOP.range(f)[idx]), "aria-label": t(key) });
+        const v = el("span", { class: "dim", text: ms(LOOP.range(f)[idx]) });
+        r.addEventListener("input", () => {
+          if (idx) f.le = Math.max(+r.value, (f.ls ?? 0) + LOOP.MIN - 1); else f.ls = Math.min(+r.value, (f.le ?? n - 1) - LOOP.MIN + 1);
+          v.textContent = ms(LOOP.range(f)[idx]);
+          draw();
+        });
+        r.addEventListener("change", () => { [f.ls, f.le] = LOOP.snapRange(f.s, ...LOOP.range(f)); renderSamples(); });
+        return el("label", { class: "bar" }, el("span", { text: t(key) }), r, v);
+      };
+      requestAnimationFrame(draw);
+      return el("div", {}, row, el("div", { class: "floop" }, cv, mk("smpLoopStart", 0), mk("smpLoopEnd", 1),
+        el("span", { class: "dim", text: t("smpLoopTail") })));
     }));
   if (d.files.length) requestAnimationFrame(() => drawKeymap(u.keymap, d.files, keys));
   /* 3 */
