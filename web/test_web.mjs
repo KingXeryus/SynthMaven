@@ -1285,6 +1285,73 @@ function editorTabs() {
   }
 }
 
+/* ------------------------------- editor: Clipper's pages == the device's (params.c PAGES, CLIPPER_SYNTH) --- */
+function editorClipperPages() {
+  const lay = html.slice(html.indexOf("const EXPECT = {"), html.indexOf("/* globals that are actions"));
+  const syn = html.slice(html.indexOf("const INS_BITS"), html.indexOf("/* the INSERT's TYPE or the arp's MODE changed"));
+  const X = vm.runInNewContext(lay + syn + ";({ LAYOUT, layoutKnown, synDesc, INS_DESC, INS_RATE, INS_NTYPE, AM_TURING })", { F: E.F, dev: null });
+  const ch = readFileSync(join(HERE, "../firmware/src/core.h"), "utf8"), pc = readFileSync(join(HERE, "../firmware/src/params.c"), "utf8");
+  /* the synth build's ids (core.h, CLIPPER_SYNTH 1) and its aliases */
+  const P = {}; let k = 0;
+  for (const nm of (/enum \{\s*\/\* per-track parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/#(if|endif)[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) P[nm] = k++;
+  const G = {}; k = 0;
+  for (const nm of (/enum \{\s*\/\* global parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) G[nm] = k++;
+  for (const [, a, b] of ch.matchAll(/#define ([PG]_\w+) ([PG]_\w+)/g)) (a[0] === "P" ? P : G)[a] = (b[0] === "P" ? P : G)[b];
+  /* PAGES as the synth build has it: #if CLIPPER_SYNTH kept, its #else and #if !CLIPPER_SYNTH dropped */
+  const src = pc.slice(pc.indexOf("static const page_t PAGES[]"), pc.indexOf("#define NPAGES"));
+  let keep = [true]; const lines = [];
+  for (const l of src.split("\n")) {
+    if (/^#if !CLIPPER_SYNTH/.test(l)) keep.push(false);
+    else if (/^#if CLIPPER_SYNTH/.test(l)) keep.push(true);
+    else if (/^#else/.test(l)) keep[keep.length - 1] = !keep[keep.length - 1];
+    else if (/^#endif/.test(l)) keep.pop();
+    else if (keep.every(Boolean)) lines.push(l);
+  }
+  const pages = [...lines.join("\n").matchAll(/\{"([^"]+)", [\w ?:]+, (SC_TRACK|SC_GLOBAL), GR_\w+, \{([^}]*)\}\}/g)]
+    .map(([, t, sc, ids]) => [t, sc, ids.split(",").map((x) => x.trim()).filter((x) => x !== "0xFF").map((x) => (sc === "SC_TRACK" ? P : G)[x])]);
+  const L = X.LAYOUT(P.P_E0), on = (s) => new Set(L.flatMap((g) => g.pages.filter((x) => x[1] === s).flatMap((x) => x[2])));
+  const p0 = on(0), g1 = on(1), all0 = L.flatMap((g) => g.pages.filter((x) => !x[1]).flatMap((x) => x[2]));
+  const devP = new Set(pages.filter((x) => x[1] === "SC_TRACK").flatMap((x) => x[2]));
+  const devG = pages.filter((x) => x[1] === "SC_GLOBAL").flatMap((x) => x[2]).filter((id) => ![G.G_INFO, G.G_SLOT, G.G_LOAD, G.G_SAVE, G.G_CLRSEQ, G.G_INITSND, G.G_NEWPRJ].includes(id));
+  const missP = [...devP].filter((id) => !p0.has(id)), missG = devG.filter((id) => !g1.has(id));
+  const notOn = Array.from({ length: P.P_COUNT }, (_, i) => i).filter((i) => !p0.has(i));
+  ok(pages.length > 20 && P.P_E0 === 91 && P.P_COUNT === 99 && X.layoutKnown({ pcount: 99, pe0: 91, gcount: G.G_COUNT })
+    && !missP.length && !missG.length && js(notOn) === js([P.P_MUTE]) && all0.length === new Set(all0).size,
+    `editor: Clipper 0.9's pages hold every value of the device's (params.c PAGES; not on one: MUTE${missP.length || missG.length ? `; missing P ${missP} G ${missG}` : ""}${notOn.length !== 1 ? `; off the pages ${notOn}` : ""})`);
+  const title = (id, s) => (L.flatMap((g) => g.pages).find((x) => x[1] === s && x[2].includes(id)) || [])[0];
+  ok(title(P.P_FMODEL, 0) === "FILTER" && title(P.P_VELF, 0) === "MOD" && title(P.P_VINT, 0) === "VOICE 2" && title(P.P_SLOOP, 0) === "SPICE"
+    && title(G.G_RTYPE, 1) === "REVERB" && title(G.G_RPRE, 1) === "REVERB" && title(G.G_EQLOW, 1) === "EQ+COMP" && title(G.G_SYNC, 1) === "SYSTEM"
+    && !L.some((g) => g.pages.some((x) => x[0] === "SLICER" || x[0] === "DRUMS")),
+    "editor: ... grouped as the device (FILTER MODL, LFO > MOD, VOICE 2 VINTG, SPICE LOOP, REVERB TYPE PRE, EQ+COMP, SYSTEM)");
+  /* the labels the device shows and DESC does not (params.c track_desc) */
+  const pcs = (re) => ((re.exec(pc) || [])[1] || "").match(/"[^"]*"/g).map((x) => x.slice(1, -1));
+  const amode = pcs(/N_AMODE\[\] = \{([^}]*)\}/), itype = pcs(/N_ITYPE\[\] = \{([^}]*)\}/), irate = pcs(/N_IRATE\[\] = \{([^}]*)\}/);
+  const insc = [...((/INS_DESC\[4\]\[3\] = \{([\s\S]*?)\n\};/.exec(pc) || [])[1] || "").matchAll(/PU\("([^"]+)"/g)].map((x) => x[1]);
+  ok(amode.indexOf("TURNG") === X.AM_TURING && itype.length === X.INS_NTYPE && itype[9] === "JUNO1" && js(irate) === js(X.INS_RATE)
+    && js(insc) === js(X.INS_DESC.flat().map((x) => x[0])),
+    "editor: TURNG, the INSERT's types, CRUSH's RATE names and the A B C labels as params.c");
+  const info = { pe0: 91 }, pd = [];
+  pd[91] = { label: "CUT" }; pd[92] = { label: "-" }; pd[98] = { label: "PTCH" };
+  const dst = { label: "DST", fmt: E.F.ENUM, min: 0, max: 14, def: 0, names: ["OFF", "PITCH", "CUT", "SHAPE", "AMP", "PAN", "LFO2", "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8"] };
+  const insA = { label: "INS A", fmt: E.F.PCT, min: 0, max: 127, def: 64, names: [] }, spice = { label: "SPICE", fmt: E.F.PCT, min: 0, max: 127, def: 0, names: [] };
+  const p = new Array(99).fill(0);
+  const d1 = X.synDesc(61, dst, info, p, pd);
+  p[78] = 5; const crB = X.synDesc(79, insA, info, p, pd), crR = X.synDesc(80, insA, info, p, pd);
+  p[78] = 10; const ju = X.synDesc(79, insA, info, p, pd);
+  p[78] = 0; const off = X.synDesc(79, insA, info, p, pd);
+  p[17] = 15; const mu = X.synDesc(87, spice, info, p, pd), sd = X.synDesc(88, { ...spice, label: "DICE" }, info, p, pd);
+  p[17] = 14; const ch14 = X.synDesc(87, spice, info, p, pd);
+  ok(d1.names[7] === "CUT" && d1.names[8] === "E2" && d1.names[14] === "PTCH" && dst.names[7] === "E1"
+    && crB.label === "BITS" && E.fmtValue(crB, 0)[0] === "1" && E.fmtValue(crB, 127)[0] === "16" && E.fmtValue(crB, 64)[0] === "9"
+    && crR.label === "RATE" && E.fmtValue(crR, 127).join() === "44k,Hz" && ju.label === "WIDTH" && ju.def === 127 && off === insA
+    && mu.label === "MUTAT" && sd.label === "SEED" && ch14 === spice && X.synDesc(87, spice, { pe0: 53 }, p, pd) === spice,
+    "editor: Clipper's labels: a matrix DST as the engine's values, the INSERT's A B C by TYPE (CRUSH BITS 1..16), TURNG's MUTAT SEED");
+  /* a Clipper 0.8 sound (97 values, P_E0 89) into 0.9 (99, 91): VINTAGE and LOOP left as the device has them */
+  const v8 = Array.from({ length: 97 }, (_, i) => 3000 + i), q = E.patchByCount(v8, 89, 99, 91), r = E.patchByCount(q.map((x) => x ?? 0), 91, 97, 89);
+  ok(q[88] === 3088 && q[89] === null && q[90] === null && q[91] === 3089 && q[98] === 3096 && r[88] === 3088 && r[89] === 3089 && r[96] === 3096,
+    "patchByCount: Clipper 0.8 <-> 0.9: up to DICE by place, the engine's 8 by theirs, VINTAGE and LOOP left out");
+}
+
 /* ------------------------------------------------- editor icons (Fukiai) --- */
 function editorIcons() {
   const blk = html.slice(html.indexOf("const GLYPH = {"), html.indexOf("};", html.indexOf("const GLYPH = {")));
@@ -1587,6 +1654,7 @@ await editor25();
 await editorDsyn();
 await editorCart();
 editorTabs();
+editorClipperPages();
 editorIcons();
 samplesMatch();
 chopTests();

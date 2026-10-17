@@ -181,7 +181,7 @@ if $SYN_UB -o "$OUT/synth9_ub" tests/synth9_test.c -lm 2>/dev/null; then
     run "Clipper 0.9 under ASan + UBSan" sh -c "'$OUT/synth9_ub' >/dev/null && echo clean"
 fi
 $SYN -o "$OUT/clean_test" tests/clean_test.c -lm
-run "Clipper 0.9 audio: no click or crackle (45 cases: presets of every engine, steals, mute, level, pan, INSERT, DIST, the sends, FILT, MODL, CHOR, VINTAGE, delay TIME, reverb SIZE, EQ, WAVE TABL, FMX PTCH, engine switch, TUNING, LAYER, MOD SEQ)" "$OUT/clean_test"
+run "Clipper 0.9 audio: no click or crackle (46 cases: presets of every engine, steals, mute, level, pan, INSERT, DIST, the sends, FILT, MODL, CHOR, VINTAGE, delay TIME, reverb SIZE, EQ, WAVE TABL, FMX PTCH, engine switch, TUNING, LAYER, MOD SEQ)" "$OUT/clean_test"
 if $SYN_UB -o "$OUT/clean_ub" tests/clean_test.c -lm 2>/dev/null; then
     run "Clipper 0.9 audio under ASan + UBSan" sh -c "'$OUT/clean_ub' >/dev/null && echo clean"
 fi

@@ -16,7 +16,8 @@ static int role_of(const char *n)
     if (has(n, "PAD") || has(n, "STR") || has(n, "CHOIR") || has(n, "OOH") || has(n, "ORGAN") || has(n, "ORGN") || has(n, "GOSPEL") ||
         has(n, "B3") || has(n, "CLOUD") || has(n, "HAZE") || has(n, "ATMOS") || has(n, "ENSEMBLE") || has(n, "DRONE") ||
         has(n, "SHIMMER") || has(n, "OCEAN") || has(n, "RISER") || has(n, "WIND") || has(n, "HISS") || has(n, "VINYL") ||
-        has(n, "RAIN") || has(n, "BOWL") || has(n, "BOW") || has(n, "TANPURA"))
+        has(n, "RAIN") || has(n, "BOWL") || has(n, "BOW") || has(n, "TANPURA") || has(n, "HALO") || has(n, "SWELL") ||
+        has(n, "VOWEL") || has(n, "GLASS HARP"))                 /* (0.9: GRAIN's and SAMPLE's slow pads) */
         return R_HELD;
     if ((has(n, "STAB") && !has(n, "HORN") && !has(n, "STRING")) || has(n, "CHORD"))
         return R_ONE;                                  /* TRIO stabs: one key plays the chord */

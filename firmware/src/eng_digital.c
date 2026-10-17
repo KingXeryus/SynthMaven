@@ -16,6 +16,7 @@ static void digital_note_on(track_t *t, voice_t *v)
     v->s[7] = 0;                 /* op 4 phase */
     v->s[4] = 1 << 24;           /* modulator envelope, Q24 */
     v->s[5] = v->s[6] = 0;       /* feedback history */
+    v->s[3] = -1;                /* the index of the block before (-1: none, a new note) */
 }
 
 /* operator increment = carrier * ratio (Q8) without 32-bit overflow; kept below Nyquist */
@@ -34,21 +35,48 @@ static void digital_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, con
     uint32_t i1 = m->inc;
     uint32_t i2 = fm_ratio_inc(m->inc, RATIO_Q8[p[P_E1] % 15]), i3 = fm_ratio_inc(m->inc, RATIO_Q8[p[P_E2] % 15]);
     uint32_t i4 = fm_ratio_inc(m->inc, RATIO_Q8[p[P_E3] % 15]);
-    int32_t me, idx, fb = p[P_E6], fb1, fb2;                 /* fb1, fb2: op 4 feedback history */
+    int32_t me, idx, fb = p[P_E6], fb1, fb2, didx, idq;      /* fb1, fb2: op 4 feedback history */
     uint32_t ph0, ph1, ph2, ph4;
     /* modulator envelope: decays (MODDEC) towards 25 %, per block */
     v->s[4] += mulq16((1 << 22) - v->s[4], ENV_EXP[p[P_E5] & 127]);
     me = v->s[4] >> 9;                                         /* Q15 */
     idx = (p[P_E4] * me) >> 15;                                 /* 0..127 */
     idx = clamp(idx + ((m->cutoff + m->shape - (64 << 8)) >> 8) + (v->vel - 96) / 4, 0, 127);
+    {   /* (Clipper 0.9) anti-aliasing: the index held where the sidebands (Carson: (index + 1) x the modulator)
+         * would pass ~16 kHz, from the fastest operator that modulates in this algorithm; a high note gets a
+         * little less bright instead of folding back as noise */
+        static const uint8_t MODS[8] = {14, 14, 14, 14, 10, 8, 8, 0};   /* bit 1: op 2, 2: op 3, 3: op 4 */
+        uint32_t mk = MODS[alg], im = 0, fm;
+        if (mk & 2u)
+            im = i2;
+        if ((mk & 4u) && i3 > im)
+            im = i3;
+        if ((mk & 8u) && i4 > im)
+            im = i4;
+        fm = ((im >> 16) * 44100u) >> 16;                      /* Hz */
+        if (fm > 0u) {
+            int32_t cap = (int32_t)(161760u / fm) - 10;        /* 16 kHz / fm - 1, in index steps (0.0989 rad) */
+            idx = idx < cap ? idx : (cap > 0 ? cap : 0);
+        }
+    }
+    {   /* (0.9) the index glides through the block from the last one: a new modulator envelope (a retriggered
+         * mono bass) or a fast decay no longer steps the waveform at the block's edge */
+        int32_t i0 = v->s[3] < 0 ? idx : v->s[3];
+        v->s[3] = idx;
+        idx = i0;
+        didx = ((v->s[3] - i0) * 2048) / (int32_t)(n ? n : 1u);   /* Q11 per sample */
+    }
     ph0 = v->ph[0];                                             /* state in locals: out[] may alias v->s[] */
     ph1 = v->ph[1];
     ph2 = v->ph[2];
     ph4 = (uint32_t)v->s[7];
     fb1 = v->s[5];
     fb2 = v->s[6];
+    idq = idx << 11;
     for (i = 0; i < n; i++) {
         int32_t o1, o2, o3, o4, s;
+        idx = idq >> 11;
+        idq += didx;
         o4 = sine_i((ph4 + digital_mod((fb1 + fb2) >> 1, fb)));
         fb2 = fb1;
         fb1 = o4;
@@ -117,7 +145,7 @@ static const preset_t DIGITAL_PRESETS[] = {
     {"RHODES", {4, 1, 1, 14, 26, 35, 0, 0}, {0, 85, 35, 55}, 0, 0, FX(0, 30, 12, 26), XP(P_LD_AMP + 1, 26, P_LRATE + 1, 84)},
     {"DX RHODES", {4, 1, 1, 14, 85, 45, 0, 0}, {0, 82, 40, 55}, 0, 0, FX(0, 45, 20, 30)},
     {"WURLI", {4, 1, 2, 3, 62, 35, 8, 0}, {0, 75, 30, 45}, 0, 0, FX(10, 20, 10, 20), XP(P_LD_AMP + 1, 16, P_LRATE + 1, 89)},
-    {"CLAV", {3, 1, 3, 5, 90, 25, 20, 0}, {0, 58, 34, 18}, 0, 0, FX(10, 10, 6, 10)},
+    {"CLAV", {3, 1, 3, 5, 84, 25, 7, 0}, {0, 58, 34, 18}, 0, 0, FX(10, 10, 6, 10)},
     /* house piano: bright, fast hammer, the tine stack for the attack */
     {"M1 PIANO", {4, 1, 2, 13, 74, 30, 12, 0}, {0, 86, 30, 48}, 0, 0, FX(0, 24, 14, 26)},
     /* afro house / amapiano: round keys with a bell on top */

@@ -1,8 +1,20 @@
 # Clipper — démarrage rapide (version de test 0.9)
 
-**Clipper** est un firmware de **synthétiseur** pour le M-VAVE FM-1 : un seul instrument, comme le firmware d'origine, Felucca ou Baudgirl. Ce n'est plus une groovebox : pas de pistes, pas de boîte à rythmes, pas de mode song, pas de samples intégrés. Il garde de SLOOP les 12 moteurs, les effets, l'arpégiateur, le séquenceur de pas, l'audio USB et le MIDI. Il ajoute **HYBRID**, une voix à 3 oscillateurs, 2 filtres et une matrice de modulation de 16 slots, avec 24 sons d'usine. Il ajoute aussi le pitch bend, la molette, l'aftertouch et la pédale de sustain sur tous les moteurs.
+**Clipper** est un firmware de **synthétiseur** pour le M-VAVE FM-1 : un seul instrument, comme le firmware d'origine, Felucca ou Baudgirl. Ce n'est plus une groovebox : pas de pistes, pas de boîte à rythmes, pas de mode song, pas de samples intégrés. Il garde de SLOOP les 12 moteurs, les effets, l'arpégiateur, le séquenceur de pas, l'audio USB et le MIDI. Il ajoute **HYBRID**, une voix à 3 oscillateurs, 2 filtres et une matrice de modulation de 16 slots, avec 32 sons d'usine. Il ajoute aussi le pitch bend, la molette, l'aftertouch et la pédale de sustain sur tous les moteurs.
 
-> **C'est une première version de test** : elle n'a encore jamais tourné sur une vraie FM-1. Avant d'installer, fais une **sauvegarde** dans l'éditeur SLOOP (Projects → Backup → *Save a backup*).
+> **C'est une version de test.** Avant d'installer, fais une **sauvegarde** dans l'éditeur (celui de Clipper ou de SLOOP, selon ce qui est installé) : Projects → Backup → *Save a backup*.
+
+## En bref
+
+**23 moteurs, 409 sons**, tous au même niveau :
+
+- **HYBRID** (3 oscillateurs, 2 filtres, matrice de 16 slots, 4 macros), **FMX** (6 opérateurs façon opsix, routage libre, PM / FM / RING), **FM6** (DX7, banques `.syx`), **DIGITAL** (FM 4 opérateurs), **WAVE** (tables d'ondes, et les tiennes), **WSEQ** (wave sequencing façon Wavestation), **VECTOR** (Prophet VS / joystick du Wavestation), **JUNO** (Juno-6 / 60 / 106 et son chorus I / II / I+II), **ANALOG** (analogique virtuel, 8 modèles de filtre), **ACID** (303), **STRINGS** (string machine), **MACRO** (façon Plaits), **PHASE** (façon CZ), **VPS** (vector phaseshaping), **TERRAIN** (wave terrain), **PHYS** (modèles physiques), **TRIO** (puce 8 bits), **LOFI** (chiptune), **WHEEL** (orgue à roues phoniques), **VOICE** (voyelles chantées), **NOISE**, **GRAIN** et **SAMPLE** (sur quatre sources synthétisées de Clipper, VOX, GLASS, PAD et AIR, ou sur tes propres samples).
+- **Sculpter le son** (tous les moteurs) : une **matrice de modulation** de 6 slots, **LFO 2**, **ENV 2**, le **MOD SEQ** (séquenceur de modulation à 4 pistes), **8 modèles de filtre** sur ANALOG, WAVE et VECTOR (SVF, ladder Moog, MS-20, ladder à diodes, SEM, notch, passe-bande, passe-haut), **VINTAGE** (chaque voix dérive comme sur un vrai polyphonique analogique), un effet **INSERT** par son (SOFT, HARD, FOLD, FUZZ, CRUSH, PHASER, FLANGER, CHORUS et le chorus JUNO).
+- **Effets** : distorsion, chorus stéréo, delay synchronisé, réverbs room et plate, filtre DJ, EQ 3 bandes, compresseur de bus et limiteur. Les réglages glissent au lieu de claquer.
+- **Accordage** : égal, juste, Pythagore, mésotonique, Werckmeister III, Kirnberger III, maqams Rast et Bayati, slendro, pelog, 19 / 24 / 31-EDO, et toute gamme **Scala `.scl`** envoyée depuis l'éditeur.
+- **Jouer** : 8 voix (12 ou 16 en option, sur les deux cœurs), POLY, MONO, LEGATO, UNISON et unisson polyphonique, glide ; **LAYER**, **SPLIT** et **MULTI** (deux parties sur deux canaux MIDI) ; un **arpégiateur** à 15 modes, dont une **machine de Turing** (TURNG), et les variations **SPICE / DICE** ; le séquenceur de pas avec accords et enregistrement ; gammes et accords sur les touches, KBD HOLD ; **MPE** ; MIDI USB et TRS ; interface audio USB.
+- **Travailler** : **UNDO** et **COMPARE** sur la FM-1, favoris, **MORPH** entre deux versions d'un son, **randomiseur** par section, presets utilisateur et projets qui gardent tout.
+- **L'éditeur web** (Chrome ou Edge) : chaque paramètre en direct, les patchs HYBRID et FMX en entier, les pistes du MOD SEQ, l'accordage et les fichiers `.scl`, les banques DX7, tables d'ondes et samples, une bibliothèque de sons, des outils undo / compare / A-B / random, la sauvegarde complète de la FM-1.
 
 ## Un dossier à part
 
@@ -30,8 +42,11 @@ Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maint
 - **VINTAGE** (VOICE 2 → **VINTG**, tous les moteurs) : chaque voix a sa propre petite erreur d'accord et de filtre (sa « carte de voix »), une lente dérive de hauteur, et chaque note un peu de la sienne. À 127 : carte ±6 cents, dérive ±5, note ±2, coupure ±1,5 pas. À 0 : identique à avant, au bit près.
 - **TUNING** (GLO → **TUNING**, pour tous les sons, gardé avec les réglages) : **EQUAL**, **JUST** (intonation juste), **PYTHA**gore, **MEANT**one (1/4 de comma), **WERCK**meister III, **KIRNB**erger III, les maqams **RAST** et **BAYAT**i (tierces neutres), **SLEND**ro et **PELOG** (gamelan), **19**, **24** et **31-EDO**, et **USER** : n'importe quelle gamme **Scala .scl** (jusqu'à 48 notes par période, n'importe quelle période, même la tritave de Bohlen-Pierce) envoyée depuis l'éditeur web. ROOT choisit la tonique.
 - **TURNG**, une machine de Turing dans l'arpégiateur (ARP MODE → TURNG, d'après la Turing Machine de Music Thing) : un registre à décalage en boucle choisit parmi les notes tenues. Sur la page SPICE : **MUTAT** (0 figé, 127 aléatoire), **SEED** (un autre motif), **LOOP** (longueur 1..16). LOOP fixe aussi sur combien de notes SPICE / DICE varient avant de se répéter.
-- **Un son propre, sans clics** (un nouveau test de 45 cas rend chaque changement et vérifie qu'aucun échantillon ne saute) : le limiteur de sortie bouge en courbe en S ; les envois (CHOR / DLY / REV) et la DIST de l'INSERT glissent au lieu de sauter ; le TIME du delay passe en fondu de l'ancienne à la nouvelle prise ; la DEPTH du chorus glisse ; le FILT du master passe par le milieu entre LP et HP ; FLANG / CHOR de l'INSERT attendent que leur ligne soit pleine ; une table WAVE, un patch FMX ou un modèle de filtre changés sur une note tenue font un creux et reviennent.
-- **3 nouveaux sons** (TURING JUNO, MS20 VECTOR, DIODE VS BASS). **395 sons, 23 moteurs.**
+- **Un son propre, sans clics** (un nouveau test de 46 cas rend chaque changement et vérifie qu'aucun échantillon ne saute) : le limiteur de sortie bouge en courbe en S ; les envois (CHOR / DLY / REV) et la DIST de l'INSERT glissent au lieu de sauter ; le TIME du delay passe en fondu de l'ancienne à la nouvelle prise ; la DEPTH du chorus glisse ; le FILT du master passe par le milieu entre LP et HP ; FLANG / CHOR de l'INSERT attendent que leur ligne soit pleine ; une table WAVE, un patch FMX ou un modèle de filtre changés sur une note tenue font un creux et reviennent.
+- **GRAIN et SAMPLE sonnent dès l'installation** : quatre sources propres à Clipper, synthétisées (aucun enregistrement, 25 Ko de flash) : **VOX** (un petit chœur qui s'ouvre de « ou » à « a » : le POS de GRAIN parcourt la voyelle), **GLASS** (un harmonica de verre), **PAD** (sept dents de scie, le filtre qui s'ouvre), **AIR** (du souffle sur les harmoniques de la note). Dix sons GRAIN (VOX CLOUD, VOWEL DRIFT, ANGEL HALO, GLASS RAIN, CRYSTAL SWELL, FROZEN PAD, DARK DRONE, SCAN PAD, WIND CHOIR, BREATH GRAIN) et quatre SAMPLE (SAMPLE CHOIR, GLASS HARP, SAW ENSEMBLE, AIR FLUTE). SET / SRC 0 à 3 restent tes emplacements USR1 à USR4 ; les sources viennent après.
+- **17 nouveaux sons** (ceux-là, TURING JUNO, MS20 VECTOR, DIODE VS BASS). **409 sons, 23 moteurs.**
+- **Une passe sur tous les sons** (chacun rendu, mesuré et son spectre regardé) : la FM de DIGITAL ne se replie plus en bruit dans les aigus (son index tenu sous la limite de Nyquist, et qui glisse dans chaque bloc : plus de marche quand une basse mono redéclenche) ; CLAV moins agressif ; les plateaux de l'EQ master font glisser leur fréquence aussi.
+- **Un nouveau logo** : un clipper sous voiles, dans la ligne de celui de SLOOP (sa voile devient quatre, une par couleur de piste), sur l'écran de démarrage, l'installeur, l'éditeur et ici.
 - **Corrigé** : un projet SLOOP 2.6 chargé dans Clipper lisait ses valeurs MOD SEQ / SPICE au-delà de celles de son INSERT (maintenant leurs valeurs par défaut).
 - **L'éditeur web** (protocole 14) : une carte **Tuning** (système, tonique, charger un .scl) et les nouveaux réglages.
 
@@ -125,7 +140,7 @@ Tous deux proposés dans les discussions de Felucca (#145, #146) comme des faço
 | **HOME** | L'écran du synthé : le nom du son, sa famille, son numéro dans la liste, le moteur et un oscilloscope. Les 4 knobs règlent les contrôles principaux du son. |
 | **PRESETS** | Tous les sons, un par un. |
 | **ALGORITHM** | Saute à la famille suivante (PAD, BASS, LEAD, PLCK, KEYS, STAB, FX…). |
-| **FX, EDIT, ARP, GLO, SAVE** | Un appui ouvre les pages. Bouton maintenu, le clavier joue toujours. Pages FX : FX, FILTER (avec MODL), DLY, REVERB, CHORUS. |
+| **FX, EDIT, ARP, GLO, SAVE** | Un appui ouvre les pages. Bouton maintenu, le clavier joue toujours. Pages FX : FX, FILTER (avec MODL, le modèle de filtre), INSERT, INSERT 2, DLY, REVERB, CHORUS, EQ+COMP. Pages GLO : GLOBAL (tempo, swing, métronome, accord fin), MASTER, **TUNING** (l'accordage), SYSTEM (MIDI, synchro, CPU / LATE / PEAK). |
 | **SEQ, SEL** | Maintenus : SEQ montre les 16 pas sur les touches, SEL la tonalité et les accords. Un appui ouvre leurs pages. |
 | **REC** | Enregistre ce que tu joues dans le pattern. REC maintenu efface le pattern. |
 | **MIDI** | Omni : tous les canaux jouent le synthé. |
@@ -134,7 +149,7 @@ Un projet de SLOOP se charge avec seulement sa première piste.
 
 ## 3. Jouer HYBRID
 
-- Tourne **PRESETS** (ou **ALGORITHM** pour changer de famille). Les sons HYBRID sont rangés dans les familles : **CLIPPER**, POLY PAD, STRINGS, VOX, GLASS PAD et DRONE (PAD) ; ACID, WOBBLE, REESE, FOLD BASS et 808 SUB (BASS) ; SYNC LEAD, HOOVER, CHIP LEAD et TRANCE (LEAD) ; PLUCK, SAW PLUCK, FM BELL, SPACE BEL et METAL (PLCK) ; FM KEYS (KEYS) ; BRASS (STAB) ; RISER et INIT (FX).
+- Tourne **PRESETS** (ou **ALGORITHM** pour changer de famille). Les sons HYBRID sont rangés dans les familles : **CLIPPER**, POLY PAD, STRINGS, VOX, GLASS PAD et DRONE (PAD) ; ACID, WOBBLE, REESE, FOLD BASS et 808 SUB (BASS) ; SYNC LEAD, HOOVER, CHIP LEAD et TRANCE (LEAD) ; PLUCK, SAW PLUCK, FM BELL, SPACE BEL et METAL (PLCK) ; FM KEYS (KEYS) ; BRASS (STAB) ; RISER et INIT (FX) ; et aussi MOOG BASS, MOOG LEAD, LADDER PAD, CLIP WIDE, DARK PAD, ACID HARD, BRIGHT BEL et SOFT SYNC.
 - Sur **HOME**, les 4 knobs règlent **CUT**, **RES**, **M1** et **M2**.
 - Page **EDIT** : CUT, RES, FENV (décalages sur les deux filtres), **PTCH** (le patch d'usine), et **M1 à M4**, quatre macros dont chaque patch choisit l'effet. Par exemple, sur CLIPPER, M1 ouvre le filtre et M2 élargit les supersaws.
 - Avec un clavier MIDI : pitch bend, molette (vibrato sur plusieurs patchs), aftertouch, sustain, et M1 à M4 sur les CC 16 à 19.
@@ -149,6 +164,8 @@ Les autres boutons du panneau :
 
 Un projet garde le PTCH, mais pas le patch modifié : exporte-le pour le garder.
 
+Les autres panneaux de l'onglet **Sound** : **FMX patch** (les six opérateurs, le routage en grille, STORE dans la banque, fichiers `.clipper-fmx.json`), **FM6** (les banques DX7 `.syx`), **MOD SEQ** (les quatre pistes à dessiner), **Tuning** (le système, la tonique, charger une gamme `.scl`), **Sound tools** (undo / redo, comparer, A / B, randomiser, ce qui a changé, l'enveloppe dessinée). Les onglets **Library**, **Samples** (samples et tables d'ondes) et **Projects** (sauvegarde complète) complètent.
+
 Pour essayer l'éditeur sans la FM-1, ouvre `web/editor.html?mock=1` dans Chrome.
 
 ## 5. Le test dont j'ai besoin : les deux cœurs et la charge processeur
@@ -161,9 +178,11 @@ C'est ce qui décide combien de voix Clipper peut jouer. La FM-1 doit être bran
 4. Refais avec **POLY PAD**, **TRANCE**, un son **FMX** (FMX EP) et **ENSEMBLE** (STRINGS).
 5. Si PEAK reste sous ~70 % et LATE ne monte pas, ferme la fenêtre, puis lance **`INSTALL-CLIPPER.bat 12`** (12 voix) et refais la mesure avec 12 notes. Si ça tient encore, essaie **`INSTALL-CLIPPER.bat 16`**.
 
+Pour la 0.9, refais aussi la mesure avec **VINTAGE** à 127 et le filtre en **MOOG** ou **DIODE** sur un son ANALOG (8 notes), et tourne les réglages pendant qu'un accord est tenu (MODL, les envois, TIME du delay, INSERT FLANG / CHOR) : aucun clic ne doit s'entendre.
+
 Envoie-moi les chiffres (avec et sans 2ND CORE). Signale aussi un son qui craque, une note qui reste coincée, un écran **FELUCCA CRASH** (prends-le en photo : il reste 10 s) ou un écran bizarre.
 
 ## Revenir en arrière
 
 - **Vers SLOOP** : lance `INSTALL-SLOOP.bat` depuis le dossier de SLOOP. Un son réglé sur HYBRID y jouera un autre moteur.
-- **Vers le firmware officiel** : passe par la page d'installation (« back to the official V15 »), après avoir fait une sauvegarde.
+- **Vers le firmware officiel** : passe par la page d'installation (« Revenir au firmware officiel (V15) »), après avoir fait une sauvegarde.

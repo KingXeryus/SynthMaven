@@ -10,11 +10,14 @@ The build makes three files in `build/`:
 
 ## Windows (WSL)
 
-`INSTALL-CLIPPER.bat` builds in a WSL distribution and opens the installer on
-`http://localhost:8766/webapp/installer/`. It needs Python 3 with Pillow on Windows, a WSL
-distribution with the JieLi toolchain, and the three SDK files (below) in `build/deps/ac79`.
-Set `SLOOP_WSL_DISTRO` (default `Ubuntu`) and `SLOOP_TOOLCHAIN` (a Linux path, default
-`/root/.jieli/toolchain`) if yours differ.
+`INSTALL-CLIPPER.bat` (`INSTALL-CLIPPER.bat 12` or `16` for more voices) runs `build-clipper.ps1`:
+it builds in the WSL distribution `MinUI-Build` with the JieLi toolchain at
+`/root/fm1-codex-deps/jieli/toolchain` (SLOOP's setup; edit the `build_windows.py` line of
+`build-clipper.ps1` if yours differ), makes the site and opens the installer on
+`http://localhost:8767/webapp/installer/` (SLOOP uses 8766). It needs Python 3 with Pillow on
+Windows and the three SDK files (below) in `build/deps/ac79`: the first run copies them from a
+SLOOP folder next to this one (`..\sloop-fm1`, `..\SLOOP`) or from `CLIPPER_SDK`.
+`OPEN-EDITOR.bat` serves the editor of the last build on the same port.
 
 ## Prerequisites (macOS)
 
@@ -64,10 +67,11 @@ Build options (environment, `0` or `1`; defaults in `firmware/src/felucca.c`):
 
 ## Samples
 
-The CC0 instrument samples that the SAMPLE engine uses are in `assets/samples-cc0/`
-(Versilian Studios, see `ATTRIBUTION.txt` there). `tools/fetch_cc0.py` downloads them
-again from the source repositories. Without that folder the build still works and the
-SAMPLE engine has only the generated drum kit.
+The Clipper synth (`CLIPPER_SYNTH 1`, the default) has no built-in samples: SAMPLE and GRAIN
+play the four user slots sent from the editor, and the flash goes to synthesis. The CC0
+instrument and drum samples in `assets/samples-cc0/` (Versilian Studios VSCO-2 CE and VCSL,
+Sonic Pi for SCRCH: see `ATTRIBUTION.txt` there) are only built into the groovebox
+(`CLIPPER_SYNTH 0`, which the tests use).
 
 ## Tests
 
@@ -76,12 +80,16 @@ tests/run_tests.sh
 ```
 
 Runs the host tests (flash storage, user presets, MIDI parser, update entry, update
-loader, a DSP render, the 4-track mix, project formats, the SLICER, the regression suite,
-the command-line installer) and, with Node.js, the web page tests. Run it after `./build.sh`
+loader, every synth engine and page, the modulation matrix, the MOD SEQ, the filter models,
+VINTAGE, the tunings, the arpeggiator, both cores, a click test of the whole mix, project
+formats, the groovebox's 4-track mix, the regression suite, the command-line installer)
+and, with Node.js, the web page tests. `HOST_ONLY=1` skips what needs the JieLi toolchain. Run it after `./build.sh`
 (it uses `build/` and needs `AC79_SDK` set as for the build).
 
-The regression suite (`tests/regress.c`) renders every engine and preset and compares a
-hash of each render with `tests/golden.txt`; it also checks levels, voices and the CPU
+The regression suite (`tests/regress.c`, built as the groovebox, `CLIPPER_SYNTH 0`) renders
+each of its 13 engines and their presets and compares a hash of each render with
+`tests/golden.txt` (the synth's own engines and presets have their own tests: `synth*_test`,
+`hybrid_test`, `wave_test`, `clean_test`...); it also checks levels, voices and the CPU
 cost (`tests/cpu_baseline.txt`, `tests/target_budget.txt`). The host CPU cost is relative
 to the idle + drums mix, counted by the kernel on macOS and under callgrind on Linux when
 valgrind is installed (exact, about 45 s more); without either it is timed, a rough check.

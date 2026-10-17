@@ -37,6 +37,11 @@
  * (gr_p, in the pool section); per voice s[0] the zone, s[1] the countdown to the next grain,
  * s[2] the low-pass, voice_t's phases are unused. */
 #define GR_POLY 3                /* voices per part */
+#if CLIPPER_SYNTH
+#define GR_OUT_SH 2              /* (0.9) Clipper: +6 dB, its clouds as loud as its other pads within the trims */
+#else
+#define GR_OUT_SH 1
+#endif
 #define GR_NG 12                 /* grains per part */
 #define GR_SEG_LOG2 8
 #define GR_SEG (1u << GR_SEG_LOG2)   /* seek index interval, source samples */
@@ -99,14 +104,14 @@ typedef struct {
 } gr_part_t;
 /* (its state: the part's engine arena, engines.c eng_arena_of) */
 
-static uint32_t gr_nz(uint32_t src) { return src < SMP_NSETS ? SMP_SETS[src].nz : usr_nz[(src - SMP_NSETS) % SMP_USER_SLOTS]; }
+static uint32_t gr_nz(uint32_t src) { return SMP_IS_SET(src) ? SMP_SETS[SMP_SET_OF(src)].nz : usr_nz[SMP_USR_OF(src) % SMP_USER_SLOTS]; }
 static const smp_zone_t *gr_zone(uint32_t src, uint32_t zl)
 {
-    return src < SMP_NSETS ? &SMP_ZONES[SMP_SETS[src].z0 + zl] : &usr_zone[(src - SMP_NSETS) % SMP_USER_SLOTS][zl & 15u];
+    return SMP_IS_SET(src) ? &SMP_ZONES[SMP_SETS[SMP_SET_OF(src)].z0 + zl] : &usr_zone[SMP_USR_OF(src) % SMP_USER_SLOTS][zl & 15u];
 }
 static uint32_t gr_stamp(uint32_t src)
 {
-    return src < SMP_NSETS ? 0u : usr_nz[(src - SMP_NSETS) % SMP_USER_SLOTS] ? smp_user_gen : 0xFFFFFFFFu;
+    return SMP_IS_SET(src) ? 0u : usr_nz[SMP_USR_OF(src) % SMP_USER_SLOTS] ? smp_user_gen : 0xFFFFFFFFu;
 }
 static inline uint32_t gr_rnd(gr_part_t *P) { return noise32(&P->rng); }
 static inline uint32_t gr_scale(uint32_t n, uint32_t f16) { return (n >> 16) * f16 + (((n & 0xFFFFu) * f16) >> 16); }
@@ -132,7 +137,7 @@ static inline int32_t gr_dec(const smp_zone_t *z, uint32_t pos, int32_t *pred, i
 static int32_t gr_find(uint32_t src, uint32_t note)
 {
     uint32_t i, nz = gr_nz(src);
-    int32_t zl = src < SMP_NSETS ? 0 : -1;
+    int32_t zl = SMP_IS_SET(src) ? 0 : -1;
     for (i = 0; i < nz && i < GR_MAXZ; i++) {
         const smp_zone_t *z = gr_zone(src, i);
         if (note >= z->lo && note <= z->hi)
@@ -414,13 +419,29 @@ static void grain_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const
     lp = 4000 + ((clamp((p[P_E7] << 8) + m->cutoff, 0, 127 << 8) * 28767) >> 15);
     for (i = 0; i < n; i++) {
         y += mulq15(clamp(clamp(acc[i], -65535, 65535) - y, -65535, 65535), lp);
-        out[i] += mulq15(mulq15(y, amp_at(m, i)), VOICE_FS) << 1;
+        out[i] += mulq15(mulq15(y, amp_at(m, i)), VOICE_FS) << GR_OUT_SH;
     }
     v->s[2] = y;
 }
 
-#if CLIPPER_SYNTH                         /* Clipper: no built-in samples: a cloud of the user's slot 1 */
+#if CLIPPER_SYNTH
+/* Clipper (0.9): clouds of its own synthesized sources (SRC 4 VOX: "oo" opening to "ah", 5 GLASS: a glass harmonica,
+ * 6 PAD: seven saws, the filter opening, 7 AIR: breath on the note's harmonics; tools/gen_clipper_sets.py), then the
+ * user's slot 1 (SRC 0..3: USR1..USR4). POS moves through each source: LFO DEST SHP scans it */
 static const preset_t GRAIN_PRESETS[] = {
+    /* name, {SRC, POS, SIZE, DENS, PTCH, SPRD, RAND, TONE}, {A D S R}, fenv, mono, sends */
+    {"VOX CLOUD", {4, 85, 96, 92, 0, 30, 8, 96}, {70, 100, 120, 95}, 0, 0, FX(0, 40, 18, 72)},
+    {"VOWEL DRIFT", {4, 34, 104, 86, 0, 18, 5, 100}, {80, 100, 124, 100}, 0, 0, FX(0, 34, 22, 74),
+     .x = {P_LD_SHP + 1, 44, P_LRATE + 1, 24, P_LWAVE + 1, 1}},
+    {"ANGEL HALO", {4, 90, 72, 108, 12, 56, 12, 108}, {90, 100, 127, 108}, 0, 0, FX(0, 52, 30, 92)},
+    {"GLASS RAIN", {5, 18, 30, 86, 0, 104, 30, 118}, {6, 100, 120, 96}, 0, 0, FX(0, 22, 46, 74)},
+    {"CRYSTAL SWELL", {5, 96, 110, 100, 12, 14, 4, 112}, {96, 100, 127, 104}, 0, 0, FX(0, 36, 24, 84)},
+    {"FROZEN PAD", {6, 108, 127, 127, 0, 4, 0, 100}, {80, 100, 127, 100}, 0, 0, FX(0, 50, 14, 70)},
+    {"DARK DRONE", {6, 14, 116, 90, -12, 24, 18, 64}, {100, 100, 127, 110}, 0, 0, FX(0, 30, 14, 82)},
+    {"SCAN PAD", {6, 60, 100, 96, 0, 12, 6, 104}, {70, 100, 124, 96}, 0, 0, FX(0, 46, 20, 70),
+     .x = {P_LD_SHP + 1, 52, P_LRATE + 1, 20, P_LWAVE + 1, 1}},
+    {"WIND CHOIR", {7, 60, 100, 96, 0, 44, 10, 100}, {84, 100, 124, 100}, 0, 0, FX(0, 40, 24, 86)},
+    {"BREATH GRAIN", {7, 50, 26, 94, 0, 110, 40, 110}, {10, 100, 120, 90}, 0, 0, FX(0, 20, 40, 72)},
     {"USER GRAIN", {0, 40, 100, 90, 0, 30, 12, 80}, {70, 100, 120, 95}, 0, 0, FX(0, 50, 20, 75)},
 };
 #else

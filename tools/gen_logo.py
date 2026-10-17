@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""The Clipper logo: a three-masted clipper, its square sails in the four track colours (blue, green, yellow,
-orange) inside a 270-degree dial (the knobs of the UI), a hull, and a geometric monoline wordmark "clipper"
-(the line of SLOOP's, from which Clipper comes).
+"""The Clipper logo: a clipper under sail inside a 270-degree dial (the knobs of the UI), in the line of SLOOP's
+logo: the sloop's one triangular sail becomes four, a jib and three fore-and-aft sails filled by the wind, one per
+track colour (orange, yellow, green, blue), three raked masts on a long low hull with a sharp bow, and a geometric
+monoline wordmark "clipper" (SLOOP's).
 
   tools/gen_logo.py OUT.h          firmware boot splash (RLE, 16-colour palette, RGB565)
   tools/gen_logo.py --assets DIR   clipper-logo.svg/png, clipper-icon.svg/png, clipper-splash.png
@@ -67,26 +68,65 @@ class Pen:
             self.svg.append('<polygon points="' + " ".join(f"{x:.2f},{y:.2f}" for x, y in pts) + f'" fill="{HEX(col)}"/>')
 
 
-# ---- the icon: the dial, three masts with their sails, the hull ---------------------------------
-MASTS = [(-46, -58, 3), (0, -84, 4), (46, -58, 3)]   # x from the centre, top, tiers of sails
-SAIL_COLS = [ORANGE, YELLOW, GREEN, BLUE]            # from the lowest tier up
-BOT, HULL = 38, 52
+# ---- the icon: the dial (the UI's knobs) round a clipper under sail, the line of SLOOP's logo: its sloop's one
+# triangular sail becomes a clipper's four, one per track colour, the leeches filled by the wind; the bow to the left
+# (as the sloop sails), a jib out to the bowsprit, three raked masts, a long low hull --------------------------
+RAKE = 4                                             # the masts lean aft: their tops this far to the right
+
+
+def curve(p0, p1, bulge, n=10):
+    """points from p0 to p1 bowed out to the right of the travel by bulge (a quadratic)"""
+    (x0, y0), (x1, y1) = p0, p1
+    mx, my = (x0 + x1) / 2, (y0 + y1) / 2
+    dx, dy = x1 - x0, y1 - y0
+    L = math.hypot(dx, dy)
+    cx, cy = mx - dy / L * bulge * 2, my + dx / L * bulge * 2
+    return [((1 - t) ** 2 * x0 + 2 * (1 - t) * t * cx + t * t * x1, (1 - t) ** 2 * y0 + 2 * (1 - t) * t * cy + t * t * y1)
+            for t in (i / n for i in range(n + 1))]
+
+
+class Ship:
+    """the ship drawn scaled about the dial's centre (S) and moved (SX, SY), so it sits clear inside the dial"""
+
+    def __init__(self, pen, cx, cy, k=0.86, sx=4, sy=8):
+        self.pen, self.cx, self.cy, self.k, self.sx, self.sy = pen, cx, cy, k, sx, sy
+
+    def T(self, x, y):
+        return self.cx + (x - self.cx) * self.k + self.sx, self.cy + (y - self.cy) * self.k + self.sy
+
+    def line(self, x0, y0, x1, y1, w):
+        self.pen.line(*self.T(x0, y0), *self.T(x1, y1), w=w)
+
+    def poly(self, pts, col):
+        self.pen.poly([self.T(x, y) for x, y in pts], col)
 
 
 def icon(pen, ox, oy):
     cx, cy = ox + 120, oy + 120
     pen.arc(cx, cy, 100, 135, 405)
-    for dx, top, n in MASTS:
-        mx, y0, y1 = cx + dx, cy + top, cy + BOT
-        pen.line(mx, y0 - 2, mx, y1 + 12, w=8)
-        gap, h = 5, (y1 - y0 - 4 * 5) / 4                # tiers of the same height on every mast
-        for i in range(n):                               # i = 0 the lowest
-            b = y1 - i * (h + gap)
-            t = b - h
-            wb, wt = 19 - 2.5 * i, 17 - 2.5 * i          # half widths: narrower up the mast
-            pen.poly([(mx - wt, t), (mx + wt, t), (mx + wb, b), (mx - wb, b)], SAIL_COLS[i])
-    pen.line(cx - HULL, cy + BOT + 18, cx + HULL, cy + BOT + 18, w=12)
-    pen.line(cx - HULL + 14, cy + BOT + 32, cx + HULL - 14, cy + BOT + 32, w=8)
+    sh = Ship(pen, cx, cy)
+    deck, foot = cy + 52, cy + 40                    # the deck; the sails' feet, over the deck
+    masts = [(-38, -66), (2, -88), (40, -60)]        # fore, main, mizzen: x from the centre, top
+    tops = []
+    for dx, top in masts:
+        x0, x1 = cx + dx, cx + dx + RAKE
+        sh.line(x0, deck - 2, x1, cy + top, w=7)
+        tops.append((x1, cy + top))
+    # the sails: luff on the mast (clear of it), foot over the deck, leech bowed by the wind
+    widths = [30, 34, 28]
+    for (x1, ty), (dx, top), w, col in zip(tops, masts, widths, (YELLOW, GREEN, BLUE)):
+        xb = cx + dx + 7                             # the luff at the foot (the mast leans)
+        luff_top = (x1 + 7 - 1, ty + 8)
+        clew = (xb + w, foot)
+        sh.poly([luff_top] + curve(luff_top, clew, 5)[1:] + [(xb, foot)], col)
+    fx, fty = tops[0]                                # the jib: from the foremast's head to the bowsprit
+    head, tack = (fx - 7, fty + 12), (cx - 90, foot - 4)
+    sh.poly([head, (fx - 7, foot), tack] + curve(tack, head, 3)[1:-1], ORANGE)
+    sh.line(cx - 70, deck - 8, cx - 96, foot - 6, w=5)    # the bowsprit
+    # the hull: long and low, a raised sharp bow forward (the clipper's), a sheer that falls aft, a short counter
+    hull = curve((cx - 88, deck - 12), (cx + 78, deck - 3), 2)[:-1] + [(cx + 78, deck - 3), (cx + 72, deck + 11)] + \
+        curve((cx + 72, deck + 11), (cx - 58, deck + 15), -2)[1:]
+    sh.poly(hull, WHITE)
 
 
 # ---- the wordmark "clipper": circles of the x-height, verticals, round ends -----------------------

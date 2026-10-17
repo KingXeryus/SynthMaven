@@ -24,6 +24,7 @@ slices) is written with it: SLC_BREAK_INIT.
 The header is cached in build/gen_samples.cache under a hash of every input.
 """
 import hashlib
+import json
 import math
 import os
 import re
@@ -442,26 +443,61 @@ def input_key(have_cc0):
     return h.hexdigest()
 
 
-CLIPPER_EMPTY = """
-/* Clipper (CLIPPER_SYNTH): no built-in samples (~300 KB of flash for synthesis): SAMPLE and GRAIN play the user's
- * slots USR1..4 (sent from the editor). The groovebox (CLIPPER_SYNTH 0, the tests) keeps the sets above. */
-static const uint8_t SMP_DATA[4] = {0, 0, 0, 0};
-static const smp_zone_t SMP_ZONES[] = {{0, 0, 0, 0, 65536, 960, 0, 0, 0, 127, 0}};
-static const smp_set_t SMP_SETS[] = {{"NONE", 0, 1}};
-#define SMP_NSETS 0
-static const preset_t SMP_PRESET_TABLE[] = {
-    {"USER SMP", {0, 0, 0, 1, 127, 0, 0, 0}, {0, 110, 110, 40}, 0, 0, FX(0, 10, 12, 24)},
-};
-#define SMP_SET_NAMES_INIT
-static const char *const SMP_SET_NAMES[] = {"NONE"};
-#define SLC_BREAK_INIT {0}
-"""
+CLIPPER_SETS = SRC / "assets" / "clipper-sets"    # Clipper's own synthesized sources (tools/gen_clipper_sets.py)
+# Clipper's SAMPLE presets: name, set, {SET (filled in), TUNE, BITS, LOOP, CUT, -, DRV, -}, env, mono, sends, more
+CLIPPER_SMP_PRESETS = [
+    ("SAMPLE CHOIR", "VOX", [0, 0, 0, 1, 108, 0, 0, 0], (58, 100, 122, 84), 0, (0, 34, 18, 66), ("P_VINT", 40)),
+    ("GLASS HARP", "GLASS", [0, 0, 0, 1, 118, 0, 0, 0], (18, 100, 116, 80), 0, (0, 22, 30, 66), ()),
+    ("SAW ENSEMBLE", "PAD", [0, 0, 0, 1, 104, 0, 0, 0], (34, 100, 120, 60), 0, (0, 44, 14, 48), ("P_VINT", 50)),
+    ("AIR FLUTE", "AIR", [0, 0, 0, 1, 112, 0, 0, 0], (22, 100, 120, 42), 1, (0, 12, 26, 52),
+     ("P_LD_PIT", 1, "P_LRATE", 88, "P_LFADE", 50)),
+]
+
+
+def clipper_block():
+    """Clipper (CLIPPER_SYNTH): no recorded samples (~300 KB of flash for synthesis); four small synthesized sources
+    for SAMPLE and GRAIN (~25 KB), then the user's slots USR1..4 (sent from the editor). The SET / SRC values: 0..3
+    the user's slots (as before), 4.. these sets (eng_sample.c SMP_IS_SET)"""
+    meta = json.loads((CLIPPER_SETS / "sets.json").read_text())
+    blob, zones, sets = bytearray(), [], []
+    for e in meta:
+        sr, x = read_any_wav(CLIPPER_SETS / e["file"])
+        x = [max(-32768, min(32767, int(round(v * 32768)))) for v in x]   # (read_any_wav: -1..1)
+        enc, st = ima_encode(x, e["ls"])
+        off = len(blob)
+        blob += enc
+        if len(blob) & 1:
+            blob.append(0)
+        rate = int(round(sr / 44100 * 65536))
+        sets.append((e["name"], len(zones), 1))
+        zones.append(f"    {{{off}, {len(x)}, {e['ls']}, {e['le']}, {rate}, {e['root'] * 16}, {st[0]}, {st[1]}, 0, 127, 1}},")
+    L = ["", "/* Clipper (CLIPPER_SYNTH): its own synthesized sources (tools/gen_clipper_sets.py, assets/clipper-sets),",
+         " * SET / SRC 4.. (0..3: the user's slots USR1..4, sent from the editor) */"]
+    L.append(f"static const uint8_t SMP_DATA[{len(blob)}] = {{")
+    for i in range(0, len(blob), 32):
+        L.append("    " + ",".join(map(str, blob[i:i + 32])) + ",")
+    L += ["};", "static const smp_zone_t SMP_ZONES[] = {"] + zones + ["};", "static const smp_set_t SMP_SETS[] = {"]
+    L += [f'    {{"{n}", {z0}, {nz}}},' for n, z0, nz in sets] + ["};", f"#define SMP_NSETS {len(sets)}"]
+    L.append("static const preset_t SMP_PRESET_TABLE[] = {")
+    names = [n for n, _, _ in sets]
+    for pname, setname, e, env, mono, fx, more in CLIPPER_SMP_PRESETS:
+        e = list(e)
+        e[0] = 4 + names.index(setname)
+        x = ", ".join(f"{more[j]} + 1, {more[j + 1]}" for j in range(0, len(more), 2))
+        L.append(f'    {{"{pname}", {{{", ".join(map(str, e))}}}, {{{", ".join(map(str, env))}}}, 0, {mono}, '
+                 f'FX({", ".join(map(str, fx))}){", .x = {" + x + "}" if x else ""}}},')
+    L.append('    {"USER SMP", {0, 0, 0, 1, 127, 0, 0, 0}, {0, 110, 110, 40}, 0, 0, FX(0, 10, 12, 24)},')
+    L.append("};")
+    L.append("#define SMP_SET_NAMES_INIT " + ", ".join(f'"{n}"' for n in names))
+    L.append("static const char *const SMP_SET_NAMES[] = {SMP_SET_NAMES_INIT};")
+    L.append("#define SLC_BREAK_INIT {0}")
+    return "\n".join(L) + "\n"
 
 
 def clipper_wrap(text):
     """the sets for the groovebox; none for the Clipper synth (CLIPPER_SYNTH, core.h, defined before this header)"""
     head, sep, body = text.partition("#include <stdint.h>\n")
-    return head + sep + "#if !CLIPPER_SYNTH\n" + body + "#else" + CLIPPER_EMPTY + "#endif\n"
+    return head + sep + "#if !CLIPPER_SYNTH\n" + body + "#else" + clipper_block() + "#endif\n"
 
 
 def main(out):

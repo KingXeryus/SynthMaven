@@ -58,10 +58,19 @@ typedef struct {
 } smp_user_hdr_t;                                   /* 32 + 16 x 28 = 480 B, data at +512 */
 static smp_zone_t usr_zone[SMP_USER_SLOTS][16];     /* RAM copy, off rebased onto SMP_DATA */
 static uint8_t usr_nz[SMP_USER_SLOTS];
-#if SMP_NSETS
+/* SET (SAMPLE) / SRC (GRAIN) -> a built-in set or a user slot. The groovebox: the sets, then USR1..USR4. Clipper
+ * (0.9: its own synthesized sets, tools/gen_clipper_sets.py): USR1..USR4 first (0..3: what 0.2 .. 0.9 stored, the
+ * user's slots only), then the sets */
+#if CLIPPER_SYNTH
+#define SMP_IS_SET(si) ((si) >= SMP_USER_SLOTS)
+#define SMP_SET_OF(si) ((si) - SMP_USER_SLOTS)
+#define SMP_USR_OF(si) (si)
+static const char *const SMP_ALL_NAMES[SMP_NALL] = {"USR1", "USR2", "USR3", "USR4", SMP_SET_NAMES_INIT};
+#else
+#define SMP_IS_SET(si) ((si) < SMP_NSETS)
+#define SMP_SET_OF(si) (si)
+#define SMP_USR_OF(si) ((si) - SMP_NSETS)
 static const char *const SMP_ALL_NAMES[SMP_NALL] = {SMP_SET_NAMES_INIT, "USR1", "USR2", "USR3", "USR4"};
-#else                                                   /* (Clipper: no built-in sets, the user's slots only) */
-static const char *const SMP_ALL_NAMES[SMP_NALL] = {"USR1", "USR2", "USR3", "USR4"};
 #endif
 
 #ifndef SMP_USER_XIP                                /* host tests: a RAM image of the slots */
@@ -149,14 +158,14 @@ static inline int32_t sample_next(const smp_zone_t *z, voice_t *v, int loop)
 static void sample_note_on(track_t *t, voice_t *v)
 {
     uint32_t si = (uint32_t)t->p[P_E0] % SMP_NALL, i, zi = 0xFFFFu;
-    if (si < SMP_NSETS) {
-        const smp_set_t *set = &SMP_SETS[si];
+    if (SMP_IS_SET(si)) {
+        const smp_set_t *set = &SMP_SETS[SMP_SET_OF(si)];
         for (i = 0; i < set->nz; i++)
             if (v->note >= SMP_ZONES[set->z0 + i].lo && v->note <= SMP_ZONES[set->z0 + i].hi)
                 zi = set->z0 + i;
         v->s[4] = (int32_t)(zi == 0xFFFFu ? set->z0 : zi);
     } else {                                        /* user slot: silent if empty */
-        uint32_t k = si - SMP_NSETS;
+        uint32_t k = SMP_USR_OF(si);
         for (i = 0; i < usr_nz[k]; i++)
             if (v->note >= usr_zone[k][i].lo && v->note <= usr_zone[k][i].hi)
                 zi = 0x8000u | k << 5 | i;

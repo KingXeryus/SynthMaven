@@ -544,6 +544,12 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     {BK_PAD, ENGI_VECTOR, "CHOIR VS"},
     /* Clipper 0.9 (appended: the favourites keep their places) */
     {BK_PLUCK, ENGI_JUNO, "TURING JUNO"}, {BK_LEAD, ENGI_VECTOR, "MS20 VECTOR"}, {BK_BASS, ENGI_VECTOR, "DIODE VS BASS"},
+    /* Clipper 0.9: GRAIN and SAMPLE on Clipper's own synthesized sources (tools/gen_clipper_sets.py) */
+    {BK_PAD, ENGI_GRAIN, "VOX CLOUD"}, {BK_PAD, ENGI_GRAIN, "VOWEL DRIFT"}, {BK_PAD, ENGI_GRAIN, "ANGEL HALO"},
+    {BK_FX, ENGI_GRAIN, "GLASS RAIN"}, {BK_PAD, ENGI_GRAIN, "CRYSTAL SWELL"}, {BK_PAD, ENGI_GRAIN, "FROZEN PAD"},
+    {BK_PAD, ENGI_GRAIN, "DARK DRONE"}, {BK_PAD, ENGI_GRAIN, "SCAN PAD"}, {BK_PAD, ENGI_GRAIN, "WIND CHOIR"},
+    {BK_FX, ENGI_GRAIN, "BREATH GRAIN"}, {BK_PAD, 4, "SAMPLE CHOIR"}, {BK_PAD, 4, "GLASS HARP"},
+    {BK_PAD, 4, "SAW ENSEMBLE"}, {BK_LEAD, 4, "AIR FLUTE"},
 #endif
 };
 #define NBANK (sizeof BANK / sizeof BANK[0])

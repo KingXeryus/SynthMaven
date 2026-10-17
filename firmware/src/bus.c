@@ -69,10 +69,11 @@ static const uint16_t BUS_HI_K[25] = {5395, 5997, 6660, 7388, 8187, 9062, 10018,
 static struct {
     int32_t lo[2], hi[2], m1[2], m2[2];                   /* the states, << 8 */
     int32_t gl, gm, gh;                                   /* the band gains now (10^(dB/20) - 1, Q12 << 4) */
+    int32_t kl, kh;                                       /* (0.9) the shelves' corners now (they glide too) */
     int32_t env;                                          /* the compressor's detector (Q15 peak, << 8) */
     int32_t gc;                                           /* its gain now, Q14 */
     uint8_t eq_on;
-} bus = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, 0, 0, 0, 0, 16384, 0};
+} bus = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, 0, 0, 0, 0, 0, 0, 16384, 0};
 
 /* a TPT one-pole low-pass (k = g / (1 + g), Q16) of x; the state << 8 */
 static inline int32_t bus_lp(int32_t x8, int32_t *s, int32_t k)
@@ -89,7 +90,7 @@ static void bus_eq(int32_t *l, int32_t *r, uint32_t n)
     int32_t dl = bus_db(song.g[G_EQLOW], EQ_LOW_C), dm = bus_db(song.g[G_EQMID], EQ_MID_C),
             dh = bus_db(song.g[G_EQHIGH], EQ_HIGH_C);
     int32_t tl = BUS_DB[dl] << 4, tm = BUS_DB[dm] << 4, th = BUS_DB[dh] << 4, kl = BUS_LO_K[dl], kh = BUS_HI_K[dh];
-    int32_t gl0 = bus.gl, gm0 = bus.gm, gh0 = bus.gh, gl1, gm1, gh1;
+    int32_t gl0 = bus.gl, gm0 = bus.gm, gh0 = bus.gh, gl1, gm1, gh1, kl0, kh0;
     uint32_t i, c;
     if (!tl && !tm && !th && !bus.gl && !bus.gm && !bus.gh) {
         if (bus.eq_on) {                                   /* flat: off, the states cleared for the next time */
@@ -99,6 +100,8 @@ static void bus_eq(int32_t *l, int32_t *r, uint32_t n)
         }
         return;
     }
+    if (!bus.eq_on)                                       /* (coming on: the corners from where they go) */
+        bus.kl = BUS_LO_K[dl], bus.kh = BUS_HI_K[dh];
     bus.eq_on = 1;
     /* the gains glide: an eighth of the way a block (~6 ms), the last step exact */
     gl1 = bus.gl = gl0 + ((tl - gl0) >> 3) + (tl > gl0 ? 1 : tl < gl0 ? -1 : 0);
@@ -108,6 +111,11 @@ static void bus_eq(int32_t *l, int32_t *r, uint32_t n)
         kl = gl1 < 0 ? BUS_LO_K[11] : BUS_LO_K[13];
     if ((gh0 < 0) != (gh1 < 0) && gh1)
         kh = gh1 < 0 ? BUS_HI_K[11] : BUS_HI_K[13];
+    /* (0.9) the corners glide as the gains do, sample by sample: a corner that jumped with a 12 dB turn moved the
+     * shelf's output at once (a click on a pad) */
+    kl0 = bus.kl, kh0 = bus.kh;
+    bus.kl = kl0 + ((kl - kl0) >> 3) + (kl > kl0 ? 1 : kl < kl0 ? -1 : 0);
+    bus.kh = kh0 + ((kh - kh0) >> 3) + (kh > kh0 ? 1 : kh < kh0 ? -1 : 0);
     for (c = 0; c < 2u; c++) {
         int32_t *x = c ? r : l;
         for (i = 0; i < n; i++) {
@@ -115,8 +123,8 @@ static void bus_eq(int32_t *l, int32_t *r, uint32_t n)
             int32_t g_l = gl0 + (((gl1 - gl0) * (int32_t)i) >> CTL_LOG2);
             int32_t g_m = gm0 + (((gm1 - gm0) * (int32_t)i) >> CTL_LOG2);
             int32_t g_h = gh0 + (((gh1 - gh0) * (int32_t)i) >> CTL_LOG2);
-            lo = bus_lp(s8, &bus.lo[c], kl) >> 8;
-            hp = s - (bus_lp(s8, &bus.hi[c], kh) >> 8);
+            lo = bus_lp(s8, &bus.lo[c], kl0 + (((bus.kl - kl0) * (int32_t)i) >> CTL_LOG2)) >> 8;
+            hp = s - (bus_lp(s8, &bus.hi[c], kh0 + (((bus.kh - kh0) * (int32_t)i) >> CTL_LOG2)) >> 8);
             v3 = s8 - bus.m2[c];
             v1 = (int32_t)(((int64_t)BUS_A1 * bus.m1[c] + (int64_t)BUS_A2 * v3) >> 16);
             v2 = bus.m2[c] + (int32_t)(((int64_t)BUS_A2 * bus.m1[c] + (int64_t)BUS_A3 * v3) >> 16);

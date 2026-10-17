@@ -7,9 +7,50 @@ Free and open source (GPL-3.0). It grew out of <a href="https://github.com/isod8
 
 ---
 
-> **Status: 0.9, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to SLOOP or to the official V15 from the installer page.
+> **Status: 0.9, test build.** Install it at your own risk, and keep a backup made with the editor. You can go back to the official V15 from the installer page, or to SLOOP with its own `INSTALL-SLOOP.bat`.
 
-SLOOP is a groovebox. **Clipper is a synthesizer** with 23 engines and 395 sounds, one instrument (two in MULTI) like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine, no song mode and no built-in samples. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
+SLOOP is a groovebox. **Clipper is a synthesizer** with 23 engines and 409 sounds, one instrument (two in MULTI) like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine, no song mode and no built-in samples. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
+
+## At a glance
+
+**23 engines, 409 sounds**, every one level-matched through the synth's own output chain:
+
+| Engine | What it is |
+| --- | --- |
+| **HYBRID** | The Clipper voice: three oscillators (saw, pulse, tri, sine with feedback, morph, a seven-saw supersaw, FM, hard sync, wavefolder, noise), ring, drift, drive; two filters (LP12, LP24, a Moog ladder, BP, HP, notch, peak) in series, parallel or split; two envelopes and two tempo-synced LFOs per voice, a 16-slot matrix, four macros. |
+| **FMX** | Six operators after the Korg opsix: each its own wave (10) and mode (PM, true FM, RING), any routing with an amount per connection, 40 templates, a pitch envelope; it also plays the DX7 voices of the bank. |
+| **FM6** | DX7-style six-operator FM, 32 algorithms; loads DX7 banks (`.syx`) from the editor. |
+| **DIGITAL** | Four-operator FM, eight algorithms: electric pianos, bells, basses. |
+| **WAVE** | Wavetables: 16 tables of 16 frames, band-limited per octave, and your own (Serum-style WAV) in four user slots. |
+| **WSEQ** | Wave sequencing after the Korg Wavestation: 16 sequences of waves, pitches and levels at the song's tempo, crossfaded. |
+| **VECTOR** | Vector synthesis after the Prophet VS and the Wavestation's joystick: four waves at the corners, X / Y and paths that move by themselves. |
+| **JUNO** | The Juno-6 / 60 / 106 idea: DCO saw, pulse with PWM, sub, noise, the four-position HPF, a 24 dB ladder and the stereo BBD chorus I, II, I+II. |
+| **ANALOG** | Virtual analog: two band-limited oscillators, PWM, noise, drive, and eight filter models (below). |
+| **ACID** | A 303-style bass line: ladder, accent and its sweep, slides. |
+| **STRINGS** | A 1970s string machine: 16', 8', 4' registers through a three-line ensemble. |
+| **MACRO** | Four macro-oscillators in the spirit of Mutable Instruments Plaits: CHORD, SWARM, ADDITIVE, SPEECH, with a low-pass gate. |
+| **PHASE** | Phase distortion, CZ style. |
+| **VPS** | Vector phaseshaping (Kleimola et al., DAFx 2011): phase-distorted waves to formant sweeps, alias-free. |
+| **TERRAIN** | Wave terrain synthesis: an orbit over eight surfaces, slowly drifting timbres. |
+| **PHYS** | Physical models: plucked strings, bars and bells, drum heads, sympathetic strings (after Mutable Instruments Rings and DaisySP). |
+| **TRIO** | The 8-bit home computer sound chip: three oscillators, ring, sync, a multimode filter. |
+| **LOFI** | Chiptune: pulses, triangle, wave RAM, pitch sweeps. |
+| **WHEEL** | A tonewheel organ with nine drawbars. |
+| **VOICE** | Formant synthesis: sung vowels. |
+| **NOISE** | From analog hiss to metallic shift-register tones, through a resonant filter. |
+| **GRAIN** / **SAMPLE** | Granular clouds and sampled instruments: on four sources of Clipper's own (VOX, a small choir opening "oo" to "ah"; GLASS, a glass harmonica; PAD, seven saws whose filter opens; AIR, breath on the note's harmonics), synthesized, not recorded, or on your own samples (four slots, sent from the editor). |
+
+**Shaping the sound** (every engine): a six-slot **modulation matrix** (LFO 1 and 2, ENV 1 and 2, velocity, key, mod wheel, aftertouch, random, MPE slide, the **MOD SEQ**'s four lanes) onto pitch, cutoff, shape, amp, pan, LFO 2's rate and the engine's own eight values; **LFO 2**, **ENV 2**; the **MOD SEQ**, a four-lane modulation sequencer; **eight filter models** on ANALOG, WAVE and VECTOR (SVF, Moog ladder, MS-20, diode ladder, SEM, notch, band-pass, high-pass); **VINTAGE** (each voice drifts and differs, like an analog poly); an **INSERT** effect per sound (SOFT, HARD, FOLD, FUZZ, CRUSH, PHASER, FLANGER, CHORUS, and the JUNO chorus).
+
+**Effects**: distortion, stereo chorus, tempo-synced delay, room and plate reverbs (after Dattorro), a DJ filter, a master three-band EQ, a bus compressor and a look-ahead limiter. Changes glide instead of clicking.
+
+**Tuning**: equal, just, Pythagorean, meantone, Werckmeister III, Kirnberger III, the maqams Rast and Bayati, slendro, pelog, 19 / 24 / 31-EDO, and any **Scala `.scl`** scale from the editor.
+
+**Playing**: 8 voices (12 or 16 as a build option, on both processor cores); POLY, MONO, LEGATO, UNISON and poly unison (2 or 4 voices a note), glide; **LAYER**, **SPLIT** and **MULTI** (two parts on two MIDI channels); an **arpeggiator** with 15 modes, a **Turing machine** (TURNG) among them, and **SPICE / DICE** variations; a step sequencer with chords and recording; scales and chords on the keys, KBD HOLD; **MPE**; MIDI over USB and TRS (pitch bend, mod wheel, expression, sustain, channel and polyphonic aftertouch, macros on CC 16 to 19); the FM-1 is a USB audio interface too.
+
+**Working**: **UNDO** and **COMPARE** on the FM-1, favourites, **MORPH** between two versions of a sound, a **randomizer** by section, user presets and projects that keep everything above.
+
+**The web editor** (Chrome or Edge, nothing to install): every parameter live; the whole HYBRID and FMX patches; the MOD SEQ's lanes; the tuning and `.scl` files; DX7 banks; wavetables and samples; a sound library, undo / compare / A-B / randomize tools; backups of the whole FM-1.
 
 ## New in 0.9: filter models, VINTAGE, microtuning, a Turing machine, and a clean sound
 
@@ -17,8 +58,11 @@ SLOOP is a groovebox. **Clipper is a synthesizer** with 23 engines and 395 sound
 - **VINTAGE** (VOICE 2 → **VINTG**, every engine): the voices of an analog poly are never quite alike. Each voice gets its own small tuning error and filter offset (its "voice card", fixed), a slow random drift of its pitch, and each note a little of its own. At 127: the card ±6 cents, the drift ±5, the note ±2, the cutoff ±1.5 steps. 0: bit for bit as before.
 - **TUNING** (GLO → **TUNING**, for every sound, kept with the settings): **EQUAL**, **JUST** (5-limit), **PYTHA**gorean, **MEANT**one (1/4 comma), **WERCK**meister III, **KIRNB**erger III, the maqams **RAST** and **BAYAT**i (neutral thirds), the gamelan's **SLEND**ro and **PELOG**, **19**, **24** and **31-EDO**, and **USER**: any **Scala .scl** scale (up to 48 notes per period, any period: Bohlen-Pierce's tritave too) sent from the web editor. ROOT sets the tonic. A glide moves through the scale.
 - **TURNG**, a Turing machine in the arpeggiator (ARP MODE → TURNG, after Music Thing's Turing Machine): a looping shift register picks among the held notes. On the SPICE page, **MUTAT** is how often a bit flips (0 locked, 127 random), **SEED** another pattern, **LOOP** its length (1..16). **LOOP** also sets how many notes SPICE / DICE vary before repeating.
-- **A clean sound, no clicks** (a new test, 45 cases, renders every change and checks that no sample jumps): the master limiter's gain now moves on an S-curve; the sends (CHOR / DLY / REV) and the INSERT's DIST glide instead of jumping; the delay's TIME cross-fades the old and new tap; the chorus DEPTH glides; the master FILT goes through the middle when it crosses from LP to HP; FLANG / CHOR in the INSERT wait for their line to fill; a WAVE table, an FMX patch or a filter model changed under a held note dips and comes back.
-- **3 new sounds** (TURING JUNO, MS20 VECTOR, DIODE VS BASS), and VINTAGE on a few JUNO pads. **395 sounds, 23 engines.**
+- **A clean sound, no clicks** (a new test, 46 cases, renders every change and checks that no sample jumps): the master limiter's gain now moves on an S-curve; the sends (CHOR / DLY / REV) and the INSERT's DIST glide instead of jumping; the delay's TIME cross-fades the old and new tap; the chorus DEPTH glides; the master FILT goes through the middle when it crosses from LP to HP; FLANG / CHOR in the INSERT wait for their line to fill; a WAVE table, an FMX patch or a filter model changed under a held note dips and comes back.
+- **GRAIN and SAMPLE play out of the box**: four sources of Clipper's own, synthesized (no recording, 25 KB of flash): **VOX** (a small choir, "oo" opening to "ah": GRAIN's POS scans the vowel), **GLASS** (a glass harmonica), **PAD** (seven saws, the filter opening), **AIR** (breath on the note's harmonics). Ten GRAIN sounds (VOX CLOUD, VOWEL DRIFT, ANGEL HALO, GLASS RAIN, CRYSTAL SWELL, FROZEN PAD, DARK DRONE, SCAN PAD, WIND CHOIR, BREATH GRAIN) and four SAMPLE ones (SAMPLE CHOIR, GLASS HARP, SAW ENSEMBLE, AIR FLUTE). SET / SRC 0..3 are still your slots USR1..USR4; the sources come after.
+- **17 new sounds** (those, TURING JUNO, MS20 VECTOR, DIODE VS BASS), and VINTAGE on a few JUNO pads. **409 sounds, 23 engines.**
+- **A sound pass over every preset** (each one rendered, measured and its spectrum looked at): DIGITAL's FM no longer folds back as noise on high notes (its index held under the Nyquist limit, and gliding through each block: no step when a mono bass retriggers); CLAV less harsh; the master EQ's shelves glide their corners too.
+- **A new logo**: a clipper under sail, in the line of SLOOP's (its one sail becomes four, one per track colour), on the boot screen, the installer, the editor and here.
 - **Fixed**: a SLOOP 2.6 project loaded on Clipper read its MOD SEQ / SPICE values from past the end of its INSERT's (now their defaults).
 - **The web editor** (protocol 14): a **Tuning** card (system, root, load a .scl), and the new knobs (VINTG, LOOP, MODL's models, TURNG).
 
@@ -111,7 +155,8 @@ Both suggested in the Felucca discussions ([#145](https://github.com/hugelton/Fe
 | --- | --- |
 | **HOME** | The synth screen: the sound's name, its family, its number in the list, the engine and a live scope. The four knobs play the sound's main controls (for HYBRID: CUT, RES, M1, M2). |
 | **PRESETS** | Every sound, one by one, factory and user presets. |
-| **FX pages** | FX (sends), FILTER (the sound's DJ filter and MODL), DLY, REVERB, CHORUS. |
+| **FX pages** | FX (sends), FILTER (the sound's DJ filter and MODL, the filter model), INSERT, DLY, REVERB, CHORUS, EQ+COMP. |
+| **GLO pages** | GLOBAL (tempo, swing, CLICK the metronome, fine tune), MASTER (DUST, the master FILT), **TUNING** (the system and its root, for every sound), SYSTEM (MIDI, sync, and the CPU / LATE / PEAK readout). |
 | **ALGORITHM** | Jumps to the next family: PAD, BASS, LEAD, PLCK, KEYS, STAB, FX and the rest. |
 | **FX, EDIT, ARP, GLO, SAVE** | A tap opens the pages. While one of them is held, the keys still play, so you can hold EDIT and play. |
 | **SEQ, SEL** | Held, they are the two layers a synth needs: SEQ shows the 16 steps on the keys, SEL the key and the chords. A tap opens their pages. |
@@ -131,7 +176,7 @@ A SLOOP project loads with only its first track playing. The four-track groovebo
 | **Matrix** | 16 slots of *source × via × amount → destination*. Sources: ENV2, ENV3, AENV, LFO1-3, velocity, key, mod wheel, aftertouch (channel or per note), bend, expression, a random value per note, the macros M1-M4. Destinations: pitch (all or per oscillator), shapes, levels, ring, cutoff (both or each), resonances, drive, amplitude, the LFO rates, filter balance. |
 | **On the FM-1** | EDIT shows CUT, RES and FENV (offsets on both filters), PTCH (the factory patch), and M1-M4: four macros whose effect each patch decides. |
 | **In the editor** | Every value above, live while you play. Patches export and import as `.clipper.json`. |
-| **24 factory patches** | CLIPPER, POLY PAD, STRINGS, ACID, SYNC LEAD, FM BELL, FM KEYS, WOBBLE, REESE, HOOVER, BRASS, VOX, PLUCK, RISER, METAL, FOLD BASS, CHIP LEAD, GLASS PAD, DRONE, 808 SUB, TRANCE, SAW PLUCK, SPACE BEL, INIT. They are level-matched with the other 153 sounds and sorted into the PRESETS list by kind. |
+| **27 factory patches, 32 sounds** | CLIPPER, POLY PAD, STRINGS, ACID, SYNC LEAD, FM BELL, FM KEYS, WOBBLE, REESE, HOOVER, BRASS, VOX, PLUCK, RISER, METAL, FOLD BASS, CHIP LEAD, GLASS PAD, DRONE, 808 SUB, TRANCE, SAW PLUCK, SPACE BEL, INIT, MOOG BASS, MOOG LEAD, LADDER PAD; five more sounds play them with their own macros (CLIP WIDE, DARK PAD, ACID HARD, BRIGHT BEL, SOFT SYNC). They are level-matched with every other sound and sorted into the PRESETS list by kind. |
 
 ## Playing it from a controller (new in Clipper, every engine)
 
@@ -149,7 +194,7 @@ The voices are a build option: 8 (the default, as SLOOP), 12 or 16 (`INSTALL-CLI
 
 ## Tests
 
-`HOST_ONLY=1 tests/run_tests.sh` runs everything that does not need the JieLi toolchain (0.9: the filter models, VINTAGE, the TUNING, TURNG, and the click test of 45 cases; 0.8: JUNO and its chorus, VECTOR, the MOD SEQ, SPICE / DICE, their pages; 0.7: the voices on both cores in every mode of the host double of core 1, and under ThreadSanitizer; UNDO, COMPARE, FAV, KBD HOLD): the synth mode (HOME, presets, keys, pages, one instrument, MIDI omni), the HYBRID tests (the pitch of every oscillator, the filters, the matrix, the controllers, 300 random patches, the cost per voice), the editor's commands, golden renders of every sound, ASan and UBSan, a soak test, and the web pages.
+`HOST_ONLY=1 tests/run_tests.sh` runs everything that does not need the JieLi toolchain (0.9: the filter models, VINTAGE, the TUNING, TURNG, and the click test of 46 cases; 0.8: JUNO and its chorus, VECTOR, the MOD SEQ, SPICE / DICE, their pages; 0.7: the voices on both cores in every mode of the host double of core 1, and under ThreadSanitizer; UNDO, COMPARE, FAV, KBD HOLD): the synth mode (HOME, presets, keys, pages, one instrument, MIDI omni), the HYBRID tests (the pitch of every oscillator, the filters, the matrix, the controllers, 300 random patches, the cost per voice), the editor's commands, golden renders of every sound, ASan and UBSan, a soak test, and the web pages.
 
 ## Credits
 
@@ -157,6 +202,7 @@ The voices are a build option: 8 (the default, as SLOOP), 12 or 16 (`INSTALL-CLI
 - **The second core** (0.7): its HAL (`firmware/hal/fm1_cpu1.{h,S}`) is Charles Vestal's ([X0X](https://github.com/charlesvestal/fm1-x0x)), after Kerem Kilic's [Melodee](https://github.com/keremimo/melodee); brought to SLOOP by Andre Rezemini ([sloop-lab](https://github.com/andrerezemini/sloop-lab), `cpu1.c`, `tests/cpu1_host.c`); 2.7.1's hold with the bus traps off after Felucca 1.6.1. Clipper's voice split is its own.
 - **Knob acceleration, LEVEL / PAN glide** (0.7): after [JIANT FM](https://github.com/juanjiant-bit/JIANT) by juanjiant-bit, through SLOOP 2.7.
 - **[SLOOP](https://github.com/isod89/sloop-fm1)** by 3dSam: everything Clipper starts from. Its manuals are in [docs/sloop](docs/sloop/).
+- Ideas, not code: the JUNO after Roland's Juno-6 / 60 / 106, VECTOR after the Sequential Prophet VS and the Korg Wavestation, FMX after the Korg opsix, WSEQ after the Wavestation, MACRO after Mutable Instruments Plaits, the filter models after the Korg MS-20, the Oberheim SEM and the diode ladders, TURNG after Music Thing Modular's Turing Machine, SPICE / DICE after the Arturia MicroFreak; `.scl` is Manuel Op de Coul's Scala format. All of it is Clipper's own code.
 - The supersaw follows Adam Szabo's analysis of the JP-8000. The FM6 engine is msfa (Dexed), and PHYS comes from DaisySP and Mutable Instruments Rings: see [LICENSING.md](LICENSING.md).
 
-M-VAVE and FM-1 are trademarks of their respective owners. Clipper is not affiliated with them.
+M-VAVE, FM-1 and the other product names in this file are trademarks of their respective owners. Clipper is not affiliated with them.

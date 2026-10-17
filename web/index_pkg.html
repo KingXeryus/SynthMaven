@@ -66,19 +66,19 @@
   <!--BANNER-->
   <h1 data-t="kicker"></h1>
   <section data-l="en">
-  <p class="lead">Clipper turns the FM-1 into a deep polyphonic synthesizer: 17 synthesis engines, 308 sounds, and HYBRID, a voice with three oscillators, two filters and a 16-slot modulation matrix that you can edit entirely in your browser.</p>
+  <p class="lead">Clipper turns the FM-1 into a deep polyphonic synthesizer: 23 synthesis engines and 409 sounds, from HYBRID (three oscillators, two filters, a 16-slot matrix) to FM, wavetables, vector, wave sequencing, a Juno with its chorus and physical models; a modulation matrix and sequencer on every sound, eight filter models, microtuning with Scala scales, and every parameter editable in your browser.</p>
   </section>
   <section data-l="fr">
-  <p class="lead">Clipper fait de la FM-1 un vrai synthétiseur polyphonique : 17 moteurs de synthèse, 308 sons, et HYBRID, une voix à trois oscillateurs, deux filtres et une matrice de modulation de 16 slots, entièrement éditable dans ton navigateur.</p>
+  <p class="lead">Clipper fait de la FM-1 un vrai synthétiseur polyphonique : 23 moteurs de synthèse et 409 sons, de HYBRID (trois oscillateurs, deux filtres, une matrice de 16 slots) à la FM, aux tables d'ondes, au vectoriel, au wave sequencing, à un Juno avec son chorus et aux modèles physiques ; une matrice et un séquenceur de modulation sur chaque son, huit modèles de filtre, le micro-accordage avec les gammes Scala, et chaque paramètre éditable dans ton navigateur.</p>
   </section>
   <section data-l="ja">
-  <p class="lead">Clipper は FM-1 を本格的なポリフォニック・シンセサイザーに変えます。17 の音源エンジン、308 の音色、そして 3 オシレーター・2 フィルター・16 スロットのモジュレーション・マトリクスを持つ HYBRID。音色はすべてブラウザから編集できます。</p>
+  <p class="lead">Clipper は FM-1 を本格的なポリフォニック・シンセサイザーに変えます。23 の音源エンジンと 409 の音色：HYBRID（3 オシレーター、2 フィルター、16 スロットのマトリクス）から FM、ウェーブテーブル、ベクター、ウェーブ・シーケンス、コーラス付きの Juno、物理モデリングまで。すべての音色にモジュレーション・マトリクスとシーケンサー、8 種類のフィルター・モデル、Scala 音階によるマイクロチューニング。すべてのパラメーターをブラウザから編集できます。</p>
   </section>
   <div class="tiles">
-    <div class="tile" style="--c: var(--blue)"><b>17</b><span data-t="tEng"></span></div>
-    <div class="tile" style="--c: var(--green)"><b>308</b><span data-t="tSnd"></span></div>
-    <div class="tile" style="--c: var(--yellow)"><b>3+2</b><span data-t="tHy"></span></div>
-    <div class="tile" style="--c: var(--orange)"><b>16</b><span data-t="tMx"></span></div>
+    <div class="tile" style="--c: var(--blue)"><b>23</b><span data-t="tEng"></span></div>
+    <div class="tile" style="--c: var(--green)"><b>409</b><span data-t="tSnd"></span></div>
+    <div class="tile" style="--c: var(--yellow)"><b>8</b><span data-t="tHy"></span></div>
+    <div class="tile" style="--c: var(--orange)"><b>13</b><span data-t="tMx"></span></div>
   </div>
   <p data-t="intro"></p>
   <p data-t="warn"></p>
@@ -91,117 +91,141 @@
     <h2>Engines</h2>
     <dl class="engines">
       <div><dt>HYBRID</dt><dd>The Clipper voice. Three oscillators (saw, pulse, triangle, sine with feedback, morph, a seven-saw supersaw, FM, hard sync, wavefolder, noise), ring modulation, drift and drive; two filters (LP12, LP24, a Moog ladder, band-pass, high-pass, notch, peak) in series, in parallel or split; two envelopes and two tempo-synced LFOs per voice; a 16-slot modulation matrix; four macros.</dd></div>
+      <div><dt>FMX</dt><dd>Six operators after the Korg opsix: each its own wave (ten) and mode (PM, true linear FM or RING), a ratio or a fixed frequency, its own envelope; any operator into any other with its own amount, 40 templates to start from, a pitch envelope. It also plays the DX7 voices of the bank.</dd></div>
+      <div><dt>FM6</dt><dd>Six-operator FM with the DX7's 32 algorithms. Load classic DX7 banks (.syx) from the editor.</dd></div>
+      <div><dt>DIGITAL</dt><dd>Four-operator FM with eight algorithms: bells, basses, electric pianos.</dd></div>
       <div><dt>WAVE</dt><dd>Wavetables: 16 tables of 16 frames (classic shapes, PWM, sync, FM, fold, formants, PPG-style sweeps…) morphed by POS, the envelope and the LFO, band-limited by octave so they never alias. Import your own (Serum-style WAV) from the editor.</dd></div>
+      <div><dt>WSEQ</dt><dd>Wave sequencing after the Korg Wavestation: each note plays a sequence of waves, pitches and levels at the song's tempo, each step crossfading into the next. 16 sequences.</dd></div>
+      <div><dt>VECTOR</dt><dd>Vector synthesis after the Sequential Prophet VS and the Wavestation's joystick: four waves at the corners of a square, a point (X, Y) mixing them, and paths that move it by themselves from each note.</dd></div>
+      <div><dt>JUNO</dt><dd>The Juno-6 / 60 / 106 idea: one DCO per voice with saw, pulse (PWM) or both, a sub and noise; the four-position high-pass, a 24 dB ladder, and the stereo BBD chorus I, II and I+II. The chorus is also an insert effect for any sound.</dd></div>
+      <div><dt>ANALOG</dt><dd>Virtual analog: two band-limited oscillators with PWM, noise and drive, into one of eight filter models: SVF, Moog ladder, MS-20, diode ladder, SEM, notch, band-pass, high-pass.</dd></div>
       <div><dt>ACID</dt><dd>A 303-style bass line voice: saw or square into a self-oscillating ladder, the filter envelope, accent (louder, sharper, and the sweep that climbs over a run of accents), slides that glide without retriggering, and drive.</dd></div>
       <div><dt>STRINGS</dt><dd>A 70s string machine: divide-down 16', 8' and 4' registers through a three-line ensemble chorus (slow sweep and fast shimmer), saw to square, a key-tracked filter.</dd></div>
-      <div><dt>MACRO</dt><dd>Four macro-oscillator models inspired by Mutable Instruments Plaits, each on three knobs: CHORD (eleven chords and inversions), SWARM (eight drifting oscillators), ADDITIVE (16 harmonics under a moving bump), SPEECH (formants speaking words), with a low-pass gate.</dd></div>
-      <div><dt>ANALOG</dt><dd>Virtual analog: two band-limited oscillators with PWM, noise, drive, and a resonant low-pass: a 12 dB SVF or a 24 dB Moog ladder.</dd></div>
-      <div><dt>FM6</dt><dd>Six-operator FM with 32 algorithms. Load classic DX7 patches (.syx) from the editor.</dd></div>
-      <div><dt>DIGITAL</dt><dd>Four-operator FM with eight algorithms: bells, basses, electric pianos.</dd></div>
+      <div><dt>MACRO</dt><dd>Four macro-oscillator models inspired by Mutable Instruments Plaits, each on three knobs: CHORD, SWARM (eight drifting oscillators), ADDITIVE (16 harmonics under a moving bump), SPEECH (formants speaking words), with a low-pass gate.</dd></div>
       <div><dt>PHASE</dt><dd>Phase distortion in the tradition of the 80s CZ synths.</dd></div>
+      <div><dt>VPS</dt><dd>Vector phaseshaping (after Kleimola, Lazzarini, Timoney and Välimäki): a sine through a bent phase, from phase-distorted waves to formant sweeps, alias-free.</dd></div>
+      <div><dt>TERRAIN</dt><dd>Wave terrain synthesis: an orbit circles over one of eight surfaces; its position and size choose the harmonics, and it drifts for timbres that keep evolving.</dd></div>
+      <div><dt>PHYS</dt><dd>Physical models: plucked strings, bells and bars, drum heads, sympathetic strings (after Mutable Instruments Rings and DaisySP).</dd></div>
       <div><dt>TRIO</dt><dd>The sound chip of the 8-bit home computers: three oscillators, ring modulation, sync and a multimode filter.</dd></div>
       <div><dt>LOFI</dt><dd>Chiptune voice: pulse, triangle, wave RAM and pitch sweeps.</dd></div>
       <div><dt>WHEEL</dt><dd>Tonewheel organ with nine drawbars.</dd></div>
       <div><dt>VOICE</dt><dd>Formant synthesis: sung vowels from the keyboard.</dd></div>
-      <div><dt>PHYS</dt><dd>Physical models: plucked strings, bells and bars, drum heads, sympathetic strings (after Mutable Instruments Rings and DaisySP).</dd></div>
-      <div><dt>GRAIN</dt><dd>Granular synthesis over your own samples.</dd></div>
-      <div><dt>SAMPLE</dt><dd>Your own multisampled instruments, sent from the editor (four slots).</dd></div>
       <div><dt>NOISE</dt><dd>From analog hiss to metallic shift-register tones, through a resonant filter.</dd></div>
+      <div><dt>GRAIN</dt><dd>Granular clouds: on four sources of Clipper's own (a choir, a glass harmonica, a saw ensemble, breath), synthesized, or on your own samples.</dd></div>
+      <div><dt>SAMPLE</dt><dd>Clipper's four sources as playable instruments, or your own multisampled ones sent from the editor (four slots).</dd></div>
     </dl>
     <h2>Play</h2>
     <ul>
-      <li>Up to 8 voices of polyphony, with glide, velocity, mono unison and poly unison (2 or 4 voices a note) on every engine.</li>
-      <li>Layer two sounds or split the keyboard between them; swap them to edit either one.</li>
-      <li>Morph between two versions of a sound (MIDI CC 20), or let the randomizer suggest a new one (and undo it).</li>
-      <li>Velocity, mod wheel and aftertouch routings on every engine: vibrato, cutoff, shape, wah, tremolo.</li>
-      <li>Arpeggiator, step sequencer with chords and recording, scales and chords on the keys.</li>
-      <li>MIDI over USB and TRS on every channel: pitch bend, mod wheel, expression, sustain pedal, channel and polyphonic aftertouch, the four macros on CC 16 to 19.</li>
+      <li>8 voices of polyphony (12 or 16 as a build option, rendered on both processor cores), with glide, velocity, mono, legato, unison and poly unison (2 or 4 voices a note) on every engine.</li>
+      <li>Layer two sounds, split the keyboard between them, or play them as two parts on two MIDI channels (MULTI).</li>
+      <li>An arpeggiator with 15 modes, among them a Turing machine (TURNG) that loops and mutates a melody from the held notes; SPICE and DICE vary the arp's and the sequencer's notes the same way each time round.</li>
+      <li>A step sequencer with chords and recording, scales and chords on the keys, KBD HOLD.</li>
+      <li>Undo and compare on the FM-1, favourites, morph between two versions of a sound (MIDI CC 20), a randomizer by section.</li>
+      <li>MPE (per-note bend, pressure and slide), and MIDI over USB and TRS: pitch bend, mod wheel, expression, sustain pedal, channel and polyphonic aftertouch, the four HYBRID macros on CC 16 to 19.</li>
       <li>The FM-1 is also a USB audio interface: record it straight into your computer.</li>
     </ul>
     <h2>Sound</h2>
     <ul>
       <li>44.1 kHz. Band-limited oscillators everywhere: polyBLEP saws and pulses, polyBLAMP triangles, a band-limited hard sync, FM, feedback and wavefolding held below 20 kHz.</li>
-      <li>Zero-delay-feedback filters: a 24 dB Moog ladder that self-oscillates, SVFs whose resonance saturates softly.</li>
-      <li>Effects: distortion, stereo chorus, tempo-synced delay, a room reverb and a plate reverb (after Dattorro) with pre-delay. A master 3-band EQ and a bus compressor. Level-matched presets.</li>
-      <li>A web editor for every parameter: the whole HYBRID patch, DX7 banks, your sound library, backups.</li>
+      <li>Zero-delay-feedback filters: a 24 dB Moog ladder that self-oscillates, SVFs whose resonance saturates softly, and on ANALOG, WAVE and VECTOR eight models to choose from (SVF, Moog, MS-20, diode ladder, SEM, notch, band-pass, high-pass).</li>
+      <li>Modulation on every engine: a six-slot matrix, a second LFO and envelope, and the MOD SEQ, a four-lane modulation sequencer. VINTAGE gives each voice its own small tuning, filter offset and drift, like an analog poly.</li>
+      <li>Tunings: equal, just, Pythagorean, meantone, Werckmeister III, Kirnberger III, the maqams Rast and Bayati, slendro, pelog, 19, 24 and 31-EDO, and any Scala (.scl) scale sent from the editor.</li>
+      <li>Effects: an insert per sound (drive, fuzz, fold, crush, phaser, flanger, chorus, the Juno chorus), distortion, stereo chorus, tempo-synced delay, room and plate reverbs (after Dattorro). A master 3-band EQ, a bus compressor, a look-ahead limiter. Level-matched presets; settings glide instead of clicking.</li>
+      <li>A web editor for every parameter: the whole HYBRID and FMX patches, the MOD SEQ, tunings and .scl files, DX7 banks, wavetables and samples, your sound library, backups.</li>
     </ul>
   </section>
   <section class="about" data-l="fr">
     <h2>Moteurs</h2>
     <dl class="engines">
       <div><dt>HYBRID</dt><dd>La voix de Clipper. Trois oscillateurs (dent de scie, pulse, triangle, sinus avec feedback, morph, supersaw à sept dents de scie, FM, hard sync, wavefolder, bruit), modulation en anneau, drift et saturation ; deux filtres (LP12, LP24, ladder Moog, passe-bande, passe-haut, notch, peak) en série, en parallèle ou séparés ; deux enveloppes et deux LFO synchronisables au tempo par voix ; une matrice de modulation de 16 slots ; quatre macros.</dd></div>
+      <div><dt>FMX</dt><dd>Six opérateurs dans l'esprit du Korg opsix : chacun sa forme d'onde (dix) et son mode (PM, vraie FM linéaire ou RING), un rapport ou une fréquence fixe, son enveloppe ; n'importe quel opérateur vers n'importe quel autre avec sa quantité, 40 modèles de départ, une enveloppe de hauteur. Il joue aussi les voix DX7 de la banque.</dd></div>
+      <div><dt>FM6</dt><dd>FM à six opérateurs avec les 32 algorithmes du DX7. Charge les banques DX7 classiques (.syx) depuis l'éditeur.</dd></div>
+      <div><dt>DIGITAL</dt><dd>FM à quatre opérateurs, huit algorithmes : cloches, basses, pianos électriques.</dd></div>
       <div><dt>WAVE</dt><dd>Tables d'ondes : 16 tables de 16 frames (formes classiques, PWM, sync, FM, fold, formants, balayages façon PPG…) parcourues par POS, l'enveloppe et le LFO, à bande limitée par octave : jamais de repliement. Importe les tiennes (WAV façon Serum) depuis l'éditeur.</dd></div>
+      <div><dt>WSEQ</dt><dd>Le wave sequencing du Korg Wavestation : chaque note joue une suite de formes d'onde, de hauteurs et de niveaux au tempo du morceau, chaque pas en fondu dans le suivant. 16 suites.</dd></div>
+      <div><dt>VECTOR</dt><dd>La synthèse vectorielle du Sequential Prophet VS et du joystick du Wavestation : quatre formes d'onde aux coins d'un carré, un point (X, Y) qui les mélange, et des trajets qui le déplacent tout seuls à chaque note.</dd></div>
+      <div><dt>JUNO</dt><dd>L'idée des Juno-6 / 60 / 106 : un DCO par voix avec dent de scie, impulsion (PWM) ou les deux, un sub et du bruit ; le passe-haut à quatre positions, un ladder 24 dB, et le chorus BBD stéréo I, II et I+II. Le chorus existe aussi en effet insert pour n'importe quel son.</dd></div>
+      <div><dt>ANALOG</dt><dd>Analogique virtuel : deux oscillateurs à bande limitée avec PWM, bruit et saturation, dans un des huit modèles de filtre : SVF, ladder Moog, MS-20, ladder à diodes, SEM, notch, passe-bande, passe-haut.</dd></div>
       <div><dt>ACID</dt><dd>Une voix de basse façon 303 : dent de scie ou carré dans un ladder qui auto-oscille, l'enveloppe de filtre, l'accent (plus fort, plus vif, et le balayage qui grimpe sur une suite d'accents), des slides qui glissent sans relancer l'enveloppe, et la saturation.</dd></div>
       <div><dt>STRINGS</dt><dd>Une string machine des années 70 : registres 16', 8' et 4' à division, un chorus d'ensemble à trois lignes (balayage lent et vibrato rapide), de la dent de scie au carré, un filtre qui suit le clavier.</dd></div>
-      <div><dt>MACRO</dt><dd>Quatre modèles de macro-oscillateurs inspirés de Mutable Instruments Plaits, chacun sur trois boutons : CHORD (onze accords et leurs renversements), SWARM (huit oscillateurs qui dérivent), ADDITIVE (16 harmoniques sous une bosse mobile), SPEECH (des formants qui disent des mots), avec un low-pass gate.</dd></div>
-      <div><dt>ANALOG</dt><dd>Analogique virtuel : deux oscillateurs à bande limitée avec PWM, bruit, saturation, et un passe-bas résonant : SVF 12 dB ou ladder Moog 24 dB.</dd></div>
-      <div><dt>FM6</dt><dd>FM à six opérateurs, 32 algorithmes. Charge les patchs DX7 classiques (.syx) depuis l'éditeur.</dd></div>
-      <div><dt>DIGITAL</dt><dd>FM à quatre opérateurs, huit algorithmes : cloches, basses, pianos électriques.</dd></div>
+      <div><dt>MACRO</dt><dd>Quatre modèles de macro-oscillateurs inspirés de Mutable Instruments Plaits, chacun sur trois boutons : CHORD, SWARM (huit oscillateurs qui dérivent), ADDITIVE (16 harmoniques sous une bosse mobile), SPEECH (des formants qui disent des mots), avec un low-pass gate.</dd></div>
       <div><dt>PHASE</dt><dd>Distorsion de phase, dans l'esprit des synthés CZ des années 80.</dd></div>
+      <div><dt>VPS</dt><dd>Le vector phaseshaping (d'après Kleimola, Lazzarini, Timoney et Välimäki) : un sinus lu à travers une phase pliée, des ondes à distorsion de phase jusqu'aux balayages de formants, sans repliement.</dd></div>
+      <div><dt>TERRAIN</dt><dd>La synthèse par wave terrain : une orbite tourne au-dessus d'une de huit surfaces ; sa position et sa taille choisissent les harmoniques, et elle dérive pour des timbres qui évoluent sans cesse.</dd></div>
+      <div><dt>PHYS</dt><dd>Modèles physiques : cordes pincées, cloches et lames, peaux de tambour, cordes sympathiques (d'après Mutable Instruments Rings et DaisySP).</dd></div>
       <div><dt>TRIO</dt><dd>La puce sonore des ordinateurs 8 bits : trois oscillateurs, modulation en anneau, sync et filtre multimode.</dd></div>
       <div><dt>LOFI</dt><dd>Voix chiptune : pulse, triangle, wave RAM et balayages de hauteur.</dd></div>
       <div><dt>WHEEL</dt><dd>Orgue à roues phoniques, neuf tirettes.</dd></div>
       <div><dt>VOICE</dt><dd>Synthèse de formants : des voyelles chantées au clavier.</dd></div>
-      <div><dt>PHYS</dt><dd>Modèles physiques : cordes pincées, cloches et lames, peaux de tambour, cordes sympathiques (d'après Mutable Instruments Rings et DaisySP).</dd></div>
-      <div><dt>GRAIN</dt><dd>Synthèse granulaire sur tes propres samples.</dd></div>
-      <div><dt>SAMPLE</dt><dd>Tes propres instruments multi-échantillonnés, envoyés depuis l&#39;éditeur (quatre emplacements).</dd></div>
       <div><dt>NOISE</dt><dd>Du souffle analogique aux sons métalliques des registres à décalage, à travers un filtre résonant.</dd></div>
+      <div><dt>GRAIN</dt><dd>Des nuages granulaires : sur quatre sources propres à Clipper (un chœur, un harmonica de verre, un ensemble de dents de scie, du souffle), synthétisées, ou sur tes propres samples.</dd></div>
+      <div><dt>SAMPLE</dt><dd>Les quatre sources de Clipper en instruments, ou tes propres instruments multi-échantillonnés envoyés depuis l&#39;éditeur (quatre emplacements).</dd></div>
     </dl>
     <h2>Jouer</h2>
     <ul>
-      <li>Jusqu'à 8 voix de polyphonie, avec glide, vélocité, unisson mono et unisson polyphonique (2 ou 4 voix par note) sur tous les moteurs.</li>
-      <li>Superpose deux sons (layer) ou partage le clavier entre eux (split) ; échange-les pour éditer l'un ou l'autre.</li>
-      <li>Morph entre deux versions d'un son (MIDI CC 20), ou laisse le randomiseur en proposer un nouveau (et annule-le).</li>
-      <li>Vélocité, molette et aftertouch sur tous les moteurs : vibrato, cutoff, forme, wah, trémolo.</li>
-      <li>Arpégiateur, séquenceur pas à pas avec accords et enregistrement, gammes et accords sur les touches.</li>
-      <li>MIDI par USB et TRS sur tous les canaux : pitch bend, molette, expression, pédale de sustain, aftertouch par canal et polyphonique, les quatre macros sur les CC 16 à 19.</li>
+      <li>8 voix de polyphonie (12 ou 16 en option de compilation, calculées sur les deux cœurs du processeur), avec glide, vélocité, mono, legato, unisson et unisson polyphonique (2 ou 4 voix par note) sur tous les moteurs.</li>
+      <li>Superpose deux sons, partage le clavier entre eux, ou joue-les comme deux parties sur deux canaux MIDI (MULTI).</li>
+      <li>Un arpégiateur à 15 modes, dont une machine de Turing (TURNG) qui fait tourner et muter une mélodie à partir des notes tenues ; SPICE et DICE font varier les notes de l'arpège et du séquenceur, de la même façon à chaque tour.</li>
+      <li>Un séquenceur pas à pas avec accords et enregistrement, gammes et accords sur les touches, KBD HOLD.</li>
+      <li>Undo et comparaison sur la FM-1, favoris, morph entre deux versions d'un son (MIDI CC 20), randomiseur par section.</li>
+      <li>MPE (bend, pression et slide par note), et MIDI par USB et TRS : pitch bend, molette, expression, pédale de sustain, aftertouch par canal et polyphonique, les quatre macros HYBRID sur les CC 16 à 19.</li>
       <li>La FM-1 devient aussi une interface audio USB : enregistre-la directement dans ton ordinateur.</li>
     </ul>
     <h2>Le son</h2>
     <ul>
       <li>44,1 kHz. Oscillateurs à bande limitée partout : dents de scie et pulses polyBLEP, triangles polyBLAMP, hard sync à bande limitée, FM, feedback et wavefolding tenus sous 20 kHz.</li>
-      <li>Filtres à retour sans délai (ZDF) : un ladder Moog 24 dB qui auto-oscille, des SVF dont la résonance sature en douceur.</li>
-      <li>Effets : distorsion, chorus stéréo, delay synchronisé au tempo, une réverb room et une réverb plate (d&#39;après Dattorro) avec pré-délai. Un EQ 3 bandes et un compresseur de bus sur le master. Presets de niveau égal.</li>
-      <li>Un éditeur web pour chaque paramètre : tout le patch HYBRID, les banques DX7, ta bibliothèque de sons, les sauvegardes.</li>
+      <li>Filtres à retour sans délai (ZDF) : un ladder Moog 24 dB qui auto-oscille, des SVF dont la résonance sature en douceur, et sur ANALOG, WAVE et VECTOR huit modèles au choix (SVF, Moog, MS-20, ladder à diodes, SEM, notch, passe-bande, passe-haut).</li>
+      <li>La modulation sur tous les moteurs : une matrice de 6 slots, un 2e LFO et une 2e enveloppe, et le MOD SEQ, un séquenceur de modulation à 4 pistes. VINTAGE donne à chaque voix son petit écart d'accord et de filtre et sa dérive, comme un vrai polyphonique analogique.</li>
+      <li>Accordages : égal, juste, Pythagore, mésotonique, Werckmeister III, Kirnberger III, les maqams Rast et Bayati, slendro, pelog, 19, 24 et 31-EDO, et toute gamme Scala (.scl) envoyée depuis l'éditeur.</li>
+      <li>Effets : un insert par son (saturation, fuzz, fold, crush, phaser, flanger, chorus, le chorus Juno), distorsion, chorus stéréo, delay synchronisé au tempo, réverbs room et plate (d&#39;après Dattorro). Sur le master, un EQ 3 bandes, un compresseur de bus et un limiteur. Presets de niveau égal ; les réglages glissent au lieu de claquer.</li>
+      <li>Un éditeur web pour chaque paramètre : les patchs HYBRID et FMX en entier, le MOD SEQ, les accordages et fichiers .scl, les banques DX7, tables d'ondes et samples, ta bibliothèque de sons, les sauvegardes.</li>
     </ul>
   </section>
   <section class="about" data-l="ja">
     <h2>エンジン</h2>
     <dl class="engines">
       <div><dt>HYBRID</dt><dd>Clipper のボイス。3 オシレーター（ノコギリ波、パルス、三角波、フィードバック付きサイン、モーフ、7 本のスーパーソウ、FM、ハードシンク、ウェーブフォルダー、ノイズ）、リングモジュレーション、ドリフト、ドライブ。2 フィルター（LP12、LP24、Moog ラダー、BP、HP、ノッチ、ピーク）を直列・並列・スプリットで。ボイスごとに 2 エンベロープとテンポ同期できる 2 LFO、16 スロットのマトリクス、4 つのマクロ。</dd></div>
+      <div><dt>FMX</dt><dd>Korg opsix に着想を得た 6 オペレーター。オペレーターごとに波形（10 種）とモード（PM、リニア FM、リング）、レシオまたは固定周波数、専用エンベロープ。どのオペレーターからどのオペレーターへも量を決めて接続でき、40 のテンプレート、ピッチ・エンベロープ付き。バンクの DX7 音色も演奏できます。</dd></div>
+      <div><dt>FM6</dt><dd>DX7 の 32 アルゴリズムを持つ 6 オペレーター FM。エディタから DX7 のバンク（.syx）を読み込めます。</dd></div>
+      <div><dt>DIGITAL</dt><dd>4 オペレーター FM、8 アルゴリズム：ベル、ベース、エレピ。</dd></div>
       <div><dt>WAVE</dt><dd>ウェーブテーブル：16 フレームのテーブルが 16 種類（基本波形、PWM、シンク、FM、フォールド、フォルマント、PPG 風スイープ…）。POS、エンベロープ、LFO でモーフィングし、オクターブごとに帯域制限して折り返しなし。エディタから自分のテーブル（Serum 形式の WAV）も読み込めます。</dd></div>
+      <div><dt>WSEQ</dt><dd>Korg Wavestation に着想を得たウェーブ・シーケンス：ノートごとに波形・ピッチ・レベルのステップを曲のテンポで鳴らし、ステップ間はクロスフェード。16 シーケンス。</dd></div>
+      <div><dt>VECTOR</dt><dd>Sequential Prophet VS と Wavestation のジョイスティックに着想を得たベクター合成：正方形の四隅に 4 つの波形、その中の点（X、Y）で混ぜ、点はノートごとに自動で動かすこともできます。</dd></div>
+      <div><dt>JUNO</dt><dd>Juno-6 / 60 / 106 のアイデア：ボイスごとに 1 つの DCO（ノコギリ波、PWM 付きパルス、両方）、サブとノイズ。4 段階のハイパス、24 dB ラダー、ステレオ BBD コーラス I・II・I+II。コーラスはどの音色にもインサート・エフェクトとして使えます。</dd></div>
+      <div><dt>ANALOG</dt><dd>バーチャルアナログ：帯域制限された 2 オシレーター、PWM、ノイズ、ドライブ、8 種類のフィルター・モデル（SVF、Moog ラダー、MS-20、ダイオード・ラダー、SEM、ノッチ、BP、HP）。</dd></div>
       <div><dt>ACID</dt><dd>303 風ベースライン：ノコギリ波または矩形波を自己発振するラダーへ。フィルター・エンベロープ、アクセント（大きく鋭く、続くアクセントで上がっていくスイープ）、エンベロープを再トリガーしないスライド、ドライブ。</dd></div>
       <div><dt>STRINGS</dt><dd>70 年代のストリング・マシン：分周の 16'・8'・4' レジスター、3 ラインのアンサンブル・コーラス（ゆっくりしたスイープと速いシマー）、ノコギリ波から矩形波へ、キートラックするフィルター。</dd></div>
-      <div><dt>MACRO</dt><dd>Mutable Instruments Plaits に着想を得た 4 つのマクロ・オシレーター。それぞれ 3 つのノブで：CHORD（11 のコードと転回形）、SWARM（揺らぐ 8 オシレーター）、ADDITIVE（動くピークの下の 16 倍音）、SPEECH（言葉を話すフォルマント）。ローパス・ゲート付き。</dd></div>
-      <div><dt>ANALOG</dt><dd>バーチャルアナログ：帯域制限された 2 オシレーター、PWM、ノイズ、ドライブ、レゾナンス付きローパス（12 dB SVF または 24 dB Moog ラダー）。</dd></div>
-      <div><dt>FM6</dt><dd>6 オペレーター FM、32 アルゴリズム。エディタから DX7 の音色（.syx）を読み込めます。</dd></div>
-      <div><dt>DIGITAL</dt><dd>4 オペレーター FM、8 アルゴリズム：ベル、ベース、エレピ。</dd></div>
+      <div><dt>MACRO</dt><dd>Mutable Instruments Plaits に着想を得た 4 つのマクロ・オシレーター。それぞれ 3 つのノブで：CHORD、SWARM（揺らぐ 8 オシレーター）、ADDITIVE（動くピークの下の 16 倍音）、SPEECH（言葉を話すフォルマント）。ローパス・ゲート付き。</dd></div>
       <div><dt>PHASE</dt><dd>80 年代の CZ シンセの流れをくむフェイズ・ディストーション。</dd></div>
+      <div><dt>VPS</dt><dd>ベクター・フェイズシェイピング（Kleimola、Lazzarini、Timoney、Välimäki による）：曲げた位相で読むサイン波。フェイズ・ディストーション波形からフォルマント・スイープまで、折り返しなし。</dd></div>
+      <div><dt>TERRAIN</dt><dd>ウェーブ・テレイン合成：8 種類の曲面の上を軌道が回り、その位置と大きさで倍音が決まります。軌道はゆっくり動き、音色が変化し続けます。</dd></div>
+      <div><dt>PHYS</dt><dd>物理モデリング：弦、ベルとバー、ドラムヘッド、共鳴弦（Mutable Instruments Rings と DaisySP より）。</dd></div>
       <div><dt>TRIO</dt><dd>8 ビット・パソコンの音源チップ：3 オシレーター、リングモジュレーション、シンク、マルチモード・フィルター。</dd></div>
       <div><dt>LOFI</dt><dd>チップチューン：パルス、三角波、波形メモリ、ピッチスイープ。</dd></div>
       <div><dt>WHEEL</dt><dd>9 本のドローバーを持つトーンホイール・オルガン。</dd></div>
       <div><dt>VOICE</dt><dd>フォルマント合成：鍵盤で歌う母音。</dd></div>
-      <div><dt>PHYS</dt><dd>物理モデリング：弦、ベルとバー、ドラムヘッド、共鳴弦（Mutable Instruments Rings と DaisySP より）。</dd></div>
-      <div><dt>GRAIN</dt><dd>自分のサンプルによるグラニュラー合成。</dd></div>
-      <div><dt>SAMPLE</dt><dd>エディタから送る自分のマルチサンプル楽器（4 スロット）。</dd></div>
       <div><dt>NOISE</dt><dd>アナログのヒスからシフトレジスターの金属音まで、レゾナンス・フィルターを通して。</dd></div>
+      <div><dt>GRAIN</dt><dd>グラニュラー・クラウド：Clipper 独自に合成した 4 つの素材（コーラス、グラス・ハーモニカ、ノコギリ波アンサンブル、ブレス）、または自分のサンプルで。</dd></div>
+      <div><dt>SAMPLE</dt><dd>Clipper の 4 つの素材を楽器として、またはエディタから送る自分のマルチサンプル楽器（4 スロット）。</dd></div>
     </dl>
     <h2>演奏</h2>
     <ul>
-      <li>最大 8 ボイスのポリフォニー、グライド、ベロシティ。全エンジンでモノ・ユニゾンとポリ・ユニゾン（1 音に 2 または 4 ボイス）。</li>
-      <li>2 つの音色をレイヤー、または鍵盤をスプリット。スワップでどちらの音色も編集できます。</li>
-      <li>音色の 2 つのバージョン間をモーフィング（MIDI CC 20）、またはランダマイザーで新しい音色を（元に戻すことも可能）。</li>
-      <li>全エンジンでベロシティ、モジュレーション・ホイール、アフタータッチ：ビブラート、カットオフ、シェイプ、ワウ、トレモロ。</li>
-      <li>アルペジエーター、和音と録音に対応したステップシーケンサー、鍵盤上のスケールとコード。</li>
-      <li>USB と TRS の MIDI（全チャンネル）：ピッチベンド、モジュレーション、エクスプレッション、サスティン、チャンネル／ポリ・アフタータッチ、CC 16〜19 の 4 マクロ。</li>
+      <li>8 ボイスのポリフォニー（ビルド・オプションで 12 または 16、プロセッサーの 2 コアで計算）。全エンジンでグライド、ベロシティ、モノ、レガート、ユニゾン、ポリ・ユニゾン（1 音に 2 または 4 ボイス）。</li>
+      <li>2 つの音色をレイヤー、鍵盤をスプリット、または 2 つの MIDI チャンネルで 2 パートとして演奏（MULTI）。</li>
+      <li>15 モードのアルペジエーター。押さえた音からメロディーをループさせ変化させるチューリング・マシン（TURNG）も。SPICE と DICE がアルペジエーターとシーケンサーの音を毎回同じように変化させます。</li>
+      <li>和音と録音に対応したステップシーケンサー、鍵盤上のスケールとコード、KBD HOLD。</li>
+      <li>FM-1 本体でアンドゥと比較、お気に入り、音色の 2 つのバージョン間のモーフィング（MIDI CC 20）、セクション別ランダマイザー。</li>
+      <li>MPE（ノートごとのベンド、プレッシャー、スライド）。USB と TRS の MIDI：ピッチベンド、モジュレーション、エクスプレッション、サスティン、チャンネル／ポリ・アフタータッチ、CC 16〜19 の HYBRID マクロ。</li>
       <li>FM-1 は USB オーディオ・インターフェースにもなり、そのままパソコンに録音できます。</li>
     </ul>
     <h2>サウンド</h2>
     <ul>
       <li>44.1 kHz。すべて帯域制限オシレーター：polyBLEP のノコギリ波とパルス、polyBLAMP の三角波、帯域制限ハードシンク、20 kHz 以下に抑えた FM・フィードバック・ウェーブフォールド。</li>
-      <li>ゼロディレイ・フィードバック・フィルター：自己発振する 24 dB Moog ラダー、レゾナンスがやわらかく飽和する SVF。</li>
-      <li>エフェクト：ディストーション、ステレオ・コーラス、テンポ同期ディレイ、ルームとプレート（Dattorro 方式、プリディレイ付き）の 2 種類のリバーブ。マスターに 3 バンド EQ とバス・コンプレッサー。音量をそろえたプリセット。</li>
-      <li>すべてのパラメーターを編集できるウェブ・エディタ：HYBRID の音色、DX7 バンク、音色ライブラリ、バックアップ。</li>
+      <li>ゼロディレイ・フィードバック・フィルター：自己発振する 24 dB Moog ラダー、レゾナンスがやわらかく飽和する SVF。ANALOG、WAVE、VECTOR では 8 種類のモデル（SVF、Moog、MS-20、ダイオード・ラダー、SEM、ノッチ、BP、HP）から選べます。</li>
+      <li>全エンジンでモジュレーション：6 スロットのマトリクス、2 つ目の LFO とエンベロープ、4 レーンのモジュレーション・シーケンサー MOD SEQ。VINTAGE はボイスごとに少しずつ違うチューニング、フィルター、ドリフトを与え、アナログ・ポリのように鳴らします。</li>
+      <li>チューニング：平均律、純正律、ピタゴラス、ミーントーン、ヴェルクマイスター III、キルンベルガー III、マカーム（ラースト、バヤーティー）、スレンドロ、ペロッグ、19・24・31 平均律、そしてエディタから送る Scala（.scl）音階。</li>
+      <li>エフェクト：音色ごとのインサート（ドライブ、ファズ、フォールド、クラッシュ、フェイザー、フランジャー、コーラス、Juno コーラス）、ディストーション、ステレオ・コーラス、テンポ同期ディレイ、ルームとプレート（Dattorro 方式）のリバーブ。マスターに 3 バンド EQ、バス・コンプレッサー、ルックアヘッド・リミッター。音量をそろえたプリセット。設定はクリックせずになめらかに変わります。</li>
+      <li>すべてのパラメーターを編集できるウェブ・エディタ：HYBRID と FMX の音色全体、MOD SEQ、チューニングと .scl、DX7 バンク、ウェーブテーブルとサンプル、音色ライブラリ、バックアップ。</li>
     </ul>
   </section>
   <hr>
@@ -221,10 +245,10 @@
     <p class="small" data-t="back"></p>
   </details>
   <p class="small"><b>Clipper</b> by 3dSam (<a href="https://github.com/isod89" target="_blank" rel="noopener">isod89</a>), grown from <a href="https://github.com/isod89/sloop-fm1" target="_blank" rel="noopener">SLOOP</a> and based on <a href="https://github.com/hugelton/Felucca" target="_blank" rel="noopener">Felucca</a> by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener">Hügelton Instruments</a>.
-    FM6: msfa / Dexed (Apache-2.0). PHYS: DaisySP and Mutable Instruments Rings (MIT). Supersaw after Adam Szabo's JP-8000 analysis; ladder after Vadim Zavalishin; plate after Jon Dattorro.
+    FM6: msfa / Dexed (Apache-2.0). PHYS: DaisySP and Mutable Instruments Rings (MIT). Supersaw after Adam Szabo's JP-8000 analysis; ladder after Vadim Zavalishin; plate after Jon Dattorro. JUNO, VECTOR, FMX, WSEQ, MACRO, the filter models and TURNG are Clipper's own code after the ideas of the Roland Juno, the Prophet VS and Wavestation, the Korg opsix, Mutable Instruments Plaits, the MS-20, SEM and diode ladders, Music Thing Modular's Turing Machine, and SPICE / DICE after the Arturia MicroFreak; .scl is the Scala format.
     Hold OCT− alone while switching on for USB rescue.<br>
     Font: Terminus (Dimitar Toshkov Zhekov, SIL OFL 1.1).<br>
-    M-VAVE and FM-1 are trademarks of their respective owners; Clipper is not affiliated with them.<br>
+    M-VAVE, FM-1 and the other product names above are trademarks of their respective owners; Clipper is not affiliated with them.<br>
     <span data-t="license"></span> <a href="https://github.com/hugelton/Felucca" target="_blank" rel="noopener">github.com/hugelton/Felucca</a></p>
 </main>
 <script type="module">
@@ -233,7 +257,7 @@ const $ = (id) => document.getElementById(id);
 const TEXT = {
   ja: {
     kicker: "M-VAVE FM-1 のためのシンセサイザー・ファームウェア",
-    tEng: "音源エンジン", tSnd: "音色、レベル調整済み", tHy: "hybrid：オシレーターとフィルター", tMx: "モジュレーション・スロット",
+    tEng: "音源エンジン", tSnd: "音色、レベル調整済み", tHy: "フィルター・モデル", tMx: "チューニング＋自分の Scala 音階",
     intro: "FM-1 を USB で接続してください。（Chrome か Edge で使えます）",
     warn: "書き込み中は USB を抜かないでください。",
     install: "インストール", other: "English",
@@ -241,7 +265,6 @@ const TEXT = {
     direct: "USB ケーブルはパソコンに直接つないでください。Probe や Transporter などの機材は不要です。",
     brick: "万一インストールに失敗して起動しなくなった場合は、復旧に Transporter が必要です:",
     beta: "これはベータ版で、不安定な場合があります。このカスタムファームウェアを使ったことで FM-1 が壊れたり不具合が起きたりしても、作者は一切の責任を負いません。自己責任でお使いください。",
-    back: "公式ファームウェアに戻すには、M-VAVE 公式のアップデーター M-UPGRADE（Downloads → PC Software → M-UPGRADE）と公式ファームウェア（PC Firmware → FM-1 V15）が必要です。",
     nomidi: "このブラウザでは使えません。Chrome か Edge で開いてください。", loadfail: "読み込めませんでした: ",
     start: "開始します", verify: "確認中", loader: "書き込みモードに切り替え中", write: "書き込み中",
     reboot: "再起動中", done: "完了しました", stopped: "途中で止まりました。USB を挿し直してもう一度押してください。",
@@ -269,7 +292,7 @@ const TEXT = {
   },
   en: {
     kicker: "Synthesizer firmware for the M-VAVE FM-1",
-    tEng: "synthesis engines", tSnd: "sounds, level-matched", tHy: "hybrid: oscillators + filters", tMx: "modulation matrix slots",
+    tEng: "synthesis engines", tSnd: "sounds, level-matched", tHy: "filter models", tMx: "tunings + your own Scala scales",
     intro: "Connect the FM-1 by USB. (Works in Chrome or Edge.)",
     warn: "Do not unplug the USB cable while writing.",
     install: "Install", other: "français",
@@ -277,7 +300,6 @@ const TEXT = {
     direct: "Connect the USB cable directly to the computer. No probe or Transporter is needed.",
     brick: "If an install fails and the FM-1 no longer starts, recovering it needs a Transporter:",
     beta: "This is a beta and may be unstable. The author accepts no responsibility if your FM-1 is damaged or misbehaves because of this custom firmware. Use it at your own risk.",
-    back: "To go back to the official firmware you need M-VAVE's official updater, M-UPGRADE (Downloads → PC Software → M-UPGRADE), and the official firmware (PC Firmware → FM-1 V15).",
     nomidi: "This browser cannot do it. Open the page in Chrome or Edge.", loadfail: "Could not load: ",
     start: "Starting", verify: "Verifying", loader: "Switching to update mode", write: "Writing",
     reboot: "Restarting", done: "Done", stopped: "Stopped. Replug the USB cable and press Install again.",
@@ -305,7 +327,7 @@ const TEXT = {
   },
   fr: {
     kicker: "Firmware synthétiseur pour la M-VAVE FM-1",
-    tEng: "moteurs de synthèse", tSnd: "sons, niveaux égalisés", tHy: "hybrid : oscillateurs + filtres", tMx: "slots de modulation",
+    tEng: "moteurs de synthèse", tSnd: "sons, niveaux égalisés", tHy: "modèles de filtre", tMx: "accordages + tes gammes Scala",
     intro: "Branche la FM-1 en USB. (Fonctionne dans Chrome ou Edge.)",
     warn: "Ne débranche pas le câble USB pendant l'écriture.",
     install: "Installer", other: "日本語",

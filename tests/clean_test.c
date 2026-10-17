@@ -58,6 +58,7 @@ static void neutral(track_t *t)
     t->p[P_LD_PIT] = 0, t->p[P_AMODE] = 0, t->p[P_ATK] = t->p[P_ATK] > 40 ? 40 : t->p[P_ATK];
 }
 typedef void (*change_fn)(track_t *t, uint32_t k);
+static int attacks_ok;           /* (sounds loaded: from silence, a new sound's own attack is not a click) */
 /* hold a chord, the steady sound, k changes (each followed by settle blocks), the steady sound again */
 static void check(const char *what, uint32_t eng, uint32_t pi, change_fn fn, uint32_t k, uint32_t settle)
 {
@@ -80,7 +81,7 @@ static void check(const char *what, uint32_t eng, uint32_t pi, change_fn fn, uin
         s = d2max();
         run(150);
         steady = d2max();
-        if (s > 2 * (steady > before ? steady : before) + 400 && s > worst)
+        if (s > 2 * (steady > before ? steady : before) + 400 && s > worst && !(attacks_ok && before < 8))
             worst = s, at = (int32_t)j;
         before = steady;
     }
@@ -151,11 +152,11 @@ int main(void)
     trk[1].p[P_LYMODE] = LY_OFF;
     song.g[G_BPM] = 120;
     for (e = 0; e < NENGINES; e++) {                    /* a sound loaded under the chord, every engine */
-        char w[80];
-        if (e == 4u || e == ENGI_GRAIN)
-            continue;                                   /* (the user's samples: none here) */
+        char w[80];                                     /* (0.9: SAMPLE and GRAIN too, on Clipper's own sources) */
+        attacks_ok = 1;
         snprintf(w, sizeof w, "%s: sounds loaded under a held chord", ENGINES[e]->name);
         check(w, e, 0, ch_preset, ENGINES[e]->npresets < 6u ? ENGINES[e]->npresets - 1u : 5u, 40);
+        attacks_ok = 0;
     }
     check("ANALOG: VOICE steals (9 .. 12 notes on 8 voices)", 0, 12, ch_steal, 9, 30);
     check("ANALOG: MUTE on and off", 0, 13, ch_mute, 6, 30);
