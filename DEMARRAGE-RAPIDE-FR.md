@@ -26,7 +26,7 @@ La 1.0 est expérimentale. Ce dont elle a le plus besoin, à peu près dans l'or
 - **L'éditeur.** Il montre tous les paramètres, mais certaines choses méritent leur propre page (une matrice de modulation visuelle, un gestionnaire de banques SysEx). Il a été beaucoup moins utilisé avec la 1.0 qu'avec la 0.9.
 - **La documentation.** Un vrai manuel (chaque page de la FM-1, chaque moteur), des captures, de courtes vidéos ; les textes français et japonais sont incomplets.
 - **Les limites de stockage.** Les valeurs 1.0 d'un projet ne sont gardées que si sa piste 3 n'a pas de pas (le format est plein) ; les sons plus anciens se chargent avec les valeurs 1.0 par défaut.
-- **Vos retours.** Bugs, plantages (prends en photo l'écran **FELUCCA CRASH** : il reste 10 s), notes coincées, sons trop forts ou trop faibles, contrôleurs bizarres (MPE, CC 16 à 19) : signale-les.
+- **Vos retours.** Bugs, plantages (prends en photo l'écran **FELUCCA CRASH** : il reste 10 s), notes coincées, sons trop forts ou trop faibles, contrôleurs bizarres (MPE, CC 16 à 19) : signale-les dans les [Issues](https://github.com/isod89/clipper-fm1/issues).
 
 ## Un dossier à part
 
@@ -42,6 +42,10 @@ Clipper vit dans son propre dossier, **`CLIPPER`**, à côté de celui de SLOOP.
 Sur la FM-1, Clipper se reconnaît à son écran de démarrage (**1.0 EXPERIMENTAL** sous le logo) et à HOME (maintenu) → SYS → ABOUT, qui affiche **CLIPPER 1.0 EXP**.
 
 ## 1. Compiler et installer
+
+**Sans rien compiler** : ouvre la [page d'installation en ligne](https://isod89.github.io/clipper-fm1/webapp/installer/) dans Chrome ou Edge, la FM-1 branchée en USB ; fais d'abord une sauvegarde avec l'[éditeur en ligne](https://isod89.github.io/clipper-fm1/webapp/editor/), puis clique sur **Install**. Le firmware est aussi joint à chaque [release](https://github.com/isod89/clipper-fm1/releases).
+
+**Depuis le code source** :
 
 1. Ferme la fenêtre de SLOOP si elle tourne encore. Ce n'est pas obligatoire, mais c'est plus clair.
 2. Double-clique sur **`INSTALL-CLIPPER.bat`**. Il utilise les mêmes outils que SLOOP (WSL MinUI-Build, la chaîne JieLi). La première fois, il copie les trois fichiers du SDK depuis `..\SLOOP\build\deps\ac79`. S'il ne les trouve pas, copie ce dossier `build\deps\ac79` de SLOOP dans `CLIPPER\build\deps\`.

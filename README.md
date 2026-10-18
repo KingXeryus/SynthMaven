@@ -3,7 +3,7 @@
 <p align="center"><b>A deep synthesizer firmware for the M-VAVE FM-1.</b><br>
 Free and open source (GPL-3.0). It grew out of <a href="https://github.com/isod89/sloop-fm1">SLOOP</a>, and like SLOOP it is based on <a href="https://github.com/hugelton/Felucca">Felucca</a> by Leo Kuroshita / Hügelton Instruments.</p>
 
-<p align="center"><a href="DEMARRAGE-RAPIDE-FR.md">Démarrage rapide (français)</a> · <a href="BUILDING.md">Building</a> · <a href="web/EDITOR_PROTOCOL.md">Editor protocol</a> · <a href="docs/sloop/">SLOOP's manuals</a></p>
+<p align="center"><b><a href="https://isod89.github.io/clipper-fm1/webapp/installer/">Install it from the browser</a></b> · <a href="https://isod89.github.io/clipper-fm1/webapp/editor/">Editor</a> · <a href="https://github.com/isod89/clipper-fm1/releases">Releases</a> · <a href="DEMARRAGE-RAPIDE-FR.md">Démarrage rapide (français)</a> · <a href="BUILDING.md">Building</a> · <a href="web/EDITOR_PROTOCOL.md">Editor protocol</a> · <a href="docs/sloop/">SLOOP's manuals</a></p>
 
 ---
 
@@ -173,7 +173,7 @@ Clipper 1.0 is experimental. What it needs most, roughly in order:
 - **The editor.** It shows every parameter, but some things deserve a page of their own (a visual modulation matrix, a bank manager for SysEx). It has been used much less with 1.0's layout than with 0.9's.
 - **Documentation.** A real manual (each page of the FM-1, each engine), screenshots, short videos; the French and Japanese texts are incomplete.
 - **Storage edges.** A project's 1.0 values are kept only while its track 3 has no steps (the format is full); older sounds load with the 1.0 values at their defaults.
-- **Feedback.** Bugs, crashes (photograph the **FELUCCA CRASH** screen: it stays 10 s), stuck notes, sounds that are too loud or too quiet, controllers that behave oddly (MPE, CC 16 to 19): please report them.
+- **Feedback.** Bugs, crashes (photograph the **FELUCCA CRASH** screen: it stays 10 s), stuck notes, sounds that are too loud or too quiet, controllers that behave oddly (MPE, CC 16 to 19): please report them in the [Issues](https://github.com/isod89/clipper-fm1/issues).
 
 ## On the FM-1
 
@@ -210,7 +210,9 @@ Pitch bend (±2 semitones, or the HYBRID patch's own range up to ±24), mod whee
 
 ## Install and test
 
-On Windows, see **[DEMARRAGE-RAPIDE-FR.md](DEMARRAGE-RAPIDE-FR.md)**: `INSTALL-CLIPPER.bat` builds the firmware and opens the installer at `http://localhost:8767` (SLOOP uses 8766, so the two never get mixed up). Elsewhere, see [BUILDING.md](BUILDING.md).
+**Without building anything**: open the [installer page](https://isod89.github.io/clipper-fm1/webapp/installer/) in Chrome or Edge with the FM-1 on USB, make a backup with the [editor](https://isod89.github.io/clipper-fm1/webapp/editor/) first, then click Install. The firmware package is also attached to each [release](https://github.com/isod89/clipper-fm1/releases).
+
+**From the source**: on Windows, see **[DEMARRAGE-RAPIDE-FR.md](DEMARRAGE-RAPIDE-FR.md)**: `INSTALL-CLIPPER.bat` builds the firmware and opens the installer at `http://localhost:8767` (SLOOP uses 8766, so the two never get mixed up). Elsewhere, see [BUILDING.md](BUILDING.md).
 
 Projects, user presets, samples and settings stay in the same flash places as SLOOP's. Going from SLOOP to Clipper keeps them; a sound on HYBRID plays another engine if you go back to SLOOP.
 
