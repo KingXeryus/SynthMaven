@@ -14,10 +14,32 @@ function Step([string]$m) { Write-Host "== $m" -ForegroundColor Cyan }
 Write-Host ""
 Write-Host "  C L I P P E R   1.0   EXPERIMENTAL   ->   GitHub" -ForegroundColor White
 Write-Host "  ---- ---- ---- ----" -ForegroundColor DarkGray
-foreach ($t in @("git", "gh")) {
-  if (-not (Get-Command $t -ErrorAction SilentlyContinue)) {
-    Fail "$t est introuvable. Installe Git (https://git-scm.com) et GitHub CLI (https://cli.github.com), puis relance."
+# Git and GitHub CLI: on the PATH, else where their installers put them, else installed now with winget (asked first)
+function Find-Tool([string]$t) {
+  if (Get-Command $t -ErrorAction SilentlyContinue) { return $true }
+  $env:Path = [Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [Environment]::GetEnvironmentVariable("Path", "User")
+  if (Get-Command $t -ErrorAction SilentlyContinue) { return $true }
+  $dirs = if ($t -eq "gh") { @("$env:ProgramFiles\GitHub CLI", "$env:LOCALAPPDATA\Programs\GitHub CLI", "${env:ProgramFiles(x86)}\GitHub CLI") }
+          else { @("$env:ProgramFiles\Git\cmd", "$env:LOCALAPPDATA\Programs\Git\cmd", "${env:ProgramFiles(x86)}\Git\cmd") }
+  foreach ($d in $dirs) {
+    if ($d -and (Test-Path (Join-Path $d "$t.exe"))) { $env:Path = "$d;$env:Path"; return $true }
   }
+  return $false
+}
+$ids = @{ git = "Git.Git"; gh = "GitHub.cli" }
+$names = @{ git = "Git (https://git-scm.com)"; gh = "GitHub CLI (https://cli.github.com)" }
+foreach ($t in @("git", "gh")) {
+  if (Find-Tool $t) { continue }
+  if (Get-Command winget -ErrorAction SilentlyContinue) {
+    $a = Read-Host "$($names[$t]) n'est pas installe. L'installer maintenant avec winget ? (O/N)"
+    if ($a -match '^[oOyY]') {
+      Step "Installation de $($names[$t])"
+      winget install --id $ids[$t] -e --source winget --accept-package-agreements --accept-source-agreements
+      if (Find-Tool $t) { continue }
+      Fail "$t est installe mais pas encore visible : ferme cette fenetre et relance PUBLIER-GITHUB.bat"
+    }
+  }
+  Fail "$t est introuvable. Installe $($names[$t]), puis relance PUBLIER-GITHUB.bat."
 }
 gh auth status *> $null
 if ($LASTEXITCODE -ne 0) {
