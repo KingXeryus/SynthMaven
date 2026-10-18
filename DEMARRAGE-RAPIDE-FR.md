@@ -1,8 +1,8 @@
-# Clipper — démarrage rapide (version 1.0)
+# Clipper — démarrage rapide (version 1.0 expérimentale)
 
 **Clipper** est un firmware de **synthétiseur** pour le M-VAVE FM-1 : un seul instrument, comme le firmware d'origine, Felucca ou Baudgirl. Ce n'est plus une groovebox : pas de pistes, pas de boîte à rythmes, pas de mode song, pas de samples intégrés. Il garde de SLOOP les 12 moteurs, les effets, l'arpégiateur, le séquenceur de pas, l'audio USB et le MIDI. Il ajoute **HYBRID**, une voix à 3 oscillateurs, 2 filtres et une matrice de modulation de 16 slots, avec 32 sons d'usine. Il ajoute aussi le pitch bend, la molette, l'aftertouch et la pédale de sustain sur tous les moteurs.
 
-> **Version 1.0, testée sur ordinateur (toute la suite de tests), encore peu sur la FM-1.** Avant d'installer, fais une **sauvegarde** dans l'éditeur (celui de Clipper ou de SLOOP, selon ce qui est installé) : onglet Backup (Projects → Backup dans SLOOP ou une ancienne version) → *Save a backup*.
+> **Version 1.0 EXPÉRIMENTALE.** C'est une version jeune et expérimentale, et il reste énormément de travail à faire (voir [Ce qui reste à faire](#ce-qui-reste-à-faire)). Elle passe toute sa suite de tests sur ordinateur, mais elle a encore très peu tourné sur une vraie FM-1 : attends-toi à des défauts. Avant d'installer, fais une **sauvegarde** dans l'éditeur (celui de Clipper ou de SLOOP, selon ce qui est installé) : onglet Backup (Projects → Backup dans SLOOP ou une ancienne version) → *Save a backup*.
 
 ## En bref
 
@@ -16,6 +16,18 @@
 - **Travailler** : **UNDO** et **COMPARE** sur la FM-1, favoris, **MORPH** entre deux versions d'un son, **randomiseur** par section, presets utilisateur et projets qui gardent tout.
 - **L'éditeur web** (Chrome ou Edge) : chaque paramètre en direct, les patchs HYBRID et FMX en entier, les pistes du MOD SEQ, l'accordage et les fichiers `.scl`, les banques DX7, tes propres tables d'ondes, une bibliothèque de sons, des outils undo / compare / A-B / random, la sauvegarde complète de la FM-1.
 
+## Ce qui reste à faire
+
+La 1.0 est expérimentale. Ce dont elle a le plus besoin, à peu près dans l'ordre :
+
+- **Des tests sur la FM-1.** Tout ce qui est nouveau dans la 1.0 n'a été mesuré que sur ordinateur. La charge processeur sur la FM-1 (SPREAD, SHIMMER, 8 voix sur les deux cœurs ; 12 et 16 voix), la flash et la RAM du vrai firmware compilé, les clics ou craquements que seul le matériel montre, les presets utilisateur après une coupure de courant : tout ça doit être vérifié sur de vraies machines (voir la section 5).
+- **Plus de place pour tes propres sons.** La banque de patchs FM6 / FMX a 27 emplacements, même pas une banque DX7 entière (32 voix). La flash libérée par les samples et les projets (environ 300 Ko) pourrait accueillir 32 banques de 32 voix ; le format, la page de l'éditeur et la façon de les choisir sur la FM-1 restent à faire.
+- **Les sons.** Les presets d'usine utilisent à peine ce que la 1.0 a ajouté (les macros, le LFO 3, ENV 2 LOOP, les slots 7 à 12, PING / TAPE, HALL / SHIMMER). Une passe de sound design sur les 407 sons est à faire, et les macros sont à régler moteur par moteur.
+- **L'éditeur.** Il montre tous les paramètres, mais certaines choses méritent leur propre page (une matrice de modulation visuelle, un gestionnaire de banques SysEx). Il a été beaucoup moins utilisé avec la 1.0 qu'avec la 0.9.
+- **La documentation.** Un vrai manuel (chaque page de la FM-1, chaque moteur), des captures, de courtes vidéos ; les textes français et japonais sont incomplets.
+- **Les limites de stockage.** Les valeurs 1.0 d'un projet ne sont gardées que si sa piste 3 n'a pas de pas (le format est plein) ; les sons plus anciens se chargent avec les valeurs 1.0 par défaut.
+- **Vos retours.** Bugs, plantages (prends en photo l'écran **FELUCCA CRASH** : il reste 10 s), notes coincées, sons trop forts ou trop faibles, contrôleurs bizarres (MPE, CC 16 à 19) : signale-les.
+
 ## Un dossier à part
 
 Clipper vit dans son propre dossier, **`CLIPPER`**, à côté de celui de SLOOP. Rien n'est partagé entre les deux :
@@ -27,7 +39,7 @@ Clipper vit dans son propre dossier, **`CLIPPER`**, à côté de celui de SLOOP.
 | Adresse | http://localhost:**8766** | http://localhost:**8767** |
 | Écran de démarrage | voilier, « sloop » | trois-mâts, « clipper » |
 
-Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maintenu) → SYS → ABOUT, qui affiche **CLIPPER 1.0**.
+Sur la FM-1, Clipper se reconnaît à son écran de démarrage (**1.0 EXPERIMENTAL** sous le logo) et à HOME (maintenu) → SYS → ABOUT, qui affiche **CLIPPER 1.0 EXP**.
 
 ## 1. Compiler et installer
 
@@ -36,7 +48,7 @@ Sur la FM-1, Clipper se reconnaît à son écran de démarrage et à HOME (maint
 3. La page d'installation s'ouvre sur http://localhost:8767/webapp/installer/ (Chrome ou Edge, FM-1 en USB). Clique sur **Install**.
 4. La FM-1 redémarre sur l'écran **clipper**. Tes projets, presets, samples et réglages de SLOOP sont toujours là.
 
-## Nouveau dans la 1.0 : une voix stéréo, plus de modulation, quatre macros, un hall et un shimmer
+## Nouveau dans la 1.0 (expérimentale) : une voix stéréo, plus de modulation, quatre macros, un hall et un shimmer
 
 - **SPREAD** (VOICE 3 → **SPRED**, tous les moteurs) : chaque voix a sa place entre gauche et droite (les voix extérieures d'abord, les suivantes entre elles) : un accord s'ouvre dans la stéréo, les voix de UNI2 / UNI4 s'écartent. Le centre ne change pas (gauche + droite = le son sans SPREAD, au bit près à 0). Les nappes et les sons en unisson en ont un peu d'origine (48).
 - **La matrice a 12 slots** (MATRIX 1 à 12, sur la FM-1 et dans l'éditeur) et de nouvelles sources : **LFO 3** (page LFO 3 : RATE, WAVE, MODE FREE / KEY) et les quatre macros **MAC1 à MAC4**.
@@ -193,6 +205,8 @@ C'est ce qui décide combien de voix Clipper peut jouer. La FM-1 doit être bran
 5. Si PEAK reste sous ~70 % et LATE ne monte pas, ferme la fenêtre, puis lance **`INSTALL-CLIPPER.bat 12`** (12 voix) et refais la mesure avec 12 notes. Si ça tient encore, essaie **`INSTALL-CLIPPER.bat 16`**.
 
 Pour la 0.9, refais aussi la mesure avec **VINTAGE** à 127 et le filtre en **MOOG** ou **DIODE** sur un son ANALOG (8 notes), et tourne les réglages pendant qu'un accord est tenu (MODL, les envois, TIME du delay, INSERT FLANG / CHOR) : aucun clic ne doit s'entendre.
+
+Pour la 1.0, refais la mesure avec **SPREAD** à 127 (VOICE 3), la réverb en **SHIMMER** (REVERB → TYPE) et le delay en **TAPE** (DLY 2 → MODE) sur 8 notes ; tourne **BRITE** et **SPACE** (EDIT → MACROS) pendant un accord tenu, et change de TYPE et de MODE : aucun clic ne doit s'entendre. Sauve un preset utilisateur avec des réglages 1.0, éteins la FM-1, rallume-la et recharge-le.
 
 Envoie-moi les chiffres (avec et sans 2ND CORE). Signale aussi un son qui craque, une note qui reste coincée, un écran **FELUCCA CRASH** (prends-le en photo : il reste 10 s) ou un écran bizarre.
 

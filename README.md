@@ -7,7 +7,7 @@ Free and open source (GPL-3.0). It grew out of <a href="https://github.com/isod8
 
 ---
 
-> **Status: 1.0.** Tested on the host (the test suite below), not yet by many on the device. Install it at your own risk, and keep a backup made with the editor. You can go back to the official V15 from the installer page, or to SLOOP with its own `INSTALL-SLOOP.bat`.
+> **Status: 1.0, EXPERIMENTAL.** This is an early, experimental release, and there is still a huge amount of work to do (see [What is left to do](#what-is-left-to-do)). It passes its whole test suite on a computer, but it has run very little on a real FM-1: expect rough edges. Install it at your own risk, and keep a backup made with the editor. You can go back to the official V15 from the installer page, or to SLOOP with its own `INSTALL-SLOOP.bat`.
 
 SLOOP is a groovebox. **Clipper is a synthesizer** with 23 engines and 407 sounds, one instrument (two in MULTI) like the original FM-1 firmware, Felucca and Baudgirl's FM-1+VA. It has no tracks, no drum machine, no song mode and no built-in samples. It keeps SLOOP's 12 sound engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID**: one voice built from three oscillators, two filters and a modulation matrix, with the whole patch editable in the browser.
 
@@ -52,7 +52,7 @@ SLOOP is a groovebox. **Clipper is a synthesizer** with 23 engines and 407 sound
 
 **The web editor** (Chrome or Edge, nothing to install): every parameter live; the whole HYBRID and FMX patches; the MOD SEQ's lanes; the tuning and `.scl` files; DX7 banks; your own wavetables; a sound library, undo / compare / A-B / randomize tools; backups of the whole FM-1.
 
-## New in 1.0: a stereo voice, a deeper modulation, four macros, a hall and a shimmer
+## New in 1.0 (experimental): a stereo voice, a deeper modulation, four macros, a hall and a shimmer
 
 - **SPREAD** (VOICE 3 → **SPRED**, every engine): each voice gets its own place between left and right (the outer voices first, the next ones between), so a chord opens across the stereo field and the voices of UNI2 / UNI4 fan out. The middle stays what it was (left + right is the sound without SPREAD, bit for bit at 0), and the side goes through the same DIST / INSERT level and track FILTER. The pads and the unison sounds come with a little of it (48).
 - **The matrix has 12 slots** (MATRIX 1 .. 12, on the FM-1 and in the editor), and new sources: **LFO 3** (LFO 3 page: RATE, WAVE, MODE FREE / KEY) and the four macros **MAC1 .. MAC4**.
@@ -162,6 +162,18 @@ Both suggested in the Felucca discussions ([#145](https://github.com/hugelton/Fe
 - **STRINGS**: a 1970s string machine (Solina, ARP, Elka). Divide-down registers 16', 8' and 4' locked on one phase, saw towards square (SHP), three ensemble lines moved by a slow sweep (~0.6 Hz) and a fast shimmer (~6 Hz) 120 degrees apart (ENS, RATE), a key-tracked 12 dB low-pass. EDIT: 16' 8' 4' ENS / CUT RATE SHP RES.
 - **MACRO**: four macro-oscillator models in the spirit of Mutable Instruments Plaits (the ideas, not the code), on three knobs HARM, TIMB, MORPH: **CHORD** (OCT 5TH SUS4 m m7 m9 m11 6/9 M9 M7 M, inversions, saw to square), **SWARM** (eight oscillators spread up to a semitone, each drifting), **ADDTV** (harmonics 1..16 under a moving bump, odd to even, nothing above 0.45 FS), **SPEECH** (a glottal source through three formants gliding along a word: AI AU OI UA WOW YEAH AEIOU MAMA, held or spoken). Then a low-pass and a **low-pass gate** (DEC, LPG). EDIT: MODL HARM TIMB MRPH / CUT RES DEC LPG.
 - **No built-in samples**: 300 KB of flash go to synthesis. SAMPLE and GRAIN play your own samples (the editor's Samples tab, four slots). 209 factory sounds in 0.2 (308 in 0.3): five new ones on the ladder (MOOG BASS, MOOG LEAD, LADDER PAD, MINI BASS, MINI LEAD), sixteen on WAVE, eight on ACID, eight on STRINGS, twelve on MACRO. 17 engines.
+
+## What is left to do
+
+Clipper 1.0 is experimental. What it needs most, roughly in order:
+
+- **Testing on the device.** Everything new in 1.0 was measured on a computer only. The CPU load on the FM-1 (SPREAD, SHIMMER, 8 voices on both cores; 12 and 16 voices), the flash and RAM of the real build, clicks or crackles that only the hardware shows, the storage of user presets after a power cut: all of it has to be checked on real units.
+- **More room for your own sounds.** The FM6 / FMX patch bank holds 27 patches, not even one whole DX7 bank (32 voices). The flash freed by the samples and the projects (about 300 KB) could hold 32 banks of 32 voices; the format, the editor page and the way to pick them on the FM-1 are still to be built.
+- **The sounds.** The factory presets barely use what 1.0 added (the macros, LFO 3, ENV 2 LOOP, slots 7 to 12, PING / TAPE, HALL / SHIMMER). A sound-design pass on all 407 is due, and the macros should be tuned per engine.
+- **The editor.** It shows every parameter, but some things deserve a page of their own (a visual modulation matrix, a bank manager for SysEx). It has been used much less with 1.0's layout than with 0.9's.
+- **Documentation.** A real manual (each page of the FM-1, each engine), screenshots, short videos; the French and Japanese texts are incomplete.
+- **Storage edges.** A project's 1.0 values are kept only while its track 3 has no steps (the format is full); older sounds load with the 1.0 values at their defaults.
+- **Feedback.** Bugs, crashes (photograph the **FELUCCA CRASH** screen: it stays 10 s), stuck notes, sounds that are too loud or too quiet, controllers that behave oddly (MPE, CC 16 to 19): please report them.
 
 ## On the FM-1
 

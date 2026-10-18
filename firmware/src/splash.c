@@ -26,8 +26,18 @@ static void sloop_splash(void)
     lcd_fill(0, 0, 240, 240, C_BLACK);
     sloop_logo_draw(10);
     const char *v = FELUCCA_VERSION;
+    char vb[24];
     if (v[0] == 'C' && v[1] == 'L' && v[7] == ' ')
         v += 8;                                         /* "CLIPPER 0.1" -> "0.1" under the wordmark */
+    {   /* (1.0) "1.0 EXP" -> "1.0 EXPERIMENTAL": the boot screen says it whole */
+        uint32_t n = 0;
+        while (v[n] && n < 12u)
+            vb[n] = v[n], n++;
+        vb[n] = 0;
+        if (n >= 4u && vb[n - 4] == ' ' && vb[n - 3] == 'E' && vb[n - 2] == 'X' && vb[n - 1] == 'P' && !v[n])
+            str_cpy(vb + n, "ERIMENTAL", 10);
+        v = vb;
+    }
     cv_begin(240, 36, C_BLACK);
     cv_text(120 - text_w(&FONT_S, v) / 2, 0, &FONT_S, v, RGB(196, 196, 204));
     cv_text(120 - text_w(&FONT_S, "based on felucca") / 2, 18, &FONT_S, "based on felucca", RGB(96, 96, 104));
