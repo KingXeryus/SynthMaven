@@ -66,7 +66,10 @@ static uint8_t usr_nz[SMP_USER_SLOTS];
 #define SMP_SET_OF(si) ((si) - SMP_USER_SLOTS)
 #define SMP_USR_OF(si) (si)
 static const char *const SMP_ALL_NAMES[SMP_NALL] = {"USR1", "USR2", "USR3", "USR4", SMP_SET_NAMES_INIT};
+#define SMP_SET_MIN SMP_USER_SLOTS                  /* (1.0: no user samples in Clipper: SET / SRC from the sets; a
+                                                     * 0..3 stored by 0.2 .. 0.9 is brought into range as any value) */
 #else
+#define SMP_SET_MIN 0
 #define SMP_IS_SET(si) ((si) < SMP_NSETS)
 #define SMP_SET_OF(si) (si)
 #define SMP_USR_OF(si) ((si) - SMP_NSETS)
@@ -225,7 +228,7 @@ static void sample_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
 static const engine_t ENG_SAMPLE = {
     "SAMPLE", {"SET", "TONE"},
     {
-        {"SET", F_ENUM, 0, SMP_NALL - 1, 0, SMP_ALL_NAMES, 0},
+        {"SET", F_ENUM, SMP_SET_MIN, SMP_NALL - 1, SMP_SET_MIN, SMP_ALL_NAMES + SMP_SET_MIN, 0},
         {"TUNE", F_SEMI, -24, 24, 0, 0, 0},
         {"BITS", F_INT, 0, 127, 0, 0, 0},
         {"LOOP", F_ENUM, 0, 1, 1, N_ONOFF_E, 0},

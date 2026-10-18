@@ -486,7 +486,6 @@ def clipper_block():
         x = ", ".join(f"{more[j]} + 1, {more[j + 1]}" for j in range(0, len(more), 2))
         L.append(f'    {{"{pname}", {{{", ".join(map(str, e))}}}, {{{", ".join(map(str, env))}}}, 0, {mono}, '
                  f'FX({", ".join(map(str, fx))}){", .x = {" + x + "}" if x else ""}}},')
-    L.append('    {"USER SMP", {0, 0, 0, 1, 127, 0, 0, 0}, {0, 110, 110, 40}, 0, 0, FX(0, 10, 12, 24)},')
     L.append("};")
     L.append("#define SMP_SET_NAMES_INIT " + ", ".join(f'"{n}"' for n in names))
     L.append("static const char *const SMP_SET_NAMES[] = {SMP_SET_NAMES_INIT};")

@@ -776,14 +776,14 @@
     </section>
 
     <section class="panel" id="p-projects" data-tab="projects" data-dev hidden>
-      <div class="card">
+      <div class="card" id="projcard">
         <h2 data-t="projects" data-ic="symbol_folder"></h2>
         <p class="dim" id="projhelp" data-t="projHelp"></p>
         <div class="slots" id="slots"></div>
       </div>
       <div class="card" id="bkgroup" hidden>
         <h2 data-t="bkTitle" data-ic="port_disk"></h2>
-        <p class="dim" data-t="bkHelp"></p>
+        <p class="dim" id="bkhelp" data-t="bkHelp"></p>
         <p class="bar"><button id="bk-save" class="pri" data-t="bkSave"></button> <button id="bk-load" data-t="bkLoad"></button>
           <input id="bk-file" type="file" accept=".json,application/json" hidden></p>
         <progress id="bk-prog" max="1" value="0" hidden></progress>
@@ -4291,6 +4291,9 @@ const TEXT = {
     smpStep3: "FM-1 に送って鳴らす",
     smpModeFiles: "ファイルから（1 ファイル = 1 音）",
     smpModeChop: "録音を切り分ける（CHOP）",
+    bkHelpSyn: "FM-1 のすべてを 1 つのファイルに：作業中の音色、ユーザー・プリセット、FM6 / FMX パッチ・バンク、ウェーブテーブル USR1〜USR4、設定（色、キャリブレーション、チューニング、ライト）。復元すると FM-1 はファイルの状態に戻ります（今の内容は置き換えられます）。",
+    wtTab: "ウェーブテーブル", wtIntroSyn: "WAVE エンジン用の自分のウェーブテーブル：スロット 4 つ、USR1〜USR4（FM-1 の TABL）。Clipper はサンプルを鳴らしません。古いバージョンのサンプルが残っているスロットは鳴りません。ウェーブテーブルを上書きするか消してください。",
+    wtWhere: "FM-1 では: エンジン WAVE、TABL = USR{n}（EDIT ページの KNOB 1）。上のボタンで自動設定。", wtOldSmp: "サンプル（鳴りません）",
     smpModeWave: "ウェーブテーブル", wtDrop: "ウェーブテーブルの WAV を開くかドロップ", wtDropHint: "Serum 形式（2048 点 × フレーム）、または 1 周期",
     wtHelp: "WAVE エンジン用のウェーブテーブル。16 フレームを均等に選び、各フレームの倍音 1〜128 にして送ります（本体で帯域制限されるので折り返しません）。\n下の 3 で送信し、「トラック 1」で WAVE の TABL = USR に。",
     wtInfo: "{n} フレーム（{len} 点）を読みました：16 フレームを送ります", wtNone: "ファイルがまだありません", wtTable: "ウェーブテーブル", wtBad: "ウェーブテーブルではありません: ",
@@ -4517,6 +4520,9 @@ const TEXT = {
     smpStep3: "Send it and play it",
     smpModeFiles: "From files (one note per file)",
     smpModeChop: "Chop a recording",
+    bkHelpSyn: "Everything on the FM-1 in one file: the sound you are working on, the user presets, the FM6 / FMX patch bank, the wavetables USR1–USR4 and the settings (colours, calibration, the tuning, the lights). Restoring puts the FM-1 back as it was in the file (what is on it now is replaced).",
+    wtTab: "Wavetables", wtIntroSyn: "Your own wavetables for the WAVE engine: four slots, USR1–USR4 (TABL on the FM-1). Clipper plays no samples: a slot that still holds one from an older version is not played; send a wavetable over it or erase it.",
+    wtWhere: "On the FM-1: engine WAVE, TABL = USR{n} (KNOB 1 on the EDIT page). The button above sets it for you.", wtOldSmp: "a sample (not played)",
     smpModeWave: "Wavetable", wtDrop: "Open or drop a wavetable WAV", wtDropHint: "Serum-style (frames of 2048 points), or one cycle",
     wtHelp: "A wavetable for the WAVE engine. 16 frames are picked evenly and sent as their harmonics 1..128 (the FM-1 band-limits them: no aliasing).\nSend it in step 3, then Track 1: WAVE with TABL = this slot.",
     wtInfo: "{n} frames of {len} points read: 16 frames will be sent", wtNone: "No file yet", wtTable: "wavetable", wtBad: "Not a wavetable: ",
@@ -4639,7 +4645,13 @@ function renderPanels() {
     b.tabIndex = on ? 0 : -1;
     if (b.dataset.tab === "tracks") b.hidden = !tracksOk;
     if (SYNTH_HIDE.has(b.dataset.tab)) b.hidden = syn || (b.dataset.tab === "tracks" && !tracksOk);
+    /* (Clipper 1.0: no samples, no projects on the FM-1: the tabs are the wavetables and the backup) */
+    const lab = b.dataset.tab === "samples" ? (syn ? "wtTab" : "samples") : b.dataset.tab === "projects" ? (syn ? "bkTitle" : "projects") : null;
+    if (lab && b.dataset.t !== lab) { b.dataset.t = lab; setLabel(b, t(lab)); }
   }
+  $("projcard").hidden = syn;
+  $("bkhelp").dataset.t = syn ? "bkHelpSyn" : "bkHelp";
+  $("bkhelp").textContent = t($("bkhelp").dataset.t);
   const ready = !!dev && !!dev.dump;
   let hint = "";
   for (const p of document.querySelectorAll(".panel")) {
@@ -6572,9 +6584,11 @@ function renderSamples() {
   const P = smpPage, n = dev.smp.nslots;
   if (P.slot >= n) P.slot = 0;
   const hasWave = !!dev.info && dev.info.engines.includes("WAVE");   /* (Clipper 0.2: wavetables into the slots) */
+  const wtOnly = synthOnly();                       /* (Clipper 1.0: no samples: the slots hold wavetables only) */
   if (!hasWave && P.mode === "wave") P.mode = "files";
-  if (!P.ui || P.ui.lang !== lang || P.ui.n !== n || P.ui.hasWave !== hasWave) {
-    const u = P.ui = { lang, n, hasWave };
+  if (wtOnly && hasWave) P.mode = "wave";
+  if (!P.ui || P.ui.lang !== lang || P.ui.n !== n || P.ui.hasWave !== hasWave || P.ui.wtOnly !== wtOnly) {
+    const u = P.ui = { lang, n, hasWave, wtOnly };
     const step = (k, title, ...kids) => el("section", { class: "kstep" }, el("h3", {}, el("span", { class: "num", text: String(k) }), title), ...kids);
     /* 1: the slots */
     u.slots = el("div", { class: "dest slots4", role: "radiogroup", "aria-label": t("smpStep1") }, ...Array.from({ length: n }, (_, k) => {
@@ -6585,7 +6599,7 @@ function renderSamples() {
     u.erase = el("button", { class: "warn", ic: "symbol_trash", onclick: () => smpErase(P.slot) });
     u.slotNote = el("p", { class: "destnote" });
     /* 2: files or CHOP */
-    u.modes = el("div", { class: "seg modes", role: "tablist" }, ...[["files", "smpModeFiles"], ["chop", "smpModeChop"],
+    u.modes = el("div", { class: "seg modes", role: "tablist", hidden: wtOnly }, ...[["files", "smpModeFiles"], ["chop", "smpModeChop"],
       ...(hasWave ? [["wave", "smpModeWave"]] : [])].map(([m, k]) =>
       el("button", { type: "button", role: "tab", "data-m": m, onclick: () => { P.mode = m; renderSamples(); } }, t(k))));
     u.modeHelp = el("div", { class: "modehelp" });
@@ -6638,8 +6652,8 @@ function renderSamples() {
       onclick: () => smpUseOn(i, P.slot) }, `${t("track")} ${i + 1}`)));
     u.where = el("p", { class: "dim" });
     box.replaceChildren(el("div", { class: "card" },
-      el("h2", { ic: "symbol_waves" }, t("samples")),
-      el("p", { class: "dim", text: t(synthOnly() ? "smpIntroSyn" : "smpIntro") }),
+      el("h2", { ic: "symbol_waves" }, t(wtOnly ? "wtTab" : "samples")),
+      el("p", { class: "dim", text: t(wtOnly ? "wtIntroSyn" : "smpIntro") }),
       step(1, t("smpStep1"), u.slots, el("div", { class: "bar" }, u.erase), u.slotNote),
       step(2, t("smpStep2"), u.modes, u.modeHelp, u.filesPane, u.chopPane, u.wavePane),
       step(3, t("smpStep3"), el("div", { class: "bar" }, el("span", { class: "dim", text: t("smpName") }), u.name, u.send, u.prog),
@@ -6651,7 +6665,8 @@ function renderSamples() {
     const k = +b.dataset.k, x = dev.smp.slots[k];
     b.setAttribute("aria-checked", k === P.slot ? "true" : "false");
     b.classList.toggle("full", !!x.zones);
-    b.querySelector(".now").textContent = x.zones === WT.ZONES ? `${x.name || "—"} · ${t("wtTable")}` : x.zones ? `${x.name || "—"} · ${x.zones} ${t("zones")}` : t("empty");
+    b.querySelector(".now").textContent = x.zones === WT.ZONES ? `${x.name || "—"} · ${t("wtTable")}` : x.zones ?
+      (P.ui.wtOnly ? `${x.name || "—"} · ${t("wtOldSmp")}` : `${x.name || "—"} · ${x.zones} ${t("zones")}`) : t("empty");
     const pg = b.querySelector("progress");
     pg.max = dev.smp.slotKiB; pg.value = x.kib;
     b.querySelector(".cap").textContent = `${x.kib} / ${dev.smp.slotKiB} KiB` + (k === 3 ? " · 2.4" : "");
@@ -6750,7 +6765,7 @@ function smpButtons() {
     b.disabled = smpBusy || !x.zones || !hasTracks() || (P.mode === "wave") !== (x.zones === WT.ZONES);
     b.hidden = synthOnly() && +b.dataset.i > 0;     /* (Clipper: one instrument) */
   }
-  u.where.textContent = t("smpWhere").replace(/\{n\}/g, k + 1);
+  u.where.textContent = t(P.mode === "wave" ? "wtWhere" : "smpWhere").replace(/\{n\}/g, k + 1);
 }
 async function smpSendPage() {
   const P = smpPage, k = P.slot;

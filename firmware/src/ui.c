@@ -445,9 +445,6 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     {BK_FX, ENGI_NOISE, "VINYL"}, {BK_FX, ENGI_NOISE, "HISS"}, {BK_FX, ENGI_NOISE, "RISER"},
     {BK_FX, ENGI_NOISE, "NZ SNARE"}, {BK_FX, ENGI_NOISE, "BITCRUSH"}, {BK_FX, ENGI_NOISE, "RADIO"},
     {BK_FX, 3, "CHIP NOISE"}, {BK_FX, ENGI_HYBRID, "RISER"}, {BK_FX, ENGI_HYBRID, "INIT"},
-#if CLIPPER_SYNTH                                    /* (no built-in samples: the user's own, slot 1) */
-    {BK_KEYS, 4, "USER SMP"}, {BK_PAD, ENGI_GRAIN, "USER GRAIN"},
-#endif
 #if CLIPPER_SYNTH                                    /* Clipper 0.2: WAVE, the wavetables */
     {BK_PAD, ENGI_WAVE, "PPG PAD"}, {BK_PAD, ENGI_WAVE, "WT SWEEP"}, {BK_PAD, ENGI_WAVE, "VOCAL WT"},
     {BK_PAD, ENGI_WAVE, "HARMONICS"}, {BK_PAD, ENGI_WAVE, "COMB PAD"}, {BK_PAD, ENGI_WAVE, "PWM STR"},

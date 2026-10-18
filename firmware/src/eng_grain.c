@@ -426,8 +426,8 @@ static void grain_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const
 
 #if CLIPPER_SYNTH
 /* Clipper (0.9): clouds of its own synthesized sources (SRC 4 VOX: "oo" opening to "ah", 5 GLASS: a glass harmonica,
- * 6 PAD: seven saws, the filter opening, 7 AIR: breath on the note's harmonics; tools/gen_clipper_sets.py), then the
- * user's slot 1 (SRC 0..3: USR1..USR4). POS moves through each source: LFO DEST SHP scans it */
+ * 6 PAD: seven saws, the filter opening, 7 AIR: breath on the note's harmonics; tools/gen_clipper_sets.py). (1.0: no
+ * user samples, SRC from 4.) POS moves through each source: LFO DEST SHP scans it */
 static const preset_t GRAIN_PRESETS[] = {
     /* name, {SRC, POS, SIZE, DENS, PTCH, SPRD, RAND, TONE}, {A D S R}, fenv, mono, sends */
     {"VOX CLOUD", {4, 85, 96, 92, 0, 30, 8, 96}, {70, 100, 120, 95}, 0, 0, FX(0, 40, 18, 72)},
@@ -442,7 +442,6 @@ static const preset_t GRAIN_PRESETS[] = {
      .x = {P_LD_SHP + 1, 52, P_LRATE + 1, 20, P_LWAVE + 1, 1}},
     {"WIND CHOIR", {7, 60, 100, 96, 0, 44, 10, 100}, {84, 100, 124, 100}, 0, 0, FX(0, 40, 24, 86)},
     {"BREATH GRAIN", {7, 50, 26, 94, 0, 110, 40, 110}, {10, 100, 120, 90}, 0, 0, FX(0, 20, 40, 72)},
-    {"USER GRAIN", {0, 40, 100, 90, 0, 30, 12, 80}, {70, 100, 120, 95}, 0, 0, FX(0, 50, 20, 75)},
 };
 #else
 static const preset_t GRAIN_PRESETS[] = {
@@ -463,7 +462,7 @@ static const preset_t GRAIN_PRESETS[] = {
 static const engine_t ENG_GRAIN = {
     "GRAIN", {"GRAN", "SPRY"},
     {
-        {"SRC", F_ENUM, 0, SMP_NALL - 1, 0, SMP_ALL_NAMES, 0},
+        {"SRC", F_ENUM, SMP_SET_MIN, SMP_NALL - 1, SMP_SET_MIN, SMP_ALL_NAMES + SMP_SET_MIN, 0},
         {"POS", F_PCT, 0, 127, 32, 0, 0},
         {"SIZE", F_PCT, 0, 127, 80, 0, 0},
         {"DENS", F_PCT, 0, 127, 80, 0, 0},
