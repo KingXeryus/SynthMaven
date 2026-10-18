@@ -57,9 +57,13 @@ if ($LASTEXITCODE -ne 0) {
   Pop-Location
   Fail "git push a ete refuse (le depot $full a peut-etre deja un autre historique). Rien n'a ete force. Choisis un autre nom : PUBLIER-GITHUB.bat -Repo autre-nom"
 }
-git -c user.name="$Owner" -c user.email="$email" tag -a $Tag -m "Clipper 1.0 (experimental)" 2> $null
-git push origin $Tag
-if ($LASTEXITCODE -ne 0) { Pop-Location; Fail "l'envoi du tag $Tag" }
+if ("$(git ls-remote --tags origin "refs/tags/$Tag")".Trim()) {
+  Write-Host "   (le tag $Tag est deja sur GitHub : garde tel quel)" -ForegroundColor DarkGray
+} else {
+  git -c user.name="$Owner" -c user.email="$email" tag -a $Tag -m "Clipper 1.0 (experimental)"
+  git push origin $Tag
+  if ($LASTEXITCODE -ne 0) { Pop-Location; Fail "l'envoi du tag $Tag" }
+}
 $notes = Join-Path (Resolve-Path "..").Path "release-notes.md"
 $src = Join-Path "docs" "release-1.0.md"
 if (-not (Test-Path $src)) { Pop-Location; Fail "docs/release-1.0.md manque dans le bundle (un bundle trop ancien ?)" }
