@@ -660,6 +660,8 @@ static void proj_apply(const project_t *p, int all)
             t->p[i] = (int16_t)clamp(v, d->min, d->max);
         }
         t->preset = (uint8_t)(ENGINES[e]->npresets ? (s->preset == 0xFFu ? 0u : s->preset) % ENGINES[e]->npresets : 0u);
+        arp_snd[k % NTRK] = (uint8_t)t->p[P_AMODE];     /* (1.0) a loaded project's arp is its sounds': the next sound
+                                                         * loaded turns it off (seq.c arp_snd) */
         memcpy(t->step, s->step, sizeof t->step);
         for (i = 0; i < NSTEP; i++)                     /* the nudges and locks, each inside its range */
             t->micro[i] = (int8_t)clamp(s->micro[i], MICRO_MIN, MICRO_MAX);

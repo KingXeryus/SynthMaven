@@ -235,6 +235,32 @@ int main(int argc, char **argv)
     }
     /* the header: ARP when the arpeggiator runs */
     TSEL->p[P_AMODE] = 1; ui.force = 1; frames(2); ppm("clipper-home-arp"); TSEL->p[P_AMODE] = 0; frames(2);
+    {   /* (1.0) the arp a preset brings is the sound's: the next sound turns it off; the player's own runs on */
+        track_t *t = TSEL;
+        uint32_t ea = ENGI_ACID, pa = 0, k, eb = 0;
+        for (k = 0; k < ENGINES[ea]->npresets; k++)
+            if (!strcmp(ENGINES[ea]->presets[k].name, "ACID ARP"))
+                pa = k;
+        t->p[P_AMODE] = 0;
+        set_engine_of(t, ea); apply_preset_to(t, pa); frames(2);
+        check(t->p[P_AMODE] != 0, "ACID ARP: its arp on");
+        set_engine_of(t, eb); apply_preset_to(t, 0); frames(2);
+        check(t->p[P_AMODE] == 0, "the next sound: the preset's arp off again (1.0: it ran on through every sound)");
+        set_engine_of(t, eb); apply_preset_to(t, 1); frames(2);
+        check(t->p[P_AMODE] == 0, "and the one after: still off");
+        t->p[P_AMODE] = 3; frames(2);                   /* (the player turns it on) */
+        apply_preset_to(t, 2); frames(2);
+        check(t->p[P_AMODE] == 3, "the player's arp: runs on through a sound change (0.7)");
+        set_engine_of(t, ea); apply_preset_to(t, pa); frames(2);
+        check(t->p[P_AMODE] == 3, "the player's arp: ACID ARP leaves it as it is");
+        t->p[P_AMODE] = 0; frames(2);
+        set_engine_of(t, ea); apply_preset_to(t, pa); frames(2);
+        t->p[P_AMODE] = 5; frames(2);                   /* (the preset's arp, changed by the player: now the player's) */
+        set_engine_of(t, eb); apply_preset_to(t, 0); frames(2);
+        check(t->p[P_AMODE] == 5, "a preset's arp the player changed: the player's, runs on");
+        t->p[P_AMODE] = 0; frames(2);
+        set_engine_of(t, eb); apply_preset_to(t, 0); frames(2);
+    }
     printf("clipper_ui: %s\n", fails ? "FAILED" : "all passed");
     return fails != 0;
 }

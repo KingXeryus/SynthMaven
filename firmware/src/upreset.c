@@ -435,11 +435,13 @@ static void up_boot(void)                      /* persist_boot: the banks from f
                 up_side[b].crc = st_crc32(&up_side[b], sizeof up_side[b] - 4u);
             }
         }
-    }
-        memset(&up_tail[b], 0, sizeof up_tail[b]);       /* (1.0) the tail, when it is ours and whole */
+        memset(&up_tail[b], 0, sizeof up_tail[b]);       /* (1.0) the tail, when it is ours and whole (inside the loop:
+                                                         * each bank's; 1.0's first build ran it once, after the loop, on
+                                                         * up_tail[2], past the array, and never read the tails back) */
         if (flash_ok && (st_tail_load(OBJ_UPRESET0 + b, &up_tail[b], sizeof up_tail[b]) ||
                          up_tail[b].magic != UP_TAIL_MAGIC || up_tail[b].crc != st_crc32(&up_tail[b], sizeof up_tail[b] - 4u)))
             memset(&up_tail[b], 0, sizeof up_tail[b]);
+    }
 #else
         up_bank_check(b, flash_ok ? st_load(OBJ_UPRESET0 + b, &up_bank[b], sizeof up_bank[b]) : -1);
 #endif
@@ -556,12 +558,13 @@ static int up_load_to(track_t *t, uint32_t k)
     const up_rec_t *r;
     int16_t v[P_COUNT];
     uint32_t i;
+    int keep_arp = arp_user_on(t);                      /* (1.0: the player's arp only, seq.c arp_snd) */
     if (!up_used(k) || is_drum(t))
         return 1;
     r = up_rec(k);
     up_values(r, v);
     for (i = 0; i < P_COUNT; i++)                       /* (LEN etc. of a kept pattern changed too, and */
-        if (param_kept(i) || (t->p[P_AMODE] && i >= P_AMODE && i <= P_AORDER) ||   /* a preset pattern then counted as */
+        if (param_kept(i) || (keep_arp && i >= P_AMODE && i <= P_AORDER) ||   /* a preset pattern then counted as */
             (i == P_AHOLD && !t->p[P_AMODE] && t->p[P_AHOLD]))   /* edited; 0.7: the arp that runs goes on, KBD HOLD */
             v[i] = t->p[i];                             /* stays on, ui.c apply_preset_to) */
     if (!v[P_AMODE] && !t->p[P_AMODE])
@@ -572,8 +575,9 @@ static int up_load_to(track_t *t, uint32_t k)
         hist_before_load();                             /* (0.7: the edits a step of their own, ui_synth.c) */
 #endif
     sound_fade_begin(t);
-    if (t->p[P_AMODE])
+    if (keep_arp)
         arp_keep_req |= (uint8_t)(1u << trk_index(t));  /* (0.7: its notes too) */
+    arp_snd[trk_index(t) % NTRK] = (uint8_t)(keep_arp ? 0 : v[P_AMODE]);
     panic_req |= (uint8_t)(1u << trk_index(t));
     fm1_irq_off();                                      /* the audio ISR must not see half a sound */
     t->eng_req = r->engine;

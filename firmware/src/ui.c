@@ -284,7 +284,7 @@ static void apply_preset_to(track_t *t, uint32_t pi)
 {
     const engine_t *e = ENGINES[t->eng_req % NENGINES];
     uint32_t i;
-    int keep_arp = t->p[P_AMODE] != 0, kbd_hold = !t->p[P_AMODE] && t->p[P_AHOLD];
+    int keep_arp = arp_user_on(t), kbd_hold = !t->p[P_AMODE] && t->p[P_AHOLD];   /* (1.0: the player's arp only) */
     if (is_drum(t))
         return;
     if (keep_arp)
@@ -330,6 +330,7 @@ static void apply_preset_to(track_t *t, uint32_t pi)
                 t->p[P_AMODE + i] = ka[i];
         else if (kbd_hold)
             t->p[P_AHOLD] = 1;                       /* (0.7) KBD HOLD stays on */
+        arp_snd[trk_index(t) % NTRK] = (uint8_t)(keep_arp ? 0 : t->p[P_AMODE]);   /* (1.0) whose arp it is now */
     }
 #if CLIPPER_SYNTH
     mseq_init(t);                                    /* (0.8) the MOD SEQ: the shapes to start from */

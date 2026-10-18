@@ -54,6 +54,15 @@ static volatile uint8_t panic_req;       /* bit per track: release every soundin
 static volatile uint8_t arp_keep_req;    /* (2.7) bit per track: a sound loaded under its running arp: the arp's notes stay */
 
 static uint32_t trk_index(const track_t *t) { return (uint32_t)(t - trk); }
+/* (1.0) the arp MODE the sound loaded last brought with it (a preset like ACID ARP, a user preset, a project): that arp
+ * is the sound's, and the next sound loaded turns it off again. Only an arp the player turned on or changed (a MODE other
+ * than the sound's) runs on through sound changes (0.7, after SLOOP 2.7). Before 1.0 any running arp went on: one ARP
+ * preset passed while browsing left the arp on for every sound after it */
+static uint8_t arp_snd[NTRK];
+static int arp_user_on(const track_t *t)
+{
+    return t->p[P_AMODE] != 0 && t->p[P_AMODE] != arp_snd[trk_index(t) % NTRK];
+}
 
 static uint32_t trk_midi_ch(uint32_t i)    /* MIDI channel 0..15 of track i (keys -> MIDI out) */
 {
