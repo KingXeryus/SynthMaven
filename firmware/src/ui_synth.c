@@ -19,6 +19,7 @@ enum { X_LYMODE, X_LYSOUND, X_LYSPLIT, X_LYLEVEL, X_LYOCT, X_LYPAN, X_LYFILT, X_
        X_HPOS, X_HCMP,                                 /* 0.7: UNDO (the place in the sound's history), COMPARE */
        X_QLANE, X_QSTEP, X_QVAL, X_QFILL,              /* 0.8: the MOD SEQ: the lane, the step, its value, a SHAPE */
        X_TSYS, X_TROOT,                                /* 0.9: the TUNING (voice.c tune_cfg; kept with the settings) */
+       X_TA4,                                          /* 1.0: its reference A4 in Hz */
        X_COUNT };
 static void mseq_fill(struct track *t, uint32_t l, uint32_t f);
 static const char *const N_QFILL[] = {"--", "RAMP+", "RAMP-", "TRI", "SINE", "SQR", "RND", "FLAT", "INVRT", "SHIFT"};
@@ -79,6 +80,7 @@ static const param_desc_t XD[X_COUNT] = {
     [X_QFILL] = PE("SHAPE", N_QFILL, 0),
     [X_TSYS] = PE("TUNE", N_TUNE, 0),
     [X_TROOT] = PE("ROOT", N_NOTE, 0),
+    [X_TA4] = {"A4", F_INT, 400, 480, 440, 0, "Hz"},
     [X_FSTORE] = PE("STORE", N_GO, 0),
     [X_HPOS] = PD("UNDO", F_INT, -16, 0, 0),
     [X_HCMP] = PE("CMP", N_CMP, 0),
@@ -572,6 +574,7 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
     case X_HCMP: xv[X_HCMP] = hist_cmp_on; *valp = &xv[X_HCMP]; break;
     case X_TSYS: xv[X_TSYS] = (int16_t)(tune_cfg.sys % TU_N); *valp = &xv[X_TSYS]; break;
     case X_TROOT: xv[X_TROOT] = (int16_t)(tune_cfg.root % 12u); *valp = &xv[X_TROOT]; break;
+    case X_TA4: xv[X_TA4] = (int16_t)(440 + clamp(tune_cfg.a4, -40, 40)); *valp = &xv[X_TA4]; break;
     case X_QVAL:                                      /* (0.8) the selected step of the selected lane */
         xv[X_QVAL] = TSEL->ms[clamp(xv[X_QLANE], 1, 4) - 1][clamp(xv[X_QSTEP], 1, 16) - 1];
         *valp = &xv[X_QVAL];
@@ -699,11 +702,14 @@ static void syn_changed(uint32_t id, int16_t *vp)
         ui.force = 1;
         break;
     case X_TSYS:
-    case X_TROOT:                                     /* (0.9) the TUNING: the table again, saved with the settings */
+    case X_TROOT:
+    case X_TA4:                                       /* (0.9) the TUNING: the table again, saved with the settings */
         if (id == X_TSYS)
             tune_cfg.sys = (uint8_t)clamp(*vp, 0, TU_N - 1);
-        else
+        else if (id == X_TROOT)
             tune_cfg.root = (uint8_t)clamp(*vp, 0, 11);
+        else
+            tune_cfg.a4 = (int8_t)clamp(*vp - 440, -40, 40);
         tune_build();
         settings_later = 1;
         break;

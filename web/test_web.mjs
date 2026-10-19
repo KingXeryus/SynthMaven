@@ -690,6 +690,17 @@ async function fmxPatch() {
   ok(!t0.rc && t0.sys === 0 && t0.deg.length === 12 && t0.deg[11] === 17600 && t0.period === 19200 && !tp.rc && !t1.rc && t1.sys === 13 && t1.root === 2
     && t1.deg.join() === scl.deg.join() && t1.period === 19200 && tb.rc === 1,
     "TUNING through the mock: 12-EDO to start; PUT a .scl, GET it back; degrees not rising refused (rc 1)");
+  {   /* Clipper 1.0: A4 in Hz (one more byte both ways; without it, A4 as it is) */
+    const p432 = E.parse[E.CMD.TUNE_PUT](await rq(E.req.tunePut(0, 0, [0, 1600, 3200, 4800, 6400, 8000, 9600, 11200, 12800, 14400, 16000, 17600], 19200, 432)));
+    const g1 = E.parse[E.CMD.TUNE_GET](await rq(E.req.tuneGet()));
+    const p2 = E.parse[E.CMD.TUNE_PUT](await rq(E.req.tunePut(1, 0, [0, 1600, 3200, 4800, 6400, 8000, 9600, 11200, 12800, 14400, 16000, 17600], 19200)));
+    const g2 = E.parse[E.CMD.TUNE_GET](await rq(E.req.tuneGet()));
+    const fc = readFileSync(join(HERE, "../firmware/src/editor_fmx.c"), "utf8");
+    ok(t0.a4 === 440 && !p432.rc && g1.a4 === 432 && g1.sys === 0 && !p2.rc && g2.a4 === 432 && g2.sys === 1
+      && E.req.tunePut(0, 0, [0], 19200, 415)[1].length === 7 && E.req.tunePut(0, 0, [0], 19200)[1].length === 6
+      && /ed_b\(\(uint32_t\)\(clamp\(tune_cfg\.a4, -40, 40\) \+ 40\)\)/.test(fc),
+      "TUNING 1.0: A4 in Hz (432 sent, read back; a PUT without it keeps it; the firmware's GET ends with it)");
+  }
 }
 
 /* ------------------------------------- editor v5 (SLOOP 2.0): lanes, levels, ratchets --- */

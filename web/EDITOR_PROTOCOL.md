@@ -493,14 +493,16 @@ a scale sent here (a Scala .scl file: the editor reads it):
 
 | cmd | name | request | reply |
 |---|---|---|---|
-| 95 | TUNE_GET | - | rc, system, root, n, period (3 bytes), n - 1 degrees (3 bytes each) |
-| 96 | TUNE_PUT | system, root, n, period (3 bytes), n - 1 degrees (3 bytes each) | rc |
+| 95 | TUNE_GET | - | rc, system, root, n, period (3 bytes), n - 1 degrees (3 bytes each), (Clipper 1.0) A4 - 400 Hz |
+| 96 | TUNE_PUT | system, root, n, period (3 bytes), n - 1 degrees (3 bytes each) [, A4 - 400 Hz] | rc |
 
 - system 0..13: EQUAL, JUST, PYTHA, MEANT, WERCK (Werckmeister III), KIRNB (Kirnberger III), RAST, BAYAT, SLEND,
   PELOG, 19EDO, 24EDO, 31EDO, USER. root 0..11 (C..B): the note that is 1/1 (the tables) or C4 + root (USER).
 - The USER scale: n 1..48 degrees (the first, 0, not sent), the period and the degrees in 1/16 cent, each 21 bits as
   3 bytes of 7 bits (low first). The degrees rise and stay below the period (16..65535). Each key plays the next degree;
   a period other than 1200 cents (the tritave of Bohlen-Pierce, ...) is kept as it is.
+- (Clipper 1.0) the reference A4, 400..480 Hz, as one byte (0..80) after the degrees: GET always sends it, PUT takes it
+  optionally (without it, A4 stays as it is). 0.9 sends none and refuses a PUT with it: send it only when GET gave one.
 - rc 0 ok, 1 bad request (a system / root out of range, n 0 or above 48, the bytes not as n says, degrees not rising).
   TUNE_PUT keeps the scale even when another system plays (USER plays it); the settings are written a few seconds later.
 

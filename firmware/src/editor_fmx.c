@@ -74,9 +74,11 @@ static int ed_fmx_handle(uint32_t cmd, const uint8_t *a, uint32_t n)
  * rc: 0 ok, 1 bad request */
 enum { ED_MSEQ_GET = 93, ED_MSEQ_PUT, ED_TUNE_GET, ED_TUNE_PUT };
 /* v14 (Clipper 0.9): the TUNING (voice.c tune_cfg), kept with the settings
- *   TUNE_GET                                   -> rc, system, root, n, period (3 x 7 bits), n - 1 degrees (3 x 7 bits)
- *   TUNE_PUT  system, root, n, period, degrees -> rc     (the USER scale: n 1..48 degrees of a period, 1/16 cent, each
- *             above the one before; from a Scala .scl: the editor converts it)
+ *   TUNE_GET                                   -> rc, system, root, n, period (3 x 7 bits), n - 1 degrees (3 x 7 bits),
+ *                                                 (1.0) A4 - 400 Hz (0..80)
+ *   TUNE_PUT  system, root, n, period, degrees [, A4 - 400] -> rc   (the USER scale: n 1..48 degrees of a period, 1/16
+ *             cent, each above the one before; from a Scala .scl: the editor converts it. 1.0: the A4 byte optional,
+ *             without it A4 stays as it is; 0.9 took no such byte, so the editor sends it only when GET gave one)
  * rc: 0 ok, 1 bad request */
 static uint32_t ed_u21(const uint8_t *a) { return (uint32_t)(a[0] & 127u) | (uint32_t)(a[1] & 127u) << 7 | (uint32_t)(a[2] & 127u) << 14; }
 static int ed_mseq_handle(uint32_t cmd, const uint8_t *a, uint32_t n)
@@ -103,14 +105,18 @@ static int ed_mseq_handle(uint32_t cmd, const uint8_t *a, uint32_t n)
             for (k = 0; k < 3u; k++)
                 ed_b((tune_cfg.deg[i] >> (7u * k)) & 127u);
         }
+        ed_b((uint32_t)(clamp(tune_cfg.a4, -40, 40) + 40));   /* (1.0) A4 - 400 Hz */
         return 1;
     case ED_TUNE_PUT: {
         tune_t c = tune_cfg;
         uint32_t nd = n >= 6u ? a[2] : 0u, prev = 0;
-        rc = n < 6u || a[0] >= TU_N || a[1] > 11u || nd < 1u || nd > TU_MAXDEG || n != 6u + 3u * (nd - 1u);
+        rc = n < 6u || a[0] >= TU_N || a[1] > 11u || nd < 1u || nd > TU_MAXDEG ||
+             (n != 6u + 3u * (nd - 1u) && (n != 7u + 3u * (nd - 1u) || a[n - 1u] > 80u));   /* (1.0: + A4) */
         if (!rc) {
             c.sys = a[0], c.root = a[1], c.n = (uint8_t)nd;
             c.period = (uint16_t)clamp((int32_t)ed_u21(a + 3), 16, 65535);
+            if (n == 7u + 3u * (nd - 1u))
+                c.a4 = (int8_t)((int32_t)a[n - 1u] - 40);
             memset(c.deg, 0, sizeof c.deg);
             for (i = 1; i < nd && !rc; i++) {
                 uint32_t d = ed_u21(a + 6u + 3u * (i - 1u));

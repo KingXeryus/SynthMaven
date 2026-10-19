@@ -26,7 +26,7 @@ Elsewhere than Windows: see [BUILDING.md](BUILDING.md).
 | **HOME** | The synth screen: the sound's name, its family, its number in the list, the engine and a scope. The four knobs play the sound's main controls. |
 | **PRESETS** | Every sound, one by one, factory and user presets. |
 | **ALGORITHM** | Jumps to the next family (PAD, BASS, LEAD, PLCK, KEYS, STAB, FX…). |
-| **FX, EDIT, ARP, GLO, SAVE** | A tap opens the pages; while one is held, the keys still play. FX pages: FX (sends), FILTER (and MODL, the filter model), INSERT, INSERT 2, DLY, DLY 2 (the delay's MODE), REVERB (TYPE: ROOM, PLATE, HALL, SHIMMER), CHORUS, EQ+COMP. EDIT: the engine's pages, MACROS, VOICE 1–3 (SPREAD on VOICE 3), the envelopes, LFOs and the 12-slot MATRIX. GLO: GLOBAL (tempo, swing, metronome, fine tune), MASTER, **TUNING**, SYSTEM (MIDI, sync, CPU / LATE / PEAK). SAVE: PRESETS, USER (your presets), TOOLS. |
+| **FX, EDIT, ARP, GLO, SAVE** | A tap opens the pages; while one is held, the keys still play. FX pages: FX (sends), FILTER (and MODL, the filter model), INSERT, INSERT 2, DLY, DLY 2 (the delay's MODE), REVERB (TYPE: ROOM, PLATE, HALL, SHIMMER), CHORUS, EQ+COMP. EDIT: the engine's pages, MACROS, VOICE 1–3 (SPREAD on VOICE 3), the envelopes, LFOs and the 12-slot MATRIX. GLO: GLOBAL (tempo, swing, metronome, fine tune), MASTER, **TUNING** (the system, its root, and **A4** from 400 to 480 Hz: 432, 415, 442...), SYSTEM (MIDI, sync, CPU / LATE / PEAK). SAVE: PRESETS, USER (your presets), TOOLS. |
 | **SEQ, SEL** | Held: SEQ shows the 16 steps on the keys, SEL the key and the chords. A tap opens their pages. |
 | **REC** | Records what you play into the pattern. Hold REC to clear the pattern. |
 | **MIDI** | Omni: every channel plays the synth. |
@@ -44,7 +44,7 @@ What you are playing is kept by the autosave across power cycles; save a sound y
 
 Open the [online editor](https://isod89.github.io/clipper-fm1/webapp/editor/) (or double-click `OPEN-EDITOR.bat`: http://localhost:8767/webapp/editor/), click **Connect**, then pick a sound. In the **Sound** tab, the **HYBRID patch** panel shows everything: oscillators, filters and routing, ENV2 and ENV3, LFO2 and LFO3 (tempo-synced if you want), the 16-slot matrix and the bend. With **live** ticked, every change is heard at once. **Export patch** and **Import patch** keep your sounds in `.clipper.json` files.
 
-The other panels of the **Sound** tab: **FMX patch** (the six operators, the routing grid, STORE into the bank, `.clipper-fmx.json` files), **FM6** (DX7 `.syx` banks), **MOD SEQ** (the four lanes to draw), **Tuning** (the system, the root, load a `.scl` scale), **Sound tools** (undo / redo, compare, A / B, randomize, what changed, the envelope drawn). The **Library**, **Wavetables** (your own tables for WAVE) and **Backup** tabs complete it.
+The other panels of the **Sound** tab: **FMX patch** (the six operators, the routing grid, STORE into the bank, `.clipper-fmx.json` files), **FM6** (DX7 `.syx` banks), **MOD SEQ** (the four lanes to draw), **Tuning** (the system, the root, A4 in Hz, load a `.scl` scale), **Sound tools** (undo / redo, compare, A / B, randomize, what changed, the envelope drawn). The **Library**, **Wavetables** (your own tables for WAVE) and **Backup** tabs complete it.
 
 To try the editor without an FM-1, open `web/editor.html?mock=1` in Chrome.
 

@@ -313,9 +313,35 @@ static void t_tuning(void)
     u = cents(freq_near(493.883, 4096, 8192), 493.883);
     ok(fabs(u + 50) < 0.6, "TUNING: RAST: B half flat (-50 cents)");
     trk_note_off(t, 71);
+    {   /* (1.0) A4: the reference pitch, 400 .. 480 Hz, under every system */
+        static const int hz[3] = {432, 415, 480};
+        double c[3], jj;
+        uint32_t i;
+        tune_cfg.sys = TU_EQUAL;
+        for (i = 0; i < 3u; i++) {
+            quiet();
+            tune_cfg.a4 = (int8_t)(hz[i] - 440);
+            tune_build();
+            trk_note_on(t, 69, 100);
+            run(450);
+            c[i] = cents(freq_near(hz[i], 4096, 8192), hz[i]);
+            trk_note_off(t, 69);
+        }
+        quiet();
+        tune_cfg.sys = TU_JUST, tune_cfg.a4 = 432 - 440;
+        tune_build();
+        trk_note_on(t, 64, 100);
+        run(450);
+        jj = cents(freq_near(329.628 * 432 / 440, 4096, 8192), 329.628 * 432 / 440);
+        trk_note_off(t, 64);
+        printf("synth9:   A4 432 / 415 / 480 Hz: A4 off by %.2f / %.2f / %.2f cents; JUST at 432: E4 %.2f\n", c[0], c[1], c[2], jj);
+        ok(fabs(c[0]) < 0.6 && fabs(c[1]) < 0.6 && fabs(c[2]) < 0.6 && fabs(jj + 13.7) < 0.8 && tun_on,
+           "TUNING: A4 at 432, 415, 480 Hz (EQUAL: on with a reference other than 440); JUST on top of it");
+        tune_cfg.a4 = 0;
+    }
     tune_cfg.sys = TU_EQUAL;
     tune_build();
-    ok(!tun_on, "TUNING: EQUAL: off (nothing touched)");
+    ok(!tun_on, "TUNING: EQUAL at 440: off (nothing touched)");
     quiet();
 }
 

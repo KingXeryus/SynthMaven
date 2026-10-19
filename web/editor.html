@@ -604,6 +604,7 @@
         <p class="dim" data-t="tuHelp"></p>
         <p class="bar"><label><span data-t="tuSystem"></span> <select id="tusys"></select></label>
           <label><span data-t="tuRoot"></span> <select id="turoot"></select></label>
+          <label id="tua4box" hidden>A4 <input type="number" id="tua4" min="400" max="480" step="1" style="width:5em"> Hz</label>
           <button id="tuscl" data-t="tuLoad" data-ic="symbol_upload"></button>
           <input type="file" id="tufile" accept=".scl,text/plain" hidden>
           <button id="tusend" class="pri" data-t="tuSendBtn"></button></p>
@@ -1029,10 +1030,11 @@ const parse = {
   /* v13: part, rc, 64 values (lane 1's 16 steps, lane 2's ..: -8..7) */
   [CMD.MSEQ_GET](a) { return { part: a[0], rc: a[1], steps: a[1] ? null : Array.from(a.slice(2, 66), (x) => x - 8) }; },
   [CMD.MSEQ_PUT](a) { return { part: a[0], rc: a[1] }; },
-  /* v14: rc, system, root, n, period (21 bits), n - 1 degrees (21 bits each; 1/16 cent) */
+  /* v14: rc, system, root, n, period (21 bits), n - 1 degrees (21 bits each; 1/16 cent); Clipper 1.0: + A4 - 400 Hz */
   [CMD.TUNE_GET](a) {
-    const u21 = (k) => a[k] | a[k + 1] << 7 | a[k + 2] << 14, n = a[3] || 0;
-    return { rc: a[0], sys: a[1], root: a[2], n, period: u21(4), deg: [0, ...Array.from({ length: Math.max(0, n - 1) }, (_, i) => u21(7 + 3 * i))] };
+    const u21 = (k) => a[k] | a[k + 1] << 7 | a[k + 2] << 14, n = a[3] || 0, at = 7 + 3 * Math.max(0, n - 1);
+    return { rc: a[0], sys: a[1], root: a[2], n, period: u21(4), deg: [0, ...Array.from({ length: Math.max(0, n - 1) }, (_, i) => u21(7 + 3 * i))],
+      a4: a.length > at ? 400 + a[at] : null };
   },
   [CMD.TUNE_PUT](a) { return { rc: a[0] }; },
   [CMD.FMX_STORE](a) { return { slot: a[0], rc: a[1] }; },
@@ -1140,10 +1142,12 @@ const req = {
   fmxPut: (part, bytes) => [CMD.FMX_PUT, [0, part & 0x7F, ...pack7(bytes)]],
   mseqGet: (part) => [CMD.MSEQ_GET, [part & 0x7F]],
   tuneGet: () => [CMD.TUNE_GET, []],
-  /* sys, root, deg: [0, d1 .. d(n-1)] and period, in 1/16 cent */
-  tunePut: (sys, root, deg, period) => {
+  /* sys, root, deg: [0, d1 .. d(n-1)] and period, in 1/16 cent; a4 (Hz, 400..480; Clipper 1.0) only when the device
+     gave one (0.9 refuses the extra byte) */
+  tunePut: (sys, root, deg, period, a4 = null) => {
     const u21 = (v) => [v & 127, (v >> 7) & 127, (v >> 14) & 127];
-    return [CMD.TUNE_PUT, [sys & 127, root & 127, deg.length & 127, ...u21(period), ...deg.slice(1).flatMap(u21)]];
+    return [CMD.TUNE_PUT, [sys & 127, root & 127, deg.length & 127, ...u21(period), ...deg.slice(1).flatMap(u21),
+      ...(a4 == null ? [] : [Math.max(0, Math.min(80, Math.round(a4) - 400))])]];
   },
   mseqPut: (part, steps) => [CMD.MSEQ_PUT, [part & 0x7F, ...steps.map((v) => Math.max(0, Math.min(15, (v | 0) + 8)))]],
   fmxStore: (slot, bytes) => [CMD.FMX_STORE, [slot & 0x7F, ...pack7(bytes)]],
@@ -3135,17 +3139,18 @@ function makeMockDevice(opt = {}) {
       case CMD.TUNE_GET: case CMD.TUNE_PUT: {       /* Clipper 0.9: editor_fmx.c (TU_N 14 systems, 48 degrees) */
         if (JU_E < 0 || opt.clipper === "0.8") return null;
         const u21 = (v) => [v & 127, (v >> 7) & 127, (v >> 14) & 127];
-        st.tune = st.tune || { sys: 0, root: 0, period: 19200, deg: Array.from({ length: 12 }, (_, i) => i * 1600) };
+        st.tune = st.tune || { sys: 0, root: 0, period: 19200, deg: Array.from({ length: 12 }, (_, i) => i * 1600), a4: 440 };
         if (cmd === CMD.TUNE_GET) {
           b(0); b(st.tune.sys); b(st.tune.root); b(st.tune.deg.length);
           u21(st.tune.period).forEach(b);
           st.tune.deg.slice(1).forEach((d) => u21(d).forEach(b));
+          b(st.tune.a4 - 400);                        /* (Clipper 1.0) */
         } else {
-          const nd = a[2] | 0, g = (k) => a[k] | a[k + 1] << 7 | a[k + 2] << 14;
-          let rc = a.length < 6 || a[0] >= 14 || a[1] > 11 || nd < 1 || nd > 48 || a.length !== 6 + 3 * (nd - 1) ? 1 : 0;
+          const nd = a[2] | 0, g = (k) => a[k] | a[k + 1] << 7 | a[k + 2] << 14, base = 6 + 3 * (nd - 1);
+          let rc = a.length < 6 || a[0] >= 14 || a[1] > 11 || nd < 1 || nd > 48 || (a.length !== base && (a.length !== base + 1 || a[base] > 80)) ? 1 : 0;
           const deg = [0];
           for (let i = 1; !rc && i < nd; i++) { const d = g(6 + 3 * (i - 1)); if (d <= deg[i - 1] || d >= g(3)) rc = 1; deg.push(d); }
-          if (!rc) st.tune = { sys: a[0], root: a[1], period: g(3), deg };
+          if (!rc) st.tune = { sys: a[0], root: a[1], period: g(3), deg, a4: a.length === base + 1 ? 400 + a[base] : st.tune.a4 };
           b(rc);
         }
         break;
@@ -8847,6 +8852,8 @@ function tuRender() {
   if (!tuv) return;
   $("tusys").value = String(tuv.sys);
   $("turoot").value = String(tuv.root);
+  $("tua4box").hidden = tuv.a4 == null;                /* (Clipper 1.0: the reference pitch) */
+  if (tuv.a4 != null && document.activeElement !== $("tua4")) $("tua4").value = String(tuv.a4);
   $("tuinfo").textContent = `${t("tuUser")} ${tuv.desc || ""} ${tuv.deg.length} / ${(tuv.period / 16).toFixed(2)} ct: ` +
     tuv.deg.map((d) => (d / 16).toFixed(1)).join(" ");
 }
@@ -8858,12 +8865,18 @@ async function tuRead() {
 }
 async function tuSend() {
   if (!tuv) return;
-  const r = parse[CMD.TUNE_PUT](await rq(req.tunePut(tuv.sys, tuv.root, tuv.deg, tuv.period)));
+  const r = parse[CMD.TUNE_PUT](await rq(req.tunePut(tuv.sys, tuv.root, tuv.deg, tuv.period, tuv.a4)));
   checkRc(r.rc);
 }
 $("tusys").addEventListener("change", () => { if (tuv) { tuv.sys = +$("tusys").value; op(tuSend); } });
 $("turoot").addEventListener("change", () => { if (tuv) { tuv.root = +$("turoot").value; op(tuSend); } });
 $("tusend").addEventListener("click", () => op(tuSend));
+$("tua4").addEventListener("change", () => {
+  const v = Math.round(+$("tua4").value);
+  if (!tuv || tuv.a4 == null || !(v >= 400 && v <= 480)) { tuRender(); return; }
+  tuv.a4 = v;
+  op(tuSend);
+});
 $("tuscl").addEventListener("click", () => $("tufile").click());
 $("tufile").addEventListener("change", async (e) => {
   const f = e.target.files[0];

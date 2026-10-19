@@ -954,20 +954,28 @@ static int32_t mseq_q15(int32_t v) { return clamp(v * 4369, -32767, 32767); }   
  *   KIRNB3, the maqams RAST and BAYATI with their neutral thirds);
  *   scales of n degrees in a period (SLENDRO, PELOG, 19 / 24 / 31-EDO, the USER scale from a .scl file): every key
  *   the next degree, C4 + ROOT the scale's 1/1 at its equal-tempered pitch.
- * G_TUNE (A4 in cents) still moves it all. EQUAL: tun_on 0, nothing touched, bit for bit */
+ * G_TUNE (A4 in cents) still moves it all. EQUAL: tun_on 0, nothing touched, bit for bit.
+ * (1.0) A4: the reference pitch in Hz (400 .. 480: 432, 415 baroque, 442 / 443 orchestras), every system on top of it */
 enum { TU_EQUAL, TU_JUST, TU_PYTH, TU_MEAN, TU_WERCK, TU_KIRN, TU_RAST, TU_BAYATI, TU_SLENDRO, TU_PELOG, TU_19, TU_24,
        TU_31, TU_USER, TU_N };
 static const char *const N_TUNE[TU_N] = {"EQUAL", "JUST", "PYTHA", "MEANT", "WERCK", "KIRNB", "RAST", "BAYAT", "SLEND",
                                          "PELOG", "19EDO", "24EDO", "31EDO", "USER"};
 #define TU_MAXDEG 48u
 typedef struct {
-    uint8_t sys, root, n, rsv;                          /* system, ROOT (0..11), USER: degrees (1..TU_MAXDEG) */
+    uint8_t sys, root, n;                               /* system, ROOT (0..11), USER: degrees (1..TU_MAXDEG) */
+    int8_t a4;                                          /* (1.0) A4 - 440 Hz (-40..40: 400..480 Hz); 0.9 stored 0 */
     uint16_t period;                                    /* USER: the period, 1/16 cent (1200 cents: 19200) */
     uint16_t deg[TU_MAXDEG];                            /* USER: degrees 1..n - 1 above 1/1 (deg[0] = 0), 1/16 cent */
 } tune_t;
 static tune_t tune_cfg = {TU_EQUAL, 0, 12, 0, 19200,      /* (USER until a scale comes: equal temperament) */
                           {0, 1600, 3200, 4800, 6400, 8000, 9600, 11200, 12800, 14400, 16000, 17600}};
 static int32_t tun_tab[129];
+/* (1.0) the reference A4, 400 .. 480 Hz: 12 x log2(A4 / 440) in 1/4096 semitone (432: -1301, 415: -4148) */
+static const int16_t TU_A4[81] = {-6759, -6582, -6405, -6229, -6053, -5878, -5703, -5528, -5354, -5181, -5008, -4835, -4663,
+    -4491, -4319, -4148, -3977, -3807, -3637, -3468, -3299, -3130, -2962, -2794, -2627, -2460, -2293, -2127, -1961, -1795,
+    -1630, -1465, -1301, -1137, -974, -810, -648, -485, -323, -161, 0, 161, 322, 482, 642, 801, 960, 1119, 1278, 1436, 1594,
+    1751, 1908, 2065, 2221, 2377, 2533, 2688, 2843, 2998, 3152, 3306, 3460, 3613, 3766, 3919, 4071, 4223, 4375, 4526, 4677,
+    4828, 4978, 5128, 5278, 5428, 5577, 5726, 5874, 6022, 6170};
 static volatile uint8_t tun_on;
 static const int16_t TU_TAB12[6][12] = {               /* 1/10 cent off equal temperament, from ROOT */
     {0, 117, 39, 156, -137, -20, -98, 20, 137, -156, 176, -117},       /* JUST (5-limit) */
@@ -996,6 +1004,7 @@ static void tune_build(void)
 {
     static int32_t tab[129];
     uint32_t sys = tune_cfg.sys < TU_N ? tune_cfg.sys : TU_EQUAL, key, root = tune_cfg.root % 12u;
+    int32_t a4 = TU_A4[clamp(tune_cfg.a4, -40, 40) + 40];   /* (1.0) the reference pitch, on every key */
     for (key = 0; key < 128u; key++) {
         int32_t off = 0;
         if (sys >= TU_JUST && sys <= TU_RAST) {
@@ -1012,12 +1021,12 @@ static void tune_build(void)
                   d * 4096;                             /* (1/16 cent x 4096 / 1600; fits 32 bits: +-8 octaves) */
             off = clamp(off, -100 * 4096, 100 * 4096);
         }
-        tab[key] = off;
+        tab[key] = off + a4;
     }
     tab[128] = tab[127];
     fm1_irq_off();
     memcpy(tun_tab, tab, sizeof tun_tab);
-    tun_on = (uint8_t)(sys != TU_EQUAL);
+    tun_on = (uint8_t)(sys != TU_EQUAL || a4 != 0);
     fm1_irq_on();
 }
 static inline int32_t tun_at(int32_t p16)               /* the offset at a pitch in 1/16 semitone */
