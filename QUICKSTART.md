@@ -46,6 +46,8 @@ Open the [online editor](https://isod89.github.io/clipper-fm1/webapp/editor/) (o
 
 The other panels of the **Sound** tab: **FMX patch** (the six operators, the routing grid, STORE into the bank, `.clipper-fmx.json` files), **FM6** (DX7 `.syx` banks), **MOD SEQ** (the four lanes to draw), **Tuning** (the system, the root, A4 in Hz, load a `.scl` scale), **Sound tools** (undo / redo, compare, A / B, randomize, what changed, the envelope drawn). The **Library**, **Wavetables** (your own tables for WAVE) and **Backup** tabs complete it.
 
+The **Sequencer** tab is a full step sequencer: undo / redo, a range (shift-click on the grid) for transpose, shift, reverse, double, copy / paste and chords; generators (Euclidean rhythms, random melodies in the key, 22 ready-made basslines, arpeggios and chord patterns, a pattern text, humanize); lanes to draw velocity, nudge, ratchet and level; and a pattern library (a bank in the browser, `.clipper-pattern.json` files).
+
 To try the editor without an FM-1, open `web/editor.html?mock=1` in Chrome.
 
 ## 5. The test that helps most: both cores and the CPU load

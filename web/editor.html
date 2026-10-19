@@ -224,6 +224,23 @@
   .seqtools .sq { min-width: 34px; padding: 0 8px; }
   .seqtools > * { margin-right: 6px; }
   .rollbox { overflow-x: auto; margin: 8px 0; border: 1px solid var(--line); }
+  /* ---- Clipper 1.0: the pattern tools, the lanes ---- */
+  .seqpro { border: 1px solid var(--line); padding: 8px 12px; margin: 8px 0; }
+  .seqpro .bar { margin: 6px 0; flex-wrap: wrap; }
+  .seqpro input[type=number] { width: 60px; }
+  #steps .seqpro input.wide { width: min(560px, 100%); }
+  #steps .seqpro input#pname { width: 220px; }
+  .seqpro h3 { margin: 12px 0 4px; }
+  .seqpro select[size] { width: min(420px, 100%); height: auto; }
+  .seqpro .mono { font-family: "SLOOP Terminus", monospace; color: var(--fg2); letter-spacing: 1px; }
+  .seqpro button:disabled { opacity: 0.4; }
+  .grid button { position: relative; }
+  .grid button.rg::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--fg2); }
+  .lanes { margin: 8px 0 16px; }
+  .lanes input[type=number] { width: 60px; }
+  .lanebox { border: 1px solid var(--line); margin: 6px 0; }
+  .lanebox { overflow-x: auto; }
+  .lanebox canvas { display: block; touch-action: none; cursor: crosshair; }
   .rollbox canvas { display: block; touch-action: none; }
   .midiprev { border: 1px solid var(--line); padding: 12px; margin: 8px 0 16px; }
   .midiprev ul { margin: 6px 0; padding-left: 20px; }
@@ -648,6 +665,52 @@
           <button type="button" id="midiexp" data-t="midiExport" data-ic="symbol_download"></button>
           <button type="button" id="midiimp" data-t="midiImportBtn" data-ic="symbol_upload"></button>
           <input id="midifile" type="file" accept=".mid,.midi,audio/midi" hidden></p>
+        <div class="seqpro" id="seqpro">
+          <p class="bar"><button type="button" id="pundo" data-t="patUndo"></button><button type="button" id="predo" data-t="patRedo"></button>
+            <span class="dim" data-t="patRange"></span><input id="ptfrom" type="number" min="1" max="64"><span class="dim">&ndash;</span><input id="ptto" type="number" min="1" max="64"><button type="button" id="pall" data-t="patAll"></button>
+            <button type="button" id="pcopy" data-t="patCopy"></button><button type="button" id="ppaste" data-t="patPaste"></button><button type="button" id="pclear" class="warn" data-t="patClear"></button></p>
+          <p class="bar"><span class="dim" data-t="patTranspose"></span><span class="seg" id="ptrans"><button type="button" data-v="-12">&minus;12</button><button type="button" data-v="-1">&minus;1</button><button type="button" data-v="1">+1</button><button type="button" data-v="12">+12</button></span>
+            <span class="dim" data-t="patShift"></span><span class="seg" id="pshift"><button type="button" data-v="-1">&#9664;</button><button type="button" data-v="1">&#9654;</button></span>
+            <button type="button" id="ptrev" data-t="patReverse"></button><button type="button" id="pdbl" data-t="patDouble"></button>
+            <select id="pchord"></select><button type="button" id="pchordgo" data-t="patChord"></button>
+            <span class="seg" id="pflags"><button type="button" data-f="1" data-h="on" data-t="patAccOn"></button><button type="button" data-f="1" data-h="off" data-t="patAccOff"></button><button type="button" data-f="2" data-h="on" data-t="patSlideOn"></button><button type="button" data-f="2" data-h="off" data-t="patSlideOff"></button></span></p>
+          <p class="dim" data-t="patHelp"></p>
+          <details class="more" id="pgen"><summary data-t="patGen"></summary>
+            <p class="bar"><span class="dim" data-t="patKey"></span><select id="groot"></select><select id="gscale"></select><span class="dim" data-t="patBase"></span><select id="gbase"></select></p>
+            <h3 data-t="patEuclid"></h3>
+            <p class="bar"><label><span data-t="patHits"></span> <input id="euhits" type="number" min="0" max="64" value="5"></label>
+              <label><span data-t="patOf"></span> <input id="eusteps" type="number" min="1" max="64" value="16"></label>
+              <label><span data-t="patRot"></span> <input id="eurot" type="number" min="0" max="63" value="0"></label>
+              <label><span data-t="notes"></span> <input id="enotes" type="text" value="C3" spellcheck="false"></label>
+              <label><input id="eacc" type="checkbox"> <span data-t="acc"></span></label>
+              <label><input id="emerge" type="checkbox"> <span data-t="patMerge"></span></label>
+              <button type="button" id="ego" class="pri" data-t="patMake"></button><span class="mono" id="eprev"></span></p>
+            <h3 data-t="patRandom"></h3>
+            <p class="bar"><label><span data-t="patDensity"></span> <input id="rden" type="number" min="0" max="100" value="70"></label>
+              <label><span data-t="patMotion"></span> <input id="rmot" type="number" min="0" max="100" value="30"></label>
+              <label><span data-t="patTies"></span> <input id="rtie" type="number" min="0" max="100" value="20"></label>
+              <label><span data-t="acc"></span> <input id="racc" type="number" min="0" max="100" value="20"></label>
+              <label><span data-t="slide"></span> <input id="rsli" type="number" min="0" max="100" value="10"></label>
+              <label><span data-t="patChords"></span> <input id="rcho" type="number" min="0" max="100" value="0"></label>
+              <label><span data-t="patOct"></span> <input id="roct" type="number" min="1" max="4" value="2"></label>
+              <label><span data-t="patSeed"></span> <input id="rseed" type="number" min="0" max="999999" value="1"></label>
+              <button type="button" id="rgo" class="pri" data-t="patMake"></button><button type="button" id="rdice" data-t="patDice"></button></p>
+            <h3 data-t="patPresets"></h3>
+            <p class="bar"><select id="tpre"></select><input id="ttext" type="text" class="wide" spellcheck="false"><button type="button" id="tgo" class="pri" data-t="patMake"></button></p>
+            <p class="dim" data-t="patTextHelp"></p>
+            <h3 data-t="patHumanize"></h3>
+            <p class="bar"><label><span data-t="vel"></span> &plusmn; <input id="hvel" type="number" min="0" max="64" value="12"></label>
+              <label><span data-t="nudge"></span> &plusmn; <input id="hnud" type="number" min="0" max="32" value="3"></label>
+              <button type="button" id="hgo" class="pri" data-t="patApply"></button></p>
+          </details>
+          <details class="more" id="plib"><summary data-t="patLib"></summary>
+            <p class="bar"><select id="pbank" size="6"></select></p>
+            <p class="bar"><input id="pname" type="text" maxlength="40" spellcheck="false"><button type="button" id="psave" class="pri" data-t="patSave"></button><button type="button" id="pload" data-t="patLoad"></button><button type="button" id="pdel" class="warn" data-t="delete"></button>
+              <button type="button" id="pexp" data-t="patExport"></button><button type="button" id="pbexp" data-t="patBankExport"></button><button type="button" id="pimp" data-t="patImport"></button>
+              <input id="pfile" type="file" accept=".json,application/json" multiple hidden></p>
+            <p class="dim" data-t="patLibHelp"></p>
+          </details>
+        </div>
         <div class="midiprev" id="midiprev" hidden></div>
         <div class="bar" id="drumbar" hidden></div>
         <div class="dgrid" id="drumgrid" hidden></div>
@@ -657,6 +720,12 @@
             <button type="button" id="rolldown" data-t="rollDown"></button> <span class="dim" id="rollrange"></span> <button type="button" id="rollup" data-t="rollUp"></button></p>
           <div class="rollbox"><canvas id="rollcv"></canvas></div>
           <p class="dim" data-t="rollHelp"></p>
+        </div>
+        <div class="lanes" id="lanes">
+          <p class="bar"><span class="seg" id="laneseg"><button type="button" data-l="vel" data-t="vel"></button><button type="button" data-l="nudge" data-t="nudge"></button><button type="button" data-l="rat" data-t="ratchet"></button><button type="button" data-l="lvl" data-t="hitLevel"></button></span>
+            <span class="dim" data-t="patRangeSet"></span><input id="lval" type="number"><button type="button" id="lgo" data-t="patApply"></button></p>
+          <div class="lanebox"><canvas id="lanecv"></canvas></div>
+          <p class="dim" data-t="laneHelp"></p>
         </div>
         <div class="stepdetail" id="stepdetail" hidden></div>
         <details class="more" id="steplist"><summary data-t="stepList"></summary>
@@ -3564,6 +3633,435 @@ const ROLL = {
   },
 };
 
+/* ------------------------------------------------ Clipper 1.0: pattern tools --- */
+/* The sequencer's pattern as one value: P = {len, steps[nstep], micro[nstep] | null, fill[nstep] (0..2) | null,
+   locks[{step, param, value}] | null} (micro, fill and locks need firmware v7 / v8). Every tool returns a new P and
+   never changes its input; PAT.diff says what to send the device to go from one P to another (undo is that too).
+   A range is [a, b): steps a..b-1 of the pattern's length. Generators that roll dice take a seed (PAT.rng). */
+const PAT = {
+  LOCK_MAX: 24,
+  FILE: "clipper-pattern",
+  HIST: 64,                                            /* undo steps kept */
+  rest: () => ({ n: 0, notes: [0, 0, 0, 0], time: 2, flags: 0, vel: 0, lvl: 0, rat: 0 }),
+  tie: () => ({ n: 0, notes: [0, 0, 0, 0], time: 1, flags: 0, vel: 0, lvl: 0, rat: 0 }),
+  note: (notes, o = {}) => {
+    const ns = notes.slice(0, 4).map((x) => Math.max(0, Math.min(127, Math.round(x))));
+    return { n: ns.length, notes: ns.concat([0, 0, 0, 0]).slice(0, 4), time: 0, flags: o.flags | 0, vel: o.vel ?? 96, lvl: o.lvl | 0, rat: o.rat | 0 };
+  },
+  isNote: (s) => !!s && s.time === 0 && s.n > 0,
+  /* a 2-bit value for all four notes of a step (the firmware keeps a level and a ratchet per note) */
+  uni: (v) => (v & 3) * 0x55,
+  cstep(s) {
+    if (!s) return PAT.rest();
+    const n = Math.max(0, Math.min(4, s.n | 0));
+    return { n, notes: [0, 1, 2, 3].map((k) => ((s.notes && s.notes[k]) | 0) & 0x7F), time: Math.max(0, Math.min(2, s.time | 0)),
+      flags: (s.flags | 0) & 3, vel: Math.max(0, Math.min(127, s.vel | 0)), lvl: (s.lvl | 0) & 0xFF, rat: (s.rat | 0) & 0xFF };
+  },
+  same: (x, y) => x.n === y.n && x.time === y.time && (x.flags & 3) === (y.flags & 3) && x.vel === y.vel && (x.lvl | 0) === (y.lvl | 0)
+    && (x.rat | 0) === (y.rat | 0) && x.notes.every((v, k) => v === y.notes[k]),
+  /* the editor's state (dev.steps, dev.micro, dev.fill packed bytes, dev.locks) as a P */
+  make(steps, micro, fillBytes, locks, len) {
+    const N = steps.length;
+    return { len: Math.max(1, Math.min(N, len | 0)), steps: steps.map(PAT.cstep),
+      micro: micro ? Array.from({ length: N }, (_, i) => micro[i] | 0) : null,
+      fill: fillBytes ? Array.from({ length: N }, (_, i) => fillGet(fillBytes, i) % 3) : null,
+      locks: locks ? locks.map((l) => ({ step: l.step, param: l.param, value: l.value })) : null };
+  },
+  clone: (P) => ({ len: P.len, steps: P.steps.map(PAT.cstep), micro: P.micro && P.micro.slice(), fill: P.fill && P.fill.slice(),
+    locks: P.locks && P.locks.map((l) => ({ ...l })) }),
+  range(P, a, b) {
+    a = Math.max(0, Math.min(P.len - 1, Math.round(a) || 0));
+    b = b == null ? P.len : Math.max(a + 1, Math.min(P.len, Math.round(b)));
+    return [a, b];
+  },
+  /* the chords that start in [a, b): {at, dur} with dur = 1 + the TIEs after it, cut at b */
+  chords(steps, a, b) {
+    const out = [];
+    for (let i = a; i < b; i++) {
+      if (!PAT.isNote(steps[i])) continue;
+      let d = 1;
+      while (i + d < b && steps[i + d] && steps[i + d].time === 1) d++;
+      out.push({ at: i, dur: d });
+    }
+    return out;
+  },
+  /* the TIEs from `from` on (a chord that no longer reaches them) become rests */
+  _cut(Q, from) { for (let k = from; k < Q.len && Q.steps[k].time === 1; k++) Q.steps[k] = PAT.rest(); },
+  _keepLocks(Q, dropped = 0) {                          /* at most 24 locks, the earliest steps first */
+    if (!Q.locks) return Q;
+    Q.locks.sort((x, y) => x.step - y.step || x.param - y.param);
+    const seen = new Set();
+    Q.locks = Q.locks.filter((l) => { const k = l.step * 256 + l.param; if (seen.has(k)) return false; seen.add(k); return true; });
+    if (Q.locks.length > PAT.LOCK_MAX) { dropped += Q.locks.length - PAT.LOCK_MAX; Q.locks.length = PAT.LOCK_MAX; }
+    Q.dropped = dropped;
+    return Q;
+  },
+  /* move whole steps (notes, nudge, fill, locks) inside [a, b): step i goes to f(i) */
+  _move(P, a, b, f) {
+    const Q = PAT.clone(P);
+    for (let i = a; i < b; i++) {
+      const j = f(i);
+      Q.steps[j] = PAT.cstep(P.steps[i]);
+      if (Q.micro) Q.micro[j] = P.micro[i];
+      if (Q.fill) Q.fill[j] = P.fill[i];
+    }
+    if (Q.locks) Q.locks = Q.locks.map((l) => (l.step >= a && l.step < b ? { ...l, step: f(l.step) } : l));
+    return PAT._keepLocks(Q);
+  },
+
+  /* ---- transformations ---- */
+  /* every note of the range up or down `semi` semitones (a note that would leave 0..127 moves by octaves instead) */
+  transpose(P, semi, a, b) {
+    [a, b] = PAT.range(P, a, b);
+    const Q = PAT.clone(P);
+    const fold = (n) => { while (n > 127) n -= 12; while (n < 0) n += 12; return n; };
+    for (let i = a; i < b; i++) {
+      const s = Q.steps[i];
+      for (let k = 0; k < s.n; k++) s.notes[k] = fold(s.notes[k] + semi);
+    }
+    return Q;
+  },
+  /* shift the range by k steps, round (what leaves one end comes in at the other) */
+  rotate(P, k, a, b) {
+    [a, b] = PAT.range(P, a, b);
+    const w = b - a;
+    return PAT._move(P, a, b, (i) => a + ((((i - a + k) % w) + w) % w));
+  },
+  /* the range backwards: each chord keeps its length (it now ends where it started) */
+  reverse(P, a, b) {
+    [a, b] = PAT.range(P, a, b);
+    const Q = PAT.clone(P), ch = PAT.chords(P.steps, a, b);
+    const spill = ch.length && ch[ch.length - 1].at + ch[ch.length - 1].dur === b && b < P.len && P.steps[b].time === 1;
+    for (let i = a; i < b; i++) { Q.steps[i] = PAT.rest(); if (Q.micro) Q.micro[i] = 0; if (Q.fill) Q.fill[i] = 0; }
+    const map = new Map();
+    for (const c of ch) {
+      const ns = a + b - c.at - c.dur;
+      map.set(c.at, ns);
+      Q.steps[ns] = PAT.cstep(P.steps[c.at]);
+      for (let k = 1; k < c.dur; k++) Q.steps[ns + k] = PAT.tie();
+      if (Q.micro) Q.micro[ns] = P.micro[c.at];
+      if (Q.fill) Q.fill[ns] = P.fill[c.at];
+    }
+    if (spill) PAT._cut(Q, b);                         /* (the last chord held past the range: not any more) */
+    if (Q.locks) Q.locks = Q.locks.map((l) => (l.step >= a && l.step < b ? { ...l, step: map.has(l.step) ? map.get(l.step) : a + b - 1 - l.step } : l));
+    return PAT._keepLocks(Q);
+  },
+  /* the pattern twice: LEN doubles (up to max steps) and the copy follows */
+  double(P, max) {
+    const len = P.len, nl = Math.max(len, Math.min(max ?? P.steps.length, P.steps.length, len * 2));
+    const Q = PAT.clone(P);
+    Q.len = nl;
+    for (let i = len; i < nl; i++) {
+      Q.steps[i] = PAT.cstep(P.steps[i - len]);
+      if (Q.micro) Q.micro[i] = P.micro[i - len];
+      if (Q.fill) Q.fill[i] = P.fill[i - len];
+    }
+    if (Q.locks) {
+      Q.locks = Q.locks.filter((l) => l.step < len);
+      for (const l of P.locks) if (l.step < len && l.step + len < nl) Q.locks.push({ ...l, step: l.step + len });
+    }
+    return PAT._keepLocks(Q);
+  },
+  /* the range as a clip (steps 0..), for paste */
+  copy(P, a, b) {
+    [a, b] = PAT.range(P, a, b);
+    return { len: b - a, steps: P.steps.slice(a, b).map(PAT.cstep), micro: P.micro && P.micro.slice(a, b), fill: P.fill && P.fill.slice(a, b),
+      locks: P.locks ? P.locks.filter((l) => l.step >= a && l.step < b).map((l) => ({ ...l, step: l.step - a })) : null };
+  },
+  /* a clip from step `at` on (cut at the pattern's length); the locks it covers are the clip's */
+  paste(P, clip, at) {
+    at = Math.max(0, Math.min(P.len - 1, at | 0));
+    const Q = PAT.clone(P), end = Math.min(P.len, at + clip.len);
+    for (let i = at; i < end; i++) {
+      Q.steps[i] = PAT.cstep(clip.steps[i - at]);
+      if (Q.micro) Q.micro[i] = clip.micro ? clip.micro[i - at] | 0 : 0;
+      if (Q.fill) Q.fill[i] = clip.fill ? clip.fill[i - at] % 3 : 0;
+    }
+    if (end < P.len) PAT._cut(Q, end);               /* (an old chord's TIEs after the clip: not the clip's) */
+    if (Q.locks) {
+      Q.locks = Q.locks.filter((l) => l.step < at || l.step >= end);
+      if (clip.locks) for (const l of clip.locks) if (at + l.step < end) Q.locks.push({ ...l, step: at + l.step });
+    }
+    return PAT._keepLocks(Q);
+  },
+  /* the range silent: rests, no nudge, fill or lock */
+  clear(P, a, b) {
+    [a, b] = PAT.range(P, a, b);
+    const Q = PAT.clone(P);
+    for (let i = a; i < b; i++) { Q.steps[i] = PAT.rest(); if (Q.micro) Q.micro[i] = 0; if (Q.fill) Q.fill[i] = 0; }
+    PAT._cut(Q, b);
+    if (Q.locks) Q.locks = Q.locks.filter((l) => l.step < a || l.step >= b);
+    return Q;
+  },
+
+  /* ---- fine editing: one value of every NOTE step in the range ---- */
+  /* the lanes: VEL 1..127, NUDGE MICRO.MIN..MAX, RATCHET 1..4 hits, LEVEL GHOST SOFT NORM HARD (1..4) */
+  LANES: { vel: [1, 127], nudge: [-32, 31], rat: [1, 4], lvl: [1, 4] },
+  laneGet(P, lane, i) {
+    const s = P.steps[i];
+    switch (lane) {
+      case "vel": return s.vel || 96;
+      case "nudge": return P.micro ? P.micro[i] | 0 : 0;
+      case "rat": return 1 + (s.rat & 3);
+      case "lvl": return 1 + LV_ORDER.indexOf(s.lvl & 3);
+    }
+    return 0;
+  },
+  laneSet(P, lane, i, v) {
+    const [lo, hi] = PAT.LANES[lane];
+    v = Math.max(lo, Math.min(hi, Math.round(v)));
+    const s = P.steps[i];
+    if (lane === "vel") s.vel = v;
+    else if (lane === "nudge") { if (P.micro) P.micro[i] = v; }
+    else if (lane === "rat") s.rat = PAT.uni(v - 1);
+    else if (lane === "lvl") s.lvl = PAT.uni(LV_ORDER[v - 1]);
+    return P;
+  },
+  /* set a lane over the range (only on NOTE steps) */
+  setLane(P, lane, v, a, b) {
+    [a, b] = PAT.range(P, a, b);
+    const Q = PAT.clone(P);
+    for (let i = a; i < b; i++) if (PAT.isNote(Q.steps[i])) PAT.laneSet(Q, lane, i, v);
+    return Q;
+  },
+  /* the chords: intervals from the step's first note; "key3" / "key4" stack thirds of the scale */
+  CHORDS: [["single", [0]], ["maj", [0, 4, 7]], ["min", [0, 3, 7]], ["dim", [0, 3, 6]], ["aug", [0, 4, 8]], ["sus2", [0, 2, 7]],
+    ["sus4", [0, 5, 7]], ["7", [0, 4, 7, 10]], ["maj7", [0, 4, 7, 11]], ["m7", [0, 3, 7, 10]], ["add9", [0, 4, 7, 14]],
+    ["5", [0, 7]], ["oct", [0, 12]], ["5oct", [0, 7, 12]], ["key3", null], ["key4", null]],
+  chord(P, type, a, b, key = {}) {
+    [a, b] = PAT.range(P, a, b);
+    const Q = PAT.clone(P), c = PAT.CHORDS.find((x) => x[0] === type);
+    if (!c) return Q;
+    for (let i = a; i < b; i++) {
+      const s = Q.steps[i];
+      if (!PAT.isNote(s)) continue;
+      const root = s.notes[0];
+      let ns;
+      if (c[1]) ns = c[1].map((x) => root + x);
+      else {
+        const sc = PAT.scaleNotes(key.root | 0, key.scale || "MAJ", 0, 128);
+        let at = sc.indexOf(root);
+        if (at < 0) at = sc.findIndex((n) => n > root) - 1;   /* (not in the key: from the scale note under it) */
+        if (at < 0) at = 0;
+        ns = [0, 2, 4, 6].slice(0, type === "key4" ? 4 : 3).map((d) => (at + d < sc.length ? sc[at + d] : root));
+        ns[0] = root;
+      }
+      ns = ns.filter((n) => n <= 127);
+      Object.assign(s, { n: ns.length, notes: ns.concat([0, 0, 0, 0]).slice(0, 4) });
+    }
+    return Q;
+  },
+  /* accents / slides on the range: on, off or every other */
+  flag(P, bit, how, a, b) {
+    [a, b] = PAT.range(P, a, b);
+    const Q = PAT.clone(P);
+    let k = 0;
+    for (let i = a; i < b; i++) {
+      const s = Q.steps[i];
+      if (!PAT.isNote(s)) continue;
+      const on = how === "on" || (how === "toggle" ? !(s.flags & bit) : false);
+      s.flags = on ? s.flags | bit : s.flags & ~bit;
+      k++;
+    }
+    return Q;
+  },
+
+  /* ---- generators ---- */
+  rng(seed) {                                          /* mulberry32: the same seed, the same pattern */
+    let a = (seed >>> 0) || 0x9E3779B9;
+    return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  },
+  /* the device's 16 scales (params.c SCL) as semitones from the root */
+  SCALES: { CHR: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], MAJ: [0, 2, 4, 5, 7, 9, 11], MIN: [0, 2, 3, 5, 7, 8, 10], DOR: [0, 2, 3, 5, 7, 9, 10],
+    MIX: [0, 2, 4, 5, 7, 9, 10], PEN: [0, 2, 4, 7, 9], MPEN: [0, 3, 5, 7, 10], HARM: [0, 2, 3, 5, 7, 8, 11], PHRY: [0, 1, 3, 5, 7, 8, 10],
+    LYD: [0, 2, 4, 6, 7, 9, 11], LOC: [0, 1, 3, 5, 6, 8, 10], MEL: [0, 2, 3, 5, 7, 9, 11], BLUES: [0, 3, 5, 6, 7, 10], WHOLE: [0, 2, 4, 6, 8, 10],
+    DIMHW: [0, 1, 3, 4, 6, 7, 9, 10], DIMWH: [0, 2, 3, 5, 6, 8, 9, 11] },
+  /* the notes of a scale in [lo, hi) */
+  scaleNotes(root, scale, lo, hi) {
+    const iv = PAT.SCALES[scale] || PAT.SCALES.MAJ, out = [];
+    for (let n = Math.max(0, lo); n < Math.min(128, hi); n++) if (iv.includes((((n - root) % 12) + 12) % 12)) out.push(n);
+    return out;
+  },
+  /* Euclid: k hits spread as evenly as can be over n steps, turned by rot (k = 3, n = 8: x..x..x.) */
+  euclid(k, n, rot = 0) {
+    n = Math.max(1, n | 0); k = Math.max(0, Math.min(n, k | 0));
+    return Array.from({ length: n }, (_, i) => { const j = (((i - rot) % n) + n) % n; return (j * k) % n < k; });
+  },
+  /* the rhythm over the range, again every n steps: a hit plays the notes, the other steps rest (or stay as they
+     were, merge) */
+  genEuclid(P, o, a, b) {
+    [a, b] = PAT.range(P, a, b);
+    const Q = PAT.clone(P), hits = PAT.euclid(o.k, o.n, o.rot | 0), notes = o.notes && o.notes.length ? o.notes : [48];
+    for (let i = a; i < b; i++) {
+      if (hits[(i - a) % hits.length]) {
+        Q.steps[i] = PAT.note(notes, { vel: o.vel ?? 96, flags: o.accent && (i - a) % hits.length === hits.indexOf(true) ? 1 : 0 });
+        if (Q.micro) Q.micro[i] = 0;
+      } else if (!o.merge) Q.steps[i] = PAT.rest();
+    }
+    if (!o.merge) PAT._cut(Q, b);
+    return Q;
+  },
+  /* a melody in the key: density (0..100) of notes, motion (0..100: steps to leaps), ties, accents, slides and
+     chords in % of the notes, over `oct` octaves from note `base` */
+  genRandom(P, o, a, b) {
+    [a, b] = PAT.range(P, a, b);
+    const R = PAT.rng(o.seed), Q = PAT.clone(P), pc = (x) => R() * 100 < (x | 0);
+    const base = o.base ?? 48, sc = PAT.scaleNotes(o.root | 0, o.scale || "MIN", base, base + 12 * Math.max(1, o.oct | 0) + 1);
+    if (!sc.length) return Q;
+    const full = PAT.scaleNotes(o.root | 0, o.scale || "MIN", 0, 128);   /* (a chord may go above the range) */
+    const reach = 1 + Math.round(((o.motion ?? 30) / 100) * Math.max(1, sc.length - 1));
+    let cur = sc.indexOf(sc.find((n) => n >= base + ((o.root | 0) % 12)));
+    if (cur < 0) cur = 0;
+    let held = false;
+    for (let i = a; i < b; i++) {
+      if (Q.micro) Q.micro[i] = 0;
+      if (held && pc(o.ties)) { Q.steps[i] = PAT.tie(); continue; }
+      held = false;
+      if (i > a && !pc(o.density ?? 70)) { Q.steps[i] = PAT.rest(); continue; }
+      if (i > a) cur = Math.max(0, Math.min(sc.length - 1, cur + Math.round((R() * 2 - 1) * reach)));
+      let ns = [sc[cur]];
+      if (pc(o.chords)) { const f = full.indexOf(sc[cur]); ns = [0, 2, 4].map((d) => full[Math.min(full.length - 1, f + d)]).filter((n, k, x) => x.indexOf(n) === k); }
+      Q.steps[i] = PAT.note(ns, { vel: 80 + Math.floor(R() * 40), flags: (pc(o.accents) ? 1 : 0) | (pc(o.slides) ? 2 : 0) });
+      held = true;
+    }
+    PAT._cut(Q, b);
+    return Q;
+  },
+  /* small random moves of velocity (± vel) and nudge (± nudge) on the range's notes */
+  humanize(P, o, a, b) {
+    [a, b] = PAT.range(P, a, b);
+    const R = PAT.rng(o.seed), Q = PAT.clone(P);
+    for (let i = a; i < b; i++) {
+      const s = Q.steps[i];
+      if (!PAT.isNote(s)) continue;
+      if (o.vel) s.vel = Math.max(1, Math.min(127, (s.vel || 96) + Math.round((R() * 2 - 1) * o.vel)));
+      if (o.nudge && Q.micro) Q.micro[i] = Math.max(MICRO.MIN, Math.min(MICRO.MAX, Q.micro[i] + Math.round((R() * 2 - 1) * o.nudge)));
+    }
+    return Q;
+  },
+  /* ready-made patterns as text, one token a step: a scale degree (1 = the root, 8 = the root an octave up;
+     ' an octave up, , an octave down), chords joined by +, then > accent and ~ slide; - holds (TIE), . rests */
+  PRESETS: [
+    ["bass", "Acid", "1 1' . 1~ 3' . 1 5,~ 1> . 1' 7,~ 1 . 3~ 1'>"],
+    ["bass", "Octaves", "1 1' 1 1' 1 1' 1 1' 1 1' 1 1' 1 1' 1 1'"],
+    ["bass", "Offbeat", ". . 1 . . . 1 . . . 1 . . . 1 ."],
+    ["bass", "Rolling", ". 1 1 1 . 1 1 1 . 1 1 1 . 1 1 1"],
+    ["bass", "Funk", "1> . . 1' . 1 . 7, . 1 . 5, 6, . 7,~ 1"],
+    ["bass", "Sub pulse", "1 - - - . . 1 - . . 1 - - - . ."],
+    ["bass", "Electro", "1> . . 1 . . 1 . . . 3 . 1 . 5, ."],
+    ["bass", "Minimal", "1 . . . . . 1' . . 1 . . . . . ."],
+    ["arp", "Up", "1 3 5 8 1 3 5 8 1 3 5 8 1 3 5 8"],
+    ["arp", "Down", "8 5 3 1 8 5 3 1 8 5 3 1 8 5 3 1"],
+    ["arp", "Up-down", "1 3 5 8 10 8 5 3 1 3 5 8 10 8 5 3"],
+    ["arp", "Broken", "1 5 3 8 5 10 8 12 1 5 3 8 5 10 8 12"],
+    ["arp", "Berlin", "1 5 8 5 3 5 8 5 1 5 8 5 3 5 10 5"],
+    ["arp", "Pedal", "1 8 1 7 1 5 1 6 1 8 1 7 1 5 1 3"],
+    ["arp", "Trance", "1 5 8 1' 1 5 8 1' 6, 3 6 3' 4, 1 4 1'"],
+    ["chords", "Stabs", "1+3+5> . . 1+3+5 . . 1+3+5 . . . 1+3+5 . 6,+1+3 . . ."],
+    ["chords", "Progression", "1+3+5 - - - 6,+1+3 - - - 4,+6,+1 - - - 5,+7,+2 - - -"],
+    ["chords", "Gate", "1+5+8 . 1+5+8 1+5+8 . 1+5+8 . 1+5+8 1+5+8 . 1+5+8 . 1+5+8 1+5+8 . 1+5+8"],
+    ["chords", "Dub", "1+3+5 - . . . . . . 1+3+5 - . . . . . ."],
+    ["chords", "House", ". . 1+3+5+7 . . . 1+3+5+7 . . . 1+3+5+7 . . 1+3+5+7 . ."],
+    ["lead", "Pluck", "1 . 3 5 . 8 . 7 5 . 3 . 2 . 1 ."],
+    ["lead", "Call", "5 - 6 5 3 - 1 . 2 - 3 2 1 - . ."],
+  ],
+  /* one degree token ("3'", "5,") as a note */
+  degNote(tok, key) {
+    const m = /^(\d+)([',]*)$/.exec(tok);
+    if (!m) return null;
+    const iv = PAT.SCALES[key.scale] || PAT.SCALES.MIN, d = Math.max(1, +m[1]) - 1;
+    let n = (key.base ?? 48) + (key.root | 0) + 12 * Math.floor(d / iv.length) + iv[d % iv.length];
+    for (const c of m[2]) n += c === "'" ? 12 : -12;
+    return n >= 0 && n <= 127 ? n : null;
+  },
+  /* pattern text -> steps (null on a bad token) */
+  fromText(text, key) {
+    const out = [];
+    for (const tok of String(text).trim().split(/\s+/).filter(Boolean)) {
+      if (tok === ".") { out.push(PAT.rest()); continue; }
+      if (tok === "-") { out.push(PAT.tie()); continue; }
+      const m = /^([0-9',+]+?)([>~]*)$/.exec(tok);
+      if (!m) return null;
+      const ns = m[1].split("+").map((x) => PAT.degNote(x, key));
+      if (!ns.length || ns.length > 4 || ns.includes(null)) return null;
+      out.push(PAT.note(ns, { flags: (m[2].includes(">") ? 1 : 0) | (m[2].includes("~") ? 2 : 0) }));
+    }
+    return out.length ? out : null;
+  },
+  /* the text's steps over the range, again and again */
+  genText(P, text, key, a, b) {
+    [a, b] = PAT.range(P, a, b);
+    const st = PAT.fromText(text, key);
+    if (!st) return null;
+    const Q = PAT.clone(P);
+    for (let i = a; i < b; i++) { Q.steps[i] = PAT.cstep(st[(i - a) % st.length]); if (Q.micro) Q.micro[i] = 0; }
+    if (Q.steps[a].time === 1) Q.steps[a] = PAT.rest();   /* (nothing to hold at the start) */
+    PAT._cut(Q, b);
+    return Q;
+  },
+
+  /* ---- the device: what to send to go from A to B ---- */
+  diff(A, B) {
+    const N = Math.min(A.steps.length, B.steps.length), d = { steps: [], micro: [], fill: [], lockDel: [], lockSet: [], len: A.len !== B.len ? B.len : null };
+    for (let i = 0; i < N; i++) if (!PAT.same(A.steps[i], B.steps[i])) d.steps.push(i);
+    if (A.micro && B.micro) for (let i = 0; i < N; i++) if ((A.micro[i] | 0) !== (B.micro[i] | 0)) d.micro.push(i);
+    if (A.fill && B.fill) for (let i = 0; i < N; i++) if ((A.fill[i] | 0) !== (B.fill[i] | 0)) d.fill.push(i);
+    if (A.locks && B.locks) {
+      const key = (l) => l.step * 256 + l.param, bk = new Map(B.locks.map((l) => [key(l), l])), ak = new Map(A.locks.map((l) => [key(l), l]));
+      for (const l of A.locks) if (!bk.has(key(l))) d.lockDel.push({ step: l.step, param: l.param });
+      for (const l of B.locks) { const o = ak.get(key(l)); if (!o || o.value !== l.value) d.lockSet.push({ ...l }); }
+    }
+    d.n = d.steps.length + d.micro.length + d.fill.length + d.lockDel.length + d.lockSet.length + (d.len != null ? 1 : 0);
+    return d;
+  },
+
+  /* ---- files (.clipper-pattern.json) and the browser's pattern bank ---- */
+  toFile(P, name = "") {
+    const len = P.len, o = { format: PAT.FILE, version: 1, name: String(name).slice(0, 40), len,
+      steps: P.steps.slice(0, len).map((s) => { const c = PAT.cstep(s); return [c.n, c.notes, c.time, c.flags, c.vel, c.lvl, c.rat]; }) };
+    if (P.micro) o.micro = P.micro.slice(0, len);
+    if (P.fill) o.fill = P.fill.slice(0, len);
+    if (P.locks) o.locks = P.locks.filter((l) => l.step < len).map((l) => [l.step, l.param, l.value]);
+    return o;
+  },
+  /* a file -> a P of N steps (the steps after its length rest); throws on what is not a pattern */
+  fromFile(o, N = 64) {
+    if (!o || o.format !== PAT.FILE || !Array.isArray(o.steps) || !o.steps.length) throw new Error("not a Clipper pattern");
+    const int = (v, lo, hi) => { if (!Number.isFinite(+v)) throw new Error("bad value"); return Math.max(lo, Math.min(hi, Math.round(+v))); };
+    const len = int(o.len ?? o.steps.length, 1, N);
+    const steps = Array.from({ length: N }, (_, i) => {
+      const s = o.steps[i];
+      if (!s || i >= len) return PAT.rest();
+      if (!Array.isArray(s) || !Array.isArray(s[1])) throw new Error("bad step " + (i + 1));
+      return PAT.cstep({ n: int(s[0], 0, 4), notes: s[1].map((x) => int(x, 0, 127)), time: int(s[2], 0, 2), flags: int(s[3], 0, 3),
+        vel: int(s[4], 0, 127), lvl: int(s[5] ?? 0, 0, 255), rat: int(s[6] ?? 0, 0, 255) });
+    });
+    const micro = Array.from({ length: N }, (_, i) => (Array.isArray(o.micro) && i < len ? int(o.micro[i] ?? 0, MICRO.MIN, MICRO.MAX) : 0));
+    const fill = Array.from({ length: N }, (_, i) => (Array.isArray(o.fill) && i < len ? int(o.fill[i] ?? 0, 0, 2) : 0));
+    const locks = (Array.isArray(o.locks) ? o.locks : []).filter((l) => Array.isArray(l) && +l[0] < len)
+      .map((l) => ({ step: int(l[0], 0, N - 1), param: int(l[1], 0, 127), value: int(l[2], -8192, 8191) }));
+    return PAT._keepLocks({ len, steps, micro, fill, locks });
+  },
+  /* the file's lock-able parts kept to what this device has (no micro / fill / locks on older firmware) */
+  fitTo(P, like) {
+    const Q = PAT.clone(P);
+    if (!like.micro) Q.micro = null; else if (!Q.micro) Q.micro = new Array(Q.steps.length).fill(0);
+    if (!like.fill) Q.fill = null; else if (!Q.fill) Q.fill = new Array(Q.steps.length).fill(0);
+    if (!like.locks) Q.locks = null; else if (!Q.locks) Q.locks = [];
+    return Q;
+  },
+  BANK_MAX: 128,
+  /* the bank: [{name, at, pat}] by name (saving under a name that is there replaces it) */
+  bankPut(list, name, file, at = Date.now()) {
+    name = String(name).trim().slice(0, 40) || "pattern";
+    const out = list.filter((x) => x.name !== name);
+    out.push({ name, at, pat: { ...file, name } });
+    out.sort((x, y) => x.name.localeCompare(y.name));
+    if (out.length > PAT.BANK_MAX) throw new Error("bank full");
+    return out;
+  },
+};
+
 /* ------------------------------------------ SLOOP 2.5: Standard MIDI Files --- */
 const SMF = {
   PPQ: 96,
@@ -4359,6 +4857,28 @@ const TEXT = {
     songOld: "この FM-1 のファームウェアではソングを読めません（新しいファームウェアが必要です）。",
     songBad: "このソングは送れません（16 項目、1〜64 小節まで）", songRefused: "ソングを止めてから送ってください",
     songSent: "ソングを FM-1 に送りました",
+    /* Clipper 1.0: パターンツール */
+    patUndo: "元に戻す", patRedo: "やり直す", patRange: "範囲", patAll: "全体", patCopy: "コピー", patPaste: "貼り付け", patClear: "消去",
+    patTranspose: "移調", patShift: "ずらす", patReverse: "逆順", patDouble: "倍の長さ", patChord: "和音にする",
+    patAccOn: "アクセント +", patAccOff: "アクセント −", patSlideOn: "スライド +", patSlideOff: "スライド −",
+    patHelp: "ツールは範囲に効きます（グリッドのステップを Shift+クリック: 選んだステップからそこまで）。Ctrl+Z / Ctrl+Shift+Z: 元に戻す / やり直す（64 回、手での編集も）。Ctrl+C: 範囲をコピー、Ctrl+V: 選んだステップに貼り付け。",
+    patGen: "生成", patKey: "キー", patBase: "音域の下端", patEuclid: "ユークリッド・リズム", patHits: "打数", patOf: "ステップ数", patRot: "回転",
+    patMerge: "ほかのステップを残す", patMake: "生成", patRandom: "キーの中でランダム", patDensity: "音の割合 %", patMotion: "跳躍 %",
+    patTies: "タイ %", patChords: "和音 %", patOct: "オクターブ数", patSeed: "シード", patDice: "サイコロ",
+    patPresets: "既成パターンとパターン文字列",
+    patTextHelp: "1 ステップに 1 語: キーの度数（1 = ルート、8 = 1 オクターブ上のルート）、' で 1 オクターブ上、, で 1 オクターブ下、+ で和音（1+3+5）、> アクセント、~ スライド。- は伸ばす（タイ）、. は休符。範囲の中で繰り返します。",
+    patHumanize: "ヒューマナイズ", patApply: "適用",
+    patLib: "パターンライブラリ", patSave: "バンクに保存", patLoad: "読み込む", patExport: "ファイルに書き出す", patBankExport: "バンクを書き出す", patImport: "ファイルを読み込む",
+    patLibHelp: "バンクはこのブラウザに保存されます（名前をダブルクリックで読み込み）。ファイル（.clipper-pattern.json）には音、タイ、アクセント、スライド、ベロシティ、ラチェット、レベル、ナッジ、フィル、ロック、長さが入ります。",
+    patRangeSet: "範囲をこの値に", laneHelp: "音の上をマウス（または指）でなぞる: ベロシティ、ナッジ（前後、1/64 ステップ）、ラチェット（x1〜x4）、レベル（GHOST、SOFT、NORM、HARD）。",
+    chSingle: "単音", chKey3: "キーの三和音", chKey4: "キーの七の和音", pk_bass: "ベース", pk_arp: "アルペジオ", pk_chords: "和音", pk_lead: "リード",
+    patName: "パターン名", patStepsShort: "ステップ", patBankEmpty: "保存したパターンはまだありません", patDefName: "パターン",
+    patOverwrite: "バンクのパターン {name} を置き換えますか？", patSaved: "バンクに保存しました: ", patLoaded: "パターンを読み込みました",
+    patExported: "パターンファイルを保存しました: ", patImported: "読み込んだパターン: ", patFileBad: "Clipper のパターンファイルではありません",
+    patBankFail: "このブラウザにバンクを保存できませんでした", patBankFull: "バンクがいっぱいです（128 パターン）",
+    patDone: "完了", patSame: "変更はありません", patLocksDropped: "完了。FM-1 の 24 個を超えたロックは入りません: ",
+    patUndone: "元に戻しました", patRedone: "やり直しました", patCopied: "コピーしたステップ: ", patPasted: "貼り付けました", patCleared: "範囲を消去しました", patMade: "パターンを生成しました",
+    patBadNotes: "音: 音名（C3、F#2）か番号を 4 つまで", patBadText: "パターン文字列に読めない語があります",
   },
   en: {
     other: "日本語", connect: "Connect", disconnect: "Disconnect", mock: "Mock device (no hardware)",
@@ -4588,6 +5108,28 @@ const TEXT = {
     songOld: "This FM-1's firmware cannot share its song (a newer firmware).",
     songBad: "This song cannot be sent (16 entries, 1–64 bars each)", songRefused: "Stop the song first, then send",
     songSent: "Song sent to the FM-1",
+    /* Clipper 1.0: the pattern tools */
+    patUndo: "Undo", patRedo: "Redo", patRange: "Range", patAll: "All", patCopy: "Copy", patPaste: "Paste", patClear: "Clear",
+    patTranspose: "Transpose", patShift: "Shift", patReverse: "Reverse", patDouble: "Double", patChord: "Make chords",
+    patAccOn: "Accent +", patAccOff: "Accent −", patSlideOn: "Slide +", patSlideOff: "Slide −",
+    patHelp: "The tools work on the range (shift-click a step of the grid to set it, from the selected step). Ctrl+Z / Ctrl+Shift+Z: undo / redo (64 steps, edits by hand too). Ctrl+C: copy the range, Ctrl+V: paste it at the selected step.",
+    patGen: "Generate", patKey: "Key", patBase: "from", patEuclid: "Euclidean rhythm", patHits: "Hits", patOf: "over", patRot: "Rotate",
+    patMerge: "Keep the other steps", patMake: "Generate", patRandom: "Random in the key", patDensity: "Notes %", patMotion: "Leaps %",
+    patTies: "Ties %", patChords: "Chords %", patOct: "Octaves", patSeed: "Seed", patDice: "New dice",
+    patPresets: "Ready-made patterns and pattern text",
+    patTextHelp: "One token a step: a degree of the key (1 = the root, 8 = the root an octave up), ' an octave up, , an octave down, + joins the notes of a chord (1+3+5), > accent, ~ slide; - holds the note (tie), . rests. The text repeats over the range.",
+    patHumanize: "Humanize", patApply: "Apply",
+    patLib: "Pattern library", patSave: "Save to the bank", patLoad: "Load", patExport: "Export file", patBankExport: "Export the bank", patImport: "Import files",
+    patLibHelp: "The bank lives in this browser (double-click a name to load it). Files (.clipper-pattern.json) keep the notes, ties, accents, slides, velocities, ratchets, levels, nudges, fills, locks and the length.",
+    patRangeSet: "Set the range to", laneHelp: "Draw with the mouse (or a finger) over the notes: velocity, nudge (early / late, 1/64 step), ratchet (x1 to x4 hits) or level (GHOST, SOFT, NORM, HARD).",
+    chSingle: "single note", chKey3: "triad in key", chKey4: "7th in key", pk_bass: "Bass", pk_arp: "Arpeggio", pk_chords: "Chords", pk_lead: "Lead",
+    patName: "Pattern name", patStepsShort: "steps", patBankEmpty: "No pattern saved yet", patDefName: "Pattern",
+    patOverwrite: "Replace the pattern {name} in the bank?", patSaved: "Saved in the bank: ", patLoaded: "Pattern loaded",
+    patExported: "Pattern file saved: ", patImported: "Patterns imported: ", patFileBad: "Not a Clipper pattern file",
+    patBankFail: "This browser could not store the bank", patBankFull: "The bank is full (128 patterns)",
+    patDone: "Done", patSame: "Nothing to change", patLocksDropped: "Done; locks over the 24 the FM-1 keeps, left out: ",
+    patUndone: "Undone", patRedone: "Redone", patCopied: "Steps copied: ", patPasted: "Pasted", patCleared: "Range cleared", patMade: "Pattern generated",
+    patBadNotes: "Notes: type note names (C3, F#2) or numbers, 4 at most", patBadText: "The pattern text has a token it cannot read",
   },
 };
 let lang = (navigator.language || "en").toLowerCase().startsWith("ja") ? "ja" : "en";
@@ -5499,9 +6041,22 @@ $("stmorph").addEventListener("input", () => stMorph(+$("stmorph").value));
 $("strand").addEventListener("click", stRandom);
 $("stamt").addEventListener("input", () => { $("stamtv").textContent = $("stamt").value; });
 window.addEventListener("keydown", (e) => {
-  if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "z" || !dev) return;
+  const k = e.key.toLowerCase();
+  if (!(e.ctrlKey || e.metaKey) || !dev || !"zycv".includes(k) || k.length !== 1) return;
   const a = document.activeElement;
   if (a && (a.tagName === "INPUT" && a.type === "text" || a.tagName === "TEXTAREA")) return;
+  if (!$("p-sequencer").hidden && patOn()) {             /* (1.0: in the Sequencer tab, the pattern's undo, copy, paste) */
+    if (k === "c" || k === "v") {
+      if (a && (a.tagName === "INPUT" || a.tagName === "SELECT") || String(window.getSelection() || "")) return;
+      e.preventDefault();
+      if (k === "c") patCopy(); else patPaste();
+      return;
+    }
+    e.preventDefault();
+    if (k === "y" || e.shiftKey) patRedo(); else patUndo();
+    return;
+  }
+  if (k !== "z") return;
   e.preventDefault();
   if (e.shiftKey) stRedo(); else stUndo();
 });
@@ -5578,6 +6133,7 @@ function renderSteps() {
   $("drumbar").hidden = $("drumgrid").hidden = !dg;
   $("stepgrid").hidden = $("steptables").hidden = dg;
   renderSeqTools();
+  renderPatBar();                                     /* (Clipper 1.0: the pattern tools, the lanes) */
   const rollOn = !dg && !isDrum() && RV.view === "roll";   /* (2.5) the piano roll instead of the tiles */
   $("roll").hidden = !rollOn;
   if (rollOn) $("stepgrid").hidden = true;
@@ -5596,7 +6152,7 @@ function renderSteps() {
   const tables = [];
   for (let b = 0; b < len; b += 16) {
     const tb = el("table", {}, el("tr", {}, el("th"), el("th", { text: t("notes") }), el("th", { text: t("time") }),
-      el("th", { text: t("acc") }), el("th", { text: t("slide") }), el("th", { text: t("vel") })));
+      el("th", { text: t("acc") }), el("th", { text: t("slide") }), el("th", { text: t("vel") }), el("th", { text: t("ratchet") }), el("th", { text: t("hitLevel") })));
     for (let i = b; i < Math.min(len, b + 16); i++) tb.append(stepRow(i));
     tables.push(tb);
   }
@@ -5608,9 +6164,11 @@ function stepRow(i) {
   const acc = el("input", { type: "checkbox" });
   const sl = el("input", { type: "checkbox" });
   const vel = el("input", { type: "number", min: 0, max: 127 });
+  const rat = el("select", {}, ...[0, 1, 2, 3].map((k) => el("option", { value: k, text: "x" + (k + 1) })));   /* (1.0: ratchet, level) */
+  const lvl = el("select", {}, ...LV_ORDER.map((k) => el("option", { value: k, text: LV_NAMES[k] })));
   const tr = el("tr", { "data-i": i }, el("td", { class: "i", text: String(i + 1) }),
-    el("td", {}, notes), el("td", {}, time), el("td", {}, acc), el("td", {}, sl), el("td", {}, vel));
-  tr._c = { notes, time, acc, sl, vel };
+    el("td", {}, notes), el("td", {}, time), el("td", {}, acc), el("td", {}, sl), el("td", {}, vel), el("td", {}, rat), el("td", {}, lvl));
+  tr._c = { notes, time, acc, sl, vel, rat, lvl };
   fillStep(tr, dev.steps[i]);
   tr.addEventListener("focusin", () => selectStep(i));   /* (v7: the step detail follows the row being edited) */
   const send = () => writeStep(i, tr);
@@ -5619,6 +6177,8 @@ function stepRow(i) {
   acc.addEventListener("change", send);
   sl.addEventListener("change", send);
   vel.addEventListener("change", send);
+  rat.addEventListener("change", send);
+  lvl.addEventListener("change", send);
   return tr;
 }
 function fillStep(tr, s) {
@@ -5630,6 +6190,8 @@ function fillStep(tr, s) {
   c.acc.checked = !!(s.flags & 1);
   c.sl.checked = !!(s.flags & 2);
   c.vel.value = String(s.vel);
+  c.rat.value = c.rat.dataset.v = String((s.rat | 0) & 3);   /* (the first note's; a change sets all four) */
+  c.lvl.value = c.lvl.dataset.v = String((s.lvl | 0) & 3);
   tr.classList.toggle("off", !s.n || s.time === 2);
 }
 function updateStepRows() {
@@ -5646,19 +6208,21 @@ function renderGrid() {
   if (!dev || !dev.steps.length) { box.replaceChildren(); return; }
   const len = stepLen();
   if (box.children.length !== len) {
-    box.replaceChildren(...Array.from({ length: len }, (_, i) => el("button", { type: "button", "data-i": i, onclick: () => focusStep(i) })));
+    box.replaceChildren(...Array.from({ length: len }, (_, i) => el("button", { type: "button", "data-i": i, onclick: (e) => (e.shiftKey ? patRangeTo(i) : focusStep(i)) })));
   }
+  const [ra, rb] = patRange(), rg = patRanged();
   for (const b of box.children) {
     const i = +b.dataset.i, s = dev.steps[i];
     const on = !!s && s.n > 0 && s.time === 0, tie = !!s && s.time === 1;
     const txt = on ? stepNotes(s) : tie ? "—" : "";
     const marks = s && on ? (s.flags & 1 ? " >" : "") + (s.flags & 2 ? " ~" : "") : "";
     const lk = stepLocked(i), fc = stepFill(i);
-    b.className = [on && "on", tie && "tie", on && s.flags & 1 && "acc", i % 4 === 0 && "beat", lk && "lk", fc && "fc" + fc, i === selStep && hasLocks() && "sel"].filter(Boolean).join(" ");
+    b.className = [on && "on", tie && "tie", on && s.flags & 1 && "acc", i % 4 === 0 && "beat", lk && "lk", fc && "fc" + fc, i === selStep && hasLocks() && "sel", rg && i >= ra && i < rb && "rg"].filter(Boolean).join(" ");
     b.title = `${i + 1}: ${on ? txt : tie ? "TIE" : "REST"}${marks}${fc ? " (" + FC.NAMES[fc] + ")" : ""}`;
     b.replaceChildren(el("span", { class: "n", text: String(i + 1) + marks }), el("span", { class: "x", text: txt }));
   }
   if (!$("roll").hidden) renderRoll();
+  renderLanes();
 }
 function focusStep(i) {
   const tr = $("steptables").querySelector(`tr[data-i="${i}"]`);
@@ -5680,8 +6244,10 @@ async function writeStep(i, tr) {
   let time = +c.time.value;
   if (notes.length && !old.n && time === 2) time = 0;   /* typing notes into an empty step makes it play */
   const s = { n: notes.length, notes: all, time, flags: (c.acc.checked ? 1 : 0) | (c.sl.checked ? 2 : 0),
-    vel: Math.max(0, Math.min(127, +c.vel.value || 0)), lvl: old.lvl, rat: old.rat };   /* v5: level / ratchet kept */
+    vel: Math.max(0, Math.min(127, +c.vel.value || 0)),   /* v5: level / ratchet kept, unless changed here (then on all four notes) */
+    lvl: c.lvl.value !== c.lvl.dataset.v ? PAT.uni(+c.lvl.value) : old.lvl, rat: c.rat.value !== c.rat.dataset.v ? PAT.uni(+c.rat.value) : old.rat };
   if (s.n && !s.vel) s.vel = 96;
+  patMark();
   stepEdit.set(i, performance.now());
   try {
     dev.steps[i] = parse[CMD.STEP_SET](await rq(req.stepSet(i, s)));
@@ -5799,6 +6365,7 @@ function rollNoteAt(h) {                                 /* the chord (and its n
 let rollWriting = false;
 async function rollApply(ch) {
   if (!ch.size || rollWriting) { renderRoll(); return; }
+  patMark();
   rollWriting = true;
   for (const [i, s] of ch) dev.steps[i] = { ...dev.steps[i], ...s, index: i };   /* (drawn at once, the device follows) */
   renderGrid();
@@ -5909,6 +6476,7 @@ async function midiImport() {
   if (!MI || !dev) return;
   if (!confirm(t("midiConfirm"))) return;
   const plan = midiPlan(), setlen = $("midisetlen").checked;
+  patMark();
   busy++;
   try {
     if (plan.dsteps) {
@@ -6341,6 +6909,7 @@ function addLock(i) {                                    /* a new lock at the tr
 }
 async function writeMicro(i, m) {
   const d = dev;
+  patMark();
   stepEdit.set(i, performance.now());
   try {
     const r = parse[CMD.MICRO_SET](await rq(req.microSet(d.sel, i, m), { key: "micro:" + i }));
@@ -6352,6 +6921,7 @@ async function writeMicro(i, m) {
 }
 async function writeFill(i, c) {                         /* v8: the step's fill condition */
   const d = dev;
+  patMark();
   stepEdit.set(i, performance.now());
   try {
     const r = parse[CMD.FILL_SET](await rq(req.fillSet(d.sel, i, c), { key: "fill:" + i }));
@@ -6363,6 +6933,7 @@ async function writeFill(i, c) {                         /* v8: the step's fill 
 }
 async function writeLock(i, param, v) {
   const d = dev;
+  patMark();
   stepEdit.set(i, performance.now());
   try {
     const r = parse[CMD.LOCK_SET](await rq(req.lockSet(d.sel, i, param, v), { key: `lock:${i}:${param}` }));
@@ -6385,6 +6956,363 @@ async function refreshLocks() {                          /* a STEP_CHANGED push:
     renderGrid();
   } catch (err) { report(err); }
 }
+
+/* ---- Clipper 1.0: the pattern tools (PAT) on the selected track: a range, undo / redo, transformations,
+   generators, the lanes (velocity, nudge, ratchet, level), the pattern bank and files. A tool computes the new
+   pattern at once and sends only what changed (STEP_SET, MICRO_SET, FILL_SET, LOCK_SET, LEN). */
+const PT = { undo: [], redo: [], clip: null, a: 0, b: null, lane: "vel", busy: false, dev: null, keyDev: null, draw: null };
+try { const l = localStorage.getItem("clipper-seq-lane"); if (l in PAT.LANES) PT.lane = l; } catch (e) { /* no storage */ }
+const patOn = () => !!dev && !!dev.dump && dev.steps.length >= dev.info.nstep && !(drumGrid() && dev.dstepsOk);
+function patSync() { if (PT.dev !== dev) { PT.dev = dev; PT.undo = []; PT.redo = []; PT.a = 0; PT.b = null; } }
+const patNow = () => PAT.make(dev.steps.slice(0, dev.info.nstep), dev.micro, dev.fill, dev.locks, stepLen());
+/* the range [a, b) on the pattern's length (b null: to the end) */
+function patRange() {
+  const len = stepLen(), a = Math.max(0, Math.min(len - 1, PT.a));
+  return [a, PT.b == null ? len : Math.max(a + 1, Math.min(len, PT.b))];
+}
+const patRanged = () => { const [a, b] = patRange(); return a > 0 || b < stepLen(); };
+function patRangeTo(i) {                                 /* shift-click: from the selected step to this one */
+  const lo = Math.min(selStep, i), hi = Math.max(selStep, i);
+  PT.a = lo; PT.b = hi + 1;
+  renderPatBar();
+  renderGrid();
+}
+/* a step of the editor about to change by hand: the pattern before it is an undo step */
+function patMark() {
+  if (!patOn() || PT.busy) return;
+  patSync();
+  PT.undo.push(patNow());
+  if (PT.undo.length > PAT.HIST) PT.undo.shift();
+  PT.redo = [];
+  renderPatBar();
+}
+/* send what differs between the pattern now and `next`; dev.* keeps what the device answers */
+async function patWrite(next) {
+  const d0 = dev, d = PAT.diff(patNow(), next);
+  if (!d.n) return d;
+  PT.busy = true;
+  busy++;
+  let k = 0, refused = 0;
+  const tick = () => { if (++k % 8 === 0) sayK("applying", `${k}/${d.n}`); };
+  try {
+    for (const i of d.steps) dev.steps[i] = { ...next.steps[i], index: i };   /* (drawn at once, the device follows) */
+    renderGrid();
+    for (const i of d.steps) {
+      stepEdit.set(i, performance.now());
+      d0.steps[i] = parse[CMD.STEP_SET](await rq(req.stepSet(i, next.steps[i])));
+      tick();
+    }
+    for (const i of d.micro) {
+      stepEdit.set(i, performance.now());
+      d0.micro[i] = parse[CMD.MICRO_SET](await rq(req.microSet(d0.sel, i, next.micro[i]))).micro;
+      tick();
+    }
+    for (const i of d.fill) {
+      stepEdit.set(i, performance.now());
+      fillSet(d0.fill, i, parse[CMD.FILL_SET](await rq(req.fillSet(d0.sel, i, next.fill[i]))).cond);
+      tick();
+    }
+    for (const l of d.lockDel) {
+      await rq(req.lockSet(d0.sel, l.step, l.param, null));
+      const x = d0.locks.findIndex((o) => o.step === l.step && o.param === l.param);
+      if (x >= 0) d0.locks.splice(x, 1);
+      tick();
+    }
+    for (const l of d.lockSet) {
+      const r = parse[CMD.LOCK_SET](await rq(req.lockSet(d0.sel, l.step, l.param, l.value)));
+      const x = d0.locks.findIndex((o) => o.step === l.step && o.param === l.param);
+      if (r.has && x >= 0) d0.locks[x].value = r.value;
+      else if (r.has) d0.locks.push({ step: l.step, param: l.param, value: r.value });
+      else refused++;
+      tick();
+    }
+    if (d.len != null && d0 === dev) setLen(d.len);
+  } finally {
+    busy--;
+    PT.busy = false;
+    if (d0 === dev) { $("steptables").dataset.len = ""; renderSteps(); }
+  }
+  d.refused = refused;
+  return d;
+}
+/* a tool: fn(pattern now, range) -> the new pattern (null: nothing to do) */
+async function patApply(fn, done = "patDone") {
+  if (!patOn() || PT.busy) return;
+  patSync();
+  const cur = patNow();
+  let next;
+  try { next = fn(cur, patRange()); } catch (err) { report(err); return; }
+  if (!next) return;
+  if (!PAT.diff(cur, next).n) { sayK("patSame"); return; }
+  PT.undo.push(cur);
+  if (PT.undo.length > PAT.HIST) PT.undo.shift();
+  PT.redo = [];
+  try {
+    const d = await patWrite(next);
+    sayK(next.dropped ? "patLocksDropped" : d.refused ? "lockRefused" : done, next.dropped ? String(next.dropped) : "");
+  } catch (err) { report(err); }
+  renderPatBar();
+}
+async function patStep(from, to, done) {                 /* undo / redo */
+  if (!patOn() || PT.busy) return;
+  patSync();
+  if (!from.length) return;
+  const target = from.pop();
+  to.push(patNow());
+  try { await patWrite(PAT.fitTo(target, patNow())); sayK(done); } catch (err) { report(err); }
+  renderPatBar();
+}
+const patUndo = () => patStep(PT.undo, PT.redo, "patUndone");
+const patRedo = () => patStep(PT.redo, PT.undo, "patRedone");
+function patCopy() {
+  if (!patOn()) return;
+  const [a, b] = patRange();
+  PT.clip = PAT.copy(patNow(), a, b);
+  sayK("patCopied", String(b - a));
+  renderPatBar();
+}
+const patPaste = () => PT.clip && patApply((P) => PAT.paste(P, PT.clip, Math.min(selStep, P.len - 1)), "patPasted");
+/* the key for the generators: the track's ROOT / SCL the first time (CHR: minor) */
+function patKey() {
+  return { root: +$("groot").value || 0, scale: $("gscale").value || "MIN", base: +$("gbase").value || 48 };
+}
+function renderPatBar() {
+  const box = $("seqpro");
+  const on = patOn();
+  box.hidden = $("lanes").hidden = !on;
+  if (!on) return;
+  patSync();
+  if (!$("pchord").children.length || $("pchord").dataset.lang !== lang) {
+    $("pchord").dataset.lang = lang;
+    $("pchord").replaceChildren(...PAT.CHORDS.map(([k]) => el("option", { value: k, text: { single: t("chSingle"), key3: t("chKey3"), key4: t("chKey4") }[k] || k })));
+    $("groot").replaceChildren(...NOTE_NAMES.map((n, i) => el("option", { value: i, text: n })));
+    $("gscale").replaceChildren(...Object.keys(PAT.SCALES).map((n) => el("option", { value: n, text: n })));
+    $("gbase").replaceChildren(...[24, 36, 48, 60, 72].map((n) => el("option", { value: n, text: noteName(n) })));
+    const kinds = [...new Set(PAT.PRESETS.map((p) => p[0]))];
+    $("tpre").replaceChildren(...kinds.map((k) => el("optgroup", { label: t("pk_" + k) },
+      ...PAT.PRESETS.map((p, i) => [p, i]).filter(([p]) => p[0] === k).map(([p, i]) => el("option", { value: i, text: p[1] })))));
+    if (!$("ttext").value) $("ttext").value = PAT.PRESETS[0][2];
+    $("pname").placeholder = t("patName");
+  }
+  if (PT.keyDev !== dev) {                               /* (the device's key, once a connection) */
+    PT.keyDev = dev;
+    const sc = Object.keys(PAT.SCALES), r = dev.dump.p[pById("ROOT", 25)] | 0, s = sc[dev.dump.p[pById("SCL", 26)] | 0];
+    $("groot").value = String(Math.max(0, Math.min(11, r)));
+    $("gscale").value = s && s !== "CHR" ? s : "MIN";
+    $("gbase").value = "48";
+  }
+  const len = stepLen(), [a, b] = patRange();
+  for (const [id, v] of [["ptfrom", a + 1], ["ptto", b]]) { const x = $(id); x.max = String(len); if (document.activeElement !== x) x.value = String(v); }
+  $("pundo").disabled = !PT.undo.length || PT.busy;
+  $("predo").disabled = !PT.redo.length || PT.busy;
+  $("ppaste").disabled = !PT.clip;
+  $("pdbl").disabled = len * 2 > dev.info.nstep;
+  $("pall").disabled = !patRanged();
+  $("pundo").title = `${t("patUndo")} (Ctrl+Z): ${PT.undo.length}`;
+  $("predo").title = `${t("patRedo")} (Ctrl+Shift+Z): ${PT.redo.length}`;
+  $("ppaste").title = PT.clip ? `${t("patPaste")}: ${PT.clip.len} → ${selStep + 1}` : t("patPaste");
+  $("eprev").textContent = PAT.euclid(+$("euhits").value, Math.min(32, +$("eusteps").value || 16), +$("eurot").value || 0).map((x) => (x ? "x" : ".")).join("");
+  for (const btn of $("laneseg").children) {
+    btn.setAttribute("aria-pressed", btn.dataset.l === PT.lane ? "true" : "false");
+    if (btn.dataset.l === "nudge") btn.hidden = !dev.micro;
+  }
+  if (PT.lane === "nudge" && !dev.micro) PT.lane = "vel";
+  const [lo, hi] = PAT.LANES[PT.lane];
+  $("lval").min = String(lo); $("lval").max = String(hi);
+  if (document.activeElement !== $("lval") && (+$("lval").value < lo || +$("lval").value > hi || $("lval").value === "")) $("lval").value = String(PT.lane === "vel" ? 96 : PT.lane === "nudge" ? 0 : PT.lane === "rat" ? 2 : 3);
+  renderPatBank();
+  renderLanes();
+}
+$("pundo").addEventListener("click", patUndo);
+$("predo").addEventListener("click", patRedo);
+$("ptfrom").addEventListener("change", () => { PT.a = Math.max(0, (+$("ptfrom").value || 1) - 1); if (PT.b != null && PT.b <= PT.a) PT.b = PT.a + 1; renderPatBar(); renderGrid(); });
+$("ptto").addEventListener("change", () => { const v = +$("ptto").value || stepLen(); PT.b = v >= stepLen() ? null : Math.max(1, v); if (PT.b != null && PT.a >= PT.b) PT.a = PT.b - 1; renderPatBar(); renderGrid(); });
+$("pall").addEventListener("click", () => { PT.a = 0; PT.b = null; renderPatBar(); renderGrid(); });
+$("pcopy").addEventListener("click", patCopy);
+$("ppaste").addEventListener("click", patPaste);
+$("pclear").addEventListener("click", () => patApply((P, [a, b]) => PAT.clear(P, a, b), "patCleared"));
+for (const btn of $("ptrans").children) btn.addEventListener("click", () => patApply((P, [a, b]) => PAT.transpose(P, +btn.dataset.v, a, b)));
+for (const btn of $("pshift").children) btn.addEventListener("click", () => patApply((P, [a, b]) => PAT.rotate(P, +btn.dataset.v, a, b)));
+$("ptrev").addEventListener("click", () => patApply((P, [a, b]) => PAT.reverse(P, a, b)));
+$("pdbl").addEventListener("click", () => patApply((P) => PAT.double(P, dev.info.nstep)));
+$("pchordgo").addEventListener("click", () => patApply((P, [a, b]) => PAT.chord(P, $("pchord").value, a, b, patKey())));
+for (const btn of $("pflags").children) btn.addEventListener("click", () => patApply((P, [a, b]) => PAT.flag(P, +btn.dataset.f, btn.dataset.h, a, b)));
+for (const id of ["euhits", "eusteps", "eurot"]) $(id).addEventListener("input", () => renderPatBar());
+$("ego").addEventListener("click", () => {
+  const notes = parseNotes($("enotes").value);
+  if (!notes || !notes.length) { $("enotes").classList.add("bad"); sayK("patBadNotes"); return; }
+  $("enotes").classList.remove("bad");
+  patApply((P, [a, b]) => PAT.genEuclid(P, { k: +$("euhits").value, n: +$("eusteps").value || 16, rot: +$("eurot").value || 0, notes,
+    accent: $("eacc").checked, merge: $("emerge").checked }, a, b), "patMade");
+});
+function patRandom() {
+  const k = patKey();
+  patApply((P, [a, b]) => PAT.genRandom(P, { ...k, seed: +$("rseed").value || 1, oct: +$("roct").value || 1, density: +$("rden").value,
+    motion: +$("rmot").value, ties: +$("rtie").value, accents: +$("racc").value, slides: +$("rsli").value, chords: +$("rcho").value }, a, b), "patMade");
+}
+$("rgo").addEventListener("click", patRandom);
+$("rdice").addEventListener("click", () => { $("rseed").value = String(1 + Math.floor(Math.random() * 999998)); patRandom(); });
+$("tpre").addEventListener("change", () => { const p = PAT.PRESETS[+$("tpre").value]; if (p) $("ttext").value = p[2]; });
+$("tgo").addEventListener("click", () => {
+  const txt = $("ttext").value;
+  if (!PAT.fromText(txt, patKey())) { $("ttext").classList.add("bad"); sayK("patBadText"); return; }
+  $("ttext").classList.remove("bad");
+  patApply((P, [a, b]) => PAT.genText(P, txt, patKey(), a, b), "patMade");
+});
+$("hgo").addEventListener("click", () => patApply((P, [a, b]) => PAT.humanize(P, { seed: 1 + Math.floor(Math.random() * 1e6), vel: +$("hvel").value, nudge: +$("hnud").value }, a, b)));
+
+/* the lanes: one bar a step, drawn with the mouse or a finger (NOTE steps only) */
+const LANE_H = 96;
+function laneVal(lane, y) {
+  const [lo, hi] = PAT.LANES[lane], f = 1 - Math.max(0, Math.min(1, y / LANE_H));
+  if (lane === "nudge") return Math.round((f * 2 - 1) * 32);
+  if (lane === "vel") return Math.round(lo + f * (hi - lo));
+  return Math.min(hi, 1 + Math.floor(f * 4));
+}
+function renderLanes() {
+  const cv = $("lanecv");
+  if (!patOn() || $("lanes").hidden) return;
+  const P = PT.draw ? PT.draw.P : patNow(), len = P.len, lane = PT.lane, [lo, hi] = PAT.LANES[lane];
+  const G = !$("roll").hidden && RV.geo && RV.geo.len === len ? RV.geo : null;   /* (under the piano roll: its columns) */
+  const off = G ? ROLL_LAB : 0, avail = Math.max(320, cv.parentElement.clientWidth || 800), cw = G ? G.cw : avail / len;
+  const W = off + cw * len, H = LANE_H, dpr = window.devicePixelRatio || 1;
+  PT.lgeo = { off, cw };
+  cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + "px"; cv.style.height = H + "px";
+  const g = cv.getContext("2d"), C = rollColors(), [a, b] = patRange();
+  g.setTransform(dpr, 0, 0, dpr, off * dpr, 0);
+  g.fillStyle = C.bg; g.fillRect(-off, 0, W, H);
+  if (patRanged()) { g.fillStyle = C.s1; g.fillRect(a * cw, 0, (b - a) * cw, H); }
+  const per = ROLL.DIV_PER_BAR[curDiv()];
+  for (let i = 0; i <= len; i++) {
+    if (i % 4 && !(per >= 1 && i % per === 0)) continue;
+    g.fillStyle = per >= 1 && i % per === 0 ? C.dim : C.s3; g.fillRect(Math.round(i * cw), 0, 1, H);
+  }
+  if (lane === "nudge") { g.fillStyle = C.s3; g.fillRect(0, H / 2, W - off, 1); }
+  for (let i = 0; i < len; i++) {
+    const s = P.steps[i], x = i * cw + 2, w = Math.max(2, cw - 4);
+    if (!PAT.isNote(s)) { g.fillStyle = C.s2; g.fillRect(x, H - 2, w, 2); continue; }
+    const v = PAT.laneGet(P, lane, i);
+    g.fillStyle = i === selStep ? C.fg : C.trk;
+    if (lane === "nudge") { const y = H / 2 - (v / 32) * (H / 2); g.fillRect(x, Math.min(y, H / 2), w, Math.max(2, Math.abs(y - H / 2))); }
+    else if (lane === "vel") { const hh = ((s.flags & 1 ? 127 : v) / 127) * H; g.fillRect(x, H - hh, w, hh); if (s.flags & 1) { g.fillStyle = C.fg; g.fillRect(x, H - hh, w, 2); } }
+    else for (let k = 0; k < v; k++) g.fillRect(x, H - (k + 1) * (H / 4) + 2, w, H / 4 - 4);
+  }
+  cv.title = `${lane === "vel" ? t("vel") : lane === "nudge" ? t("nudge") : lane === "rat" ? t("ratchet") : t("hitLevel")} ${lo}..${hi}`;
+}
+function laneAt(e) {
+  const r = $("lanecv").getBoundingClientRect(), len = stepLen(), L = PT.lgeo || { off: 0, cw: r.width / len };
+  return { i: Math.max(0, Math.min(len - 1, Math.floor((e.clientX - r.left - L.off) / L.cw))), y: e.clientY - r.top };
+}
+function laneDraw(e) {
+  const h = laneAt(e), D = PT.draw, v = laneVal(PT.lane, h.y);
+  const from = D.last == null ? h.i : D.last, step = from <= h.i ? 1 : -1;
+  for (let i = from; ; i += step) {                      /* (a fast stroke: the steps in between too) */
+    if (PAT.isNote(D.P.steps[i])) PAT.laneSet(D.P, PT.lane, i, v);
+    if (i === h.i) break;
+  }
+  D.last = h.i;
+  renderLanes();
+}
+$("lanecv").addEventListener("pointerdown", (e) => {
+  if (!patOn() || PT.busy) return;
+  patSync();
+  PT.draw = { P: patNow(), last: null, before: patNow() };
+  $("lanecv").setPointerCapture(e.pointerId);
+  laneDraw(e);
+});
+$("lanecv").addEventListener("pointermove", (e) => { if (PT.draw) laneDraw(e); });
+async function laneDrop() {
+  const D = PT.draw;
+  if (!D) return;
+  PT.draw = null;
+  if (!PAT.diff(D.before, D.P).n) { renderLanes(); return; }
+  PT.undo.push(D.before);
+  if (PT.undo.length > PAT.HIST) PT.undo.shift();
+  PT.redo = [];
+  try { await patWrite(D.P); sayK("patDone"); } catch (err) { report(err); }
+  renderPatBar();
+}
+$("lanecv").addEventListener("pointerup", laneDrop);
+$("lanecv").addEventListener("pointercancel", () => { PT.draw = null; renderLanes(); });
+for (const btn of $("laneseg").children) btn.addEventListener("click", () => {
+  PT.lane = btn.dataset.l;
+  try { localStorage.setItem("clipper-seq-lane", PT.lane); } catch (e) { /* no storage */ }
+  $("lval").value = "";
+  renderPatBar();
+});
+$("lgo").addEventListener("click", () => patApply((P, [a, b]) => PAT.setLane(P, PT.lane, +$("lval").value, a, b)));
+window.addEventListener("resize", () => renderLanes());
+
+/* the pattern bank (this browser) and .clipper-pattern.json files */
+const BANK_KEY = "clipper-pattern-bank";
+function bankRead() {
+  try { const v = JSON.parse(localStorage.getItem(BANK_KEY) || "[]"); return Array.isArray(v) ? v.filter((x) => x && typeof x.name === "string" && x.pat) : []; }
+  catch (e) { return []; }
+}
+function bankWrite(list) {
+  try { localStorage.setItem(BANK_KEY, JSON.stringify(list)); return true; } catch (e) { sayK("patBankFail"); return false; }
+}
+function renderPatBank() {
+  const sel = $("pbank"), list = bankRead(), keep = sel.value;
+  const sig = list.map((x) => x.name + x.at).join("|") + lang;
+  if (sel.dataset.sig !== sig) {
+    sel.dataset.sig = sig;
+    sel.replaceChildren(...(list.length ? list.map((x) => el("option", { value: x.name, text: `${x.name}  (${x.pat.len || x.pat.steps.length} ${t("patStepsShort")})` }))
+      : [el("option", { value: "", disabled: true, text: t("patBankEmpty") })]));
+    if (list.some((x) => x.name === keep)) sel.value = keep;
+  }
+  $("pload").disabled = $("pdel").disabled = !sel.value;
+  $("pbexp").disabled = !list.length;
+}
+const patName = () => $("pname").value.trim() || `${t("patDefName")} ${bankRead().length + 1}`;
+$("psave").addEventListener("click", () => {
+  if (!patOn()) return;
+  const name = patName(), list = bankRead();
+  if (list.some((x) => x.name === name) && !confirm(t("patOverwrite").replace("{name}", name))) return;
+  try { if (bankWrite(PAT.bankPut(list, name, PAT.toFile(patNow(), name)))) { $("pbank").dataset.sig = ""; renderPatBank(); $("pbank").value = name; renderPatBank(); sayK("patSaved", name); } }
+  catch (err) { sayK("patBankFull"); }
+});
+function patLoadFile(f, name) {
+  patApply((P) => PAT.fitTo(PAT.fromFile(f, dev.info.nstep), P), "patLoaded");
+  if (name) $("pname").value = name;
+}
+$("pload").addEventListener("click", () => { const x = bankRead().find((y) => y.name === $("pbank").value); if (x) patLoadFile(x.pat, x.name); });
+$("pbank").addEventListener("dblclick", () => $("pload").click());
+$("pbank").addEventListener("change", () => { $("pname").value = $("pbank").value; renderPatBank(); });
+$("pdel").addEventListener("click", () => {
+  const name = $("pbank").value;
+  if (!name || !confirm(t("confirmDelete").replace("{name}", name))) return;
+  if (bankWrite(bankRead().filter((x) => x.name !== name))) renderPatBank();
+});
+$("pexp").addEventListener("click", () => {
+  if (!patOn()) return;
+  const name = $("pname").value.trim() || "pattern";
+  download(`${fileSlug(name)}.clipper-pattern.json`, PAT.toFile(patNow(), name));
+  sayK("patExported", name);
+});
+$("pbexp").addEventListener("click", () => download("clipper-patterns.json", { format: "clipper-pattern-bank", version: 1, patterns: bankRead().map((x) => x.pat) }));
+$("pimp").addEventListener("click", () => $("pfile").click());
+$("pfile").addEventListener("change", async (e) => {
+  const files = [...e.target.files];
+  e.target.value = "";
+  let list = bankRead(), got = [], bad = 0;
+  for (const f of files) {
+    try {
+      const j = JSON.parse(await f.text());
+      const pats = j && j.format === "clipper-pattern-bank" && Array.isArray(j.patterns) ? j.patterns : [j];
+      for (const p of pats) {
+        PAT.fromFile(p, 64);                             /* (refused here when it is not a pattern) */
+        const name = String(p.name || f.name.replace(/\.clipper-pattern\.json$|\.json$/i, "")).trim() || patName();
+        list = PAT.bankPut(list, name, p);
+        got.push([name, p]);
+      }
+    } catch (err) { bad++; }
+  }
+  if (got.length && !bankWrite(list)) return;
+  renderPatBank();
+  if (got.length === 1 && patOn()) patLoadFile(got[0][1], got[0][0]);
+  else sayK(bad && !got.length ? "patFileBad" : "patImported", String(got.length));
+});
 
 /* ---- v5: the drum track's 16 lanes. A click puts a hit with the level / roll chosen above, or takes it
    away when it already has them; Shift+click steps the level of a hit. One DRUM_STEP per step in flight
@@ -6477,6 +7405,7 @@ $("reloadsteps").addEventListener("click", async () => {
 });
 $("clearseq").addEventListener("click", async () => {
   if (!dev || !confirm(t("confirmClear"))) return;
+  patMark();
   busy++;
   try {
     const drum = drumGrid() && dev.dstepsOk;

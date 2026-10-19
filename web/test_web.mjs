@@ -34,7 +34,7 @@ const E = vm.runInNewContext(proto + `
    CHOP, chopNovelty, chopHits, chopSnap, chopGrid, chopEqual, chopList, chopPick, chopFit, chopZones, wavFile, zipStore, crc32,
    UP, bank, capturePatch, auditionPatch, startWatch, libraryFile, readLibraryFile, paramKeys, patternFromSteps, stepsFromPattern, upName,
    mixer, GM_DRUM, drumName, parseNotes, fmtValue, F, DRUM_LANES, LV_NAMES, emptyDrum, lockable, MICRO, FC, fillGet, fillSet, pack7, unpack7,
-   backupCapture, backupRestore, backupObjects, b64enc, b64dec, FM6, KIT, kitPad, kitZones, kitLen, kitBytes, kitFit, kitSplit, kitLaneOf, kitPlace, zipRead, ROLL, SMF, ARR, mockSettings, fm6CartWrite, fm6CartPreset, fm6CartSlots, fm6CartPresets, DSYN, DSYN_MOCK_NAMES, DSYN_MOCK_KITS, HY, FX, WT, SetGate, patchByCount, bkProjFormat, bkDevFormat, bkFwAtLeast, FM1_PORT_ED: FM1_PORT, fm1Ports, parseScl })`,
+   backupCapture, backupRestore, backupObjects, b64enc, b64dec, FM6, KIT, kitPad, kitZones, kitLen, kitBytes, kitFit, kitSplit, kitLaneOf, kitPlace, zipRead, ROLL, SMF, ARR, mockSettings, fm6CartWrite, fm6CartPreset, fm6CartSlots, fm6CartPresets, DSYN, DSYN_MOCK_NAMES, DSYN_MOCK_KITS, HY, FX, WT, SetGate, patchByCount, bkProjFormat, bkDevFormat, bkFwAtLeast, FM1_PORT_ED: FM1_PORT, fm1Ports, parseScl, PAT })`,
 { setTimeout, clearTimeout, setInterval, clearInterval, console, TextEncoder, TextDecoder, Blob, Response, DecompressionStream });
 
 async function editorMock() {
@@ -1263,6 +1263,155 @@ async function editorCart() {
   old.done();
 }
 
+/* ------------------------------------------ Clipper 1.0: the pattern tools (editor.html PAT) --- */
+async function patternTools() {
+  const { PAT } = E;
+  const shape = (P, n = P.len) => P.steps.slice(0, n).map((x) => (x.time === 0 && x.n ? x.notes.slice(0, x.n).join("+") + (x.flags & 1 ? ">" : "") + (x.flags & 2 ? "~" : "") : x.time === 1 ? "-" : ".")).join(" ");
+  const blank = (len = 16) => ({ len, steps: Array.from({ length: 64 }, PAT.rest), micro: new Array(64).fill(0), fill: new Array(64).fill(0), locks: [] });
+  const from = (txt, len) => { const P = blank(len); txt.split(" ").forEach((t, i) => {
+    P.steps[i] = t === "." ? PAT.rest() : t === "-" ? PAT.tie() : PAT.note(t.split("+").map(Number)); }); return P; };
+  /* make <-> the editor's state; diff */
+  {
+    const fb = new Array(16).fill(0);
+    E.fillSet(fb, 3, 1); E.fillSet(fb, 5, 2);
+    const st = Array.from({ length: 64 }, (_, i) => (i === 2 ? { n: 1, notes: [60, 0, 0, 0], time: 0, flags: 9, vel: 100, lvl: 0, rat: 0 } : PAT.rest()));
+    const P = PAT.make(st, new Array(64).fill(0).map((_, i) => (i === 2 ? -5 : 0)), fb, [{ step: 2, param: 5, value: 40 }], 16);
+    ok(P.len === 16 && P.fill[3] === 1 && P.fill[5] === 2 && P.micro[2] === -5 && P.steps[2].flags === 1 && P.locks.length === 1,
+      "pattern: the editor's steps, nudges, packed fills and locks as one value");
+    const Q = PAT.clone(P);
+    Q.steps[4] = PAT.note([62]); Q.micro[2] = 3; Q.fill[3] = 0; Q.locks = [{ step: 2, param: 5, value: 41 }, { step: 4, param: 6, value: 1 }]; Q.len = 32;
+    const d = PAT.diff(P, Q);
+    ok(d.steps.join() === "4" && d.micro.join() === "2" && d.fill.join() === "3" && d.lockSet.length === 2 && !d.lockDel.length && d.len === 32 && d.n === 6
+      && PAT.diff(Q, P).lockDel.map((l) => l.step + ":" + l.param).join() === "4:6" && PAT.diff(P, P).n === 0 && P.steps[4].time === 2,
+      "pattern: diff = what to send (and the input is never changed)");
+  }
+  /* transformations */
+  {
+    const P = from("60 - . 64 . . 67 - - . . . 72 . . 71", 16);
+    P.micro[3] = 4; P.locks = [{ step: 3, param: 5, value: 9 }];
+    ok(shape(PAT.transpose(P, 12)) === "72 - . 76 . . 79 - - . . . 84 . . 83" && shape(PAT.transpose(P, -1, 0, 4)) === "59 - . 63 . . 67 - - . . . 72 . . 71"
+      && PAT.transpose(from("120 5", 2), 12).steps.slice(0, 2).map((s) => s.notes[0]).join() === "120,17", "pattern: transpose (the range; octaves fold back into 0..127)");
+    const r1 = PAT.rotate(P, 1);
+    ok(shape(r1) === "71 60 - . 64 . . 67 - - . . . 72 . ." && r1.micro[4] === 4 && r1.locks[0].step === 4 && shape(PAT.rotate(P, -1)) === "- . 64 . . 67 - - . . . 72 . . 71 60"
+      && shape(PAT.rotate(P, 1, 0, 4)) === "64 60 - . . . 67 - - . . . 72 . . 71", "pattern: shift round, nudges and locks move with their steps");
+    const rv = PAT.reverse(P);
+    ok(shape(rv) === "71 . . 72 . . . 67 - - . . 64 . 60 -" && rv.micro[12] === 4 && rv.locks[0].step === 12, "pattern: reverse keeps each chord's length");
+    ok(shape(PAT.reverse(P, 0, 8)) === "67 - . . 64 . 60 - . . . . 72 . . 71", "pattern: reverse a range");
+    const r2 = PAT.reverse(P, 6, 8);                     /* the chord 6..8 held past the range: cut */
+    ok(shape(r2) === "60 - . 64 . . 67 - . . . . 72 . . 71", "pattern: reverse a range, a chord held past it stops at its end");
+    const dbl = PAT.double(P);
+    ok(dbl.len === 32 && shape(dbl) === shape(P) + " " + shape(P) && dbl.micro[19] === 4 && dbl.locks.map((l) => l.step).join() === "3,19"
+      && PAT.double({ ...P, len: 40 }, 64).len === 64, "pattern: double the length (the copy after, up to 64 steps)");
+    const clip = PAT.copy(P, 3, 7);
+    const ps = PAT.paste(P, clip, 12);
+    ok(clip.len === 4 && shape(ps) === "60 - . 64 . . 67 - - . . . 64 . . 67" && ps.micro[12] === 4 && ps.locks.map((l) => l.step).join() === "3,12"
+      && shape(PAT.paste(P, PAT.copy(P, 0, 2), 6)) === "60 - . 64 . . 60 - . . . . 72 . . 71", "pattern: copy / paste (cut at LEN, an old chord's ties after it end)");
+    ok(shape(PAT.clear(P, 0, 4)) === ". . . . . . 67 - - . . . 72 . . 71" && !PAT.clear(P, 0, 4).locks.length && shape(PAT.clear(P, 6, 7)) === "60 - . 64 . . . . . . . . 72 . . 71",
+      "pattern: clear a range (its locks go; ties of a chord cleared go too)");
+    const many = blank(16);
+    many.locks = Array.from({ length: 20 }, (_, k) => ({ step: k % 16, param: 5 + Math.floor(k / 16), value: k }));
+    const dm = PAT.double(many);
+    ok(dm.locks.length === 24 && dm.dropped === 16, "pattern: at most 24 locks (the device's), what did not fit is counted");
+  }
+  /* fine editing */
+  {
+    const P = from("60 . 64 -", 4);
+    let Q = PAT.setLane(P, "rat", 3);
+    ok(Q.steps[0].rat === 0xAA && Q.steps[1].rat === 0 && PAT.laneGet(Q, "rat", 0) === 3, "pattern: ratchet x3 on the notes (all four of a step)");
+    Q = PAT.setLane(P, "lvl", 1);
+    ok(Q.steps[0].lvl === PAT.uni(1) && PAT.laneGet(Q, "lvl", 0) === 1 && PAT.laneGet(P, "lvl", 0) === 3 && PAT.laneGet(PAT.setLane(P, "lvl", 4), "lvl", 2) === 4,
+      "pattern: level GHOST..HARD (1..4 by loudness)");
+    ok(PAT.laneGet(PAT.setLane(P, "vel", 300), "vel", 0) === 127 && PAT.laneGet(P, "vel", 1) === 96 && PAT.laneGet(PAT.setLane(P, "nudge", -99), "nudge", 2) === -32,
+      "pattern: velocity and nudge lanes (clamped)");
+    ok(shape(PAT.chord(P, "maj")) === "60+64+67 . 64+68+71 -" && shape(PAT.chord(P, "m7", 2, 3)) === "60 . 64+67+71+74 -"
+      && shape(PAT.chord(P, "key3", 0, 4, { root: 0, scale: "MAJ" })) === "60+64+67 . 64+67+71 -"
+      && shape(PAT.chord(P, "key4", 0, 1, { root: 9, scale: "MIN" })) === "60+64+67+71 . 64 -" && shape(PAT.chord(PAT.chord(P, "maj"), "single")) === "60 . 64 -",
+      "pattern: chords (fixed or in the key) from each step's first note");
+    ok(shape(PAT.flag(P, 1, "on")) === "60> . 64> -" && shape(PAT.flag(PAT.flag(P, 2, "on"), 2, "off", 0, 1)) === "60 . 64~ -", "pattern: accents / slides on a range");
+  }
+  /* generators */
+  {
+    const eu = (k, n, r) => PAT.euclid(k, n, r).map((x) => (x ? "x" : ".")).join("");
+    ok(eu(3, 8) === "x..x..x." && eu(5, 8) === "x.x.xx.x" && eu(4, 16) === "x...x...x...x..." && eu(3, 8, 1) === ".x..x..x" && eu(0, 4) === "...." && eu(9, 8) === "xxxxxxxx",
+      "pattern: euclidean rhythms (tresillo, cinquillo, rotation)");
+    const g = PAT.genEuclid(from("60 - - - 62 62 62 62", 16), { k: 3, n: 8, notes: [36, 43], accent: true });
+    ok(shape(g) === "36+43> . . 36+43 . . 36+43 . 36+43> . . 36+43 . . 36+43 ." && shape(PAT.genEuclid(from("50 . 51 . . . . 52", 8), { k: 2, n: 4, notes: [40], merge: true })) === "40 . 40 . 40 . 40 52",
+      "pattern: euclid over the range (replace or merge)");
+    const r1 = PAT.genRandom(blank(), { seed: 7, root: 2, scale: "DOR", base: 48, oct: 2, density: 80, ties: 30, accents: 20, slides: 20, chords: 0 });
+    const r2 = PAT.genRandom(blank(), { seed: 7, root: 2, scale: "DOR", base: 48, oct: 2, density: 80, ties: 30, accents: 20, slides: 20, chords: 0 });
+    const notes = r1.steps.slice(0, 16).filter(PAT.isNote).flatMap((s) => s.notes.slice(0, s.n));
+    ok(shape(r1) === shape(r2) && shape(r1) !== shape(PAT.genRandom(blank(), { seed: 8, root: 2, scale: "DOR" })) && notes.length >= 6
+      && notes.every((n) => n >= 48 && n <= 72 && PAT.SCALES.DOR.includes((n - 2 + 120) % 12)) && r1.steps[0].time === 0 && r1.steps[16].time === 2,
+      "pattern: random in the key (the same seed, the same pattern; only the range)");
+    const dense = PAT.genRandom(blank(), { seed: 3, density: 100, ties: 0, chords: 100, scale: "MAJ" });
+    ok(dense.steps.slice(0, 16).every((s) => PAT.isNote(s) && s.n === 3), "pattern: random chords at 100 %");
+    const h = PAT.humanize(from("60 60 . 60", 4), { seed: 1, vel: 20, nudge: 6 });
+    ok(h.steps[0].vel !== 96 && h.steps.slice(0, 4).every((s, i) => i === 2 || Math.abs(s.vel - 96) <= 20) && h.micro.slice(0, 4).some((m) => m) && h.micro[2] === 0
+      && h.micro.every((m) => m >= -6 && m <= 6), "pattern: humanize velocity and nudge (notes only, within the amounts)");
+    const key = { root: 9, scale: "MIN", base: 36 };
+    ok(PAT.fromText("1 3 5 8 1' 3, - . 1+3+5>~", key).map((s) => (s.time === 0 ? s.notes.slice(0, s.n).join("+") + s.flags : s.time)).join(" ")
+      === "450 480 520 570 570 360 1 2 45+48+523" && PAT.fromText("1 x", key) === null && PAT.fromText("1+2+3+4+5", key) === null,
+      "pattern: pattern text (degrees of the key, ' , octaves, + chords, > accent, ~ slide)");
+    let good = 0;
+    for (const [, , txt] of PAT.PRESETS) { const s = PAT.fromText(txt, key); if (s && s.length === 16) good++; }
+    ok(good === PAT.PRESETS.length && PAT.PRESETS.length >= 20, "pattern: every ready-made pattern reads (16 steps)");
+    const gt = PAT.genText(blank(32), "- 1 . 5", { root: 0, scale: "MAJ", base: 48 }, 0, 6);
+    ok(shape(gt, 8) === ". 48 . 55 - 48 . ." && PAT.genText(blank(), "1 q", key) === null, "pattern: a text over the range, again and again");
+  }
+  /* files and the bank */
+  {
+    const P = from("60+64 - . 67", 4);
+    P.micro[3] = -7; P.fill[0] = 2; P.locks = [{ step: 3, param: 12, value: -200 }, { step: 9, param: 5, value: 1 }];
+    P.steps[3].rat = 0x55; P.steps[3].lvl = 0xFF;
+    const f = JSON.parse(JSON.stringify(PAT.toFile(P, "My bass")));
+    const Q = PAT.fromFile(f, 64);
+    ok(f.format === "clipper-pattern" && f.steps.length === 4 && f.locks.length === 1 && Q.len === 4 && shape(Q) === shape(P) && Q.micro[3] === -7 && Q.fill[0] === 2
+      && Q.steps[3].rat === 0x55 && Q.steps[3].lvl === 0xFF && Q.locks.length === 1 && Q.locks[0].value === -200 && Q.steps[4].time === 2,
+      "pattern: a .clipper-pattern.json file there and back");
+    let bad = 0;
+    for (const o of [null, {}, { format: "clipper-pattern", steps: [] }, { format: "x", steps: [[1, [60], 0, 0, 96]] }, { format: "clipper-pattern", steps: [[1, [60], 0, 0, "q"]] }, { format: "clipper-pattern", steps: [5] }])
+      try { PAT.fromFile(o); } catch (e) { bad++; }
+    const big = PAT.fromFile({ format: "clipper-pattern", len: 999, steps: [[9, [300, -4, 0, 0], 7, 9, 999]], micro: [99] }, 64);
+    ok(bad === 6 && big.len === 64 && big.steps[0].n === 4 && big.steps[0].notes[0] === 127 && big.steps[0].notes[1] === 0 && big.steps[0].time === 2 && big.micro[0] === 31,
+      "pattern: a bad file is refused, odd values are clamped");
+    const old = PAT.fitTo(Q, { micro: null, fill: null, locks: null });
+    ok(old.micro === null && old.locks === null && PAT.diff(PAT.fitTo(Q, { micro: [], fill: [], locks: [] }), Q).n === 0, "pattern: fit to older firmware (no nudge / fill / lock)");
+    let bank = PAT.bankPut([], "b", f, 1);
+    bank = PAT.bankPut(bank, "a", f, 2);
+    bank = PAT.bankPut(bank, " b ", f, 3);
+    ok(bank.map((x) => x.name + x.at).join() === "a2,b3" && bank[0].pat.name === "a", "pattern: the bank (by name, saving again replaces)");
+  }
+  /* against the mock: a pattern sent with STEP_SET / MICRO_SET / FILL_SET / LOCK_SET reads back the same */
+  {
+    const m = E.makeMockDevice();
+    const inp = [...m.access.inputs.values()][0], out = [...m.access.outputs.values()][0];
+    const link = new E.Link((d) => out.send(d), { timeout: 300 });
+    inp.onmidimessage = (e) => link.receive(e.data);
+    const rq = async (r) => link.request(r);
+    const info = E.parse[E.CMD.INFO](await rq(E.req.info()));
+    const steps = [];
+    for (let i = 0; i < info.nstep; i++) steps.push(E.parse[E.CMD.STEP_GET](await rq(E.req.stepGet(i))));
+    const mic = E.parse[E.CMD.MICRO_GET](await rq(E.req.microGet(0))).micro, fil = E.parse[E.CMD.FILL_GET](await rq(E.req.fillGet(0))).fill;
+    const lk = E.parse[E.CMD.LOCK_GET](await rq(E.req.lockGet(0))).locks;
+    const A = PAT.make(steps, mic, fil, lk, 16);
+    let B = PAT.genText(A, "1+3+5> - 3 5~ . 8", { root: 0, scale: "MAJ", base: 48 });
+    B = PAT.setLane(PAT.humanize(B, { seed: 5, vel: 10, nudge: 5 }), "rat", 2, 0, 4);
+    B.fill[2] = 1; B.locks = [{ step: 0, param: 5, value: 20 }];
+    const d = PAT.diff(A, B);
+    for (const i of d.steps) await rq(E.req.stepSet(i, B.steps[i]));
+    for (const i of d.micro) await rq(E.req.microSet(0, i, B.micro[i]));
+    for (const i of d.fill) await rq(E.req.fillSet(0, i, B.fill[i]));
+    for (const l of d.lockDel) await rq(E.req.lockSet(0, l.step, l.param, null));
+    for (const l of d.lockSet) await rq(E.req.lockSet(0, l.step, l.param, l.value));
+    const s2 = [];
+    for (let i = 0; i < info.nstep; i++) s2.push(E.parse[E.CMD.STEP_GET](await rq(E.req.stepGet(i))));
+    const C = PAT.make(s2, E.parse[E.CMD.MICRO_GET](await rq(E.req.microGet(0))).micro, E.parse[E.CMD.FILL_GET](await rq(E.req.fillGet(0))).fill,
+      E.parse[E.CMD.LOCK_GET](await rq(E.req.lockGet(0))).locks, 16);
+    ok(d.n > 10 && PAT.diff(B, C).n === 0, "pattern: written to the mock with the device's commands, read back the same");
+    link.close && link.close();
+  }
+}
+
 /* ------------------------------------------------- editor tabs and strings --- */
 function editorTabs() {
   const tabs = [...html.matchAll(/<button role="tab" data-tab="(\w+)"/g)].map((x) => x[1]);
@@ -1286,6 +1435,11 @@ function editorTabs() {
   let err = null;
   try { new vm.Script(script); } catch (e) { err = e.message; }
   ok(!err, "editor: page script compiles" + (err ? ` (${err})` : ""));
+  {   /* (1.0) a function or a top-level const declared twice in the page: the later one silently wins */
+    const names = [...script.matchAll(/^(?:async )?function (\w+)|^(?:const|let) (\w+)/gm)].map((m) => m[1] || m[2]);
+    const twice = [...new Set(names.filter((n, i) => names.indexOf(n) !== i))];
+    ok(!twice.length, "editor: no top-level name declared twice" + (twice.length ? ` (${twice.join(" ")})` : ""));
+  }
   {   /* 2.4: the device's palette as tokens (:root), used through var(--...); outside them only #000 (text on a colour) */
     const css = html.slice(html.indexOf("<style>"), html.indexOf("</style>")).replace(/:root\s*\{[^}]*\}/g, "");
     const hex = [...css.matchAll(/#[0-9a-f]{3,6}\b/gi)].map((m) => m[0].toLowerCase()).filter((c) => c !== "#000");
@@ -1676,6 +1830,7 @@ await editorBackup();
 await editor25();
 await editorDsyn();
 await editorCart();
+await patternTools();
 editorTabs();
 editorClipperPages();
 editorIcons();
