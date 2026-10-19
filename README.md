@@ -3,7 +3,7 @@
 <p align="center"><b>A deep synthesizer firmware for the M-VAVE FM-1.</b><br>
 Free and open source (GPL-3.0). It grew out of <a href="https://github.com/isod89/sloop-fm1">SLOOP</a>, and like SLOOP it is based on <a href="https://github.com/hugelton/Felucca">Felucca</a> by Leo Kuroshita / Hügelton Instruments.</p>
 
-<p align="center"><b><a href="https://isod89.github.io/clipper-fm1/webapp/installer/">Install it from the browser</a></b> · <a href="https://isod89.github.io/clipper-fm1/webapp/editor/">Editor</a> · <a href="https://github.com/isod89/clipper-fm1/releases">Releases</a> · <a href="DEMARRAGE-RAPIDE-FR.md">Démarrage rapide (français)</a> · <a href="BUILDING.md">Building</a> · <a href="web/EDITOR_PROTOCOL.md">Editor protocol</a> · <a href="docs/sloop/">SLOOP's manuals</a></p>
+<p align="center"><b><a href="https://isod89.github.io/clipper-fm1/webapp/installer/">Install it from the browser</a></b> · <a href="https://isod89.github.io/clipper-fm1/webapp/editor/">Editor</a> · <a href="https://github.com/isod89/clipper-fm1/releases">Releases</a> · <a href="QUICKSTART.md">Quick start</a> · <a href="DEMARRAGE-RAPIDE-FR.md">Démarrage rapide (français)</a> · <a href="BUILDING.md">Building</a> · <a href="web/EDITOR_PROTOCOL.md">Editor protocol</a> · <a href="docs/sloop/">SLOOP's manuals</a></p>
 
 ---
 
@@ -214,7 +214,7 @@ Pitch bend (±2 semitones, or the HYBRID patch's own range up to ±24), mod whee
 
 **Without building anything**: open the [installer page](https://isod89.github.io/clipper-fm1/webapp/installer/) in Chrome or Edge with the FM-1 on USB, make a backup with the [editor](https://isod89.github.io/clipper-fm1/webapp/editor/) first, then click Install. The firmware package is also attached to each [release](https://github.com/isod89/clipper-fm1/releases).
 
-**From the source**: on Windows, see **[DEMARRAGE-RAPIDE-FR.md](DEMARRAGE-RAPIDE-FR.md)**: `INSTALL-CLIPPER.bat` builds the firmware and opens the installer at `http://localhost:8767` (SLOOP uses 8766, so the two never get mixed up). Elsewhere, see [BUILDING.md](BUILDING.md).
+**From the source**: on Windows, see **[QUICKSTART.md](QUICKSTART.md)** (in French: [DEMARRAGE-RAPIDE-FR.md](DEMARRAGE-RAPIDE-FR.md)): `INSTALL-CLIPPER.bat` builds the firmware and opens the installer at `http://localhost:8767` (SLOOP uses 8766, so the two never get mixed up). Elsewhere, see [BUILDING.md](BUILDING.md).
 
 Projects, user presets, samples and settings stay in the same flash places as SLOOP's. Going from SLOOP to Clipper keeps them; a sound on HYBRID plays another engine if you go back to SLOOP.
 

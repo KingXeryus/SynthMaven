@@ -371,8 +371,8 @@ const TEXT = {
     back: "L'outil de M-VAVE, M-UPGRADE (Downloads → PC Software), fonctionne aussi. S'il ne trouve pas la FM-1, ferme toutes les autres applis et onglets qui utilisent le MIDI.",
   },
 };
-let lang = (navigator.language || "en").toLowerCase().slice(0, 2);
-if (!["ja", "fr"].includes(lang)) lang = "en";
+let lang = "en";                                     /* English first; the button switches, and the choice is remembered */
+try { const v = localStorage.getItem("clipper-installer-lang"); if (["en", "fr", "ja"].includes(v)) lang = v; } catch (e) { /* no storage */ }
 const NEXT = { en: "fr", fr: "ja", ja: "en" };
 const t = (k) => TEXT[lang][k];
 let lastKey = null, lastArg = "";
@@ -383,7 +383,11 @@ function applyLang() {
   $("lang").textContent = t("other");
   if (lastKey) $("status").textContent = t(lastKey) + lastArg;
 }
-$("lang").addEventListener("click", () => { lang = NEXT[lang]; applyLang(); });
+$("lang").addEventListener("click", () => {
+  lang = NEXT[lang];
+  try { localStorage.setItem("clipper-installer-lang", lang); } catch (e) { /* no storage */ }
+  applyLang();
+});
 applyLang();
 const sayK = (k, arg = "") => { lastKey = k; lastArg = arg; $("status").textContent = t(k) + arg; };
 const say = (txt) => { lastKey = null; $("status").textContent = txt; };

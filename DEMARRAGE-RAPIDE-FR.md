@@ -196,7 +196,7 @@ Les autres boutons du panneau :
 
 Un projet garde le PTCH, mais pas le patch modifié : exporte-le pour le garder.
 
-Les autres panneaux de l'onglet **Sound** : **FMX patch** (les six opérateurs, le routage en grille, STORE dans la banque, fichiers `.clipper-fmx.json`), **FM6** (les banques DX7 `.syx`), **MOD SEQ** (les quatre pistes à dessiner), **Tuning** (le système, la tonique, charger une gamme `.scl`), **Sound tools** (undo / redo, comparer, A / B, randomiser, ce qui a changé, l'enveloppe dessinée). Les onglets **Library**, **Samples** (samples et tables d'ondes) et **Projects** (sauvegarde complète) complètent.
+Les autres panneaux de l'onglet **Sound** : **FMX patch** (les six opérateurs, le routage en grille, STORE dans la banque, fichiers `.clipper-fmx.json`), **FM6** (les banques DX7 `.syx`), **MOD SEQ** (les quatre pistes à dessiner), **Tuning** (le système, la tonique, charger une gamme `.scl`), **Sound tools** (undo / redo, comparer, A / B, randomiser, ce qui a changé, l'enveloppe dessinée). Les onglets **Library**, **Wavetables** (tes tables d'ondes pour WAVE) et **Backup** (sauvegarde complète) complètent.
 
 Pour essayer l'éditeur sans la FM-1, ouvre `web/editor.html?mock=1` dans Chrome.
 

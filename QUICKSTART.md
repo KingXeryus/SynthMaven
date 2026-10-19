@@ -1,0 +1,68 @@
+# Clipper — quick start (1.0, experimental)
+
+**Clipper** is a **synthesizer** firmware for the M-VAVE FM-1: one instrument, like the original firmware, Felucca or Baudgirl's FM-1+VA. It is not a groovebox: no tracks, no drum machine, no song mode, no built-in samples. It keeps SLOOP's engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID** (three oscillators, two filters, a 16-slot matrix) and many more engines. Pitch bend, mod wheel, aftertouch and the sustain pedal work on every engine. *(En français : [DEMARRAGE-RAPIDE-FR.md](DEMARRAGE-RAPIDE-FR.md).)*
+
+> **Version 1.0, EXPERIMENTAL.** This is an early, experimental release, and there is still a huge amount of work to do (see [What is left to do](README.md#what-is-left-to-do)). It passes its whole test suite on a computer, but it has run very little on a real FM-1: expect rough edges. **Before installing, make a backup** with the editor (Clipper's or SLOOP's, whichever is installed): the Backup tab (Projects → Backup in SLOOP or an older version) → *Save a backup*.
+
+On the FM-1, Clipper shows its boot screen (**1.0 EXPERIMENTAL** under the logo), and HOME (held) → SYS → ABOUT reads **CLIPPER 1.0 EXP**.
+
+## 1. Install
+
+**Without building anything**: open the [installer page](https://isod89.github.io/clipper-fm1/webapp/installer/) in Chrome or Edge with the FM-1 on USB. Make a backup with the [online editor](https://isod89.github.io/clipper-fm1/webapp/editor/) first, then click **Install**. The firmware package is also attached to each [release](https://github.com/isod89/clipper-fm1/releases).
+
+**From the source, on Windows**:
+
+1. Close SLOOP's window if it is still running (not required, just clearer). Clipper lives in its own folder, `CLIPPER`, next to SLOOP's; nothing is shared between the two (Clipper's local pages are on port **8767**, SLOOP's on 8766).
+2. Double-click **`INSTALL-CLIPPER.bat`**. It uses the same tools as SLOOP (WSL MinUI-Build, the JieLi toolchain). The first time it copies the three SDK files from `..\SLOOP\build\deps\ac79`; if it cannot find them, copy SLOOP's `build\deps\ac79` folder into `CLIPPER\build\deps\`.
+3. The installer opens at http://localhost:8767/webapp/installer/ (Chrome or Edge, FM-1 on USB). Click **Install**.
+4. The FM-1 restarts on the **clipper** screen. Your SLOOP user presets and settings are still there.
+
+Elsewhere than Windows: see [BUILDING.md](BUILDING.md).
+
+## 2. On the FM-1
+
+| | |
+| --- | --- |
+| **HOME** | The synth screen: the sound's name, its family, its number in the list, the engine and a scope. The four knobs play the sound's main controls. |
+| **PRESETS** | Every sound, one by one, factory and user presets. |
+| **ALGORITHM** | Jumps to the next family (PAD, BASS, LEAD, PLCK, KEYS, STAB, FX…). |
+| **FX, EDIT, ARP, GLO, SAVE** | A tap opens the pages; while one is held, the keys still play. FX pages: FX (sends), FILTER (and MODL, the filter model), INSERT, INSERT 2, DLY, DLY 2 (the delay's MODE), REVERB (TYPE: ROOM, PLATE, HALL, SHIMMER), CHORUS, EQ+COMP. EDIT: the engine's pages, MACROS, VOICE 1–3 (SPREAD on VOICE 3), the envelopes, LFOs and the 12-slot MATRIX. GLO: GLOBAL (tempo, swing, metronome, fine tune), MASTER, **TUNING**, SYSTEM (MIDI, sync, CPU / LATE / PEAK). SAVE: PRESETS, USER (your presets), TOOLS. |
+| **SEQ, SEL** | Held: SEQ shows the 16 steps on the keys, SEL the key and the chords. A tap opens their pages. |
+| **REC** | Records what you play into the pattern. Hold REC to clear the pattern. |
+| **MIDI** | Omni: every channel plays the synth. |
+
+What you are playing is kept by the autosave across power cycles; save a sound you like as a **user preset** (SAVE → USER).
+
+## 3. Playing HYBRID
+
+- Turn **PRESETS** (or **ALGORITHM** to change family). HYBRID's sounds are spread over the families: **CLIPPER**, POLY PAD, STRINGS, VOX, GLASS PAD and DRONE (PAD); ACID, WOBBLE, REESE, FOLD BASS and 808 SUB (BASS); SYNC LEAD, HOOVER, CHIP LEAD and TRANCE (LEAD); PLUCK, SAW PLUCK, FM BELL, SPACE BEL and METAL (PLCK); FM KEYS (KEYS); BRASS (STAB); RISER and INIT (FX); and MOOG BASS, MOOG LEAD, LADDER PAD, CLIP WIDE, DARK PAD, ACID HARD, BRIGHT BEL and SOFT SYNC.
+- On **HOME** the four knobs play **CUT**, **RES**, **M1** and **M2**.
+- **EDIT**: CUT, RES, FENV (offsets on both filters), **PTCH** (the factory patch), and **M1 to M4**, four macros whose effect each patch decides. On CLIPPER, for example, M1 opens the filter and M2 widens the supersaws.
+- From a MIDI keyboard: pitch bend, mod wheel (vibrato on several patches), aftertouch, sustain, and M1 to M4 on CC 16 to 19. On every other engine, CC 16 to 19 play the four MACROS (BRITE, TIMBR, MOTN, SPACE).
+
+## 4. The web editor
+
+Open the [online editor](https://isod89.github.io/clipper-fm1/webapp/editor/) (or double-click `OPEN-EDITOR.bat`: http://localhost:8767/webapp/editor/), click **Connect**, then pick a sound. In the **Sound** tab, the **HYBRID patch** panel shows everything: oscillators, filters and routing, ENV2 and ENV3, LFO2 and LFO3 (tempo-synced if you want), the 16-slot matrix and the bend. With **live** ticked, every change is heard at once. **Export patch** and **Import patch** keep your sounds in `.clipper.json` files.
+
+The other panels of the **Sound** tab: **FMX patch** (the six operators, the routing grid, STORE into the bank, `.clipper-fmx.json` files), **FM6** (DX7 `.syx` banks), **MOD SEQ** (the four lanes to draw), **Tuning** (the system, the root, load a `.scl` scale), **Sound tools** (undo / redo, compare, A / B, randomize, what changed, the envelope drawn). The **Library**, **Wavetables** (your own tables for WAVE) and **Backup** tabs complete it.
+
+To try the editor without an FM-1, open `web/editor.html?mock=1` in Chrome.
+
+## 5. The test that helps most: both cores and the CPU load
+
+This decides how many voices Clipper can play. The FM-1 must be connected to the computer by USB, otherwise the CPU box shows the USB state instead.
+
+1. After installing, hold HOME (the menu) → **SYS** → **ABOUT**: it should read **2 CORES**. If it reads **1 CORE**, please report it.
+2. Pick the **CLIPPER** sound with PRESETS, go to **GLO → SYSTEM**: the fourth box cycles through **CPU**, **LATE** and **PEAK**.
+3. Hold **8 notes** and note CPU and PEAK. Then MENU → SYS → **2ND CORE OFF** and measure again: the difference is what the second core brings. Set it back **ON**.
+4. Do the same with **POLY PAD**, **TRANCE**, an **FMX** sound (FMX EP) and **ENSEMBLE** (STRINGS).
+5. Then with 1.0's features: **SPREAD** at 127 (VOICE 3), the reverb on **SHIMMER** (REVERB → TYPE) and the delay on **TAPE** (DLY 2 → MODE), 8 notes. Turn **BRITE** and **SPACE** (EDIT → MACROS) while a chord is held, and change TYPE and MODE: no click should be heard.
+6. Save a user preset with some 1.0 settings, switch the FM-1 off and on, and load it again: the settings should be there.
+7. If PEAK stays under ~70 % and LATE does not climb, try a 12-voice build (**`INSTALL-CLIPPER.bat 12`**) with 12 notes, then 16.
+
+Please report the numbers (with and without 2ND CORE) in the [Issues](https://github.com/isod89/clipper-fm1/issues), and anything odd: a crackling sound, a stuck note, a **FELUCCA CRASH** screen (photograph it: it stays 10 s), a strange screen.
+
+## Going back
+
+- **To SLOOP**: run `INSTALL-SLOOP.bat` from SLOOP's folder. A sound set to HYBRID plays another engine there.
+- **To the official firmware**: use the installer page ("Return to the official firmware (V15)"), after making a backup.

@@ -19,24 +19,12 @@ SPREAD; the matrix grows to 12 slots with LFO 3 and the macros as sources; ENV 2
 ## Install
 
 - **From the browser**: open the [installer page](https://isod89.github.io/clipper-fm1/webapp/installer/) (Chrome or Edge, the FM-1 on USB; the [editor](https://isod89.github.io/clipper-fm1/webapp/editor/) is next to it), make a backup with the editor first, then click Install.
-- **From the source, on Windows**: see [DEMARRAGE-RAPIDE-FR.md](https://github.com/isod89/clipper-fm1/blob/main/DEMARRAGE-RAPIDE-FR.md) — `INSTALL-CLIPPER.bat` builds the firmware (WSL and the JieLi toolchain, as SLOOP) and opens the installer.
+- **From the source, on Windows**: see [QUICKSTART.md](https://github.com/isod89/clipper-fm1/blob/main/QUICKSTART.md) (French: [DEMARRAGE-RAPIDE-FR.md](https://github.com/isod89/clipper-fm1/blob/main/DEMARRAGE-RAPIDE-FR.md)) — `INSTALL-CLIPPER.bat` builds the firmware (WSL and the JieLi toolchain, as SLOOP) and opens the installer.
 
 ## What is left to do
 
 Testing on real units (CPU, flash, RAM, clicks, storage across power cuts); room for many more SysEx banks; a sound-design pass so the presets use what 1.0 added; editor pages for the matrix and the banks; a real manual. See [What is left to do](https://github.com/isod89/clipper-fm1/blob/main/README.md#what-is-left-to-do).
 
 **Please report what you find** in the [Issues](https://github.com/isod89/clipper-fm1/issues): bugs, crashes (photograph the FELUCCA CRASH screen), stuck notes, crackles, CPU readings (GLO → SYSTEM).
-
----
-
-## Clipper 1.0 (expérimental) — en français
-
-**Un firmware de synthétiseur gratuit et open source pour la M-VAVE FM-1**, issu de SLOOP et basé sur Felucca.
-
-> ⚠️ **C'est une version expérimentale.** Elle passe toute sa suite de tests sur ordinateur, mais elle a encore très peu tourné sur une vraie FM-1 : il peut rester des défauts (charge processeur, clics, sauvegarde), et il reste énormément de travail à faire. **Fais une sauvegarde avec l'éditeur avant d'installer.** Tu peux toujours revenir au firmware officiel V15 depuis la page d'installation.
-
-23 moteurs, 407 sons ; une matrice de modulation à 12 slots, 3 LFO, 4 macros et des voix stéréo (SPREAD) sur tous les moteurs ; des réverbs Hall et Shimmer, un delay ping-pong et bande ; le micro-accordage Scala ; un éditeur web pour tous les paramètres. Installation : [la page d'installation](https://isod89.github.io/clipper-fm1/webapp/installer/). Guide en français : [DEMARRAGE-RAPIDE-FR.md](https://github.com/isod89/clipper-fm1/blob/main/DEMARRAGE-RAPIDE-FR.md), dont la section « Ce qui reste à faire ».
-
-**Signale ce que tu trouves** dans les [Issues](https://github.com/isod89/clipper-fm1/issues) : bugs, plantages, notes coincées, craquements, mesures de charge processeur.
 
 Clipper is not affiliated with M-VAVE. GPL-3.0.
