@@ -94,6 +94,9 @@ static uint32_t lights_keep;
  * default), 27 KNOB ACCEL OFF (ui_input.c), 31 the REC screen's QUANT OFF (seq.c rec_quant_off) */
 static uint8_t cpu1_off;                        /* menu 2ND CORE: 1 = OFF, the whole render on core 0 (cpu1.c) */
 static uint8_t knob_accel_off;                  /* menu KNOB ACCEL: 1 = OFF, one value a detent however fast */
+static uint8_t step_adv_off;                    /* (1.0, after SLOOP 2.7.1) menu SEQ > STEP ADVANCE: 1 = OFF, the NOTES page's
+                                                 * cursor stays where it is when the keys are let go (KNOB 1 moves it);
+                                                 * kept in the settings' side record (project.c) */
 static uint8_t usb_rate;                        /* (0.7) menu USB RATE: 0 AUTO, 1 44.1, 2 48 kHz (usb.c usb_rate_mode, at the
                                                  * next start; kept in the settings' side record, project.c) */
 static uint32_t lights_word(void)

@@ -61,15 +61,17 @@ static void pattern_rotate(track_t *t, int32_t d)       /* every step one later 
     layer_undo_mark(t);
     fm1_irq_off();
     if (d > 0) {
+        int8_t m = t->micro[len - 1u];
         keep = t->step[len - 1u];
         for (i = len - 1u; i > 0; i--)
-            t->step[i] = t->step[i - 1u];
-        t->step[0] = keep;
+            t->step[i] = t->step[i - 1u], t->micro[i] = t->micro[i - 1u];   /* (1.0: the nudges with their steps) */
+        t->step[0] = keep, t->micro[0] = m;
     } else {
+        int8_t m = t->micro[0];
         keep = t->step[0];
         for (i = 0; i + 1u < len; i++)
-            t->step[i] = t->step[i + 1u];
-        t->step[len - 1u] = keep;
+            t->step[i] = t->step[i + 1u], t->micro[i] = t->micro[i + 1u];
+        t->step[len - 1u] = keep, t->micro[len - 1u] = m;
     }
     fm1_irq_on();
 }
@@ -80,7 +82,7 @@ static void pattern_length(track_t *t, int32_t d)       /* x2 (the pattern again
     fm1_irq_off();
     if (d > 0 && len * 2u <= NSTEP) {
         for (i = 0; i < len; i++)
-            t->step[len + i] = t->step[i];
+            t->step[len + i] = t->step[i], t->micro[len + i] = t->micro[i];   /* (1.0: and the nudges) */
         t->p[P_SLEN] = (int16_t)(len * 2u);
     } else if (d < 0 && len >= 2u) {
         t->p[P_SLEN] = (int16_t)(len / 2u);
@@ -184,6 +186,8 @@ static void steps_held_edit(uint32_t knob, int32_t s)
 {
     track_t *t = TSEL;
     uint32_t w, i;
+    /* (1.0, SLOOP 2.6) the accelerated turn once for every step held (a second call would see no time pass) */
+    int32_t sv = knob == 1u && !is_drum(t) ? accel(EN_K2, s, 126) : 0;
     layer_undo_mark(t);
     step_pend_off &= (uint16_t)~ui.step_held;            /* (edited: kept when let go) */
     fm1_irq_off();
@@ -218,6 +222,13 @@ static void steps_held_edit(uint32_t knob, int32_t s)
             step_t *st = &t->step[idx];
             if (!step_on(st))
                 continue;
+            if (knob == 1u) {                             /* VEL (1.0, SLOOP 2.6): the step's velocity, 1..127; every note
+                                                           * at it (NORM) */
+                st->vel = (uint8_t)clamp((int32_t)step_vel_shown(st) + sv, 1, 127);
+                st->lvl = 0;
+                st->flags &= (uint8_t)~SF_ACCENT;         /* (ACC would play it at 127) */
+                continue;
+            }
             for (i = 0; i < st->n; i++) {
                 uint32_t sh = 2u * i, lv = (st->lvl >> sh) & 3u, rt = (st->rat >> sh) & 3u;
                 if (knob == 0u) {
@@ -408,6 +419,8 @@ static void layer_key(uint32_t layer, uint32_t k, uint32_t down)
         return;
     }
     case LY_MIX:
+        if (CLIPPER_SYNTH && w >= 0 && w < 8)
+            return;                                         /* (Clipper: one instrument, no mute / solo) */
         if (w >= 0 && w < 4) {
             trk[w].p[P_MUTE] = (int16_t)!trk[w].p[P_MUTE];
         } else if (w >= 4 && w < 8) {
@@ -541,6 +554,8 @@ static void layer_knobs(uint32_t layer)
             break;
         case LY_MIX: {
             int16_t *lv = k == TRK_DRUM ? &song.g[G_DRLVL] : &trk[k].p[P_LEVEL];
+            if (CLIPPER_SYNTH && k)
+                break;                                      /* (Clipper: KNOB 1 the sound's LEVEL, the others nothing) */
             *lv = (int16_t)clamp(*lv + accel(EN_K1 + k, s, 127), 0, 127);
             break;
         }
@@ -782,8 +797,17 @@ static void layer_screen_draw(void)
             for (w = 0; w < 16u && !((ui.step_held >> w) & 1u); w++)
                 ;
             idx = (page * 16u + w) % NSTEP;
-            lab[1] = "level", lab[2] = "ratchet", lab[3] = "nudge";
+            lab[1] = is_drum(t) ? "level" : "vel", lab[2] = "ratchet", lab[3] = "nudge";
             str_cpy(v[1], "-  +", 8);
+            if (!is_drum(t)) {                          /* (1.0, SLOOP 2.6) the first held step's velocity */
+                const step_t *st = &t->step[idx];
+                if (step_on(st)) {
+                    fmt_int(v[1], (int32_t)step_vel_shown(st));
+                    ratio[1] = (int32_t)step_vel_shown(st) * 1000 / 127;
+                } else {
+                    str_cpy(v[1], "--", 8);
+                }
+            }
             str_cpy(v[2], "x1 x4", 8);
             {
                 int32_t m = t->micro[idx];
@@ -861,8 +885,8 @@ static void layer_screen_draw(void)
     }
     case LY_MIX: {                                      /* mute 1..4, solo 1..4, fill / fill bar, tap */
         col = C_WHITE;
-        str_cpy(sub, "mute  solo  fill  tap", sizeof sub);
-        for (i = 0; i < 4u; i++) {
+        str_cpy(sub, CLIPPER_SYNTH ? "fill  bar  tap" : "mute  solo  fill  tap", sizeof sub);
+        for (i = 0; i < 4u && !CLIPPER_SYNTH; i++) {   /* (Clipper: one instrument, no mute / solo) */
             int m = trk[i].p[P_MUTE] != 0, so = (song.solo >> i) & 1u;
             str_cpy(tl[i].lab, "mute 1", 8);
             tl[i].lab[5] = (char)('1' + i);
@@ -886,9 +910,9 @@ static void layer_screen_draw(void)
         tl[15].fg = tl[15].bg == C_WHITE ? C_BLACK : C_WHITE;
         str_cpy(tl[14].lab, "tap>", 8);
         tl[14].bg = C_BLACK;
-        for (i = 0; i < 4u; i++) {
+        for (i = 0; i < (CLIPPER_SYNTH ? 1u : 4u); i++) {
             uint32_t lv = trk_level(i);
-            static const char *const L[4] = {"1", "2", "3", "4"};
+            static const char *const L[4] = {CLIPPER_SYNTH ? "level" : "1", "2", "3", "4"};
             lab[i] = L[i];
             fmt_int(v[i], (int32_t)lv * 100 / 127);
             ratio[i] = (int32_t)lv * 1000 / 127;

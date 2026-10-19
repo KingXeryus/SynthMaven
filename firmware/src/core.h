@@ -311,6 +311,11 @@ enum { ST_NOTE, ST_TIE, ST_REST };
 #define SF_CONT0 8u
 #define SF_CONT(k) (SF_CONT0 << (k))
 #define SF_CONT_ALL (15u * SF_CONT0)
+/* SLOOP 2.7.2: bit 7 of a NOTE step's flags (MONO / LEGATO / UNISON parts): played legato, recorded while the note
+ * before was still held: the note before is held to it and this one takes over as a held key does (LEGATO: the
+ * envelope goes on; a glide only with GLIDE or a SLIDE), not released and played again (seq.c rec_note, seq_step).
+ * An older version ignores it (the note plays again there) */
+#define SF_LEG 0x80u
 /* the dynamics of a note or a drum hit (2 bits each in the steps): played without velocity
  * (OCT- / OCT+ held on the drum track, the step page) or from a MIDI velocity */
 enum { LV_NORM, LV_GHOST, LV_SOFT, LV_HARD };
@@ -416,6 +421,9 @@ typedef struct track {
     uint8_t rh_last;             /* the last of them; rh_bak: what it held (an early release puts it back) */
     uint32_t rh_last_abs;        /* (its step of the transport grid) */
     step_t rh_bak;
+    uint8_t rh_end;              /* (SLOOP 2.7.1) one of them let go, others still held: the next step, only those go on */
+    uint8_t rh_rs;               /* (2.7.1) rh_start is such a step (rh_last, rh_last_abs: it) */
+    uint8_t rh_offn, rh_off[4];  /* (2.7.1) the ones let go since the hold's last NOTE step (they end there) */
     uint32_t pass;               /* loops played since PLAY (a recording pass: one undo) */
     /* mono */
     uint8_t mono_stack[8];

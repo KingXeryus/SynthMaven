@@ -582,7 +582,7 @@ static const page_t PAGES[] = {
     {"SPICE", FAM_ARP, SC_TRACK, GR_NONE, {P_SPICE, P_DICE, P_SLOOP, 0xFF}},   /* (0.8) the arp's and the steps' notes
                                                                                 * vary; (0.9) TURNG: MUTAT SEED LOOP */
 #endif
-    {"STEP", FAM_SEQ, SC_STEP, GR_ROLL, {0, 1, 2, 3}},
+    {"NOTES", FAM_SEQ, SC_STEP, GR_ROLL, {0, 1, 2, 3}},   /* (1.0, after SLOOP 2.7.2: the NOTES editor; "STEP" before) */
     {"PATTERN", FAM_SEQ, SC_TRACK, GR_STEPS, {P_SLEN, P_SDIV, P_SSWING, P_SGATE}},
     {"SONG", CLIPPER_SYNTH ? FAM_TRK : FAM_SEQ, SC_SONG, GR_NONE, {0xFF, 0xFF, 0xFF, 0xFF}},   /* (Clipper: out of reach) */
     {"TRACKS", FAM_TRK, SC_TRK, GR_TRK, {0, 1, 2, 3}},   /* REC button; TRACK LEVEL LEN PAN */

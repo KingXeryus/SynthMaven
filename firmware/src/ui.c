@@ -50,6 +50,9 @@ static struct {
     uint8_t bank;                /* SEQ: 16-step bank (follows the cursor) */
     uint8_t cursor;              /* SEQ: step being edited (STEP page KNOB 1 moves it) */
     uint8_t entry_open;          /* SEQ: keys held since the first press of this entry */
+    uint8_t note_k;              /* (1.0, SLOOP 2.7.2) NOTES: the note of the cursor's chord (0..n-1) */
+    uint8_t zoom;                /* (1.0) NOTES: the steps shown, NV_ZOOM[1 + zoom] (PRESETS) */
+    uint8_t sheet;               /* (1.0) NOTES: the note's sheet (OCT+ held) open: 1 + its row; 0 closed */
     uint8_t hot_col, hot_t;      /* column whose knob was just turned (drawn white) */
     uint8_t menu;                /* 0 off, 1 list, 2 about (HOME held) */
     uint8_t menu_sel;
@@ -125,6 +128,37 @@ static void page_entered(void)
 }
 
 static int step_on(const step_t *st) { return st->time == ST_NOTE && st->n; }
+/* (1.0, SLOOP 2.6) a note's length: its step and the TIEs after it (inside LEN); note_set_len makes it want steps
+ * long: shorter, its last TIEs become RESTs; longer, the RESTs after it become TIEs, up to the next step with notes
+ * (or LEN). Returns its length now */
+static uint32_t note_len(const track_t *t, uint32_t i)
+{
+    uint32_t len = (uint32_t)clamp(t->p[P_SLEN], 1, NSTEP), n = 1;
+    while (i + n < len && t->step[i + n].time == ST_TIE)
+        n++;
+    return n;
+}
+static uint32_t note_set_len(track_t *t, uint32_t i, uint32_t want)
+{
+    uint32_t len = (uint32_t)clamp(t->p[P_SLEN], 1, NSTEP), n = note_len(t, i);
+    for (; n > want && n > 1u; n--) {
+        if (!t->step[i + n - 1u].n)                    /* (a TIE holding notes, from an older pattern, keeps them) */
+            memset(&t->step[i + n - 1u], 0, sizeof(step_t));
+        t->step[i + n - 1u].time = ST_REST;
+    }
+    for (; n < want && i + n < len && !t->step[i + n].n; n++) {
+        memset(&t->step[i + n], 0, sizeof(step_t));
+        t->step[i + n].time = ST_TIE;
+    }
+    return n;
+}
+/* (1.0, SLOOP 2.6) a synth step's velocity as it plays (seq.c step_vel: ACC 127, else its VEL, 96 when 0, through its
+ * first note's level) */
+static uint32_t step_vel_shown(const step_t *st)
+{
+    uint32_t base = (st->flags & SF_ACCENT) ? 127u : (st->vel ? st->vel : 96u);
+    return lvl_vel(st->lvl & 3u, base);
+}
 /* step i of track t has something to play (synth: notes, drums: a lane) */
 static int trk_step_on(const track_t *t, uint32_t i)
 {
@@ -150,8 +184,11 @@ static int undo_swap(int redo)
         uint32_t i;
         for (i = 0; i < NSTEP; i++) {
             step_t x = t->step[i];
+            int8_t m = t->micro[i];
             t->step[i] = undo.st[i];
             undo.st[i] = x;
+            t->micro[i] = undo.micro[i];                 /* (1.0, as SLOOP 2.7: and its nudge; undo_mark kept it) */
+            undo.micro[i] = m;
         }
     }
     len = t->p[P_SLEN];
@@ -171,12 +208,175 @@ static void cursor_set(int32_t c)
     ui.cursor = (uint8_t)((c % len + len) % len);
     ui.bank = (uint8_t)(ui.cursor / 16u);
     ui.entry_open = 0;
+    ui.note_k = 0;
 }
 
 static void cursor_fix(void)                           /* LEN got shorter: onto the last step */
 {
     if (ui.cursor >= (uint32_t)TSEL->p[P_SLEN])
         cursor_set(TSEL->p[P_SLEN] - 1);
+    if (ui.note_k && ui.note_k >= TSEL->step[ui.cursor].n)
+        ui.note_k = (uint8_t)(TSEL->step[ui.cursor].n ? TSEL->step[ui.cursor].n - 1u : 0u);
+}
+
+/* ---- 1.0, after SLOOP 2.7.2: SEQ > NOTES, the note editor (after Melodee's NOTES page, keremimo, GPL-3.0: the idea,
+ * not its code). The note under edit: step ui.cursor, note ui.note_k of its chord. KNOB 1 walks the notes (a chord's one
+ * by one) and the empty steps; a note's TIEs are its length, not stops. KNOB 2 its pitch, KNOB 3 its length
+ * (note_set_len), KNOB 4 its FORCE, PRESETS the zoom; OCT+ held its sheet (SLIDE, NUDGE, FILL, MOVE, COPY, DELETE) */
+static const uint8_t NV_ZOOM[4] = {8, 16, 32, 64};
+static const char *const FORCE_N[5] = {"GHOST", "SOFT", "NORM", "HARD", "ACC"};
+static const uint8_t F_LVL[4] = {LV_GHOST, LV_SOFT, LV_NORM, LV_HARD};
+static const char *const SHEET_N[6] = {"SLIDE", "NUDGE", "FILL", "MOVE", "COPY", "DELETE"};
+static const char *const FILL_N[3] = {"NORMAL", "FILL", "NO FILL"};
+static void note_walk(int32_t dir)
+{
+    track_t *t = TSEL;
+    uint32_t len = trk_len(t), i = ui.cursor % len, guard = len;
+    const step_t *st = &t->step[i];
+    if (dir > 0 && step_on(st) && ui.note_k + 1u < st->n) {
+        ui.note_k++;
+        return;
+    }
+    if (dir < 0 && step_on(st) && ui.note_k) {
+        ui.note_k--;
+        return;
+    }
+    do                                                  /* (the TIEs belong to the note before them) */
+        i = dir > 0 ? (i + 1u) % len : (i + len - 1u) % len;
+    while (--guard && t->step[i].time == ST_TIE);
+    cursor_set((int32_t)i);
+    if (dir < 0 && step_on(&t->step[i]))
+        ui.note_k = (uint8_t)(t->step[i].n - 1u);       /* (back: the chord's last note) */
+}
+static uint32_t note_force(const step_t *st, uint32_t k)   /* 0 GHOST .. 3 HARD, 4 ACC (the step's accent) */
+{
+    uint32_t l = (st->lvl >> (2u * k)) & 3u;
+    if (st->flags & SF_ACCENT)
+        return 4u;
+    return l == LV_GHOST ? 0u : l == LV_SOFT ? 1u : l == LV_HARD ? 3u : 2u;
+}
+static void note_force_set(step_t *st, uint32_t k, uint32_t f)
+{
+    uint32_t sh = 2u * k;
+    st->lvl = (uint8_t)((st->lvl & ~(3u << sh)) | (uint32_t)F_LVL[f > 3u ? 3u : f] << sh);
+    st->flags = (uint8_t)((st->flags & ~SF_ACCENT) | (f == 4u ? SF_ACCENT : 0u));
+}
+static uint8_t drop2(uint32_t v, uint32_t k)            /* a 2-bit field per note: note k's taken out */
+{
+    return (uint8_t)((v & ((1u << (2u * k)) - 1u)) | ((v >> (2u * k + 2u)) << (2u * k)));
+}
+static void note_del(track_t *t, uint32_t i, uint32_t k)   /* one note of a chord; the last one: the step */
+{
+    step_t *st = &t->step[i];
+    uint32_t j, c;
+    if (!step_on(st))
+        return;
+    if (st->n <= 1u) {
+        note_set_len(t, i, 1);                          /* (its TIEs: RESTs) */
+        step_clear(st);
+        return;
+    }
+    for (j = k; j + 1u < st->n; j++)
+        st->note[j] = st->note[j + 1u];
+    st->lvl = drop2(st->lvl, k);
+    st->rat = drop2(st->rat, k);
+    c = (st->flags & SF_CONT_ALL) / SF_CONT0;
+    c = (c & ((1u << k) - 1u)) | ((c >> (k + 1u)) << k);
+    st->flags = (uint8_t)((st->flags & ~SF_CONT_ALL) | c * SF_CONT0);
+    st->n--;
+}
+static int step_free(const track_t *t, uint32_t i)     /* nothing there: no note, no TIE */
+{
+    return !step_on(&t->step[i]) && t->step[i].time != ST_TIE;
+}
+/* a note (its step, TIEs, nudge, fill, locks) one step on or back (copy: to just after it, the original stays);
+ * the steps it goes to must be free, inside the pattern. Returns where it is now, or -1 */
+static int32_t note_shift(track_t *t, uint32_t i, int32_t dir, int copy)
+{
+    uint32_t len = trk_len(t), n = note_len(t, i), j, to;
+    if (!step_on(&t->step[i]))
+        return -1;
+    to = copy ? i + n : dir > 0 ? i + 1u : i - 1u;
+    if ((!copy && dir < 0 && i == 0u) || to + n > len)
+        return -1;
+    for (j = 0; j < n; j++)
+        if ((to + j < i || to + j >= i + n) && !step_free(t, to + j))
+            return -1;
+    fm1_irq_off();
+    if (copy) {
+        for (j = 0; j < n; j++)
+            t->step[to + j] = t->step[i + j];
+    } else if (dir > 0) {
+        for (j = n; j > 0; j--)
+            t->step[i + j] = t->step[i + j - 1u];
+        step_clear(&t->step[i]);
+    } else {
+        for (j = 0; j < n; j++)
+            t->step[i - 1u + j] = t->step[i + j];
+        step_clear(&t->step[i + n - 1u]);
+    }
+    t->micro[to] = t->micro[i];
+    step_fill_set(t, to, step_fill(t, i));
+    for (j = 0; j < NLOCK; j++)
+        if (t->lock[j].step == i) {
+            if (!copy)
+                t->lock[j].step = (uint8_t)to;
+            else {
+                int k = lock_find(t, to, t->lock[j].param, 1);
+                if (k >= 0) {
+                    t->lock[k].step = (uint8_t)to;
+                    t->lock[k].param = t->lock[j].param;
+                    t->lock[k].val = t->lock[j].val;
+                }
+            }
+        }
+    if (!copy) {
+        t->micro[i] = 0;
+        step_fill_set(t, i, FC_NORM);
+    }
+    fm1_irq_on();
+    return (int32_t)to;
+}
+/* OCT+ on the NOTES page: a tap acts on release (the octave, as everywhere), a hold (0.4 s) opens the sheet. Returns
+ * pressed without OCT+ while it is down; *ev: 1 tapped, 2 held. OCT- pressed meanwhile: OCT+ as before */
+static uint8_t octp;
+static uint32_t octp_t;
+static uint32_t octp_filter(uint32_t pressed, uint32_t *ev)
+{
+    uint32_t ub = 1u << panel.btn[B_OCTUP];
+    *ev = 0;
+    if (pressed & ub) {
+        octp = 1;
+        octp_t = fm1_ms;
+        pressed &= ~ub;
+    }
+    if (octp == 1u && (fm1_in.buttons & (1u << panel.btn[B_OCTDN]))) {
+        octp = 0;
+        return pressed | ub;                            /* (both: the octave back to 0, as before) */
+    }
+    if (octp && !(fm1_in.buttons & ub)) {
+        *ev = octp == 1u;
+        octp = 0;
+    } else if (octp == 1u && fm1_ms - octp_t >= 400u) {
+        octp = 2;
+        *ev = 2;
+    }
+    return pressed;
+}
+/* the sheet over the NOTES page: six rows, the one KNOB 1 picks lit, values on the right */
+static void sheet_draw(int32_t x, int32_t y, const char *const *lab, const char *const *val, uint32_t sel, uint16_t acc)
+{
+    int32_t w = 124, k;
+    cv_rect(x - 1, y - 1, w + 2, 6 * 16 + 4, C_LINE);
+    cv_rect(x, y, w, 6 * 16 + 2, C_BLACK);
+    for (k = 0; k < 6; k++) {
+        int32_t ry = y + 2 + k * 16;
+        if ((uint32_t)k == sel)
+            cv_rect(x + 1, ry - 1, w - 2, 15, acc);
+        cv_text(x + 5, ry, &FONT_S, lab[k], (uint32_t)k == sel ? C_WHITE : C_HI);
+        if (val[k] && val[k][0])
+            cv_text(x + w - 5 - text_w(&FONT_S, val[k]), ry, &FONT_S, val[k], (uint32_t)k == sel ? C_WHITE : C_AMB);
+    }
 }
 
 static void note_name(char *b, uint32_t n)

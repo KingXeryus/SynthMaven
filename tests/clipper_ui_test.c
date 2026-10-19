@@ -6,8 +6,10 @@
  *   PRESETS browses the sounds, ALGORITHM jumps from kind to kind (and back); not on a page that edits the sound
  *   one instrument: an old project / the editor selecting another track comes back to track 1; tracks 2..4 and the
  *   drums are silent even with patterns and notes; MIDI plays the instrument on every channel (omni, 10 too)
- *   no groovebox layer: FX / EDIT / ARP / GLO / SAVE held, the keys still play; tapped (or held long), their pages;
- *   SAVE opens the SAVE pages (no song); SEQ and SEL keep their layers (steps; the key)
+ *   FX and SAVE held, the keys still play; tapped (or held long), their pages; SAVE opens the SAVE pages (no song);
+ *   SEQ and SEL keep their layers (steps; the key); 1.0 (the sequencer of SLOOP 2.7.2): EDIT (erase, SHIFT, LENGTH,
+ *   TRANSPOSE, undo), ARP (note repeat) and GLO (fill, fill bar, tap, the level) are layers again; SEQ > NOTES, the note
+ *   editor and its sheet; MENU > SEQ > STEP ADVANCE; step entry from a MIDI keyboard
  *   the pages: no SLICER, no DRUMS, no SONG page; MASTER without DUCK and ROLL; VOICE 2 without MUTE
  *   the REC screen: the instrument alone; REC held: "PATTERN CLEARED"
  *   screens to DIR/clipper-*.ppm for review. */
@@ -145,9 +147,7 @@ int main(int argc, char **argv)
 
     /* the buttons with no layer: held, the keys play; their pages on release */
     {
-        static const struct { uint32_t b, fam; const char *n; } B[] = {
-            {B_FX, FAM_FX, "FX"}, {B_EDIT, FAM_EDIT, "EDIT"}, {B_ARP, FAM_ARP, "ARP"}, {B_GLO, FAM_GLO, "GLO"},
-            {B_SAVE, FAM_SAVE, "SAVE"}};
+        static const struct { uint32_t b, fam; const char *n; } B[] = {{B_FX, FAM_FX, "FX"}, {B_SAVE, FAM_SAVE, "SAVE"}};
         char what[96];
         for (i = 0; i < NELEM(B); i++) {
             go_home(); frames(2);
@@ -181,6 +181,276 @@ int main(int argc, char **argv)
         press(B_SCL); frames(12);
         check(ui.layer == LY_SCALE, "SEL held: the key layer");
         release(B_SCL); frames(2);
+    }
+    /* 1.0, the sequencer of SLOOP 2.7.2: EDIT, ARP and GLO are layers again */
+    {
+        track_t *t = TSEL;
+        uint32_t j;
+        int ok;
+        uint8_t n60[1] = {60}, n64[1] = {64};
+        transport_req = 2; frames(4);
+        go_home(); frames(2);
+        t->p[P_SLEN] = 16; t->p[P_CHORD] = 0; song.octave = 0;
+        for (j = 0; j < NSTEP; j++) step_clear(&t->step[j]);
+        for (j = 0; j < 16u; j += 4u) put_step(t, j, 1, j % 8u ? n64 : n60, ST_NOTE, 0);
+        press(B_EDIT); frames(12);
+        ok = ui.layer == LY_ERASE;
+        ui.force = 1; frame(); ppm("clipper-layer-edit");
+        {                                             /* EDIT + a key, stopped: that note gone from the whole pattern */
+            uint32_t k;
+            for (k = 0; k < 27u && kb_map(t, k) != 64u; k++)
+                ;
+            ok &= k < 27u;
+            key(k); frames(2);
+        }
+        ok &= step_on(&t->step[0]) && !step_on(&t->step[4]) && step_on(&t->step[8]) && !step_on(&t->step[12]) && voices_part(0) == 0u;
+        check(ok, "EDIT held: the erase layer; EDIT + E4 (stopped) erases every E4 (the C4s stay), nothing plays");
+        press(B_OCTDN); release(B_OCTDN); frames(2);
+        check(step_on(&t->step[4]) && step_on(&t->step[12]), "EDIT + OCT-: undo (the E4s back)");
+        encs[panel.enc[EN_K1]] = 1; frames(2);       /* SHIFT: every step one later */
+        ok = step_on(&t->step[1]) && !step_on(&t->step[0]) && t->step[1].note[0] == 60u;
+        encs[panel.enc[EN_K3]] = 1; frames(2); encs[panel.enc[EN_K3]] = 1; frames(2);   /* TRANSPOSE +2 (a semitone a turn) */
+        ok &= t->step[1].note[0] == 62u && t->step[5].note[0] == 66u;
+        encs[panel.enc[EN_K2]] = 1; frames(2);       /* LENGTH x2 */
+        ok &= t->p[P_SLEN] == 32 && t->step[17].note[0] == 62u;
+        release(B_EDIT); frames(4);
+        check(ok && ui.home, "EDIT + KNOB 1 SHIFT, KNOB 3 TRANSPOSE, KNOB 2 LENGTH x2; let go: HOME again (no page)");
+        press(B_EDIT); press(B_OCTDN); release(B_OCTDN); release(B_EDIT); frames(4);
+        check(t->p[P_SLEN] == 16 && t->step[0].note[0] == 60u && ui.home, "EDIT + OCT-: the whole hold's turns undone at once");
+        tap(B_EDIT); frames(2);
+        check(!ui.home && cur_page()->fam == FAM_EDIT, "EDIT tapped: its pages");
+        go_home(); frames(2);
+        press(B_GLO); frames(12);
+        ok = ui.layer == LY_MIX;
+        ui.force = 1; frame(); ppm("clipper-layer-glo");
+        fm1_in.notes |= 1u << key_of_white(8); frames(2);
+        ok &= fill_now != 0;
+        fm1_in.notes &= ~(1u << key_of_white(8)); frames(2);
+        ok &= !fill_now;
+        key(key_of_white(0)); frames(2);
+        ok &= !t->p[P_MUTE] && !trk[1].p[P_MUTE] && voices_part(0) == 0u;   /* (no mute keys: nothing, nothing plays) */
+        t->p[P_LEVEL] = 100;
+        encs[panel.enc[EN_K1]] = -10; encs[panel.enc[EN_K2]] = -10; frames(2);
+        ok &= t->p[P_LEVEL] < 100 && trk[1].p[P_LEVEL] == trk[1].p[P_LEVEL];
+        {
+            int16_t l1 = trk[1].p[P_LEVEL];
+            encs[panel.enc[EN_K2]] = -10; frames(2);
+            ok &= trk[1].p[P_LEVEL] == l1;
+        }
+        release(B_GLO); frames(4);
+        t->p[P_LEVEL] = 100;
+        check(ok, "GLO held: key 9 a fill while held; keys 1..8 nothing (one instrument); KNOB 1 the sound's level, KNOB 2 nothing");
+        press(B_ARP); frames(12);
+        ok = ui.layer == LY_ROLL;
+        transport_req = 1; frames(4);
+        for (j = 0; j < NSTEP; j++) step_clear(&t->step[j]);
+        {
+            uint32_t k, on = 0, prev = 0, f;
+            for (k = 0; k < 27u && kb_map(t, k) != 67u; k++)
+                ;
+            fm1_in.notes |= 1u << k;
+            for (f = 0; f < 120u; f++) {             /* about a second at 120 BPM: a roll of 1/16s (8 a second) */
+                uint32_t g = 0, i;
+                frame();
+                for (i = 0; i < NVOICE; i++)
+                    g += t->v[i].active && t->v[i].gate && t->v[i].note == 67;
+                on += g && !prev;
+                prev = g;
+            }
+            fm1_in.notes &= ~(1u << k); frames(4);
+            ok &= on >= 4u;
+            printf("clipper:   ARP roll: %u hits in 120 frames\n", on);
+        }
+        transport_req = 2; frames(4);
+        release(B_ARP); frames(30);
+        check(ok, "ARP held: the roll layer; a key repeats on the grid (note repeat)");
+        go_home(); frames(2);
+    }
+    /* 1.0, after SLOOP 2.7.2: SEQ > NOTES, the note editor and its sheet */
+    {
+        track_t *t = TSEL;
+        uint32_t j;
+        int ok;
+        transport_req = 2; frames(2);
+        song.rec = 0; rec_wait = 0; song.octave = 0; layer_unlock();
+        t->p[P_VOICE] = V_POLY; t->p[P_CHORD] = 0;
+        go_home(); frame();
+        t->p[P_SLEN] = 16;
+        for (j = 0; j < NSTEP; j++) step_clear(&t->step[j]);
+        memset(t->micro, 0, sizeof t->micro); memset(t->fill, 0, sizeof t->fill);
+        t->step[0].n = 1; t->step[0].note[0] = 48; t->step[0].time = ST_NOTE;          /* C3, 2 steps */
+        t->step[1].time = ST_TIE;
+        t->step[4].n = 3; t->step[4].note[0] = 60; t->step[4].note[1] = 64; t->step[4].note[2] = 67;
+        t->step[4].time = ST_NOTE;                                                  /* a chord on step 5 */
+        t->step[8].n = 1; t->step[8].note[0] = 55; t->step[8].time = ST_NOTE;
+        open_family(FAM_SEQ); frame();
+        check(!strcmp(PAGES[ui.page].title, "NOTES"), "SEQ tapped: the NOTES page (STEP before 1.0)");
+        cursor_set(0); ui.force = 1; frame();
+        encs[panel.enc[EN_K1]] = 1; frame();
+        ok = ui.cursor == 2u && ui.note_k == 0u;                                    /* (step 2 is the note's TIE: passed) */
+        encs[panel.enc[EN_K1]] = 2; frame();
+        ok &= ui.cursor == 4u && ui.note_k == 0u;
+        encs[panel.enc[EN_K1]] = 2; frame();
+        ok &= ui.cursor == 4u && ui.note_k == 2u;                                   /* the chord's notes one by one */
+        encs[panel.enc[EN_K1]] = -1; frame();
+        ok &= ui.cursor == 4u && ui.note_k == 1u;
+        check(ok, "NOTES: KNOB 1 walks the notes, a chord's one by one, past a note's TIEs");
+        encs[panel.enc[EN_K2]] = 1; frame();
+        check(t->step[4].note[0] == 60u && t->step[4].note[1] == 65u && t->step[4].note[2] == 67u,
+              "NOTES: KNOB 2 changes that note's pitch only (E4 -> F4, the chord's others stay)");
+        encs[panel.enc[EN_K3]] = 2; frame();
+        check(note_len(t, 4) == 3u && t->step[5].time == ST_TIE && t->step[6].time == ST_TIE, "NOTES: KNOB 3 its length (3 steps: two TIEs)");
+        encs[panel.enc[EN_K4]] = 1; frame();
+        ok = note_force(&t->step[4], 1) == 3u && ((t->step[4].lvl >> 2) & 3u) == LV_HARD && !(t->step[4].flags & SF_ACCENT);
+        encs[panel.enc[EN_K4]] = 1; frame();
+        ok &= note_force(&t->step[4], 1) == 4u && (t->step[4].flags & SF_ACCENT);
+        encs[panel.enc[EN_K4]] = -1; frame(); encs[panel.enc[EN_K4]] = -1; frame();
+        encs[panel.enc[EN_K4]] = -1; frame(); encs[panel.enc[EN_K4]] = -1; frame();
+        ok &= note_force(&t->step[4], 1) == 0u && ((t->step[4].lvl >> 2) & 3u) == LV_GHOST && !(t->step[4].flags & SF_ACCENT);
+        check(ok, "NOTES: KNOB 4 its FORCE: HARD, ACC (the step's accent), down to GHOST");
+        {
+            uint32_t total, p0 = preset_pos(&total);
+            encs[panel.enc[EN_PRESET]] = 1; frame();
+            ok = (int8_t)ui.zoom == 1;
+            encs[panel.enc[EN_PRESET]] = -1; frame(); encs[panel.enc[EN_PRESET]] = -1; frame();
+            ok &= (int8_t)ui.zoom == -1;
+            encs[panel.enc[EN_PRESET]] = 1; frame();
+            check(ok && (int8_t)ui.zoom == 0 && preset_pos(&total) == p0, "NOTES: PRESETS zooms (16 -> 32, then 8; the sound stays)");
+        }
+        ui.force = 1; frame(); ppm("clipper-notes-chord");
+        tap(B_OCTUP); frame();
+        check(song.octave == 1 && !ui.sheet, "NOTES: OCT+ tapped: the octave up, as before (on release)");
+        song.octave = 0;
+        press(B_OCTUP); frames(30);
+        ok = ui.sheet == 1u && song.octave == 0;
+        release(B_OCTUP); frame();
+        check(ok && ui.sheet == 1u && song.octave == 0, "NOTES: OCT+ held 0.4 s: the note's sheet (the octave stays)");
+        ui.force = 1; frame(); ppm("clipper-notes-sheet");
+        tap(B_OCTUP); frame();
+        ok = (t->step[4].flags & SF_SLIDE) != 0;
+        encs[panel.enc[EN_K1]] = 1; frame();
+        encs[panel.enc[EN_K2]] = 3; frame();
+        ok &= ui.sheet == 2u && t->micro[4] == 3;
+        encs[panel.enc[EN_K1]] = 1; frame();
+        encs[panel.enc[EN_K2]] = 1; frame();
+        ok &= step_fill(t, 4) == FC_FILL;
+        check(ok, "NOTES sheet: SLIDE (OCT+), NUDGE +3, FILL (KNOB 1 the row, KNOB 2 its value)");
+        encs[panel.enc[EN_K1]] = 1; frame();
+        encs[panel.enc[EN_K2]] = -1; frame();
+        ok = ui.cursor == 3u && t->step[3].n == 3u && t->step[3].note[1] == 65u && note_len(t, 3) == 3u && !step_on(&t->step[4]) &&
+             t->step[6].time == ST_REST && t->micro[3] == 3 && t->micro[4] == 0 && step_fill(t, 3) == FC_FILL;
+        encs[panel.enc[EN_K2]] = -1; frame();
+        ok &= ui.cursor == 2u && t->step[2].n == 3u;
+        encs[panel.enc[EN_K2]] = -1; frame();
+        ok &= ui.cursor == 2u && !strcmp(ui.msg, "NO ROOM");                        /* (step 1: the C3's TIE) */
+        check(ok, "NOTES sheet: MOVE, KNOB 2 a step a detent (with its TIEs, nudge, fill); not over another note");
+        encs[panel.enc[EN_K1]] = 1; frame();
+        tap(B_OCTUP); frame();
+        ok = step_on(&t->step[2]) && step_on(&t->step[5]) && t->step[5].note[1] == 65u && ui.cursor == 5u && ui.sheet == 4u;
+        check(ok, "NOTES sheet: COPY (OCT+): just after it, the copy picked, MOVE next");
+        encs[panel.enc[EN_K1]] = 2; frame();
+        tap(B_OCTUP); frame();
+        ok = step_on(&t->step[5]) && t->step[5].n == 2u && ui.sheet == 0u;
+        check(ok, "NOTES sheet: DELETE (OCT+): that note (the chord keeps its others), the sheet closes");
+        press(B_OCTUP); frames(30); release(B_OCTUP); frame();
+        tap(B_OCTDN); frame();
+        check(!ui.sheet && song.octave == 0, "NOTES: OCT- closes the sheet (the octave stays)");
+        press(B_EDIT); release(B_EDIT); frames(2);
+        check(t->step[5].n == 1u && step_on(&t->step[5]), "NOTES: EDIT tapped deletes the note under edit only");
+        press(B_EDIT); release(B_EDIT); frames(2);
+        check(!step_on(&t->step[5]) && t->step[6].time == ST_REST, "NOTES: the chord's last note: the step and its TIEs go");
+        press(B_EDIT); press(B_OCTDN); release(B_OCTDN); release(B_EDIT); frames(2);
+        check(step_on(&t->step[5]), "NOTES: EDIT + OCT- brings it back (undo)");
+        cursor_set(0); ui.force = 1; frame(); ppm("clipper-notes");
+        frames(20);                                   /* (EDIT let go: KNOB 1..4 quiet 250 ms, #39) */
+        /* the keys write the step under edit; STEP ADVANCE (MENU > SEQ) */
+        {
+            uint32_t kc, ke, kg;
+            for (kc = 0; kc < 27u && kb_map(t, kc) != 60u; kc++) ;
+            for (ke = 0; ke < 27u && kb_map(t, ke) != 64u; ke++) ;
+            for (kg = 0; kg < 27u && kb_map(t, kg) != 67u; kg++) ;
+            cursor_set(10); frame();
+            fm1_in.notes |= 1u << kc | 1u << ke; frame(); fm1_in.notes = 0; frame();
+            ok = t->step[10].n == 2u && t->step[10].note[1] == 64u && ui.cursor == 11u;
+            step_adv_off = 1;
+            cursor_set(12); frame();
+            fm1_in.notes |= 1u << kc | 1u << ke; frame(); fm1_in.notes = 0; frame();   /* a wrong chord */
+            ok &= ui.cursor == 12u && t->step[12].n == 2u;
+            fm1_in.notes |= 1u << kc | 1u << ke | 1u << kg; frame(); fm1_in.notes = 0; frame();
+            ok &= ui.cursor == 12u && t->step[12].n == 3u && t->step[12].note[2] == 67u;   /* the chord again: the step anew */
+            encs[panel.enc[EN_K1]] = 1; frame(); encs[panel.enc[EN_K1]] = 1; frame();
+            encs[panel.enc[EN_K1]] = 1; frame();
+            ok &= ui.cursor == 13u && ui.note_k == 0u;
+            step_adv_off = 0;
+            check(ok, "NOTES: the keys write the step under edit (and move on); STEP ADVANCE OFF: the cursor stays, a chord again rewrites it");
+            /* a MIDI keyboard on the NOTES page (1.0, after SLOOP 2.6) */
+            cursor_set(13); frame();
+            midi_in(0x90u, 62, 100); midi_in(0x90u, 65, 100); frames(2);
+            midi_in(0x80u, 62, 0); midi_in(0x80u, 65, 0); frames(3);
+            ok = t->step[13].n == 2u && t->step[13].note[0] == 62u && t->step[13].note[1] == 65u && ui.cursor == 14u;
+            midi_in(0x95u, 69, 90); frames(2); midi_in(0x85u, 69, 0); frames(3);   /* (omni: any channel) */
+            ok &= t->step[14].n == 1u && t->step[14].note[0] == 69u && ui.cursor == 15u;
+            check(ok, "NOTES: a MIDI keyboard writes the step too (a chord: the notes held together; let go: the next step)");
+            go_home(); frames(2);
+            midi_in(0x90u, 71, 100); frames(2); midi_in(0x80u, 71, 0); frames(3);
+            check(t->step[15].time != ST_NOTE || t->step[15].note[0] != 71u, "off the NOTES page, MIDI writes no step");
+            frames(100);
+        }
+        /* (SLOOP 2.7.2) a legato step (SF_LEG) on the instrument: the note before is held into it, the voice takes the
+         * new note with no new attack; the same step without SF_LEG: the note before ends, a new attack */
+        {
+            uint32_t pass, att[2] = {0, 0}, gated_all[2] = {1, 1}, seen55[2] = {0, 0};
+            int16_t atk = t->p[P_ATK], sus = t->p[P_SUS];
+            go_home(); frames(2);
+            for (pass = 0; pass < 2u; pass++) {
+                uint32_t f, i, v0 = NVOICE;
+                for (j = 0; j < NSTEP; j++) step_clear(&t->step[j]);
+                memset(t->micro, 0, sizeof t->micro); memset(t->fill, 0, sizeof t->fill);
+                t->p[P_SLEN] = 16; t->p[P_VOICE] = V_LEGATO; t->p[P_GLIDE] = 0; t->p[P_ATK] = 70; t->p[P_SUS] = 100;
+                t->step[0].n = 1, t->step[0].note[0] = 48, t->step[0].time = ST_NOTE;
+                t->step[1].time = t->step[2].time = t->step[3].time = ST_TIE;
+                t->step[4].n = 1, t->step[4].note[0] = 55, t->step[4].time = ST_NOTE;
+                t->step[4].flags = (uint8_t)(pass ? 0u : SF_LEG);
+                t->step[5].time = ST_TIE;
+                transport_req = 1;
+                for (f = 0; f < 60u; f++) {               /* (8 steps at 120 BPM: 1 s) */
+                    uint32_t g = 0, idx;
+                    frame();
+                    idx = t->seq_idx;
+                    for (i = 0; i < NVOICE; i++)
+                        if (t->v[i].active && t->v[i].gate) {
+                            g++;
+                            if (v0 == NVOICE && t->v[i].note == 48)
+                                v0 = i;
+                            if (t->v[i].note == 55 && !seen55[pass]) {
+                                seen55[pass] = 1;
+                                att[pass] = i != v0 || t->v[i].stage == 1u || t->v[i].env < 1000;
+                            }
+                        }
+                    if (song.playing && idx >= 1u && idx <= 3u && f > 2u && !g)
+                        gated_all[pass] = 0;
+                    if (idx >= 6u)
+                        break;
+                }
+                transport_req = 2; frames(10);
+            }
+            t->p[P_VOICE] = V_POLY; t->p[P_ATK] = atk; t->p[P_SUS] = sus;
+            check(seen55[0] && !att[0] && gated_all[0] && seen55[1] && att[1],
+                  "a LEGATO step (SF_LEG, 1.0): the note before held into it, the same voice takes it, no new attack (without: a new one)");
+        }
+        /* the menu: MENU > SEQ > STEP ADVANCE */
+        {
+            ui.menu = 1; ui.menu_sel = MI_ADV; ui.force = 1; frame(); ppm("clipper-menu-seq");
+            check(mi_sec(MI_ADV) == MS_SEQ && !strcmp(MS_NAME[MS_SEQ], "SEQ") && !strcmp(MI_NAME[MI_ADV], "STEP ADVANCE"),
+                  "MENU: a SEQ section (STEP ADVANCE), between AUDIO and MIDI");
+            encs[panel.enc[EN_K1]] = -1; frame();
+            ok = step_adv_off == 1u;
+            encs[panel.enc[EN_K1]] = 1; frame();
+            ok &= step_adv_off == 0u;
+            ui.menu = 0; ui.force = 1; frame();
+            check(ok, "MENU > SEQ: KNOB 1 STEP ADVANCE OFF / ON (kept: synth9_test)");
+        }
+        go_home(); frames(2);
     }
     /* the pages a synth keeps */
     check(!page_named("SLICER") && !page_named("DRUMS") && !page_named("SONG") && page_named("MASTER") && page_named("VOICE 2"),

@@ -49,6 +49,25 @@ static int8_t kb_oct[27];                   /* the octave buttons when the key w
 static uint8_t last_note = 60;
 static uint8_t pen_n = 1, pen_note[4] = {60};   /* the last chord / note played: the SEQ layer writes it */
 static uint8_t pen_lane;                       /* the last drum lane played: the SEQ layer's lane */
+/* 1.0, after SLOOP 2.6: the MIDI keyboard's notes. mi_pen: the notes held on the instrument (the SEQ layer's pen, as the
+ * keys: the notes down together are a chord). step_in_q: every note-on / note-off of the instrument from MIDI, note | on
+ * << 7, for the NOTES page's entry (ui_input.c midi_entry): the audio side writes, the UI reads; a full queue drops and
+ * says so */
+static uint32_t mi_pen[4];
+#define STEP_IN_Q 32u
+static volatile uint16_t step_in_q[STEP_IN_Q];
+static volatile uint32_t step_in_w;
+static volatile uint8_t step_in_lost;
+static uint32_t step_in_r;
+static void step_in_push(uint32_t ev)
+{
+    if (step_in_w - step_in_r >= STEP_IN_Q) {
+        step_in_lost = 1;
+        return;
+    }
+    step_in_q[step_in_w % STEP_IN_Q] = (uint16_t)ev;
+    step_in_w++;
+}
 static volatile uint8_t transport_req;   /* 1 start, 2 stop (from the UI); 3 start from a MIDI START */
 static volatile uint8_t panic_req;       /* bit per track: release every sounding note (preset / engine change) */
 static volatile uint8_t arp_keep_req;    /* (2.7) bit per track: a sound loaded under its running arp: the arp's notes stay */
@@ -126,9 +145,10 @@ static volatile uint8_t ly_lock = LY_PLAY;
 static uint32_t layer_buttons(void) { return fm1_in.buttons | (ly_lock != LY_PLAY ? ly_bit[ly_lock % LY_COUNT] : 0u); }
 /* the layer the keys are in: the held function button (FX, EDIT, ARP, SEQ, SEL, GLO in that order),
  * else the locked one */
-/* Clipper: the layers a synth keeps: SEQ (the steps) and SEL (key and chords). FX, EDIT, ARP, GLO and SAVE only
- * open their pages; held, the keys still play */
-static int ly_on(uint32_t l) { return !CLIPPER_SYNTH || l == LY_STEP || l == LY_SCALE; }
+/* Clipper: the layers a synth keeps: SEQ (the steps), SEL (key and chords) and (1.0, the sequencer of SLOOP 2.7.2)
+ * EDIT (erase, SHIFT, LENGTH, TRANSPOSE, undo / redo), ARP (note repeat) and GLO (fill, fill bar, tap tempo, the level).
+ * FX and SAVE only open their pages; held, the keys still play */
+static int ly_on(uint32_t l) { return !CLIPPER_SYNTH || (l != LY_FX && l != LY_SONG); }
 static uint32_t layer_now(void)
 {
     uint32_t b = layer_buttons(), l;
@@ -509,6 +529,9 @@ static void step_add(track_t *t, uint32_t idx, uint32_t note, uint32_t vel, uint
         s->vel = (uint8_t)vel;
 }
 
+#ifndef UI_SMALL
+#define UI_SMALL                         /* (gfx.c: minsize; the host tests: nothing) */
+#endif
 /* ---- SLOOP 2.7: overdub over held notes ----
  * A pattern holds its notes with TIE steps (the notes of the NOTE step before them go on). A note recorded into a TIE
  * used to make that step a NOTE of its own, which ends the held notes there. Now (POLY parts) the step becomes a NOTE
@@ -516,7 +539,7 @@ static void step_add(track_t *t, uint32_t idx, uint32_t note, uint32_t vel, uint
  * oldest held one makes room); the step after it, when a TIE, becomes the new note's end: a NOTE of the held notes
  * only, all going on (step_pure_cont). While the new note is held, rec_hold moves that end along. Step entry (SEQ +
  * key) still replaces what plays. */
-static uint32_t chain_notes(const track_t *t, uint32_t idx, uint8_t *out)   /* what goes on into TIE step idx */
+UI_SMALL static uint32_t chain_notes(const track_t *t, uint32_t idx, uint8_t *out)   /* what goes on into TIE step idx */
 {
     uint32_t len = trk_len(t), k;
     for (k = 1; k < len; k++) {
@@ -531,11 +554,11 @@ static uint32_t chain_notes(const track_t *t, uint32_t idx, uint8_t *out)   /* w
     }
     return 0;
 }
-static int step_pure_cont(const step_t *s)      /* a NOTE whose notes all go on: the end of an overdubbed note */
+UI_SMALL static int step_pure_cont(const step_t *s)      /* a NOTE whose notes all go on: the end of an overdubbed note */
 {
     return s->time == ST_NOTE && s->n && s->n <= 4u && ((s->flags & SF_CONT_ALL) / SF_CONT0) == (1u << s->n) - 1u;
 }
-static void chain_end(track_t *t, uint32_t j, const uint8_t *keep, uint32_t n)   /* TIE j: only keep goes on */
+UI_SMALL static void chain_end(track_t *t, uint32_t j, const uint8_t *keep, uint32_t n)   /* TIE j: only keep goes on */
 {
     step_t *s = &t->step[j % NSTEP];
     uint32_t i;
@@ -549,7 +572,7 @@ static void chain_end(track_t *t, uint32_t j, const uint8_t *keep, uint32_t n)  
     s->n = (uint8_t)i;
     s->time = ST_NOTE;
 }
-static uint32_t cont_notes(const step_t *s, uint32_t except, uint8_t *out)   /* its notes going on, but except */
+UI_SMALL static uint32_t cont_notes(const step_t *s, uint32_t except, uint8_t *out)   /* its notes going on, but except */
 {
     uint32_t i, n = 0;
     for (i = 0; i < s->n && i < 4u; i++)
@@ -558,22 +581,94 @@ static uint32_t cont_notes(const step_t *s, uint32_t except, uint8_t *out)   /* 
     return n;
 }
 
+/* (2.7.1) several notes held while recording (POLY): each goes on until its own key is let go. A note recorded over a
+ * held one makes its step a NOTE of the held ones going on + the new one (as over a pattern's held notes, above); one let
+ * go while others are held ends there: the step it ends on becomes a NOTE of the others only, all going on (hold_restart),
+ * and TIEs carry them on. Before, the hold followed the newest note only and the others ended with it */
+UI_SMALL static int rh_has(const track_t *t, uint32_t note)      /* a note of this hold: held, or let go since its last NOTE */
+{
+    uint32_t i;
+    for (i = 0; i < t->rh_n; i++)
+        if (t->rh_note[i] == note)
+            return 1;
+    for (i = 0; i < t->rh_offn; i++)
+        if (t->rh_off[i] == note)
+            return 1;
+    return 0;
+}
+UI_SMALL static int rh_held(const track_t *t, uint32_t note)
+{
+    uint32_t i;
+    for (i = 0; i < t->rh_n; i++)
+        if (t->rh_note[i] == note)
+            return 1;
+    return 0;
+}
+UI_SMALL static void hold_marker_clear(track_t *t, uint32_t j, uint32_t also)   /* an end marker of only this hold's notes: gone */
+{
+    step_t *s = &t->step[j % NSTEP];
+    uint32_t i;
+    if (!step_pure_cont(s))
+        return;
+    for (i = 0; i < s->n; i++)
+        if (!rh_has(t, s->note[i]) && s->note[i] != also)
+            return;
+    memset(s, 0, sizeof *s);
+    s->time = ST_REST;
+}
+UI_SMALL static void hold_restart(track_t *t, uint32_t j, uint32_t len, uint32_t abs)   /* step j: only the notes still held go on */
+{
+    step_t *s = &t->step[j % NSTEP];
+    uint8_t c[4];
+    uint32_t n = chain_notes(t, j, c), i, k, m = 0;
+    for (i = 0; i < n; i++) {                       /* (what sounded into j, but the ones let go) */
+        for (k = 0; k < t->rh_offn && t->rh_off[k] != c[i]; k++)
+            ;
+        if (k == t->rh_offn)
+            c[m++] = c[i];
+    }
+    hold_marker_clear(t, (j + 1u) % len, 0x100u);
+    memset(s, 0, sizeof *s);
+    for (i = 0; i < m; i++) {
+        s->note[i] = c[i];
+        s->flags |= (uint8_t)SF_CONT(i);
+    }
+    s->n = (uint8_t)m;
+    s->time = m ? ST_NOTE : ST_REST;
+    t->rh_start = (uint8_t)j;
+    t->rh_last = (uint8_t)j;
+    t->rh_last_abs = abs;
+    t->rh_ties = 0;
+    t->rh_rs = 1;
+    t->rh_end = 0;
+    t->rh_offn = 0;
+}
+
 /* live recording into a synth part: the nearest step (rec_target). Held on: each further step the
  * sequencer enters while the note is held becomes a TIE (rec_hold), up to the pattern length and
  * never over a step with notes (overdub keeps them); a release before the middle of the last one
  * puts that step back (rec_release), so a short note stays one step. A note recorded into another
  * step ends the hold before (the step model ties the notes of one step only). */
-static void rec_note(track_t *t, uint32_t note, uint32_t vel, uint32_t rat, int hold)
+UI_SMALL static void rec_note(track_t *t, uint32_t note, uint32_t vel, uint32_t rat, int hold)
 {
     uint32_t len = trk_len(t), later, abs = rec_target(t, &later), idx = abs % len, k;
     int was_empty = !(t->step[idx % NSTEP].time == ST_NOTE && t->step[idx % NSTEP].n);
     step_t *st = &t->step[idx % NSTEP];
     uint8_t ch[4], keep[4];
-    uint32_t nc, nk = 0;
+    uint32_t nc = 0, nk = 0, merged = 0;
     undo_mark(t, UNDO_REC(t));
-    if (t->p[P_VOICE] == V_POLY && !rat && st->time == ST_TIE && (nc = chain_notes(t, idx, ch)) != 0) {
+    if (t->p[P_VOICE] == V_POLY && !rat && hold && t->rh_n && st->time != ST_TIE && !(st->time == ST_NOTE && st->n) &&
+        idx == ((t->rh_ties || t->rh_rs ? t->rh_last : t->rh_start) + 1u) % len) {
+        nc = t->rh_n;                               /* (2.7.1) the step the hold goes on into, not tied yet: as a TIE */
+        memcpy(ch, t->rh_note, nc);
+        st->time = ST_TIE;
+    } else if (t->p[P_VOICE] == V_POLY && !rat && st->time == ST_TIE) {
+        nc = chain_notes(t, idx, ch);
+    }
+    if (nc) {
+        merged = hold != 0;
         for (k = 0; k < nc; k++)                    /* (2.7) over held notes: they go on, this one starts */
-            if (ch[k] != note)
+            if (ch[k] != note && !(t->rh_n && rh_has(t, ch[k]) && !rh_held(t, ch[k])))   /* (2.7.1: not one let go) */
                 keep[nk++] = ch[k];
         while (nk > 3u) {                           /* (four at most: the oldest one ends here) */
             for (k = 0; k + 1u < nk; k++)
@@ -593,7 +688,13 @@ static void rec_note(track_t *t, uint32_t note, uint32_t vel, uint32_t rat, int 
         if ((idx + 1u) % len != idx)
             chain_end(t, (idx + 1u) % len, keep, nk);
     } else {
+        uint32_t last = t->rh_ties || t->rh_rs ? t->rh_last : t->rh_start;
+        int leg = t->p[P_VOICE] != V_POLY && !rat && hold && t->rh_n && !(t->rh_n == 1u && t->rh_note[0] == note) &&
+                  idx != t->rh_start && (idx == (last + 1u) % len || (t->rh_ties && idx == last && st->time == ST_TIE));
         step_add(t, idx, note, vel, vel_lvl(vel), rat);
+        if (leg)                                    /* (2.7.2) MONO / LEGATO: played over the note before, still held
+                                                     * into this step (or to it): legato, as it sounded */
+            st->flags |= (uint8_t)SF_LEG;
         for (k = 0; k < st->n; k++)                 /* (2.7) played again: it starts here */
             if (st->note[k] == note)
                 st->flags &= (uint8_t)~SF_CONT(k);
@@ -612,10 +713,15 @@ static void rec_note(track_t *t, uint32_t note, uint32_t vel, uint32_t rat, int 
     }
     if (!hold)
         return;
-    if (!t->rh_n || t->rh_start != idx) {           /* a new hold (one in another step ends) */
+    if (merged) {                                   /* (2.7.1) over held ones: they stay held, from this step on */
+        t->rh_start = (uint8_t)idx;
+        t->rh_ties = 0;
+        t->rh_rs = t->rh_end = t->rh_offn = 0;
+    } else if (!t->rh_n || t->rh_start != idx) {    /* a new hold (one in another step ends) */
         t->rh_n = 0;
         t->rh_start = (uint8_t)idx;
         t->rh_ties = 0;
+        t->rh_rs = t->rh_end = t->rh_offn = 0;
     }
     for (k = 0; k < t->rh_n && t->rh_note[k] != note; k++)
         ;
@@ -643,7 +749,7 @@ static void rec_hit(track_t *t, uint32_t lane, uint32_t lvl, uint32_t rat)
 }
 
 /* the sequencer enters step idx (before playing it): a recorded note still held ties into it */
-static void rec_hold(track_t *t, uint32_t idx, uint32_t len, uint32_t abs)
+UI_SMALL static void rec_hold(track_t *t, uint32_t idx, uint32_t len, uint32_t abs)
 {
     step_t *s;
     if (!t->rh_n)
@@ -655,6 +761,10 @@ static void rec_hold(track_t *t, uint32_t idx, uint32_t len, uint32_t abs)
     if (idx == t->rh_start)
         return;                                     /* (recorded ahead into the step now starting) */
     s = &t->step[idx];
+    if (t->rh_end && (s->time == ST_TIE || s->time == ST_REST || !s->n || step_pure_cont(s))) {
+        hold_restart(t, idx, len, abs);             /* (2.7.1) one let go: from here the others only */
+        return;
+    }
     if (step_pure_cont(s)) {                        /* (2.7) the end of a note over held ones: it goes on, the end moves */
         uint8_t keep[4];
         uint32_t nk = cont_notes(s, 0x100u, keep);
@@ -681,19 +791,41 @@ static void rec_hold(track_t *t, uint32_t idx, uint32_t len, uint32_t abs)
 }
 
 /* a key of a recorded note is up: the hold ends with the last one */
-static void rec_release(track_t *t, uint32_t note)
+UI_SMALL static void rec_release(track_t *t, uint32_t note)
 {
-    uint32_t i, k = 0, into, slen, half, lat;
+    uint32_t i, k = 0, into, slen, half, lat, early, len = trk_len(t);
     for (i = 0; i < t->rh_n; i++)
         if (t->rh_note[i] != note)
             t->rh_note[k++] = t->rh_note[i];
-    if (k == t->rh_n || (t->rh_n = (uint8_t)k))
-        return;                                     /* not one of them, or others still held */
-    if (!t->rh_ties || trk_grid(t, &into, &slen) != t->rh_last_abs)
-        return;
+    if (k == t->rh_n)
+        return;                                     /* not one of them */
+    early = trk_grid(t, &into, &slen) == t->rh_last_abs;
     half = slen / 2u;
     lat = REC_LAT * (uint32_t)song.g[G_BPM];
-    if (into <= half + (lat < half ? lat : half) && t->step[t->rh_last].time == ST_TIE)
+    early = early && into <= half + (lat < half ? lat : half);   /* (let go early in the hold's last step) */
+    if (k) {                                        /* (2.7.1) others still held: this one ends, they go on */
+        t->rh_n = (uint8_t)k;
+        if (t->p[P_VOICE] != V_POLY)
+            return;
+        if (t->rh_offn < 4u)
+            t->rh_off[t->rh_offn++] = (uint8_t)note;
+        if (t->rh_ties && early && t->step[t->rh_last].time == ST_TIE)
+            hold_restart(t, t->rh_last, len, t->rh_last_abs);   /* (not held into this step: it ends before it) */
+        else
+            t->rh_end = 1;                          /* (held into this step: it ends with it) */
+        return;
+    }
+    t->rh_n = 0;
+    hold_marker_clear(t, ((t->rh_ties || t->rh_rs ? t->rh_last : t->rh_start) + 1u) % len, note);   /* (2.7.1) an end left
+                                                     * ahead of notes all let go */
+    if (t->rh_rs && !t->rh_ties && early && step_pure_cont(&t->step[t->rh_last])) {
+        memset(&t->step[t->rh_last], 0, sizeof t->step[t->rh_last]);   /* (2.7.1) let go early in a step the others went on */
+        t->step[t->rh_last].time = ST_REST;                            /* into: not held into it */
+    }
+    t->rh_end = t->rh_rs = t->rh_offn = 0;
+    if (!t->rh_ties || !early)
+        return;
+    if (t->step[t->rh_last].time == ST_TIE)
         t->step[t->rh_last] = t->rh_bak;            /* released early in it: not held into this step */
 }
 
@@ -2256,8 +2388,9 @@ static void seq_step(track_t *t, const step_t *s, uint32_t slen, uint32_t skip)
     uint32_t i, j, gate = slen * (uint32_t)t->p[P_SGATE] / 128u;
     uint32_t slide_in = t->seq_hold && t->seq_n;
     const step_t *nx = &t->step[(t->seq_idx + 1u) % trk_len(t)];
-    uint32_t next_tie = nx->time == ST_TIE || (nx->time == ST_NOTE && (nx->flags & SF_CONT_ALL));   /* (2.7: notes going on
-                                                     * into the next step: held to it, it says which end) */
+    uint32_t next_tie = nx->time == ST_TIE || (nx->time == ST_NOTE && (nx->flags & (SF_CONT_ALL | SF_LEG)));   /* (2.7: notes
+                                                     * going on into the next step: held to it, it says which end;
+                                                     * SLOOP 2.7.2: a legato note next: held to it) */
 #if CLIPPER_SYNTH
     step_t vs;                                      /* (0.8) SPICE: this step's variation, on a copy */
     if (t->p[P_SPICE] && s->time == ST_NOTE && s->n && !s->rat && !(s->flags & SF_CONT_ALL)) {
@@ -2323,7 +2456,8 @@ static void seq_step(track_t *t, const step_t *s, uint32_t slen, uint32_t skip)
                 hits = 1u + ((s->rat >> (2u * i)) & 3u);
         gate /= hits;
     }
-    t->slide_glide = (uint8_t)slide_in;
+    t->slide_glide = (uint8_t)(slide_in && (!(s->flags & SF_LEG) ||   /* (2.7.2: legato alone: no glide of its own) */
+                                            (t->step[(t->seq_idx + trk_len(t) - 1u) % trk_len(t)].flags & SF_SLIDE)));
     if (!slide_in)
         seq_release(t);
     for (i = 0; i < s->n; i++)
@@ -2706,17 +2840,42 @@ static void __attribute__((noinline)) midi_cc(track_t *t, uint32_t cc, uint32_t 
  * (the slicer, delay and arp follow it). START restarts from the top, CONTINUE carries on where it
  * stopped, STOP stops. With no pulse for 0.5 s, the internal tempo takes over (PLAY works as ever). */
 #define MCLK_PULSE_U (BEAT_U / 24u)
+#define MCLK_NB 8u                  /* (2.7.2) the tempo: the mean of the last 8 beats */
 static struct {
     uint32_t pos, done;          /* units: the master's position (pulses since START), ours */
     uint32_t last_ms, iv_ms;     /* the last pulse, the interval between pulses (smoothed) */
     uint32_t beat_ms;            /* when pulse 0 of the last 24 came: the tempo */
     uint8_t have, n24;           /* a pulse since START; pulses towards the next tempo reading */
     uint8_t alive;               /* pulses are coming (from the SYNC source) */
+    uint8_t nb, bi;              /* (2.7.2) the last beats' lengths (bdt[], up to MCLK_NB, bi the next) */
+    uint16_t bdt[MCLK_NB];
 } mclk;
 
 static int mclk_on(void)                          /* the clock drives the sequencer */
 {
     return song.g[G_SYNC] && mclk.alive && fm1_ms - mclk.last_ms < 500u;
+}
+
+/* (2.7.2) the tempo from a beat of dt ms. A beat timed to the millisecond reads +-1 BPM at random (140: 428.6 ms; the
+ * computer, USB and our blocks move a pulse by a few ms), so: the mean of the last 8 beats, in tenths of a BPM; once
+ * there are 8, BPM changes only when the mean is 0.8 away (a steady 140 stays 140; a tempo ramp still goes through). A
+ * beat 5 BPM or more away is a new tempo: taken at once (the 8 start again). The sequencer follows the pulses either
+ * way: this is the BPM shown (and what follows it: delay, slicer, arp) */
+static void mclk_tempo(uint32_t dt)
+{
+    uint32_t k, sum = 0, t10;
+    int32_t one = (int32_t)((60000u + dt / 2u) / dt), cur = song.g[G_BPM];
+    if (mclk.nb && (one - cur >= 5 || cur - one >= 5))
+        mclk.nb = 0;
+    mclk.bdt[mclk.bi] = (uint16_t)dt;
+    mclk.bi = (uint8_t)((mclk.bi + 1u) % MCLK_NB);
+    if (mclk.nb < MCLK_NB)
+        mclk.nb++;
+    for (k = 0; k < mclk.nb; k++)
+        sum += mclk.bdt[(mclk.bi + MCLK_NB - 1u - k) % MCLK_NB];
+    t10 = (600000u * mclk.nb + sum / 2u) / sum;    /* (<= 8 x 600000 + 6000: fits 32 bits) */
+    if (mclk.nb < MCLK_NB || (int32_t)t10 - cur * 10 >= 8 || cur * 10 - (int32_t)t10 >= 8)
+        song.g[G_BPM] = (int16_t)clamp((int32_t)((t10 + 5u) / 10u), 40, 240);
 }
 
 static void mclk_event(uint32_t st, uint32_t src)  /* a realtime message; src 1 USB, 2 TRS */
@@ -2745,13 +2904,14 @@ static void mclk_event(uint32_t st, uint32_t src)  /* a realtime message; src 1 
     }
     if (!mclk.alive || now - mclk.last_ms >= 500u) {   /* (re)started: count a fresh beat */
         mclk.n24 = 0;
+        mclk.nb = 0;
         mclk.beat_ms = now;
     } else if (++mclk.n24 == 24u) {                /* a beat: the tempo */
         uint32_t dt = now - mclk.beat_ms;
         mclk.n24 = 0;
         mclk.beat_ms = now;
         if (dt >= 250u && dt <= 1500u)             /* 40..240 BPM */
-            song.g[G_BPM] = (int16_t)clamp((int32_t)((60000u + dt / 2u) / dt), 40, 240);
+            mclk_tempo(dt);
     }
     mclk.alive = 1;
     mclk.last_ms = now;
@@ -2938,6 +3098,8 @@ static void events_block(uint32_t n)
     }
     if (pr)
         arp_keep_req = 0;
+    if (pr)
+        mi_pen[0] = mi_pen[1] = mi_pen[2] = mi_pen[3] = 0;   /* (1.0: the MIDI pen's notes held: never stuck either) */
     keyboard_block();
     drum_audition_poll();                             /* (the editor's DRUM SYNTH page) */
     strum_block(n);                                   /* (voice.c: the strummed notes due) */
@@ -2990,6 +3152,13 @@ static void events_block(uint32_t n)
                 trk_note_off1(t, d1);
 #endif
         } else if (st == 0x90u && d2) {
+            if (t == TSEL) {                          /* (1.0, SLOOP 2.6) the SEQ layer's pen: this note, or the chord held */
+                if (!(mi_pen[0] | mi_pen[1] | mi_pen[2] | mi_pen[3]) || pen_n >= 4u)
+                    pen_n = 0;
+                pen_note[pen_n++] = (uint8_t)d1;
+                mi_pen[d1 >> 5] |= 1u << (d1 & 31u);
+                step_in_push(d1 | 0x80u);             /* (the NOTES page's entry) */
+            }
 #if CLIPPER_SYNTH
             mpe_cur_ch = (uint8_t)(mpe_mode ? ch : 0u);  /* (voice.c voice_start: the voice's channel) */
             input_on(t, d1, d2);
@@ -2998,6 +3167,10 @@ static void events_block(uint32_t n)
             input_on(t, d1, d2);
 #endif
         } else {
+            if (t == TSEL) {
+                mi_pen[d1 >> 5] &= ~(1u << (d1 & 31u));
+                step_in_push(d1);
+            }
             input_off(t, d1);
         }
     }
