@@ -11,6 +11,9 @@
 #define DLY_SPAN DLY_LEN
 #endif
 #define CHO_LEN 2048u
+#define PART_MAX 880000                                 /* (1.0) a part's sum, ~27 x full scale: x LEVEL_Q12[127] (9713)
+                                                         * >> 2 stays in 32 bits */
+#define MIX_MAX 2000000                                 /* (1.0) ~61 x full scale: far into the limiter, never past 32 bits */
 static int16_t dly_buf[DLY_LEN] __attribute__((section(".pool")));
 static int16_t cho_buf[CHO_LEN] __attribute__((section(".pool")));
 /* the reverb: two input diffusers, then four delay lines mixed by a Hadamard matrix (a feedback delay
@@ -19,8 +22,13 @@ static int16_t cho_buf[CHO_LEN] __attribute__((section(".pool")));
 #define REV_MOD 12               /* samples the modulated line moves (+-) */
 static const uint16_t REV_LINE[4] = {1559, 1931, 2389, 2791};   /* 35..63 ms, coprime */
 static const uint16_t REV_AP[2] = {556, 441};
+#if CLIPPER_SYNTH                /* (1.0) in the pool, which has room in the synth (48 KB free): .lowram put line 0, the
+                                  * left channel's own, right above the second core's stacks */
+static int16_t rev_line[1559 + 1931 + 2389 + 2791 + REV_MOD + 2] __attribute__((section(".pool")));
+#else
 static int16_t rev_line[1559 + 1931 + 2389 + 2791 + REV_MOD + 2] __attribute__((section(".lowram")));   /* (the pool is
                                                                       * full; .lowram: the SRAM below the RAM region, app.ld) */
+#endif
 static int16_t rev_ap[556 + 441] __attribute__((section(".pool")));
 static struct {
     uint32_t dly_w, cho_w, cho_ph, rev_ph;
@@ -432,6 +440,10 @@ static inline void dly_taps(uint32_t m, uint32_t d, uint32_t i, int32_t *l, int3
 #define TF_INC 20257887u                /* (6.5 Hz, the flutter) */
 #endif
 
+static inline int32_t lp_step(int32_t d, int32_t k)   /* (1.0) mulq15(d, k), d past 16 bits in 64 */
+{
+    return d > 65535 || d < -65535 ? (int32_t)(((int64_t)d * k) >> 15) : mulq15(d, k);
+}
 /* process the three buses for one block; sends in, wet out (stereo). The LFOs (chorus, reverb line)
  * are computed per block and ramped: no sine per sample */
 static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t *rev_in, int32_t *wet_l,
@@ -605,10 +617,12 @@ static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t
             o2 = c[B2 + fx.line_i[2]];
             o3 = c[B3 + fx.line_i[3]];
             s0 = o0 + o1, d0 = o0 - o1, s1 = o2 + o3, d1 = o2 - o3;   /* Hadamard / 2: each feeds all four */
-            fx.line_lp[0] += mulq15(((s0 + s1) >> 1) - fx.line_lp[0], lpk);
-            fx.line_lp[1] += mulq15(((d0 + d1) >> 1) - fx.line_lp[1], lpk);
-            fx.line_lp[2] += mulq15(((s0 - s1) >> 1) - fx.line_lp[2], lpk);
-            fx.line_lp[3] += mulq15(((d0 - d1) >> 1) - fx.line_lp[3], lpk);
+            /* (1.0) lp_step: the lines at full scale (SIZE and the sends up, DAMP 0) swing the step past 65536, and
+             * x 32767 overflowed 32 bits: the tail burst into a crackle. Within 65536, as before, bit for bit */
+            fx.line_lp[0] += lp_step(((s0 + s1) >> 1) - fx.line_lp[0], lpk);
+            fx.line_lp[1] += lp_step(((d0 + d1) >> 1) - fx.line_lp[1], lpk);
+            fx.line_lp[2] += lp_step(((s0 - s1) >> 1) - fx.line_lp[2], lpk);
+            fx.line_lp[3] += lp_step(((d0 - d1) >> 1) - fx.line_lp[3], lpk);
             c[fx.line_i[0]] = (int16_t)clamp(mulq15(fx.line_lp[0], g) + a, -32768, 32767);
             c[B1 + fx.line_i[1]] = (int16_t)clamp(mulq15(fx.line_lp[1], g) - a, -32768, 32767);
             c[B2 + fx.line_i[2]] = (int16_t)clamp(mulq15(fx.line_lp[2], g) + a, -32768, 32767);
@@ -1306,9 +1320,10 @@ static void mix_part1(track_t *t, uint32_t n)
         dl = (t->lvl - lvl0) >> CTL_LOG2, dgl = t->gpl - gl0, dgr = t->gpr - gr0;
         for (i = 0; i < n; i++) {
 #if NVOICE > 8                                          /* Clipper: 12 / 16 loud voices: one more bit of headroom */
-            int32_t x = ((b[i] >> 3) * (lvl0 + dl * (int32_t)i)) >> 9, a;
+            int32_t x = ((clamp(b[i], -PART_MAX * 2, PART_MAX * 2) >> 3) * (lvl0 + dl * (int32_t)i)) >> 9, a;
 #else
-            int32_t x = ((b[i] >> 2) * (lvl0 + dl * (int32_t)i)) >> 10, a;   /* pre-shift: 8 loud voices */
+            int32_t x = ((clamp(b[i], -PART_MAX, PART_MAX) >> 2) * (lvl0 + dl * (int32_t)i)) >> 10, a;   /* pre-shift: 8
+                                                         * loud voices (1.0: bounded: x LEVEL 127 within 32 bits) */
 #endif
             int32_t xs, g = ga + (((gb - ga) * (int32_t)i) >> CTL_LOG2);
             if (g < 32767)
@@ -1492,8 +1507,8 @@ static void mix_block(int32_t *out, uint32_t n)
         static uint8_t usb_was;
         for (i = 0; i < n; i++) {
             int32_t m = m0 + (((m1 - m0) * (int32_t)i) >> CTL_LOG2);
-            ol[i] = ((mix_l[i] >> 2) * m) >> 10;
-            orr[i] = ((mix_r[i] >> 2) * m) >> 10;
+            ol[i] = ((clamp(mix_l[i], -MIX_MAX, MIX_MAX) >> 2) * m) >> 10;   /* (1.0: bounded first: x MASTER in 32 bits) */
+            orr[i] = ((clamp(mix_r[i], -MIX_MAX, MIX_MAX) >> 2) * m) >> 10;
             master_pre(&ol[i], &orr[i]);
             if ((i & 1u)) {                             /* the visualiser: every other sample, as audio.c reads it */
                 vis_tap[2u * i] = (int16_t)knee(mix_l[i]);

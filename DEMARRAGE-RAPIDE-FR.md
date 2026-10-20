@@ -229,7 +229,12 @@ Envoie-moi les chiffres (avec et sans 2ND CORE). Signale aussi un son qui craque
 
 ## Un bruit d'un seul côté ?
 
-Avec certains écouteurs, un bruit dans le canal gauche vient du contact de la prise de sortie de la FM-1 (le matériel, pas le firmware : le son que Clipper calcule est propre des deux côtés). Enfonce la fiche jusqu'au bout, ou tourne-la un peu dans la prise, jusqu'à ce que le bruit disparaisse.
+Certains entendent un craquement ou un bruit dans le canal gauche, avec la réverb et sur certains sons, que le firmware d'origine n'a pas. Une cause est corrigée dans la 1.0 : avec REVERB > DAMP baissé et un son fort, la réverb ROOM débordait en un craquement qui continuait après les notes. La 1.0 déplace aussi la mémoire de la réverb. À part ça, le son que Clipper calcule est propre des deux côtés (tous les sons d'usine vérifiés, avec tous les effets au maximum). Si tu l'entends encore, ces tests nous disent d'où il vient (une réponse sur GitHub ou YouTube avec les résultats aide beaucoup) :
+1. FX > FX : REV à 0. Le bruit s'arrête ? FX > REVERB > TYPE ROOM, puis PLATE : sur les deux ?
+2. Quitte HOME pour une page fixe (GLO > TUNING) : le bruit change ?
+3. GLO > SYSTEM, la dernière colonne (CPU, puis LATE, puis PEAK, à tour de rôle) : LATE monte quand tu l'entends ?
+4. MENU > SYS > 2ND CORE OFF, éteins et rallume, le même son : toujours là ? (Remets ON après.)
+5. Il est là sans aucune note jouée ?
 
 ## Revenir en arrière
 

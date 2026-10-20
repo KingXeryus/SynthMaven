@@ -68,7 +68,12 @@ Please report the numbers (with and without 2ND CORE) in the [Issues](https://gi
 
 ## A noise on one side?
 
-With some headphones, a noise on the left channel comes from the contact of the FM-1's own output jack (the hardware, not the firmware: the sound Clipper renders is clean on both sides). Push the plug all the way in, or turn it a little in the jack, until the noise goes.
+Some players hear a crackle or a noise on the left channel, with the reverb on and on some sounds, that the original firmware does not have. One cause is fixed in 1.0: with REVERB > DAMP turned down and a loud sound, the room reverb overflowed into a crackle that went on after the notes. 1.0 also moves the reverb's memory. The sound Clipper computes is otherwise clean on both sides (every factory sound checked, with every effect at full). If you still hear it, these tell us where it comes from (a reply on GitHub or YouTube with the answers helps a lot):
+1. FX > FX: REV at 0. Does the noise stop? FX > REVERB > TYPE ROOM, then PLATE: on both?
+2. Leave HOME for a still page (GLO > TUNING): does the noise change?
+3. GLO > SYSTEM, the last column (CPU, then LATE, then PEAK, in turn): does LATE go up while you hear it?
+4. MENU > SYS > 2ND CORE OFF, power off and on, the same sound: still there? (Set it back ON after.)
+5. Is it there with no note playing?
 
 ## Going back
 

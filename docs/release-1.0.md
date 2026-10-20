@@ -14,7 +14,7 @@
 
 ## New in 1.0
 
-SPREAD; the matrix grows to 12 slots with LFO 3 and the macros as sources; ENV 2 LOOP; four macros on every engine; HALL and SHIMMER reverbs; the delay's PING and TAPE modes; a crack of the JUNO chorus on loud chords fixed; no samples and no project page on the FM-1 any more (one instrument: the autosave keeps what you play, user presets keep your sounds). The full list is in the [README](https://github.com/isod89/clipper-fm1/blob/main/README.md).
+SPREAD; the matrix grows to 12 slots with LFO 3 and the macros as sources; ENV 2 LOOP; four macros on every engine; HALL and SHIMMER reverbs; the delay's PING and TAPE modes; a crack of the JUNO chorus on loud chords fixed; the room reverb no longer overflows into a crackle with DAMP turned down on a loud sound; no samples and no project page on the FM-1 any more (one instrument: the autosave keeps what you play, user presets keep your sounds). The full list is in the [README](https://github.com/isod89/clipper-fm1/blob/main/README.md).
 
 ## Install
 

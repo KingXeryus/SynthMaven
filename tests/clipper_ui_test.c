@@ -366,6 +366,37 @@ int main(int argc, char **argv)
         usb.id_req = 0;
         go_home(); frames(2);
     }
+    /* 1.0 (comments: a crackle with the reverb on): the room reverb driven at full scale (SIZE 127, DAMP 0: a bright
+     * long room, sends and LEVEL up on a loud chord) keeps its loop filters within 16 bits: their 32-bit products
+     * overflowed there, and the tail turned into a full-scale noise that went on after the notes */
+    {
+        static int32_t ci[CTL], di[CTL], ri[CTL], wl[CTL], wr[CTL];
+        int16_t keep[3] = {song.g[G_RSIZE], song.g[G_RDAMP], song.g[G_RTYPE]};
+        int32_t worst = 0, tail = 0;
+        uint32_t b, k;
+        song.g[G_RSIZE] = 127, song.g[G_RDAMP] = 0, song.g[G_RTYPE] = RT_ROOM;
+        for (b = 0; b < 3000u; b++) {
+            for (k = 0; k < CTL; k++) {
+                ci[k] = di[k] = 0;
+                {
+                    static uint32_t seed = 1u;
+                    seed = seed * 1664525u + 1013904223u;
+                    ri[k] = b < 1500u ? (int32_t)(seed >> 13) - 262144 : 0;   /* a loud bright noise, then silence */
+                }
+            }
+            fx_buses(ci, di, ri, wl, wr, CTL);
+            for (k = 0; k < 4u; k++)
+                worst = abs(fx.line_lp[k]) > worst ? abs(fx.line_lp[k]) : worst;
+            if (b >= 2900u)
+                for (k = 0; k < CTL; k++)
+                    tail = abs(wl[k]) > tail ? abs(wl[k]) : tail;
+        }
+        check(worst <= 65535 && tail < 40000, "the room reverb driven at full scale (SIZE 127, DAMP 0): within 16 bits, and its tail fades (it went on as full-scale noise)");
+        song.g[G_RSIZE] = keep[0], song.g[G_RDAMP] = keep[1], song.g[G_RTYPE] = keep[2];
+        for (k = 0; k < NELEM(rev_line); k++)
+            rev_line[k] = 0;
+        fx.line_lp[0] = fx.line_lp[1] = fx.line_lp[2] = fx.line_lp[3] = 0;
+    }
     /* the buttons with no layer: held, the keys play; their pages on release */
     {
         static const struct { uint32_t b, fam; const char *n; } B[] = {{B_FX, FAM_FX, "FX"}, {B_SAVE, FAM_SAVE, "SAVE"}};
