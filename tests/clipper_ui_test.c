@@ -145,6 +145,29 @@ int main(int argc, char **argv)
         check(ch == 0, "the note-offs on every channel let them all go");
     }
 
+    /* 1.0 (a comment: a noise on the left SLOOP has not): HOME redraws its scope only while it moves; SCOPE OFF never */
+    {
+        uint32_t f, ch_idle = 0, ch_play = 0, ch_off = 0, sig;
+        go_home(); frames(200);                       /* (silence: the tails gone) */
+        sig = ui.graph_sig;
+        for (f = 0; f < 30u; f++) { frame(); ch_idle += ui.graph_sig != sig; sig = ui.graph_sig; }
+        fm1_in.notes |= 1u << 7; frames(4);
+        for (f = 0; f < 30u; f++) { frame(); ch_play += ui.graph_sig != sig; sig = ui.graph_sig; }
+        scope_off = 1; frames(2); sig = ui.graph_sig;
+        for (f = 0; f < 30u; f++) { frame(); ch_off += ui.graph_sig != sig; sig = ui.graph_sig; }
+        ui.force = 1; frame(); ppm("clipper-home-scope-off");
+        scope_off = 0;
+        fm1_in.notes &= ~(1u << 7); frames(200);
+        check(ch_idle == 0u && ch_play >= 10u && ch_off == 0u,
+              "HOME: the scope redrawn only while sound plays (silent: never); MENU > SCOPE OFF: never");
+        printf("clipper:   HOME graph redraws in 30 frames: silent %u, playing %u, SCOPE OFF %u\n", ch_idle, ch_play, ch_off);
+        ui.menu = 1; ui.menu_sel = MI_SCOPE; ui.force = 1; frame();
+        encs[panel.enc[EN_K4]] = -1; frame();
+        f = scope_off;
+        encs[panel.enc[EN_K4]] = 1; frame();
+        ui.menu = 0; ui.force = 1; frame();
+        check(mi_sec(MI_SCOPE) == MS_SCREEN && f == 1u && scope_off == 0u, "MENU > SCREEN > SCOPE (KNOB 4): OFF / ON");
+    }
     /* 1.0 (a comment): the PRESETS page's KNOB 2 filters the list by engine; KNOB 1 and PRESETS stay inside it */
     {
         uint32_t total, k, e, ok = 1, pos, c, n, seen = 0, prev = 0xFFFFu;
