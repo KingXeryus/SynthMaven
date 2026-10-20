@@ -65,6 +65,10 @@ This decides how many voices Clipper can play. The FM-1 must be connected to the
 
 Please report the numbers (with and without 2ND CORE) in the [Issues](https://github.com/isod89/clipper-fm1/issues), and anything odd: a crackling sound, a stuck note, a **FELUCCA CRASH** screen (photograph it: it stays 10 s), a strange screen.
 
+## A noise on one side?
+
+With some headphones, a noise on the left channel comes from the contact of the FM-1's own output jack (the hardware, not the firmware: the sound Clipper renders is clean on both sides). Push the plug all the way in, or turn it a little in the jack, until the noise goes.
+
 ## Going back
 
 - **To SLOOP**: run `INSTALL-SLOOP.bat` from SLOOP's folder. A sound set to HYBRID plays another engine there.

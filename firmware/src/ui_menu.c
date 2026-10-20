@@ -9,15 +9,15 @@
 /* 0.7 (after SLOOP 2.7): SCREEN + KNOB ACCEL, AUDIO + USB RATE (four rows: the fourth takes the help's place), MIDI
  * (CLOCK OUT, MPE), SYS (2ND CORE, CALIBRATION, ABOUT) */
 #if CLIPPER_SYNTH                                  /* Clipper 0.4: MPE (MIDI: OFF or the member channels' bend range) */
-enum { MI_COLOR, MI_ZOOM, MI_ACCEL, MI_SCOPE, MI_LIGHTS, MI_KEYS, MI_NOTES, MI_LOWCUT, MI_USB, MI_SERIAL, MI_RATE, MI_ADV, MI_CLKOUT,
+enum { MI_COLOR, MI_ZOOM, MI_ACCEL, MI_LIGHTS, MI_KEYS, MI_NOTES, MI_LOWCUT, MI_USB, MI_SERIAL, MI_RATE, MI_ADV, MI_CLKOUT,
        MI_MPE, MI_CPU1, MI_PANEL, MI_ABOUT, MI_COUNT };
-static const char *const MI_NAME[MI_COUNT] = {"COLOR", "ZOOM", "KNOB ACCEL", "SCOPE (HOME)", "LIGHTS", "KEYS", "NOTES", "SPEAKER LOWCUT",
+static const char *const MI_NAME[MI_COUNT] = {"COLOR", "ZOOM", "KNOB ACCEL", "LIGHTS", "KEYS", "NOTES", "SPEAKER LOWCUT",
                                               "USB AUDIO", "USB SERIAL", "USB RATE", "STEP ADVANCE", "CLOCK OUT (USB)",
                                               "MPE (CH 2-16)", "2ND CORE", "HARDWARE CALIBRATION", "ABOUT"};
 #else
-enum { MI_COLOR, MI_ZOOM, MI_ACCEL, MI_SCOPE, MI_LIGHTS, MI_KEYS, MI_NOTES, MI_LOWCUT, MI_USB, MI_SERIAL, MI_RATE, MI_ADV, MI_CLKOUT,
+enum { MI_COLOR, MI_ZOOM, MI_ACCEL, MI_LIGHTS, MI_KEYS, MI_NOTES, MI_LOWCUT, MI_USB, MI_SERIAL, MI_RATE, MI_ADV, MI_CLKOUT,
        MI_CPU1, MI_PANEL, MI_ABOUT, MI_COUNT };
-static const char *const MI_NAME[MI_COUNT] = {"COLOR", "ZOOM", "KNOB ACCEL", "SCOPE (HOME)", "LIGHTS", "KEYS", "NOTES", "SPEAKER LOWCUT",
+static const char *const MI_NAME[MI_COUNT] = {"COLOR", "ZOOM", "KNOB ACCEL", "LIGHTS", "KEYS", "NOTES", "SPEAKER LOWCUT",
                                               "USB AUDIO", "USB SERIAL", "USB RATE", "STEP ADVANCE", "CLOCK OUT (USB)",
                                               "2ND CORE", "HARDWARE CALIBRATION", "ABOUT"};
 #endif
@@ -64,7 +64,6 @@ static const char *mi_value(uint32_t i, uint16_t *c)
     case MI_USB: return usb_full ? "FULL" : "MASTER";
     case MI_SERIAL: return usb_serial ? "ON" : "OFF";
     case MI_ACCEL: return knob_accel_off ? "OFF" : "ON";   /* (0.7) the knobs speed up with a fast turn */
-    case MI_SCOPE: return scope_off ? "OFF" : "ON";        /* (1.0) HOME's scope (OFF: no screen traffic while playing) */
     case MI_RATE: return USB_RATE_NAME[usb_rate % 3u];     /* (0.7) for hosts that record one rate badly */
     case MI_CPU1: return cpu1_off ? "OFF" : "ON";          /* (0.7) the second core renders half the voices */
     case MI_CLKOUT: return clk_out ? "ON" : "OFF";         /* (0.7) the MIDI clock out on USB while SYNC is INT */
@@ -85,7 +84,7 @@ static void draw_menu(void)
                    settings.zoom * 104729u + lights_lvl * 1299709u + lights_keys * 15485863u +
                    lights_notes * 32452843u + usb_full * 49979687u + usb_serial * 86028121u +
                    knob_accel_off * 179424673u + usb_rate * 373587883u + cpu1_off * 674506111u + clk_out * 982451653u +
-                   step_adv_off * 236887691u + scope_off * 961748927u
+                   step_adv_off * 236887691u
 #if CLIPPER_SYNTH
                    + mpe_mode * 2654435761u
 #endif
@@ -234,9 +233,6 @@ static void mi_set(uint32_t i, int32_t s)
             usb_rate--;
         else if (!s)
             usb_rate = (uint8_t)((usb_rate + 1u) % 3u);
-        break;
-    case MI_SCOPE:                                     /* (1.0) right ON, left OFF; OCT+ toggles */
-        scope_off = (uint8_t)(s > 0 ? 0u : s < 0 ? 1u : !scope_off);
         break;
     case MI_ADV:                                       /* (1.0) right ON, left OFF; OCT+ toggles */
         step_adv_off = (uint8_t)(s > 0 ? 0u : s < 0 ? 1u : !step_adv_off);

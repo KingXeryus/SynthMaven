@@ -431,18 +431,6 @@ static uint32_t graph_signature(void)
     if (!ui.home && big_page(pg))                    /* the big values: as the columns show them */
         for (i = 0; i < 4u; i++)
             h = str_hash(str_hash(str_hash(h ^ ui.big_c[i] * 31u, ui.big_v[i]), ui.big_l[i]), ui.big_u[i]);
-#if CLIPPER_SYNTH
-    if (ui.home) {                                   /* (1.0) the scope only while it moves: no screen traffic when
-                                                      * silent, none with MENU > SCOPE OFF (a comment heard a noise on
-                                                      * the left that SLOOP, whose TRACKS screen stays still, has not) */
-        uint32_t total, pos = preset_pos(&total), q, live = 0, w = scope_w;
-        for (q = 0; q < SCOPE_N && !live && !scope_off; q += 4u)
-            live = scope_buf[(w + q) & (SCOPE_N - 1u)] > 24 || scope_buf[(w + q) & (SCOPE_N - 1u)] < -24;
-        h ^= pos * 2654435761u + total * 40503u + TSEL->eng_req * 131u + TSEL->preset * 7u + TSEL->user * 257u +
-             up_gen * 7919u + hist_edited * 3u + hist_cmp_on * 5u + scope_off * 11u + (TSEL->p[P_AMODE] != 0) * 13u;
-        return live ? h ^ (ui.frame / 2u) * 977u : h;
-    }
-#endif
     if (ui.home)
         return h ^ (ui.frame / 2u);                  /* scope: redraw every other frame */
     h ^= (uint32_t)pg->graph * 131u + TSEL->eng_req + song.sel * 7777u;
@@ -760,10 +748,6 @@ static void graph_home(uint16_t c)
         cv_text(x + 8, 36, &FONT_S, "EDITED", C_AMB);
 #endif
     cv_text(236 - text_w(&FONT_S, e->name), 36, &FONT_S, e->name, C_HI);
-    if (scope_off) {                                 /* (1.0) MENU > SCREEN > SCOPE OFF: a still line */
-        cv_line(0, 90, 239, 90, C_LINE);
-        return;
-    }
     for (i = 0; i < SCOPE_N; i++) {                  /* the scope, auto-scaled, triggered on a rising zero */
         snap[i] = scope_buf[(w + i) & (SCOPE_N - 1u)];
         if (snap[i] > peak)

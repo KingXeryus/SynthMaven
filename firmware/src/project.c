@@ -863,7 +863,7 @@ static void autosave_resume(void)              /* power-on: the project as it wa
 typedef struct {
     uint32_t magic;
     uint8_t usb_rate, clk_out, flags, mch;           /* (1.0) flags: bit 0 STEP ADVANCE OFF (0 before 1.0: ON), bits
-                                                      * 1..4 GLO > MIDI > OUT CH - 1, bit 5 SCOPE OFF; mch: IN CH, 0 OMNI (0 before 1.0) */
+                                                      * 1..4 GLO > MIDI > OUT CH - 1; mch: IN CH, 0 OMNI (0 before 1.0) */
     uint16_t fav[FAV_N];
     uint32_t crc;
 } clip_side_t;
@@ -892,7 +892,7 @@ static void side_fill(side2_t *s)                    /* what the side record hol
     r->magic = CLIP_SIDE_MAGIC;
     r->usb_rate = (uint8_t)(usb_rate % 3u);
     r->clk_out = (uint8_t)(clk_out != 0u);
-    r->flags = (uint8_t)((step_adv_off != 0u) | (midi_out_ch & 15u) << 1 | (scope_off != 0u) << 5);
+    r->flags = (uint8_t)((step_adv_off != 0u) | (midi_out_ch & 15u) << 1);
     r->mch = (uint8_t)(midi_in_ch % 17u);
     memcpy(r->fav, fav, sizeof fav);
     r->crc = st_crc32(r, sizeof *r - 4u);
@@ -910,7 +910,6 @@ static void side_take(const side2_t *s)              /* a side record read back:
         clk_out = (uint8_t)(r->clk_out & 1u);
         step_adv_off = (uint8_t)(r->flags & 1u);
         midi_out_ch = (uint8_t)((r->flags >> 1) & 15u);
-        scope_off = (uint8_t)((r->flags >> 5) & 1u);
         midi_in_ch = (uint8_t)(r->mch <= 16u ? r->mch : 0u);
         memcpy(fav, r->fav, sizeof fav);
     }
