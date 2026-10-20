@@ -190,6 +190,11 @@ run "Clipper 1.0 audio: no click or crackle (55 cases: presets of every engine, 
 if $SYN_UB -o "$OUT/clean_ub" tests/clean_test.c -lm 2>/dev/null; then
     run "Clipper 0.9 audio under ASan + UBSan" sh -c "'$OUT/clean_ub' >/dev/null && echo clean"
 fi
+$SYN -o "$OUT/fx_sweep_test" tests/fx_sweep_test.c -lm
+run "Clipper 1.0 effects: a sine through every reverb type, delay MODE and TIME, chorus, swept INSERT, JUNO chorus and the master at their extremes: no click, left as clean as right" "$OUT/fx_sweep_test"
+if $SYN_UB -o "$OUT/fx_sweep_ub" tests/fx_sweep_test.c -lm 2>/dev/null; then
+    run "Clipper 1.0 effects under ASan + UBSan (no line read out of its array)" sh -c "'$OUT/fx_sweep_ub' >/dev/null && echo clean"
+fi
 $SYN -o "$OUT/engines3_test" tests/engines3_test.c -lm
 run "Clipper 0.5 VPS (vector phaseshaping: pitch, formant, D, no DC, no aliasing, no step) and TERRAIN (every surface pitched, RAD, DRIFT, no aliasing), bounded, cost" "$OUT/engines3_test" build/eng3_demo
 if $SYN_UB -o "$OUT/engines3_ub" tests/engines3_test.c -lm 2>/dev/null; then

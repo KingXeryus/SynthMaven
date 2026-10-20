@@ -141,8 +141,9 @@ static void lofi_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const 
     /* sweep down, vibrato (uses the track LFO through m->pitch16 already) */
     if (v->s[3] < 4096)                                 /* past 2047 + an arp step the pitch is 0 anyway */
         v->s[3] += p[P_E4] / 8;
-    v->s[5]++;
-    pitch = m->pitch16 - v->s[3] + ARPS[ar & 3][(v->s[5] / 28) % 3] * 16;   /* ~50 Hz, chip-style */
+    v->s[5]++;                                          /* (1.0: read unsigned: a voice taken over from another
+                                                         * engine's state never indexes before the table) */
+    pitch = m->pitch16 - v->s[3] + ARPS[ar & 3][((uint32_t)v->s[5] / 28u) % 3u] * 16;   /* ~50 Hz, chip-style */
     inc = pitch_inc(clamp(pitch, 0, 2047));
     if (p[P_E5])
         inc += (uint32_t)(((int32_t)(inc >> 12) * (((osc_sine(v->ph[1]) >> 8) * p[P_E5]) >> 4)) >> 4);   /* no overflow */

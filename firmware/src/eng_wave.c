@@ -259,7 +259,8 @@ static void wave_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const 
     int32_t det = p[P_E2], sub = p[P_E3] * 258, drive = 32768 + p[P_E6] * 768, dw = p[P_E6] * 258, drv = p[P_E6];
     int32_t cut = (p[P_E4] << 8) + m->cutoff + (p[P_E7] * (v->pitch16 - 60 * 16) >> 4);
     int32_t p1 = clamp((p[P_E1] << 8) + m->shape - (64 << 8), 0, 127 << 8) * (int32_t)(WT_NF - 1u) / 127;   /* Q8 */
-    int32_t p0 = v->s[7] < 0 ? p1 : v->s[7];
+    int32_t p0 = v->s[7] < 0 || v->s[7] > (int32_t)((WT_NF - 1u) << 8) ? p1 : v->s[7];   /* (1.0: a voice that
+                                                     * another engine's state reached: never a frame past the table) */
     int32_t sv[2] = {v->s[0], v->s[1]}, ls[4] = {v->s[3], v->s[4], v->s[5], v->s[6]};
     int32_t model = fm_model(t);                     /* (0.9: the filter MODEL, dsp.c fmod_*) */
     fmod_t fm;
