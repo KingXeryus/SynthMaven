@@ -445,7 +445,7 @@ static uint32_t graph_signature(void)
         uint32_t q;
         for (q = 0; q < FAV_N; q++)
             h = h * 31u + fav[q];
-        h ^= (uint32_t)(fav_at + 1) * 2654435761u;
+        h ^= (uint32_t)(fav_at + 1) * 2654435761u + br_eng * 40503u;
     }
     if (pg->graph == GR_SLCR && t->p[P_SLCR])        /* the SLICER's step playing */
         h ^= (sl[song.sel].idx + 1u) * 2654435761u;
@@ -464,15 +464,19 @@ static uint32_t graph_signature(void)
 /* preset browser: the list by kind (ui.c BANK), the current one in white */
 static void graph_browse(void)
 {
-    uint32_t total, cur = preset_pos(&total), e, k;
-    int32_t row;
-    if (!total)
+    uint32_t total, cur = preset_pos(&total), e, k, pos, cnt = br_count(&pos), first = cur;
+    int32_t row, r0 = -3, r1 = 3;
+    if (!total || !cnt)
         return;
-    for (row = -3; row <= 3; row++) {
+    if (cnt < 7u) {                                  /* (1.0, a short filter: its sounds once, from the first) */
+        first = br_walk(total - 1u, 1);
+        r0 = -3, r1 = (int32_t)cnt - 4;
+    }
+    for (row = r0; row <= r1; row++) {
         int32_t y = 4 + (row + 3) * 17;
         char tag[5], nm[13];
-        int sel = row == 0;
-        uint32_t n = (cur + total * 4u + (uint32_t)row) % total;
+        uint32_t n = cnt < 7u ? br_walk(first, row + 3) : br_walk(cur, row);
+        int sel = n == cur;
         e = preset_at(n, &k);
         if (e == NENGINES) {                             /* user preset: "U07" and its name */
             up_slot_label(tag, k);
@@ -1027,8 +1031,14 @@ static void draw_columns(void)
         fmt_int(val, (int32_t)cur + 1);
         str_cpy(u, "/", 8);
         fmt_int(u + 1, (int32_t)total);
+        if (br_eng != BR_ALL) {                          /* (1.0) the place in the engine's sounds */
+            uint32_t pos, c = br_count(&pos);
+            fmt_int(val, (int32_t)pos + 1);
+            fmt_int(u + 1, (int32_t)c);
+        }
         draw_column(0, "No.", val, u, VAL(0u), -1, ICON_NONE);
-        draw_column(1, "ENG", ENGINES[TSEL->eng_req]->name, "", VAL(1u), -1, engine_icon(ENGINES[TSEL->eng_req]->name));
+        draw_column(1, "ENG", br_eng == BR_ALL ? "ALL" : br_eng == NENGINES ? "USER" : ENGINES[br_eng]->name, "", VAL(1u), -1,
+                    br_eng < NENGINES ? engine_icon(ENGINES[br_eng]->name) : ICON_NONE);   /* (1.0: the filter) */
         draw_column(2, "", "", "", C_HI, -1, ICON_AUTO);
         draw_column(3, "FAV", fav_has(fav_key()) ? "ON" : "--", "", VAL(3u), -1, ICON_NONE);   /* (0.7) KNOB 4 */
         return;

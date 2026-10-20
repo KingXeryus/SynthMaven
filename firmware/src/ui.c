@@ -909,6 +909,89 @@ static void preset_go(uint32_t n)                    /* load list index n into t
     ui.force = 1;
 }
 
+/* 1.0 (a comment: "KNOB 2 just jumps to a preset of that engine, the list is not filtered"): the PRESETS page's
+ * engine filter. KNOB 2 picks ALL, one engine (those with sounds in the list) or USER (the user presets); then KNOB 1,
+ * the PRESETS knob on that page and the list shown go through that engine's sounds only, in the list's order (the
+ * favourites, their own copies, are left out of a filter). HOME's PRESETS knob always browses the whole list */
+#define BR_ALL 0xFFu
+static uint8_t br_eng = BR_ALL;
+static int br_match(uint32_t n, uint32_t nf)         /* entry n of the list (nf favourites first) is in the filter */
+{
+    uint32_t k;
+    if (br_eng == BR_ALL)
+        return 1;
+    return n >= nf && preset_at(n, &k) == br_eng;
+}
+/* the filtered list: how many, and where the sound now is in it (*pos; when it is not in it: 0) */
+static uint32_t br_count(uint32_t *pos)
+{
+    uint32_t total, cur = preset_pos(&total), b[FAV_N], nf = fav_list(b), n, c = 0;
+    *pos = 0;
+    for (n = 0; n < total; n++)
+        if (br_match(n, nf)) {
+            if (n == cur)
+                *pos = c;
+            c++;
+        }
+    return c;
+}
+/* the entry s matches on from list index n (back for s < 0), round; n itself when nothing matches */
+static uint32_t br_walk(uint32_t n, int32_t s)
+{
+    uint32_t total, b[FAV_N], nf = fav_list(b), guard;
+    preset_pos(&total);
+    if (!total)
+        return 0;
+    while (s) {
+        guard = total;
+        do
+            n = s > 0 ? (n + 1u) % total : (n + total - 1u) % total;
+        while (--guard && !br_match(n, nf));
+        s += s > 0 ? -1 : 1;
+    }
+    return n;
+}
+static void br_step(int32_t s)                        /* KNOB 1 / PRESETS on the PRESETS page */
+{
+    uint32_t total, cur = preset_pos(&total), b[FAV_N];
+    if (is_drum(TSEL) || !total)
+        return;
+    if (!br_match(cur, fav_list(b)))                  /* (the sound now is not in the filter: its first one) */
+        cur = br_walk(total - 1u, 1), s = s > 0 ? s - 1 : s;
+    preset_go(br_walk(cur, s));
+}
+static int br_engine_has(uint32_t e)                  /* the list holds sounds of engine e (NENGINES: user presets) */
+{
+    uint32_t total, n, k, b[FAV_N], nf = fav_list(b);
+    preset_pos(&total);
+    for (n = nf; n < total; n++)
+        if (preset_at(n, &k) == e)
+            return 1;
+    return 0;
+}
+static void br_filter_step(int32_t s)                 /* KNOB 2: ALL, the engines, USER, round */
+{
+    uint32_t e = br_eng == BR_ALL ? NENGINES + 1u : br_eng, guard = NENGINES + 2u, total, cur = preset_pos(&total), b[FAV_N];
+    if (is_drum(TSEL))
+        return;
+    do                                                /* (0..NENGINES-1 the engines, NENGINES USER, NENGINES + 1 ALL) */
+        e = s > 0 ? (e + 1u) % (NENGINES + 2u) : (e + NENGINES + 1u) % (NENGINES + 2u);
+    while (--guard && e <= NENGINES && !br_engine_has(e));
+    br_eng = (uint8_t)(e > NENGINES ? BR_ALL : e);
+    if (!br_match(cur, fav_list(b)))
+        preset_go(br_walk(total - 1u, 1));            /* (the filter's first sound) */
+    {
+        uint32_t pos, c = br_count(&pos);
+        char m[24];
+        str_cpy(m, br_eng == BR_ALL ? "ALL" : br_eng == NENGINES ? "USER" : ENGINES[br_eng]->name, sizeof m);
+        str_cpy(m + str_len(m), " (", 3);
+        fmt_int(m + str_len(m), (int32_t)c);
+        str_cpy(m + str_len(m), ")", 2);
+        ui_message(m);
+    }
+    ui.force = 1;
+}
+
 /* Clipper: ALGORITHM, the kind of sound: the first sound of the next kind (BASS, KEYS, ORGN, PAD, LEAD, PLCK,
  * STAB, FX, then the user presets), or of the previous one; round */
 static uint32_t kind_at(uint32_t n)                  /* (0.7: the favourites first, a kind of their own) */

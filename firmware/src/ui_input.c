@@ -495,13 +495,11 @@ static void edit_param(uint32_t slot, int32_t steps)
         tracks_edit(slot, steps);
         return;
     }
-    if (pg->graph == GR_BROWSE) {                         /* KNOB 1: one preset, KNOB 2: the next / previous engine */
+    if (pg->graph == GR_BROWSE) {                         /* KNOB 1: one preset, KNOB 2: the engine filter (1.0) */
         if (slot == 0u && !is_drum(TSEL)) {
-            uint32_t total, cur = preset_pos(&total);
-            if (total)
-                preset_go((uint32_t)(((int32_t)cur + steps % (int32_t)total + (int32_t)total) % (int32_t)total));
+            br_step(steps);
         } else if (slot == 1u && !is_drum(TSEL)) {
-            select_engine((TSEL->eng_req + (steps > 0 ? 1u : NENGINES - 1u)) % NENGINES);
+            br_filter_step(steps > 0 ? 1 : -1);
         } else if (slot == 3u && !is_drum(TSEL)) {          /* (0.7) KNOB 4: FAV, right adds the sound, left removes it */
             fav_toggle(steps > 0);
         }
@@ -1164,6 +1162,8 @@ static void ui_input(void)
         uint32_t total, cur = preset_pos(&total);
         if (is_drum(TSEL))
             TDRUM->p[P_E0] = (int16_t)clamp(TDRUM->p[P_E0] + s, 0, DRUM_KITS - 1);
+        else if (!ui.home && cur_page()->graph == GR_BROWSE)
+            br_step(s);                                 /* (1.0: the PRESETS page: its engine filter) */
         else if (total)
             preset_go((uint32_t)(((int32_t)cur + s % (int32_t)total + (int32_t)total) % (int32_t)total));
     }

@@ -145,6 +145,38 @@ int main(int argc, char **argv)
         check(ch == 0, "the note-offs on every channel let them all go");
     }
 
+    /* 1.0 (a comment): the PRESETS page's KNOB 2 filters the list by engine; KNOB 1 and PRESETS stay inside it */
+    {
+        uint32_t total, k, e, ok = 1, pos, c, n, seen = 0, prev = 0xFFFFu;
+        go_home(); frames(2);
+        open_family(FAM_SAVE); frames(2);
+        check(cur_page()->graph == GR_BROWSE && br_eng == BR_ALL, "SAVE: the PRESETS page, the filter on ALL");
+        encs[panel.enc[EN_K2]] = 1; frames(2);
+        e = br_eng;
+        ok = e < NENGINES && TSEL->eng_req == e && user_of(TSEL) >= UP_SLOTS;
+        c = br_count(&pos);
+        for (n = 0; n < c + 2u; n++) {                /* KNOB 1 round the engine's sounds (and once more) */
+            uint32_t p = preset_pos(&total);
+            ok &= TSEL->eng_req == e;
+            seen += p != prev;
+            prev = p;
+            encs[panel.enc[EN_K1]] = 1; frames(1);
+        }
+        encs[panel.enc[EN_PRESET]] = -1; frames(1);
+        ok &= TSEL->eng_req == e;
+        ui.force = 1; frame(); ppm("clipper-presets-filter");
+        check(ok && c >= 2u && seen >= c, "PRESETS page: KNOB 2 filters by engine (the first one with sounds); KNOB 1 and PRESETS go through its sounds only");
+        for (k = 0; k < NENGINES + 2u && br_eng != BR_ALL; k++) {
+            encs[panel.enc[EN_K2]] = 1; frames(1);
+        }
+        check(br_eng == BR_ALL, "KNOB 2 round the engines (and USER when there are user presets) back to ALL");
+        encs[panel.enc[EN_K2]] = -1; frames(1);
+        ok = br_eng == NENGINES || (br_eng < NENGINES && TSEL->eng_req == br_eng);   /* (the harness's user presets: names only) */
+        check(ok, "KNOB 2 left from ALL: the last filter (USER, or the last engine and its first sound)");
+        while (br_eng != BR_ALL) { encs[panel.enc[EN_K2]] = 1; frames(1); }
+        go_home(); frames(2);
+        set_engine_of(TSEL, ENGI_HYBRID); apply_preset_to(TSEL, 0); frames(3);
+    }
     /* 1.0 (a comment from a KeyStep Pro user): GLO > MIDI, IN CH (OMNI or one channel) and OUT CH */
     {
         uint32_t pg, ch, i2, n1, n3, ok;
