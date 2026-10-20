@@ -102,6 +102,7 @@ _Static_assert(sizeof(hy_patch_t) == HY_PATCH_SIZE, "hy_patch_t is the editor's 
 typedef struct {
     int16_t bend;                /* Q15, -32768 .. 32764 */
     uint8_t mw, at, expr, sus;   /* 0..127; sus: the pedal is down */
+    uint8_t exoff;               /* (1.0) 127 - CC 11: the expression's cut of the part's volume (fx.c), 0 none */
 } part_ctl_t;
 static part_ctl_t part_ctl[NPART];
 

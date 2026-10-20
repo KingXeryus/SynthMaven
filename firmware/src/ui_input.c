@@ -528,7 +528,15 @@ static void edit_param(uint32_t slot, int32_t steps)
     if (!d || !vp || d->max == d->min)
         return;
     v = clamp(*vp + accel(EN_K1 + slot, steps, d->names ? 0 : d->max - d->min), d->min, d->max);
+#if CLIPPER_SYNTH
+    {
+        int32_t old = *vp;
+        *vp = (int16_t)v;
+        cc_out_knob(vp, old);                             /* (1.0) GLO > MIDI 2 > SEND CC */
+    }
+#else
     *vp = (int16_t)v;
+#endif
 #if CLIPPER_SYNTH
     if (pg->scope == SC_SYN) {                            /* the layer, MORPH, RANDOM (ui_synth.c) */
         syn_changed(id, vp);
@@ -1199,7 +1207,12 @@ static void ui_input(void)
         if (ui.home) {
             int16_t *vp;
             const param_desc_t *d = home_param(k, &vp);
+            int32_t old = *vp;
             *vp = (int16_t)clamp(*vp + accel(EN_K1 + k, s, d->names ? 0 : d->max - d->min), d->min, d->max);
+#if CLIPPER_SYNTH
+            cc_out_knob(vp, old);                     /* (1.0) CC OUT */
+#endif
+            (void)old;
             if (!is_drum(TSEL) && p_lockable(ENGINES[TSEL->eng_req % NENGINES]->macro[k & 3u]))
                 ui.lock_par = ENGINES[TSEL->eng_req % NENGINES]->macro[k & 3u];
         } else {

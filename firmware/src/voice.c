@@ -39,6 +39,8 @@ static int32_t lfo_wave(track_t *t, uint32_t ph)
     return lfo_wave_n(t->p[P_LWAVE], ph, (int32_t)(t->lfo_rnd >> 16) - 32768);
 }
 
+static uint8_t midi_bend;                               /* (1.0) GLO > MIDI > BEND, or RPN 0 (seq.c): the pitch bend's
+                                                         * range in semitones, 0 AUTO (the HYBRID patch's, else 2) */
 #if CLIPPER_SYNTH
 /* Clipper 0.4: MPE (menu SYSTEM > MPE; seq.c MIDI in). Channel 1 is the master channel (the part's bend, pressure,
  * CCs, as ever); a note on a member channel (2..16) is that channel's own: its pitch bend (over the range chosen
@@ -1179,7 +1181,8 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
     uint32_t pc = CLIPPER_SYNTH ? ctl_part(t) : (uint32_t)(t - trk) % NPART;   /* (Clipper: the layer plays part 1's
                                                          * controls; in MULTI its own) */
     int32_t bend = (uint32_t)(t - trk) < NPART ?
-                   (part_ctl[pc].bend * (e == &ENG_HYBRID ? (int32_t)hy_cur[t - trk].bend : 2)) >> 3 : 0;
+                   (part_ctl[pc].bend * (midi_bend ? (int32_t)midi_bend :
+                                         e == &ENG_HYBRID ? (int32_t)hy_cur[t - trk].bend : 2)) >> 3 : 0;
 #if CLIPPER_SYNTH
     /* Clipper 0.3: the mod wheel's and the aftertouch's destinations (P_MWDST, P_ATDST), velocity to the cutoff
      * (P_VELF); VIB and TREM ride a vibrato LFO of their own (~5.5 Hz sine), WAH the sound's LFO */

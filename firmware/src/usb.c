@@ -138,6 +138,7 @@ static struct {
     uint8_t sx_len, sx_on;
     volatile uint8_t uboot_req;
     volatile uint8_t ota_req;    /* F0 22 24 35 7F F7: M-UPGRADE upgrade command (FELUCCA_OTA) */
+    volatile uint8_t id_req;     /* (Clipper 1.0) F0 7E xx 06 01 F7: identity request, answered by the main loop */
     uint8_t rx_pend;             /* EP1 OUT packet seen, not yet taken (the MIDI ring was too full) */
     uint32_t rx_held, rx_bad;    /* packets held back (NAK) for room, malformed events ignored */
 } usb;
@@ -772,6 +773,8 @@ static void sysex_byte(uint8_t b)
             ok = usb.sysex[i] == UBOOT_KEY[i];
         if (ok)
             usb.uboot_req = 1;
+        else if (usb.sx_len == 6u && usb.sysex[1] == 0x7Eu && usb.sysex[3] == 0x06u && usb.sysex[4] == 0x01u)
+            usb.id_req = 1;
 #if FELUCCA_OTA
         else if (usb.sx_len == 6u && usb.sysex[1] == 0x22 && usb.sysex[2] == 0x24 && usb.sysex[3] == 0x35 &&
                  usb.sysex[4] == 0x7F)

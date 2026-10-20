@@ -1219,6 +1219,10 @@ static void mix_part1(track_t *t, uint32_t n)
     {
         int32_t lvl = LEVEL_Q12[t->p[P_LEVEL] ? clamp(t->p[P_LEVEL] + t->p[P_ED_FX], 1, 127) : 0], pan = t->p[P_PAN];   /* (+ the sound's trim: 1/2 dB steps, as LEVEL's) */
 #if CLIPPER_SYNTH
+        {   /* (1.0) the expression (CC 11): x (cc + 1)^2 / 128^2, 127 unchanged */
+            int32_t ex = 128 - part_ctl[ctl_part(t)].exoff;
+            lvl = (lvl * ex * ex) >> 14;
+        }
         pan = clamp(pan + t->panmod, -64, 64);         /* Clipper 0.4: + the matrix's PAN (voice.c) */
 #endif
         int32_t gl = 4096 - (pan > 0 ? pan * 64 : 0), gr = 4096 + (pan < 0 ? pan * 64 : 0);

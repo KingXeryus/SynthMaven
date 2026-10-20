@@ -36,6 +36,12 @@ static int page_named(const char *t)
             return 1;
     return 0;
 }
+static void to_page(uint32_t fam, const char *t)              /* (from HOME) the family's button until that page */
+{
+    uint32_t n = 0;
+    go_home(); frame();
+    do { open_family(fam); frame(); } while (strcmp(cur_page()->title, t) && ++n < 40u);
+}
 static void midi_in(uint32_t st, uint32_t d1, uint32_t d2)    /* a USB-MIDI packet, as usb.c queues it */
 {
     midi_in_q[mi_w % MQ] = (st >> 4) | st << 8 | d1 << 16 | d2 << 24;
@@ -224,6 +230,140 @@ int main(int argc, char **argv)
         midi_in(0x95u, 64, 100); frames(2);
         check(midi_in_ch == 0u && midi_out_ch == 0u && voices_part(0) >= 1u, "IN CH back to OMNI, OUT CH 1: every channel again");
         midi_in(0x85u, 64, 0); frames(60);
+        go_home(); frames(2);
+    }
+    /* 1.0 ("ultra compatible MIDI"): program change and bank, expression, the channel mode messages, RPN 0, local
+     * control, the LFO's CCs, CC OUT, the identity request */
+    {
+        uint32_t total, b2[FAV_N], nf = fav_list(b2), ok, i2, on, l_full, l_cut, cc_n, cc_v;
+        go_home(); frames(2);
+        to_page(FAM_GLO, "MIDI");
+        ui.force = 1; frame(); ppm("clipper-midi-1");
+        check(cur_page()->id[2] == 52u && cur_page()->id[3] == 53u && midi_bend == 0u && !midi_local_off,
+              "GLO > MIDI: BEND (AUTO) and LOCAL (ON) next to the channels");
+        midi_in(0xC0u, 5, 0); frames(2);
+        ok = base_pos(&total) == 5u;
+        midi_in(0xB0u, 0, 1); midi_in(0xC0u, 2, 0); frames(2);
+        ok &= total <= 130u || base_pos(&total) == 130u;
+        check(ok && total > 130u, "a program change loads that sound of the list; CC 0 picks the bank of 128");
+        midi_in(0xB0u, 0, 0); midi_in(0xC0u, 0, 0); frames(2);
+        check(base_pos(&total) == 0u && preset_pos(&total) == nf, "program 0 of bank 0: the first factory sound");
+        to_page(FAM_GLO, "MIDI");
+        open_family(FAM_GLO); frame();
+        check(!ui.home && !strcmp(cur_page()->title, "MIDI 2"), "GLO: then the MIDI 2 page");
+        ui.force = 1; frame(); ppm("clipper-midi-2");
+        frames(20);
+        encs[panel.enc[EN_K1]] = -1; frame();
+        midi_in(0xC0u, 7, 0); frames(2);
+        check(midi_pc_off && base_pos(&total) == 0u, "MIDI 2 > PROG OFF: program changes ignored");
+        encs[panel.enc[EN_K1]] = 1; frame();
+        check(!midi_pc_off, "PROG back ON");
+        /* expression: the part's volume */
+        midi_in(0x90u, 60, 100); frames(6);
+        l_full = (uint32_t)trk[0].lvl;
+        midi_in(0xB0u, 11, 0); frames(20);
+        l_cut = (uint32_t)trk[0].lvl;
+        midi_in(0xB0u, 11, 127); frames(20);
+        check(l_full > 1000u && l_cut * 1000u < l_full && (uint32_t)trk[0].lvl == l_full,
+              "CC 11 expression: 0 silences the sound, 127 brings it back to its level");
+        midi_in(0xB0u, 123, 0); frames(4);
+        for (i2 = 0, on = 0; i2 < NVOICE; i2++) on += trk[0].v[i2].gate;
+        check(on == 0u, "CC 123 all notes off: the note held lets go");
+        midi_in(0x90u, 62, 100); frames(2); midi_in(0xB0u, 120, 0); frames(4);
+        check(voices_part(0) == 0u, "CC 120 all sound off: nothing left");
+        midi_in(0xE0u, 0, 127); midi_in(0xB0u, 1, 90); midi_in(0xB0u, 11, 20); midi_in(0xB0u, 64, 127); frames(2);
+        ok = part_ctl[0].bend != 0 && part_ctl[0].sus && part_ctl[0].exoff;
+        midi_in(0xB0u, 121, 0); frames(2);
+        check(ok && !part_ctl[0].bend && !part_ctl[0].mw && !part_ctl[0].exoff && !part_ctl[0].sus,
+              "CC 121 reset all controllers: bend centred, mod wheel 0, expression full, pedal up");
+        /* RPN 0: the bend range */
+        midi_in(0xB0u, 101, 0); midi_in(0xB0u, 100, 0); midi_in(0xB0u, 6, 12); frames(2);
+        ok = midi_bend == 12u;
+        midi_in(0xB0u, 99, 1); midi_in(0xB0u, 98, 2); midi_in(0xB0u, 6, 3); frames(2);
+        check(ok && midi_bend == 12u, "RPN 0 (CC 101 100 = 0 0, CC 6): the bend range 12; an NRPN's data entry: no change");
+        to_page(FAM_GLO, "MIDI");
+        frames(20);
+        encs[panel.enc[EN_K3]] = -1; frame();
+        check(midi_bend == 11u, "GLO > MIDI > BEND: the knob sets the range (11)");
+        for (i2 = 0; i2 < 12u; i2++) { encs[panel.enc[EN_K3]] = -1; frame(); }
+        check(midi_bend == 0u, "BEND back to AUTO");
+        /* local control */
+        usb.config = 1;
+        mo_r = mo_w;
+        midi_in(0xB0u, 122, 0); frames(3);
+        fm1_in.notes |= 1u << 9; frames(3);
+        i2 = voices_part(0);
+        fm1_in.notes &= ~(1u << 9); frames(2);
+        for (on = 0; mo_r != mo_w; mo_r++)
+            on += ((midi_out_q[mo_r % MQ] >> 8) & 0xF0u) == 0x90u;
+        check(midi_local_off && i2 == 0u && on == 1u, "CC 122 local off: a key goes out on MIDI, the sound does not play it");
+        midi_in(0x90u, 64, 100); frames(2);
+        check(voices_part(0) >= 1u, "local off: the notes coming in (a DAW's echo) play");
+        midi_in(0x80u, 64, 0); frames(40);
+        encs[panel.enc[EN_K4]] = 1; frame();
+        fm1_in.notes |= 1u << 9; frames(3);
+        on = voices_part(0);
+        fm1_in.notes &= ~(1u << 9); frames(2);
+        check(!midi_local_off && on >= 1u, "GLO > MIDI > LOCAL ON: the keys play the sound again");
+        frames(60);
+        /* the LFO's CCs */
+        midi_in(0xB0u, 76, 127); midi_in(0xB0u, 78, 0); frames(2);
+        check(trk[0].p[P_LRATE] == 127 && trk[0].p[P_LFADE] == 0, "CC 76 the LFO's rate, 78 its fade (delay)");
+        midi_in(0xB0u, 76, 60); frames(2);
+        /* CC OUT: a knob on the sound sends its CC */
+        to_page(FAM_GLO, "MIDI 2");
+        frames(20);
+        encs[panel.enc[EN_K2]] = 1; frame();
+        ok = midi_cc_out == 1u;
+        go_home(); frames(2);
+        to_page(FAM_ENV, "ENV");
+        frames(20);
+        mo_r = mo_w;
+        encs[panel.enc[EN_K4]] = 1; frame();
+        for (cc_n = 0, cc_v = 0; mo_r != mo_w; mo_r++)
+            if (((midi_out_q[mo_r % MQ] >> 8) & 0xF0u) == 0xB0u && ((midi_out_q[mo_r % MQ] >> 16) & 127u) == 72u)
+                cc_n++, cc_v = midi_out_q[mo_r % MQ] >> 24;
+        check(ok && cc_n == 1u && cc_v == (uint32_t)((trk[0].p[P_REL] * 127 + 63) / 127),
+              "MIDI 2 > SEND CC: ENV's RELEASE knob sends CC 72 with its value");
+        mo_r = mo_w;
+        midi_in(0xB0u, 72, 30); frames(2);
+        check(mo_r == mo_w && trk[0].p[P_REL] == 30, "a CC received sets the sound, nothing is sent back");
+        to_page(FAM_GLO, "MIDI 2");
+        frames(20);
+        encs[panel.enc[EN_K2]] = -1; frame();
+        mo_r = mo_w;
+        go_home(); frames(2);
+        to_page(FAM_ENV, "ENV");
+        frames(20);
+        encs[panel.enc[EN_K4]] = 1; frame();
+        check(!midi_cc_out && mo_r == mo_w, "SEND OFF (the default): the knobs send nothing");
+        usb.config = 0;
+        /* BREATH (an EWI player's comment): CC 2 the volume, and the aftertouch */
+        midi_in(0xB0u, 2, 0); frames(2);
+        ok = part_ctl[0].exoff == 0u;
+        to_page(FAM_GLO, "MIDI 2");
+        frames(20);
+        encs[panel.enc[EN_K3]] = 1; frame();
+        ok &= midi_breath == 1u;
+        midi_in(0x90u, 60, 100); frames(6);
+        l_full = (uint32_t)trk[0].lvl;
+        midi_in(0xB0u, 2, 0); frames(20);
+        l_cut = (uint32_t)trk[0].lvl;
+        midi_in(0xB0u, 2, 127); frames(20);
+        check(ok && l_full > 1000u && l_cut * 1000u < l_full && (uint32_t)trk[0].lvl == l_full && part_ctl[0].at == 0u,
+              "MIDI 2 > EWI VOL: CC 2 (breath) is the volume (OFF, the default: CC 2 does nothing)");
+        encs[panel.enc[EN_K3]] = 1; frame();
+        midi_in(0xB0u, 2, 90); frames(2);
+        check(midi_breath == 2u && part_ctl[0].at == 90u && part_ctl[0].exoff == 37u, "EWI V+AT: and the aftertouch");
+        ui.force = 1; frame(); ppm("clipper-midi-breath");
+        encs[panel.enc[EN_K3]] = -1; frame(); encs[panel.enc[EN_K3]] = -1; frame();
+        midi_in(0xB0u, 121, 0); midi_in(0x80u, 60, 0); frames(40);
+        check(!midi_breath && !part_ctl[0].exoff && !part_ctl[0].at, "EWI back OFF");
+        /* the identity request (usb.c): F0 7E 7F 06 01 F7 */
+        midi_in_event(0x04u | 0xF0u << 8 | 0x7Eu << 16 | 0x7Fu << 24);
+        midi_in_event(0x07u | 0x06u << 8 | 0x01u << 16 | 0xF7u << 24);
+        check(usb.id_req == 1u, "a MIDI identity request is seen (the main loop answers it)");
+        usb.id_req = 0;
         go_home(); frames(2);
     }
     /* the buttons with no layer: held, the keys play; their pages on release */

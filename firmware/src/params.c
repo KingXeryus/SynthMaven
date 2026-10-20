@@ -564,7 +564,8 @@ static const page_t PAGES[] = {
     {"MASTER", FAM_GLO, SC_GLOBAL, GR_NONE, {G_DUST, G_FILT, 0xFF, 0xFF}},
     {"TUNING", FAM_GLO, SC_SYN, GR_NONE, {47, 48, 49, 0xFF}},   /* (0.9) X_TSYS X_TROOT (1.0: X_TA4): voice.c tune_cfg */
     {"SYSTEM", FAM_GLO, SC_GLOBAL, GR_NONE, {G_MIDI, G_SYNC, G_ROUTE, G_INFO}},
-    {"MIDI", FAM_GLO, SC_SYN, GR_NONE, {50, 51, 0xFF, 0xFF}},   /* (1.0) X_MIN X_MOUT: the channels (seq.c midi_in_ch) */
+    {"MIDI", FAM_GLO, SC_SYN, GR_NONE, {50, 51, 52, 53}},   /* (1.0) X_MIN X_MOUT X_MBEND X_MLOCAL (seq.c midi_in_ch) */
+    {"MIDI 2", FAM_GLO, SC_SYN, GR_NONE, {54, 55, 56, 0xFF}},    /* (1.0) X_MPROG X_MCCO X_MBRTH */
 #else
     {"MASTER", FAM_GLO, SC_GLOBAL, GR_NONE, {G_DUST, G_DUCK, G_FILT, G_ROLL}},
     {"SYSTEM", FAM_GLO, SC_GLOBAL, GR_NONE, {G_MIDI, G_SYNC, G_ROUTE, G_INFO}},

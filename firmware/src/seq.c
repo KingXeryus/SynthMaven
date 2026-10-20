@@ -87,6 +87,16 @@ static int arp_user_on(const track_t *t)
  * OMNI (every channel plays it, as before), 1..16 that channel only (a KeyStep Pro's other tracks for other gear);
  * midi_out_ch 0..15 the channel its keys, arp and sequencer go out on */
 static uint8_t midi_in_ch, midi_out_ch;
+/* 1.0 (GLO > MIDI, MIDI 2): LOCAL OFF (the keys go out, the sound plays only what comes in: a DAW's echo; CC 122 too),
+ * CC OUT (the knobs send the CCs they would answer to), PROG OFF (program changes ignored). midi_pc_req: a program
+ * change (with its bank, CC 0) for the UI to load: 1 + bank * 128 + program, 0 none. midi_rpn: the RPN selected
+ * (CC 101, 100; 127 none) for the data entry (CC 6): RPN 0, the bend range (voice.c midi_bend) */
+static uint8_t midi_local_off, midi_cc_out, midi_pc_off, midi_bank, midi_rpn[2] = {127, 127};
+/* 1.0 (a comment from an EWI player), GLO > MIDI 2 > EWI: CC 2 (a breath controller) is the volume (as CC 11; 0
+ * silent), 2 V+AT: and the aftertouch too (the MOD page's AT destination, the matrix's AT: the cutoff follows the
+ * breath); 0 OFF: CC 2 ignored */
+static uint8_t midi_breath;
+static volatile uint16_t midi_pc_req;
 static uint32_t trk_midi_ch(uint32_t i)    /* MIDI channel 0..15 of track i (keys -> MIDI out) */
 {
     if (CLIPPER_SYNTH && i == 0u)
@@ -1923,7 +1933,7 @@ static void chord_revoice(uint32_t sel)
                         ft_note_off(n);
                     rec_release(t, n);
                     trk_note_off(t, n);
-                } else {
+                } else if (!midi_local_off) {
                     input_off(t, n);
                 }
                 midi_out_event(0x08u | (0x80u | mc) << 8 | n << 16);
@@ -1934,7 +1944,8 @@ static void chord_revoice(uint32_t sel)
                 ;
             if (i == kb_n[k]) {
                 in_key = (uint8_t)(k + 1u);         /* (a chord's new note: of this key, #191) */
-                input_on(t, nw[j], 100);
+                if (!midi_local_off)
+                    input_on(t, nw[j], 100);
                 in_key = 0;
                 midi_out_event(0x09u | (0x90u | mc) << 8 | (uint32_t)nw[j] << 16 | 100u << 24);
             }
@@ -2049,7 +2060,8 @@ static void key_down(uint32_t k)
             in_chord = kb_n[k] > 1u ? kb_nt[k] : 0;
             in_chord_n = kb_n[k];
             in_chord_i = i;
-            input_on(t, kb_nt[k][i], 100);
+            if (!midi_local_off)                    /* (1.0: LOCAL OFF: the keys only go out) */
+                input_on(t, kb_nt[k][i], 100);
             in_chord = 0;
             midi_out_event(0x09u | (0x90u | mc) << 8 | (uint32_t)kb_nt[k][i] << 16 | 100u << 24);
         }
@@ -2096,7 +2108,8 @@ static void key_up(uint32_t k)
         mc = trk_midi_ch(kb_trk[k] % NTRK);
         for (i = 0; i < kb_n[k]; i++) {
             uint32_t n = kb_nt[k][i];
-            input_off(t, n);
+            if (!midi_local_off)
+                input_off(t, n);
             if (kh_on(t) && kh_has(t, n)) {         /* (0.7) KBD HOLD: its MIDI note-off waits with it */
                 kh_mo[kb_trk[k] % NTRK][(n >> 5) & 3u] |= 1u << (n & 31u);
                 kh_mc[kb_trk[k] % NTRK] = (uint8_t)mc;
@@ -2699,7 +2712,8 @@ static track_t *midi_route(uint32_t ch, uint32_t note, int on)
 #define MCC_CUT 0xFEu                             /* (0.7, after SLOOP 2.7) CC 74: the engine's own cutoff / brightness */
 static const uint8_t MIDI_CC_MAP[][2] = {
     {5, P_GLIDE}, {7, P_LEVEL}, {10, P_PAN}, {71, MCC_RES}, {72, P_REL}, {73, P_ATK}, {74, MCC_CUT}, {75, P_DEC},
-    {91, P_REV}, {93, P_CHOR}, {94, P_DLY},
+    {91, P_REV}, {93, P_CHOR}, {94, P_DLY}, {76, P_LRATE}, {77, P_LD_PIT}, {78, P_LFADE},   /* (1.0: 76..78 the LFO's
+                                                                                     * rate, vibrato depth, delay) */
 };
 /* Clipper: the performance controllers of a part (eng_hybrid.c part_ctl: the matrix's MW, AT, BEND, EXPR):
  * pitch bend (En, every engine: voice.c), channel and polyphonic pressure (Dn, An), and the CCs 1 (mod
@@ -2749,7 +2763,33 @@ static int part_ctl_cc(track_t *t, uint32_t cc, uint32_t value)   /* 1: taken */
     c = &part_ctl[p];
     switch (cc) {
     case 1: c->mw = (uint8_t)value; return 1;
-    case 11: c->expr = (uint8_t)value; return 1;
+    case 11:                                          /* (1.0) expression: the part's volume too (fx.c), as GM */
+        c->expr = (uint8_t)value;
+        c->exoff = (uint8_t)(127u - value);
+        return 1;
+    case 0: midi_bank = (uint8_t)value; return 1;
+    case 2:                                           /* (1.0) breath (GLO > MIDI 2 > EWI) */
+        if (midi_breath)
+            c->exoff = (uint8_t)(127u - value);
+        if (midi_breath > 1u)
+            c->at = (uint8_t)value;
+        return 1;    /* (1.0) bank select, MSB: the next program change's */
+    case 101: case 100: midi_rpn[cc & 1u] = (uint8_t)value; return 1;   /* (1.0) RPN; NRPN: none selected */
+    case 99: case 98: midi_rpn[0] = midi_rpn[1] = 127; return 1;
+    case 6:                                           /* (1.0) data entry: RPN 0, the pitch bend range in semitones */
+        if (!midi_rpn[0] && !midi_rpn[1])
+            midi_bend = (uint8_t)clamp((int32_t)value, 1, 24);
+        return 1;
+    case 120: case 123: case 124: case 125: case 126: case 127:   /* (1.0) all sound / notes off (and the mode
+                                                                 * messages, which mean it too) */
+        panic_req |= 1u << p;
+        return 1;
+    case 121:                                         /* (1.0) reset all controllers */
+        c->bend = 0;
+        c->at = c->mw = c->expr = c->exoff = 0;
+        midi_rpn[0] = midi_rpn[1] = 127;
+        value = 0;                                    /* (and the pedal up) */
+        /* fall through */
     case 64:
         if (value >= 64u) {
             c->sus = 1;
@@ -2771,6 +2811,10 @@ static int part_ctl_cc(track_t *t, uint32_t cc, uint32_t value)   /* 1: taken */
         syn_morph_req = (int16_t)(value & 127u);
         return 1;
 #endif
+    case 122:                                         /* (1.0) local control (GLO > MIDI > LOCAL) */
+        midi_local_off = value < 64u;
+        panic_req |= 1u << p;
+        return 1;
     default:
         return 0;
     }
@@ -2794,18 +2838,17 @@ static uint32_t cc74_slot(const engine_t *e)      /* 0..7, or 8: none */
             return T[i].slot;
     return 8u;
 }
-static void __attribute__((noinline)) midi_cc(track_t *t, uint32_t cc, uint32_t value)
+/* the parameter a mapped CC sets on track t: its range, *slotp its value; 0 none (1.0: shared with CC OUT) */
+static const param_desc_t *__attribute__((noinline)) cc_target(track_t *t, uint32_t cc, int16_t **slotp)
 {
     const param_desc_t *d = 0;
     int16_t *slot = 0;
     uint32_t i, id = 0xFFFFu;
-    if (part_ctl_cc(t, cc, value))
-        return;
     for (i = 0; i < NELEM(MIDI_CC_MAP); i++)
         if (MIDI_CC_MAP[i][0] == cc)
             id = MIDI_CC_MAP[i][1];
     if (id == 0xFFFFu)
-        return;
+        return 0;
     if (id == MCC_CUT) {                               /* (0.7) the engine's cutoff, else the track FILTER */
         uint32_t k = is_drum(t) ? 8u : cc74_slot(ENGINES[t->eng_req % NENGINES]);
         if (k < 8u) {
@@ -2836,10 +2879,49 @@ static void __attribute__((noinline)) midi_cc(track_t *t, uint32_t cc, uint32_t 
         d = &TP[id];
         slot = &t->p[id];
     }
-    if (!d || d->max <= d->min)
-        return;
-    *slot = (int16_t)(d->min + ((int32_t)value * (d->max - d->min) + 63) / 127);
+    *slotp = slot;
+    return d && d->max > d->min ? d : 0;
 }
+static void midi_cc(track_t *t, uint32_t cc, uint32_t value)
+{
+    int16_t *slot;
+    const param_desc_t *d;
+    if (!part_ctl_cc(t, cc, value) && (d = cc_target(t, cc, &slot)) != 0)
+        *slot = (int16_t)(d->min + ((int32_t)value * (d->max - d->min) + 63) / 127);
+}
+#if CLIPPER_SYNTH
+/* 1.0, GLO > MIDI 2 > SEND CC: a knob turned on the instrument's sound sends the CC that sets it (the map above, and
+ * the MACROS' 16..19) on the channel out, when the value it stands for changes: a DAW records the moves and plays them
+ * back. A sound loaded sends nothing; a CC received is not sent back */
+static uint32_t cc_of(const param_desc_t *d, int32_t v) { return (uint32_t)(((v - d->min) * 127 + (d->max - d->min) / 2) / (d->max - d->min)); }
+static void cc_out_knob(const int16_t *vp, int32_t old)
+{
+    track_t *t = &trk[0];
+    uint32_t i, cc, q = 0xFFu, q0 = 0;
+    int16_t *slot;
+    const param_desc_t *d;
+    if (!midi_cc_out || vp < t->p || vp >= t->p + P_COUNT || *vp == old)
+        return;
+    for (i = 0; i < NELEM(MIDI_CC_MAP) + 4u; i++) {
+        if (i >= NELEM(MIDI_CC_MAP)) {                /* the macros: CC 16..19 (part_ctl_cc) */
+            uint32_t m = i - NELEM(MIDI_CC_MAP), hy = t->eng_req == ENGI_HYBRID;
+            cc = 16u + m;
+            if (vp != &t->p[(hy ? P_E4 : P_MAC1) + m])
+                continue;
+            q = (uint32_t)clamp(*vp + (!hy && m < 2u ? 64 : 0), 0, 127);
+            q0 = (uint32_t)clamp(old + (!hy && m < 2u ? 64 : 0), 0, 127);
+        } else {
+            cc = MIDI_CC_MAP[i][0];
+            if ((d = cc_target(t, cc, &slot)) == 0 || slot != vp)
+                continue;
+            q = cc_of(d, *vp);
+            q0 = cc_of(d, old);
+        }
+        if (q != q0)
+            midi_out_event(0x0Bu | (0xB0u | trk_midi_ch(0)) << 8 | cc << 16 | q << 24);
+    }
+}
+#endif
 
 /* MIDI clock in (GLO > SYSTEM > SYNC = USB or TRS; after Felucca 1.0's midi_clock.c, from contributions by
  * ChanceTheMaker and keremimo): 24 pulses a beat. While the clock runs, the sequencer advances by the
@@ -3147,6 +3229,11 @@ static void events_block(uint32_t n)
                 if (mt)
                     part_ctl_event(mt, st, d1, d2);
             }
+            continue;
+        }
+        if (st == 0xC0u) {                            /* (1.0) program change: the UI loads the sound (ui.c pc_poll) */
+            if (!song.g[G_ROUTE] && !midi_pc_off && midi_track(ch) == &trk[0])
+                midi_pc_req = (uint16_t)(1u + ((uint32_t)midi_bank << 7 | d1));
             continue;
         }
         if (st != 0x90u && st != 0x80u)

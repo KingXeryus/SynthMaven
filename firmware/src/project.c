@@ -891,8 +891,10 @@ static void side_fill(side2_t *s)                    /* what the side record hol
     memset(s, 0, sizeof *s);
     r->magic = CLIP_SIDE_MAGIC;
     r->usb_rate = (uint8_t)(usb_rate % 3u);
-    r->clk_out = (uint8_t)(clk_out != 0u);
-    r->flags = (uint8_t)((step_adv_off != 0u) | (midi_out_ch & 15u) << 1);
+    r->clk_out = (uint8_t)((clk_out != 0u) | (midi_bend % 25u) << 1 | (midi_breath % 3u) << 6);   /* (1.0: bits 1..5
+                                                                                            * the bend range, 6..7 EWI) */
+    r->flags = (uint8_t)((step_adv_off != 0u) | (midi_out_ch & 15u) << 1 | (midi_local_off != 0u) << 5 |
+                         (midi_cc_out != 0u) << 6 | (midi_pc_off != 0u) << 7);
     r->mch = (uint8_t)(midi_in_ch % 17u);
     memcpy(r->fav, fav, sizeof fav);
     r->crc = st_crc32(r, sizeof *r - 4u);
@@ -908,7 +910,12 @@ static void side_take(const side2_t *s)              /* a side record read back:
     if (r->magic == CLIP_SIDE_MAGIC && r->crc == st_crc32(r, sizeof *r - 4u)) {
         usb_rate = (uint8_t)(r->usb_rate % 3u);
         clk_out = (uint8_t)(r->clk_out & 1u);
+        midi_bend = (uint8_t)(((r->clk_out >> 1) & 31u) % 25u);
+        midi_breath = (uint8_t)((r->clk_out >> 6) % 3u);
         step_adv_off = (uint8_t)(r->flags & 1u);
+        midi_local_off = (uint8_t)((r->flags >> 5) & 1u);
+        midi_cc_out = (uint8_t)((r->flags >> 6) & 1u);
+        midi_pc_off = (uint8_t)(r->flags >> 7);
         midi_out_ch = (uint8_t)((r->flags >> 1) & 15u);
         midi_in_ch = (uint8_t)(r->mch <= 16u ? r->mch : 0u);
         memcpy(fav, r->fav, sizeof fav);

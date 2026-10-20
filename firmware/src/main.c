@@ -300,6 +300,13 @@ static void fm1_main(void)
 #if FELUCCA_OTA
         ed_service();                                   /* web editor SysEx */
         ota_service();                                  /* M-UPGRADE handshake */
+        if (usb.id_req) {                               /* (Clipper 1.0) MIDI identity reply: 7D (non-commercial),
+                                                         * family "CL", model "F1", version 1.0 */
+            static const uint8_t ID[15] = {0xF0, 0x7E, 0x7F, 0x06, 0x02, 0x7D, 0x43, 0x4C, 0x46, 0x31,
+                                           1, 0, 0, 0, 0xF7};
+            usb.id_req = 0;
+            ota_wire_send(ID, sizeof ID);
+        }
         if (usb.ota_req) {                              /* M-UPGRADE upgrade command */
             usb.ota_req = 0;
             panic_req = (1u << NTRK) - 1u;               /* every track (bit per track) */

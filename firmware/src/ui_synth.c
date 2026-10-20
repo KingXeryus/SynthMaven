@@ -21,6 +21,8 @@ enum { X_LYMODE, X_LYSOUND, X_LYSPLIT, X_LYLEVEL, X_LYOCT, X_LYPAN, X_LYFILT, X_
        X_TSYS, X_TROOT,                                /* 0.9: the TUNING (voice.c tune_cfg; kept with the settings) */
        X_TA4,                                          /* 1.0: its reference A4 in Hz */
        X_MIN, X_MOUT,                                  /* 1.0: GLO > MIDI, the instrument's channels (seq.c midi_in_ch) */
+       X_MBEND, X_MLOCAL, X_MPROG, X_MCCO,             /* 1.0: the bend range (voice.c midi_bend), LOCAL, PROG, CC OUT */
+       X_MBRTH,                                        /* 1.0: EWI (seq.c midi_breath) */
        X_COUNT };
 static void mseq_fill(struct track *t, uint32_t l, uint32_t f);
 static const char *const N_QFILL[] = {"--", "RAMP+", "RAMP-", "TRI", "SINE", "SQR", "RND", "FLAT", "INVRT", "SHIFT"};
@@ -39,7 +41,11 @@ _Static_assert(X_FOP == 19 && X_FSTORE == 40 && X_HPOS == 41 && X_QLANE == 43 &&
 static const char *const N_CMP[] = {"EDIT", "ORIG"};
 static const char *const N_MIN_CH[17] = {"OMNI", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
                                          "15", "16"};
-_Static_assert(X_MIN == 50 && X_MOUT == 51, "params.c PAGES: MIDI's ids");
+static const char *const N_MBEND[25] = {"AUTO", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13",
+                                        "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"};
+static const char *const N_MCCO[] = {"OFF", "CC"};   /* (5 characters a value: "IN+OUT" did not fit) */
+static const char *const N_MBRTH[] = {"OFF", "VOL", "V+AT"};
+_Static_assert(X_MIN == 50 && X_MOUT == 51 && X_MBEND == 52 && X_MCCO == 55 && X_MBRTH == 56, "params.c PAGES: MIDI's ids");
 static param_desc_t xd_sound = {"SOUND", F_INT, 0, 0, 0, 0, 0};   /* (its range: the list's length, syn_desc) */
 static const param_desc_t XD[X_COUNT] = {
     [X_LYMODE] = PE("MODE", N_LYMODE, LY_OFF),
@@ -87,6 +93,11 @@ static const param_desc_t XD[X_COUNT] = {
     [X_TA4] = {"A4", F_INT, 400, 480, 440, 0, "Hz"},
     [X_MIN] = PE("IN CH", N_MIN_CH, 0),
     [X_MOUT] = PD("OUT", F_INT, 1, 16, 1),          /* (the channel out: "OUT CH" does not fit the column) */
+    [X_MBEND] = PE("BEND", N_MBEND, 0),
+    [X_MLOCAL] = PE("LOCAL", N_ONOFF, 1),
+    [X_MPROG] = PE("PROG", N_ONOFF, 1),
+    [X_MCCO] = PE("SEND", N_MCCO, 0),
+    [X_MBRTH] = PE("EWI", N_MBRTH, 0),       /* (a breath controller, CC 2) */
     [X_FSTORE] = PE("STORE", N_GO, 0),
     [X_HPOS] = PD("UNDO", F_INT, -16, 0, 0),
     [X_HCMP] = PE("CMP", N_CMP, 0),
@@ -583,6 +594,11 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
     case X_TA4: xv[X_TA4] = (int16_t)(440 + clamp(tune_cfg.a4, -40, 40)); *valp = &xv[X_TA4]; break;
     case X_MIN: xv[X_MIN] = (int16_t)(midi_in_ch % 17u); *valp = &xv[X_MIN]; break;
     case X_MOUT: xv[X_MOUT] = (int16_t)(1 + (midi_out_ch & 15u)); *valp = &xv[X_MOUT]; break;
+    case X_MBEND: xv[X_MBEND] = (int16_t)(midi_bend % 25u); *valp = &xv[X_MBEND]; break;
+    case X_MLOCAL: xv[X_MLOCAL] = !midi_local_off; *valp = &xv[X_MLOCAL]; break;
+    case X_MPROG: xv[X_MPROG] = !midi_pc_off; *valp = &xv[X_MPROG]; break;
+    case X_MCCO: xv[X_MCCO] = midi_cc_out != 0u; *valp = &xv[X_MCCO]; break;
+    case X_MBRTH: xv[X_MBRTH] = (int16_t)(midi_breath % 3u); *valp = &xv[X_MBRTH]; break;
     case X_QVAL:                                      /* (0.8) the selected step of the selected lane */
         xv[X_QVAL] = TSEL->ms[clamp(xv[X_QLANE], 1, 4) - 1][clamp(xv[X_QSTEP], 1, 16) - 1];
         *valp = &xv[X_QVAL];
@@ -731,6 +747,28 @@ static void syn_changed(uint32_t id, int16_t *vp)
         }
         settings_later = 1;
         break;
+    case X_MBEND:                                     /* (1.0) GLO > MIDI, MIDI 2: kept with the settings */
+        midi_bend = (uint8_t)clamp(*vp, 0, 24);
+        settings_later = 1;
+        break;
+    case X_MLOCAL:
+        midi_local_off = !*vp;
+        panic_req |= 1u;                              /* (a key held: none stuck) */
+        settings_later = 1;
+        break;
+    case X_MPROG:
+        midi_pc_off = !*vp;
+        settings_later = 1;
+        break;
+    case X_MCCO:
+        midi_cc_out = *vp != 0;
+        settings_later = 1;
+        break;
+    case X_MBRTH:
+        midi_breath = (uint8_t)clamp(*vp, 0, 2);
+        part_ctl[0].exoff = 0;                        /* (full until the first breath; OFF: no cut left behind) */
+        settings_later = 1;
+        break;
     case X_QFILL:
         mseq_fill(TSEL, (uint32_t)clamp(xv[X_QLANE], 1, 4) - 1u, (uint32_t)clamp(*vp, 0, QF_N - 1));
         ui.force = 1;
@@ -834,6 +872,15 @@ static void syn_tick(void)
 {
     hist_poll();                                      /* (0.7) the sound's history */
     int16_t r = syn_morph_req;
+    uint32_t pc = midi_pc_req, total, b[FAV_N];
+    if (pc) {                                         /* (1.0) a MIDI program change (bank: CC 0): the sound at that
+                                                       * place in the PRESETS list (no favourites: the factory sounds
+                                                       * in order, then the user presets) */
+        midi_pc_req = 0;
+        base_pos(&total);
+        if (pc - 1u < total)
+            preset_go(fav_list(b) + pc - 1u);
+    }
     if (r >= 0) {
         syn_morph_req = -1;
         xv[X_MORPH] = r;
