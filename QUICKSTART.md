@@ -1,10 +1,10 @@
-# Clipper — quick start (1.0, experimental)
+# Clipper — quick start (1.1, experimental)
 
 **Clipper** is a **synthesizer** firmware for the M-VAVE FM-1: one instrument, like the original firmware, Felucca or Baudgirl's FM-1+VA. It is not a groovebox: no tracks, no drum machine, no song mode, no built-in samples. It keeps SLOOP's engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID** (three oscillators, two filters, a 16-slot matrix) and many more engines. Pitch bend, mod wheel, aftertouch and the sustain pedal work on every engine. *(En français : [DEMARRAGE-RAPIDE-FR.md](DEMARRAGE-RAPIDE-FR.md).)*
 
-> **Version 1.0, EXPERIMENTAL.** This is an early, experimental release, and there is still a huge amount of work to do (see [What is left to do](README.md#what-is-left-to-do)). It passes its whole test suite on a computer, but it has run very little on a real FM-1: expect rough edges. **Before installing, make a backup** with the editor (Clipper's or SLOOP's, whichever is installed): the Backup tab (Projects → Backup in SLOOP or an older version) → *Save a backup*.
+> **Version 1.1, EXPERIMENTAL.** This is an early, experimental release, and there is still a huge amount of work to do (see [What is left to do](README.md#what-is-left-to-do)). It passes its whole test suite on a computer, but it has run very little on a real FM-1: expect rough edges. **Before installing, make a backup** with the editor (Clipper's or SLOOP's, whichever is installed): the Backup tab (Projects → Backup in SLOOP or an older version) → *Save a backup*.
 
-On the FM-1, Clipper shows its boot screen (**1.0 EXPERIMENTAL** under the logo), and HOME (held) → SYS → ABOUT reads **CLIPPER 1.0 EXP**.
+On the FM-1, Clipper shows its boot screen (**1.1 EXPERIMENTAL** under the logo), and HOME (held) → SYS → ABOUT reads **CLIPPER 1.1 EXP**.
 
 ## 1. Install
 
@@ -68,7 +68,7 @@ Please report the numbers (with and without 2ND CORE) in the [Issues](https://gi
 
 ## A noise on one side?
 
-Some players hear a crackle or a noise on the left channel, with the reverb on and on some sounds, that the original firmware does not have. Found and fixed in 1.0: **PLATE, HALL and SHIMMER** (FX > REVERB > TYPE) read one of their left taps outside its delay line, a crackle on the left only; and with REVERB > DAMP turned down and a loud sound, ROOM overflowed into a crackle that went on after the notes. 1.0 also moves the reverb's memory. The sound Clipper computes is otherwise clean on both sides (every factory sound checked, with every effect at full). If you still hear it, these tell us where it comes from (a reply on GitHub or YouTube with the answers helps a lot):
+Some players hear a crackle or a noise on the left channel, with the reverb on and on some sounds, that the original firmware does not have. Found and fixed in 1.1: **PLATE, HALL and SHIMMER** (FX > REVERB > TYPE) read one of their left taps outside its delay line, a crackle on the left only; and with REVERB > DAMP turned down and a loud sound, ROOM overflowed into a crackle that went on after the notes. 1.1 also moves the reverb's memory. The sound Clipper computes is otherwise clean on both sides (every factory sound checked, with every effect at full). If you still hear it, these tell us where it comes from (a reply on GitHub or YouTube with the answers helps a lot):
 1. FX > FX: REV at 0. Does the noise stop? FX > REVERB > TYPE ROOM, then PLATE: on both?
 2. Leave HOME for a still page (GLO > TUNING): does the noise change?
 3. GLO > SYSTEM, the last column (CPU, then LATE, then PEAK, in turn): does LATE go up while you hear it?

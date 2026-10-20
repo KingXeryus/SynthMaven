@@ -1,4 +1,4 @@
-# Clipper 1.0 : l'implémentation MIDI
+# Clipper 1.1 : l'implémentation MIDI
 
 Clipper est fait pour être joué depuis un clavier MIDI, un contrôleur, un séquenceur ou un DAW autant que depuis ses propres touches. Voici tout ce qu'il reçoit et tout ce qu'il envoie, en USB comme sur le jack TRS. *(In English: [midi.md](midi.md).)*
 
@@ -50,7 +50,7 @@ GLO > SYSTEM garde le reste : **MIDI** (ce qui sort : les touches seules, ou aus
 | **CC 123** | All notes off (124..127, les messages de mode, aussi). |
 | Horloge, start, continue, stop | Avec GLO > SYSTEM > SYNC = USB ou TRS : le séquenceur, l'arpégiateur et le delay suivent le tempo, le départ et l'arrêt du maître. |
 | MPE | MENU > SYSTEM > MPE : le bend, la pression et le CC 74 propres à chaque note sur les canaux 2..16. |
-| **Identity request** | `F0 7E 7F 06 01 F7` (n'importe quel device ID) : Clipper répond `F0 7E 7F 06 02 7D 43 4C 46 31 01 00 00 00 F7` (7D, non commercial ; famille « CL », modèle « F1 », version 1.0). |
+| **Identity request** | `F0 7E 7F 06 01 F7` (n'importe quel device ID) : Clipper répond `F0 7E 7F 06 02 7D 43 4C 46 31 01 01 00 00 F7` (7D, non commercial ; famille « CL », modèle « F1 », version 1.1). |
 | SysEx | Les commandes de l'éditeur web et de la mise à jour. |
 
 Un CC règle sa valeur comme le ferait le knob : 0..127 sur toute la plage, 64 au milieu d'une valeur bipolaire.
