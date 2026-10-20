@@ -83,8 +83,14 @@ static int arp_user_on(const track_t *t)
     return t->p[P_AMODE] != 0 && t->p[P_AMODE] != arp_snd[trk_index(t) % NTRK];
 }
 
+/* Clipper 1.0 (GLO > MIDI): the instrument's MIDI channels, settings of the FM-1 (project.c side record). midi_in_ch 0
+ * OMNI (every channel plays it, as before), 1..16 that channel only (a KeyStep Pro's other tracks for other gear);
+ * midi_out_ch 0..15 the channel its keys, arp and sequencer go out on */
+static uint8_t midi_in_ch, midi_out_ch;
 static uint32_t trk_midi_ch(uint32_t i)    /* MIDI channel 0..15 of track i (keys -> MIDI out) */
 {
+    if (CLIPPER_SYNTH && i == 0u)
+        return midi_out_ch & 15u;
     if (i < NPART)
         return i;
     return song.g[G_DRCH] ? (uint32_t)song.g[G_DRCH] - 1u : 9u;
@@ -2654,7 +2660,9 @@ static track_t *midi_track(uint32_t ch)
 #if CLIPPER_SYNTH
     if (layer_multi() && ch + 1u == layer_ch())
         return &trk[1];                               /* 0.6, MULTI: the layer's own channel */
-    return &trk[0];                                   /* Clipper: the instrument, on every channel (omni) */
+    if (midi_in_ch && !mpe_mode && ch + 1u != midi_in_ch)
+        return 0;                                     /* (1.0, GLO > MIDI > IN CH: another channel; MPE uses them all) */
+    return &trk[0];                                   /* Clipper: the instrument, on every channel (OMNI) or its own */
 #endif
     if (song.g[G_DRCH] && ch + 1u == (uint32_t)song.g[G_DRCH])
         return TDRUM;
@@ -3126,13 +3134,19 @@ static void events_block(uint32_t n)
         }
 #endif
         if (st == 0xB0u) {                            /* a CC (IN = CLOCK: none) */
-            if (!song.g[G_ROUTE])
-                midi_cc(midi_track(ch), d1, d2);
+            if (!song.g[G_ROUTE]) {
+                track_t *mt = midi_track(ch);
+                if (mt)                               /* (1.0: none: a channel IN CH does not take) */
+                    midi_cc(mt, d1, d2);
+            }
             continue;
         }
         if (st == 0xE0u || st == 0xD0u || st == 0xA0u) {   /* Clipper: bend, pressure (IN = CLOCK: none) */
-            if (!song.g[G_ROUTE])
-                part_ctl_event(midi_track(ch), st, d1, d2);
+            if (!song.g[G_ROUTE]) {
+                track_t *mt = midi_track(ch);
+                if (mt)
+                    part_ctl_event(mt, st, d1, d2);
+            }
             continue;
         }
         if (st != 0x90u && st != 0x80u)
@@ -3141,6 +3155,8 @@ static void events_block(uint32_t n)
             continue;                                 /* GLO > SYSTEM > IN = CLOCK: no notes (the note-offs still
                                                        * end what was held when it was set) */
         t = midi_route(ch, d1, st == 0x90u && d2);
+        if (!t)
+            continue;                                 /* (Clipper 1.0: a channel GLO > MIDI > IN CH does not take) */
         if (is_drum(t)) {
             if (st == 0x90u && d2)
                 drum_input(lane_of_note(d1), vel_lvl(d2), 0, 1);

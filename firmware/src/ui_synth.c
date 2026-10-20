@@ -20,6 +20,7 @@ enum { X_LYMODE, X_LYSOUND, X_LYSPLIT, X_LYLEVEL, X_LYOCT, X_LYPAN, X_LYFILT, X_
        X_QLANE, X_QSTEP, X_QVAL, X_QFILL,              /* 0.8: the MOD SEQ: the lane, the step, its value, a SHAPE */
        X_TSYS, X_TROOT,                                /* 0.9: the TUNING (voice.c tune_cfg; kept with the settings) */
        X_TA4,                                          /* 1.0: its reference A4 in Hz */
+       X_MIN, X_MOUT,                                  /* 1.0: GLO > MIDI, the instrument's channels (seq.c midi_in_ch) */
        X_COUNT };
 static void mseq_fill(struct track *t, uint32_t l, uint32_t f);
 static const char *const N_QFILL[] = {"--", "RAMP+", "RAMP-", "TRI", "SINE", "SQR", "RND", "FLAT", "INVRT", "SHIFT"};
@@ -36,6 +37,9 @@ static const char *const N_FFIXC[4] = {"1Hz", "10Hz", "100Hz", "1kHz"};
 _Static_assert(X_FOP == 19 && X_FSTORE == 40 && X_HPOS == 41 && X_QLANE == 43 && X_TSYS == 47 && QF_N == NELEM(N_QFILL),
                "params.c PAGES: FMX's ids, UNDO's, MOD SEQ's");
 static const char *const N_CMP[] = {"EDIT", "ORIG"};
+static const char *const N_MIN_CH[17] = {"OMNI", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
+                                         "15", "16"};
+_Static_assert(X_MIN == 50 && X_MOUT == 51, "params.c PAGES: MIDI's ids");
 static param_desc_t xd_sound = {"SOUND", F_INT, 0, 0, 0, 0, 0};   /* (its range: the list's length, syn_desc) */
 static const param_desc_t XD[X_COUNT] = {
     [X_LYMODE] = PE("MODE", N_LYMODE, LY_OFF),
@@ -81,6 +85,8 @@ static const param_desc_t XD[X_COUNT] = {
     [X_TSYS] = PE("TUNE", N_TUNE, 0),
     [X_TROOT] = PE("ROOT", N_NOTE, 0),
     [X_TA4] = {"A4", F_INT, 400, 480, 440, 0, "Hz"},
+    [X_MIN] = PE("IN CH", N_MIN_CH, 0),
+    [X_MOUT] = PD("OUT", F_INT, 1, 16, 1),          /* (the channel out: "OUT CH" does not fit the column) */
     [X_FSTORE] = PE("STORE", N_GO, 0),
     [X_HPOS] = PD("UNDO", F_INT, -16, 0, 0),
     [X_HCMP] = PE("CMP", N_CMP, 0),
@@ -575,6 +581,8 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
     case X_TSYS: xv[X_TSYS] = (int16_t)(tune_cfg.sys % TU_N); *valp = &xv[X_TSYS]; break;
     case X_TROOT: xv[X_TROOT] = (int16_t)(tune_cfg.root % 12u); *valp = &xv[X_TROOT]; break;
     case X_TA4: xv[X_TA4] = (int16_t)(440 + clamp(tune_cfg.a4, -40, 40)); *valp = &xv[X_TA4]; break;
+    case X_MIN: xv[X_MIN] = (int16_t)(midi_in_ch % 17u); *valp = &xv[X_MIN]; break;
+    case X_MOUT: xv[X_MOUT] = (int16_t)(1 + (midi_out_ch & 15u)); *valp = &xv[X_MOUT]; break;
     case X_QVAL:                                      /* (0.8) the selected step of the selected lane */
         xv[X_QVAL] = TSEL->ms[clamp(xv[X_QLANE], 1, 4) - 1][clamp(xv[X_QSTEP], 1, 16) - 1];
         *valp = &xv[X_QVAL];
@@ -711,6 +719,16 @@ static void syn_changed(uint32_t id, int16_t *vp)
         else
             tune_cfg.a4 = (int8_t)clamp(*vp - 440, -40, 40);
         tune_build();
+        settings_later = 1;
+        break;
+    case X_MIN:                                       /* (1.0) GLO > MIDI: the instrument's channels, kept with the settings */
+    case X_MOUT:
+        if (id == X_MIN) {
+            midi_in_ch = (uint8_t)clamp(*vp, 0, 16);
+            panic_req |= 1u;                          /* (notes held on the old channel(s): none stuck) */
+        } else {
+            midi_out_ch = (uint8_t)(clamp(*vp, 1, 16) - 1);
+        }
         settings_later = 1;
         break;
     case X_QFILL:

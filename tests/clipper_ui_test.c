@@ -145,6 +145,44 @@ int main(int argc, char **argv)
         check(ch == 0, "the note-offs on every channel let them all go");
     }
 
+    /* 1.0 (a comment from a KeyStep Pro user): GLO > MIDI, IN CH (OMNI or one channel) and OUT CH */
+    {
+        uint32_t pg, ch, i2, n1, n3, ok;
+        for (pg = 0; pg < NPAGES && strcmp(PAGES[pg].title, "MIDI"); pg++)
+            ;
+        check(pg < NPAGES && PAGES[pg].fam == FAM_GLO && midi_in_ch == 0u, "GLO > MIDI: a page; IN CH OMNI by default");
+        go_home(); frames(2);
+        while (strcmp(cur_page()->title, "MIDI")) { open_family(FAM_GLO); frame(); }
+        encs[panel.enc[EN_K1]] = 1; frame(); encs[panel.enc[EN_K1]] = 1; frame(); encs[panel.enc[EN_K1]] = 1; frame();
+        ui.force = 1; frame(); ppm("clipper-midi");
+        ok = midi_in_ch == 3u;
+        midi_in(0x90u, 60, 100); frames(2);
+        n1 = voices_part(0);
+        midi_in(0x80u, 60, 0); midi_in(0xB0u, 7, 0); frames(2);       /* (a CC on channel 1: not ours either) */
+        ok &= trk[0].p[P_LEVEL] != 0;
+        midi_in(0x92u, 62, 100); frames(2);
+        n3 = voices_part(0);
+        midi_in(0x82u, 62, 0); frames(60);
+        check(ok && n1 == 0u && n3 >= 1u, "GLO > MIDI > IN CH 3: channel 3 plays the instrument, channel 1 (notes, CCs) does not");
+        for (i2 = 0, ch = 0; i2 < NVOICE; i2++) ch += trk[0].v[i2].gate;
+        check(ch == 0u, "IN CH 3: its note-offs let the notes go");
+        usb.config = 1;                               /* (MIDI out goes to a configured USB host) */
+        mo_r = mo_w;
+        encs[panel.enc[EN_K2]] = 1; frame(); encs[panel.enc[EN_K2]] = 1; frame();
+        ok = midi_out_ch == 2u;
+        key(9); frames(2);
+        for (ch = 16; mo_r != mo_w; mo_r++)
+            if (((midi_out_q[mo_r % MQ] >> 8) & 0xF0u) == 0x90u)
+                ch = (midi_out_q[mo_r % MQ] >> 8) & 15u;
+        usb.config = 0;
+        check(ok && ch == 2u, "GLO > MIDI > OUT CH 3: the keys go out on channel 3");
+        encs[panel.enc[EN_K1]] = -5; frame(); encs[panel.enc[EN_K2]] = -5; frame();
+        frames(4);
+        midi_in(0x95u, 64, 100); frames(2);
+        check(midi_in_ch == 0u && midi_out_ch == 0u && voices_part(0) >= 1u, "IN CH back to OMNI, OUT CH 1: every channel again");
+        midi_in(0x85u, 64, 0); frames(60);
+        go_home(); frames(2);
+    }
     /* the buttons with no layer: held, the keys play; their pages on release */
     {
         static const struct { uint32_t b, fam; const char *n; } B[] = {{B_FX, FAM_FX, "FX"}, {B_SAVE, FAM_SAVE, "SAVE"}};
