@@ -397,6 +397,47 @@ int main(int argc, char **argv)
             rev_line[k] = 0;
         fx.line_lp[0] = fx.line_lp[1] = fx.line_lp[2] = fx.line_lp[3] = 0;
     }
+    /* 1.0 (a comment: ROOM is fine, PLATE / HALL / SHIMMER crackle): the plate's left output read its AA diffuser
+     * 1417 samples back on a 1334-sample line (out of it: a click every turn, left only). A sine through each type:
+     * the left as smooth as the right, no click (the largest second difference within 12 x its rms) */
+    {
+        static int32_t ci[CTL], di[CTL], ri[CTL], wl[CTL], wr[CTL];
+        int16_t keep = song.g[G_RTYPE];
+        uint32_t rt, b, k, ok = 1;
+        char what[160];
+        for (rt = RT_ROOM; rt <= RT_SHIMMER; rt++) {
+            double sl = 0, sr = 0;
+            int32_t ml = 0, mr = 0, pl0 = 0, pl1 = 0, pr0 = 0, pr1 = 0;
+            uint32_t cnt = 0;
+            song.g[G_RTYPE] = (int16_t)rt;
+            for (b = 0; b < 2400u; b++) {
+                for (k = 0; k < CTL; k++) {
+                    ci[k] = di[k] = 0;
+                    ri[k] = (int32_t)(20000.0 * sin(2.0 * M_PI * 440.0 * (b * CTL + k) / 44100.0));
+                }
+                fx_buses(ci, di, ri, wl, wr, CTL);
+                for (k = 0; k < CTL; k++) {
+                    int32_t a = wl[k] - 2 * pl1 + pl0, c = wr[k] - 2 * pr1 + pr0;
+                    pl0 = pl1, pl1 = wl[k], pr0 = pr1, pr1 = wr[k];
+                    if (b < 1400u)                    /* (the fade from the last type, the tank filling) */
+                        continue;
+                    sl += (double)a * a, sr += (double)c * c, cnt++;
+                    ml = abs(a) > ml ? abs(a) : ml, mr = abs(c) > mr ? abs(c) : mr;
+                }
+            }
+            sl = sqrt(sl / cnt), sr = sqrt(sr / cnt);
+            ok &= ml < 12.0 * sl && mr < 12.0 * sr && sl < 2.5 * sr && sr < 2.5 * sl;
+            if (!(ml < 12.0 * sl && mr < 12.0 * sr && sl < 2.5 * sr && sr < 2.5 * sl))
+                printf("  reverb type %u: left %.1f x (rms %.0f), right %.1f x (rms %.0f)\n", rt, ml / sl, sl, mr / sr, sr);
+        }
+        snprintf(what, sizeof what, "a sine through ROOM, PLATE, HALL, SHIMMER: no click, the left as smooth as the right");
+        check(ok, what);
+        song.g[G_RTYPE] = keep;
+        for (b = 0; b < 400u; b++) {
+            for (k = 0; k < CTL; k++) ci[k] = di[k] = ri[k] = 0;
+            fx_buses(ci, di, ri, wl, wr, CTL);
+        }
+    }
     /* the buttons with no layer: held, the keys play; their pages on release */
     {
         static const struct { uint32_t b, fam; const char *n; } B[] = {{B_FX, FAM_FX, "FX"}, {B_SAVE, FAM_SAVE, "SAVE"}};
