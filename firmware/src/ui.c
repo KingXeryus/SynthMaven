@@ -522,6 +522,9 @@ static void apply_preset_to(track_t *t, uint32_t pi)
             ka[i] = t->p[P_AMODE + i];
         for (i = 0; i < 4u; i++) {
             t->p[P_DIST + i] = (int16_t)(pr->fx[i] ? pr->fx[i] - 1 : FX_DEF[i]);
+            if (CLIPPER_SYNTH && (P_DIST + i == P_DLY || P_DIST + i == P_REV))
+                t->p[P_DIST + i] = 0;                /* (1.0, asked by users: the factory sounds dry, no delay and no
+                                                      * reverb until FX > DLY / REV or the SPACE macro adds them) */
             t->p[P_AMODE + i] = (int16_t)(pr->arp[i] ? pr->arp[i] - 1 : TP[P_AMODE + i].def);
         }
         preset_extras(t->p, pr);                     /* glide, pitch / LFO modulation, voice mode */

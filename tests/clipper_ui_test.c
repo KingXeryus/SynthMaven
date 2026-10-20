@@ -145,6 +145,17 @@ int main(int argc, char **argv)
         check(ch == 0, "the note-offs on every channel let them all go");
     }
 
+    /* 1.0 (asked by users): every factory sound loads dry: no delay, no reverb (the FX page and SPACE add them) */
+    {
+        uint32_t e, p, wet = 0, n = 0;
+        for (e = 0; e < NENGINES; e++)
+            for (p = 0; p < ENGINES[e]->npresets; p++, n++) {
+                set_engine_of(TSEL, e); apply_preset_to(TSEL, p);
+                wet += TSEL->p[P_DLY] != 0 || TSEL->p[P_REV] != 0;
+            }
+        set_engine_of(TSEL, ENGI_HYBRID); apply_preset_to(TSEL, 0); frames(3);
+        check(n > 300u && !wet, "every factory sound loads with DLY 0 and REV 0 (dry by default)");
+    }
     /* 1.0 (a comment: a noise on the left SLOOP has not): HOME redraws its scope only while it moves; SCOPE OFF never */
     {
         uint32_t f, ch_idle = 0, ch_play = 0, ch_off = 0, sig;
