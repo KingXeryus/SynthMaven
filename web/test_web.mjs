@@ -485,6 +485,11 @@ async function editorV9() {
   const roland = F.parseSysex(Uint8Array.from([0xF0, 0x41, 0x10, 0x42, 0x12, 0x40, 0x00, 0x7F, 0x00, 0x41, 0xF7]));
   ok(!roland.voices.length && roland.kinds[0] === "maker:41", "v9: another maker's SysEx: its ID");
   ok(!F.parseSysex(Uint8Array.from([1, 2, 3])).sysex, "v9: not SysEx at all: said so");
+  const rom = F.parseSysex(new Uint8Array(readFileSync(join(HERE, "../assets/fm6/ROM1A.syx"))));
+  const arab = F.parseSysex(new Uint8Array(readFileSync(join(HERE, "../assets/fm6/ARABESC.syx"))));
+  const stock = [...rom.voices, ...arab.voices];
+  ok(stock.length === 33 && F.FACTORY_PK.length === 41 && stock.every((x, i) => eq(F.pack(x.v), F.FACTORY_PK[8 + i])),
+    "SynthMaven: all 33 supplied DX7 voices match editor factory data exactly");
   /* the device: FM6_LIST / GET / PUT / ERASE */
   const { m, rq, done } = attachMock({});
   const info = E.parse[C.INFO](await rq(E.req.info()));
@@ -1232,7 +1237,7 @@ async function editorCart() {
   L = E.parse[C.FM6_LIST](await rq(E.req.fm6List()));
   let tooMany = "";
   try { await E.fm6CartWrite(rq, pb.voices.map((x) => F.pack(x.v))); } catch (e) { tooMany = e.message; }
-  ok(rAll === 0 && L.slots.slice(8).every((x, k) => x.used && x.name.trim() === `CART ${k + 1}`) && /32 voices/.test(tooMany),
+  ok(rAll === 0 && L.slots.slice(L.factory).every((x, k) => x.used && x.name.trim() === `CART ${k + 1}`) && /32 voices/.test(tooMany),
     "cart: the first 27 of a 32-voice cartridge fill B1-B27; 32 at once refused");
   const info = E.parse[C.INFO](await rq(E.req.info()));
   const A = await E.backupCapture(rq, info);

@@ -13,3 +13,12 @@ context.rq=async()=>[0];await assert.rejects(()=>context.request(100),/Invalid/)
 context.dev.info.version='FELUCCA 1.0';await assert.rejects(()=>context.request(100),/required/);
 for(const id of ['sm-patch-enabled','sm-patch-port','sm-key-port','sm-bt','sm-pair','sm-patch-cards']) assert(html.includes('id="'+id+'"'));
 console.log('SynthMaven web: wire requests, capabilities, unavailable BLE, legacy refusal, controls PASS');
+
+const mapping = html.match(/function fm6ListToPtch[^\n]+/)[0] + '\n' + html.match(/function fm6PtchToList[^\n]+/)[0];
+vm.runInContext(mapping + ';this.toPtch=fm6ListToPtch;this.toList=fm6PtchToList',context);
+for(let i=0;i<68;i++) assert.equal(context.toList(context.toPtch(i,41),41),i);
+assert.equal(context.toPtch(41,41),8);
+assert.equal(context.toPtch(67,41),34);
+assert.equal(context.toPtch(8,41),35);
+assert.equal(context.toPtch(40,41),67);
+console.log('SynthMaven stock mappings: 41 factory / 27 bank, stable old PTCH IDs PASS');
