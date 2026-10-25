@@ -32,3 +32,13 @@ uses 580568 of 581564 bytes of app flash (996 bytes spare), static RAM uses
 checks. The compiler used the existing -Oz fallback without dropping engines.
 These are build and host-test results; physical Chocolate pairing and audio
 validation remain outstanding.
+
+## Native 1.0 target validation
+
+[Actions run 40243655940](https://github.com/KingXeryus/SynthMaven/actions/runs/40243655940)
+built the version-1.0 firmware with all 23 engines and 537 factory presets,
+including 88 melodic Oriental sounds. The image uses 580504/581564 bytes of app
+flash (1060 bytes spare), 92132/98304 bytes of static RAM, 24832/25672 bytes of
+low SRAM, and 329008/344064 bytes of pool. The package is 610045 bytes. All
+enforced bounds and host/editor checks pass. The full web regression also
+passes locally. Physical pairing and audio validation remain outstanding.

@@ -1,4 +1,4 @@
-# SynthMaven 1.1: MIDI implementation
+# SynthMaven 1.0: MIDI implementation
 
 SynthMaven is meant to be played from a MIDI keyboard, a controller, a sequencer or a DAW as much as from its own keys. This is everything it answers to and everything it sends, over USB and the TRS jack alike. *(En français : [midi-fr.md](midi-fr.md).)*
 
@@ -17,6 +17,14 @@ They are settings of the FM-1: they stay after a power-off, whatever sound is lo
 | MIDI 2 | **EWI** | OFF, VOL, V+AT | For a breath controller (an EWI, a TEC, a Yamaha BC with an adapter) sending CC 2. VOL: the breath is the volume (0 silent, 127 as set). V+AT: the aftertouch too, so the MOD page's AT destination (CUT: the filter opens as you blow; VIB, WAH, TREM) and the matrix's AT source follow it. OFF (the default): CC 2 does nothing. Set the sound's VOICE to MONO or LEGATO, with a little GLIDE. |
 
 GLO > SYSTEM keeps the rest: **MIDI** (what goes out: the keys only, or the sequencer and arp too), **SYNC** (the clock: internal, USB, TRS), **IN** (NOTES, or CLOCK: the notes ignored). MENU > MIDI has **CLOCK OUT**. MENU > SYSTEM has **MPE**.
+
+## Patch and keyboard input routing
+
+GLO → PATCH MIDI independently enables program switching and chooses USB, BLE
+or ANY. GLO → KEY MIDI chooses USB, TRS or BOTH for notes and performance
+controllers. For stable user slots, send CC0=127 then Program Change 0 for U01,
+1 for U02, etc. Empty slots do not change the sound. USB is device mode and
+requires a MIDI host. See the [user manual](USER_MANUAL.md) for setup.
 
 ## Received
 
@@ -50,7 +58,7 @@ GLO > SYSTEM keeps the rest: **MIDI** (what goes out: the keys only, or the sequ
 | **CC 123** | All notes off (124..127, the mode messages, too). |
 | Clock, start, continue, stop | With GLO > SYSTEM > SYNC = USB or TRS: the sequencer, the arpeggiator and the delay follow the master's tempo, start and stop. |
 | MPE | MENU > SYSTEM > MPE: each note's own bend, pressure and CC 74 on channels 2..16. |
-| **Identity request** | `F0 7E 7F 06 01 F7` (any device ID): SynthMaven answers `F0 7E 7F 06 02 7D 43 4C 46 31 01 01 00 00 F7` (7D, non-commercial; family "CL", model "F1", version 1.1). |
+| **Identity request** | `F0 7E 7F 06 01 F7` (any device ID): SynthMaven answers `F0 7E 7F 06 02 7D 43 4C 46 31 01 00 00 00 F7` (7D, non-commercial; family "CL", model "F1", version 1.0). |
 | SysEx | The web editor's and the updater's own commands. |
 
 A CC sets its value as the knob would: 0..127 over the whole range, 64 the middle of a bipolar one.

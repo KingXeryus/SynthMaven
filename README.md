@@ -22,7 +22,7 @@ The supplied ROM1A bank (32 voices) and ARABESC voice are built into FM6 as F9â€
 
 ## Default Korg compatibility sounds
 
-Nine supplied minilogue xd programs append to the HYBRID factory list as XD presets, with a dedicated XD browser category. In the editor, select HYBRID and choose an XD sound from the main preset list to load its patch and amplitude envelope together. The Minilogue XD panel imports `.mnlgxdprog` and selects individual `.mnlgxdlib` programs. Custom `.mnlgxdunit` files are inspected only; their ARM binaries cannot run on the FM1. These are native approximations, with digital oscillator substitutions and compatibility notes. See [the preset list and mappings](docs/KORG.md).
+Nine supplied minilogue xd programs append to the HYBRID factory list as XD presets, identified by XD names in the browser. In the editor, select HYBRID and choose an XD sound from the main preset list to load its patch and amplitude envelope together. The Minilogue XD panel imports `.mnlgxdprog` and selects individual `.mnlgxdlib` programs. Custom `.mnlgxdunit` files are inspected only; their ARM binaries cannot run on the FM1. These are native approximations, with digital oscillator substitutions and compatibility notes. See [the preset list and mappings](docs/KORG.md).
 
 All 23 synth engines remain. Lossless wavetable compression and memory reuse make room for the BLE runtime. See [Bluetooth integration status](docs/BLUETOOTH_STATUS.md) for validation limits.
 
@@ -33,7 +33,7 @@ Tap SAVE to PRESETS. Four names are visible per page (fewer in a short final pag
 | Control | Action |
 |---|---|
 | KNOB 1 / PRESETS | Move highlight without loading |
-| KNOB 2 / ALGORITHM | Filter by engine, USER, XD or ORIENTAL |
+| KNOB 2 / ALGORITHM | Filter by engine, USER or ORIENTAL |
 | KNOB 3 clockwise | Load highlighted patch |
 | KNOB 4 clockwise | Load patch and open EDIT macro pages |
 
@@ -60,8 +60,19 @@ Use the matching protocol-16 web editor. Host tests compare all 126 track
 parameters of all 88 loaded patches to the selected software recipes, with the
 three effect sends explicitly disabled.
 See [bank provenance and limits](assets/oriental/README.md). The BLE-enabled target passed all enforced memory bounds; see the
-[0.4 validation results](docs/BLUETOOTH_STATUS.md#native-04-target-validation).
+[1.0 validation results](docs/BLUETOOTH_STATUS.md#native-10-target-validation).
 Hardware listening and radio validation remain outstanding.
+
+[User manual](docs/USER_MANUAL.md) Â· [Quick-start guide](QUICKSTART.md)
+
+## Web editor
+
+Open the [SynthMaven 1.0 editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/)
+in Chrome or Edge and connect the FM1 over USB. Browse factory/user sounds,
+load or edit patches, import DX7 SysEx and Korg-compatible programs, set tuning,
+and save backups. The full-name Oriental selector matches the 88 melodic
+presets in the firmware. The editor identifies version 1.0, 23 engines and
+537 factory presets; device connection reports the installed firmware version.
 
 ## MIDI settings
 

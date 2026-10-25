@@ -8,7 +8,7 @@ Mappings include VCO wave/octave/pitch/shape/level, mixer, noise, sync, ring, cu
 
 ## Default XD presets
 
-Nine supplied programs are translated into HYBRID factory slots 27–35 (zero based), with hardware preset names beginning XD. The original 27 HYBRID factory slots and its 32 original preset IDs retain their positions; the XD presets append after them. Existing FM6 presets and user banks are unchanged.
+Nine supplied programs are translated into HYBRID patch slots 27–35 (zero based), with hardware preset names beginning XD. The original 27 HYBRID patch slots and 32 original factory preset IDs retain their positions; the nine XD factory presets append at IDs 32–40. Existing FM6 presets and user banks are unchanged.
 
 | Hardware name | Source program |
 |---|---|

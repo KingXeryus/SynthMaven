@@ -1,4 +1,7 @@
-# SynthMaven MIDI protocol v15
+# SynthMaven 1.0 MIDI settings protocol
+
+The editor protocol is v16; the settings commands below were introduced in v15
+and retain their encoding. See [the v16 preset encoding](../web/EDITOR_PROTOCOL.md).
 
 The existing editor envelope is unchanged: `F0 7D 46 4C command ... F7`. See web/EDITOR_PROTOCOL.md. New commands use 7-bit payload bytes.
 

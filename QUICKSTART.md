@@ -20,7 +20,7 @@ Tap SAVE to open PRESETS. The browser shows four names per page.
 | Control | Action |
 |---|---|
 | KNOB 1 | Highlight a sound |
-| KNOB 2 | Choose ALL, an engine, USER, XD or ORIENTAL |
+| KNOB 2 | Choose ALL, an engine, USER or ORIENTAL |
 | KNOB 3 clockwise | Load the highlighted sound |
 | KNOB 4 clockwise | Load it and open Edit |
 

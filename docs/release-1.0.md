@@ -15,6 +15,8 @@
 - Editor protocol 16 supports extended preset indices/counts. Use the matching
   online editor when updating firmware.
 
+[User manual](USER_MANUAL.md) · [Quick-start guide](../QUICKSTART.md)
+
 ## Load and edit
 
 Back up the FM1 with the web editor before installing. Open the
@@ -30,8 +32,8 @@ Scala/custom tuning for the desired maqam.
 
 Host tests cover all 88 patches and 126 track parameters, hardware browser
 indexing, MIDI response, project recall, routing, storage and editor transfers.
-The actual BLE-enabled target passed [CI run 40243154995](https://github.com/KingXeryus/SynthMaven/actions/runs/40243154995):
-580568/581564 bytes app flash, 92132/98304 bytes static RAM, 24832/25672 bytes
+The actual BLE-enabled target passed [CI run 40243655940](https://github.com/KingXeryus/SynthMaven/actions/runs/40243655940):
+580504/581564 bytes app flash, 92132/98304 bytes static RAM, 24832/25672 bytes
 low SRAM, and 329008/344064 bytes pool. Package size: 610045 bytes.
 The publication workflow repeats the checks before deployment. Version 1.0 still requires hardware validation: actual FM1 listening,
 Chocolate pairing/reconnect and audio timing under wireless load remain pending.

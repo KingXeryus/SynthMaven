@@ -14,7 +14,7 @@ Le démarrage et About indiquent SynthMaven 1.0.
 ## Presets
 
 SAVE → PRESETS affiche quatre noms. KNOB 1 sélectionne ; KNOB 2 filtre par
-moteur, USER, XD, ORIENTAL ou ALL ; KNOB 3 charge ; KNOB 4 charge et ouvre EDIT.
+moteur, USER, ORIENTAL ou ALL ; KNOB 3 charge ; KNOB 4 charge et ouvre EDIT.
 ORIENTAL contient 44 instruments mélodiques en variantes Dry et Expressive
 (88 presets, suffixes D/E). Aucune percussion ajoutée. Les envois chorus, delay
 et réverb sont à zéro ; ajoute les effets avec FX. Sauvegarde tes modifications
