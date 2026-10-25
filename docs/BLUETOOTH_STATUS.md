@@ -21,3 +21,14 @@ Actions run 40228205416 compiled all engines and 41 stock FM6 voices. The optimi
 [Actions run 40231787333](https://github.com/KingXeryus/SynthMaven/actions/runs/40231787333) built the complete native BLE firmware and package. The optimized image is 578456 bytes (of 581564), static RAM is 91092 bytes (of 98304), low-SRAM data is 24832 bytes (of 25672 remaining after RAM code), and the pool is 329008 bytes (of 344064). All enforced region bounds pass. The flash driver contains 932 instructions with no calls; radio calibration runs separately in `.radio_ram`. The package is 610045 bytes.
 
 Host validation covers MIDI routing, persistent settings, interrupted radio journal writes, explicit peer selection, real-state reporting, Korg/default patch mappings and lossless WAVE reconstruction/rendering. This establishes a buildable development package, not a hardware-validated Chocolate connection.
+
+## Native 0.4 target validation
+
+[Actions run 40243154995](https://github.com/KingXeryus/SynthMaven/actions/runs/40243154995)
+built all 23 engines, native BLE and the 88 melodic Oriental presets. The image
+uses 580568 of 581564 bytes of app flash (996 bytes spare), static RAM uses
+92132 of 98304 bytes, low-SRAM data uses 24832 of 25672 bytes, and the pool uses
+329008 of 344064 bytes. The 610045-byte firmware package passed the target
+checks. The compiler used the existing -Oz fallback without dropping engines.
+These are build and host-test results; physical Chocolate pairing and audio
+validation remain outstanding.

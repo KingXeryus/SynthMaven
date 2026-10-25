@@ -59,8 +59,9 @@ within their native engine; projects and user presets retain the patch settings.
 Use the matching protocol-16 web editor. Host tests compare all 126 track
 parameters of all 88 loaded patches to the selected software recipes, with the
 three effect sends explicitly disabled.
-See [bank provenance and limits](assets/oriental/README.md). Hardware validation
-and the actual Bluetooth build's flash/RAM checks gate a usable release.
+See [bank provenance and limits](assets/oriental/README.md). The BLE-enabled target passed all enforced memory bounds; see the
+[0.4 validation results](docs/BLUETOOTH_STATUS.md#native-04-target-validation).
+Hardware listening and radio validation remain outstanding.
 
 ## MIDI settings
 

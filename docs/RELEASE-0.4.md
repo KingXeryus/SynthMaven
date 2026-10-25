@@ -30,8 +30,10 @@ Scala/custom tuning for the desired maqam.
 
 Host tests cover all 88 patches and 126 track parameters, hardware browser
 indexing, MIDI response, project recall, routing, storage and editor transfers.
-CI must compile the actual BLE-enabled target and pass flash/RAM bounds before
-the installer is deployed. This is a development release: actual FM1 listening,
+The actual BLE-enabled target passed [CI run 40243154995](https://github.com/KingXeryus/SynthMaven/actions/runs/40243154995):
+580568/581564 bytes app flash, 92132/98304 bytes static RAM, 24832/25672 bytes
+low SRAM, and 329008/344064 bytes pool. Package size: 610045 bytes.
+The publication workflow repeats the checks before deployment. This is a development release: actual FM1 listening,
 Chocolate pairing/reconnect and audio timing under wireless load remain pending.
 USB device MIDI works through a host; direct USB keyboard host mode is not yet
 integrated. A separately powered keyboard does not supply that host function.
