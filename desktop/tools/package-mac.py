@@ -5,11 +5,12 @@ Optional: SYNTHMAVEN_SIGN_ID (Developer ID Application), SYNTHMAVEN_INSTALLER_ID
 (Developer ID Installer), SYNTHMAVEN_NOTARY_PROFILE (existing keychain profile).
 No passwords or private keys are read by this script.
 """
-import pathlib,subprocess,os,shutil,sys,plistlib
+import pathlib,subprocess,os,shutil,sys,plistlib,tempfile
 ROOT=pathlib.Path(__file__).resolve().parents[2]
 OUT=pathlib.Path(sys.argv[1]).resolve() if len(sys.argv)>1 else ROOT/'build/mac-distribution'
 OUT.mkdir(parents=True,exist_ok=True)
-STAGE=ROOT/'build/mac-package-root';DMGROOT=ROOT/'build/mac-dmg-root'
+WORK=pathlib.Path(tempfile.mkdtemp(prefix='SynthMaven-package-',dir='/private/tmp'))
+STAGE=WORK/'root';DMGROOT=WORK/'dmg'
 for p in (STAGE,DMGROOT):
  if p.exists():shutil.rmtree(p)
  p.mkdir(parents=True)
@@ -24,7 +25,7 @@ for fmt,sub,name in [('Standalone','Applications','SynthMaven.app'),('AU','Libra
  run(*args,dest);run('codesign','--verify','--strict',dest)
 version='0.1.0';signed=bool(os.environ.get('SYNTHMAVEN_SIGN_ID'));suffix='' if signed else '-Local-Test'
 pkg=DMGROOT/f'SynthMaven-{version}{suffix}.pkg'
-components=ROOT/'build/mac-package-components.plist'
+components=WORK/'components.plist'
 run('pkgbuild','--analyze','--root',STAGE,components)
 items=plistlib.loads(components.read_bytes())
 for item in items:item['BundleIsRelocatable']=False
@@ -48,3 +49,4 @@ if profile:
  run('xcrun','stapler','staple',dmg);run('spctl','--assess','--type','open','--context','context:primary-signature','-v',dmg)
 shutil.copy2(pkg,OUT/pkg.name)
 print(dmg)
+shutil.rmtree(WORK)
