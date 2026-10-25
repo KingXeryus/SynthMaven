@@ -1,0 +1,3013 @@
+{
+  "items": [
+    {
+      "name": "XD 80 BASS",
+      "source": "Bass_for_80s_years.mnlgxdprog",
+      "entry": "Prog_000.prog_bin",
+      "record": "records/XD_80_BASS.prog_bin",
+      "originalName": "80s Bass",
+      "patch": {
+        "osc": [
+          {
+            "type": 1,
+            "coarse": -24,
+            "fine": 0,
+            "level": 127,
+            "shape": 0,
+            "reset": false,
+            "fixed": false
+          },
+          {
+            "type": 8,
+            "coarse": 0,
+            "fine": -14,
+            "level": 0,
+            "shape": 0,
+            "reset": false,
+            "fixed": false
+          },
+          {
+            "type": 10,
+            "coarse": 0,
+            "fine": 0,
+            "level": 0,
+            "shape": 0,
+            "reset": false,
+            "fixed": false
+          }
+        ],
+        "flt": [
+          {
+            "type": 1,
+            "cut": 5,
+            "res": 52,
+            "env": 46,
+            "key": 0,
+            "vel": 0
+          },
+          {
+            "type": 0,
+            "cut": 0,
+            "res": 0,
+            "env": 0,
+            "key": 0,
+            "vel": 0
+          }
+        ],
+        "lfo": [
+          {
+            "wave": 1,
+            "rate": 84,
+            "key": true,
+            "sync": false,
+            "fade": 0
+          },
+          {
+            "wave": 0,
+            "rate": 60,
+            "key": false,
+            "sync": false,
+            "fade": 0
+          }
+        ],
+        "mod": [
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 4,
+            "via": 0,
+            "dst": 1,
+            "amt": 32
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          }
+        ],
+        "ring": 127,
+        "drift": 0,
+        "drive": 0,
+        "route": 0,
+        "fbal": 0,
+        "env2": [
+          0,
+          37,
+          0,
+          0
+        ],
+        "env3": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bend": 2,
+        "level": 100,
+        "name": "XD 80 BASS"
+      },
+      "packed": [
+        1,
+        232,
+        0,
+        127,
+        0,
+        0,
+        8,
+        0,
+        242,
+        0,
+        0,
+        0,
+        10,
+        0,
+        0,
+        0,
+        0,
+        0,
+        127,
+        0,
+        0,
+        0,
+        0,
+        1,
+        5,
+        52,
+        46,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        37,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        84,
+        1,
+        0,
+        0,
+        60,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        1,
+        32,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        100,
+        0,
+        88,
+        68,
+        32,
+        56,
+        48,
+        32,
+        66,
+        65,
+        83,
+        83
+      ],
+      "amp": [
+        0,
+        64,
+        127,
+        18
+      ],
+      "warnings": [
+        "Oscillator 2 sync uses HYBRID hard sync.",
+        "Ring modulation balance is approximated.",
+        "Voice-mode depth and non-poly modes are not translated.",
+        "Filter, pitch/shape response and envelope/LFO time scales are approximate. Sequencer, motion lanes, tuning and controller assignments are not imported."
+      ],
+      "index": 27
+    },
+    {
+      "name": "XD CRYSTAL",
+      "source": "Crystal_Arp.mnlgxdprog",
+      "entry": "Prog_000.prog_bin",
+      "record": "records/XD_CRYSTAL.prog_bin",
+      "originalName": "B-SynthArp",
+      "patch": {
+        "osc": [
+          {
+            "type": 2,
+            "coarse": 12,
+            "fine": -42,
+            "level": 67,
+            "shape": 100,
+            "reset": false,
+            "fixed": false
+          },
+          {
+            "type": 8,
+            "coarse": -11,
+            "fine": -27,
+            "level": 37,
+            "shape": 0,
+            "reset": false,
+            "fixed": false
+          },
+          {
+            "type": 7,
+            "coarse": 0,
+            "fine": 0,
+            "level": 127,
+            "shape": 28,
+            "reset": false,
+            "fixed": false
+          }
+        ],
+        "flt": [
+          {
+            "type": 1,
+            "cut": 76,
+            "res": 29,
+            "env": 11,
+            "key": 0,
+            "vel": 0
+          },
+          {
+            "type": 0,
+            "cut": 0,
+            "res": 0,
+            "env": 0,
+            "key": 0,
+            "vel": 0
+          }
+        ],
+        "lfo": [
+          {
+            "wave": 3,
+            "rate": 31,
+            "key": true,
+            "sync": false,
+            "fade": 0
+          },
+          {
+            "wave": 0,
+            "rate": 60,
+            "key": false,
+            "sync": false,
+            "fade": 0
+          }
+        ],
+        "mod": [
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 4,
+            "via": 0,
+            "dst": 12,
+            "amt": 37
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          }
+        ],
+        "ring": 127,
+        "drift": 0,
+        "drive": 0,
+        "route": 0,
+        "fbal": 0,
+        "env2": [
+          0,
+          32,
+          0,
+          0
+        ],
+        "env3": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bend": 2,
+        "level": 100,
+        "name": "XD CRYSTAL"
+      },
+      "packed": [
+        2,
+        12,
+        214,
+        67,
+        100,
+        0,
+        8,
+        245,
+        229,
+        37,
+        0,
+        0,
+        7,
+        0,
+        0,
+        127,
+        28,
+        0,
+        127,
+        0,
+        0,
+        0,
+        0,
+        1,
+        76,
+        29,
+        11,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        32,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        31,
+        1,
+        0,
+        0,
+        60,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        12,
+        37,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        100,
+        0,
+        88,
+        68,
+        32,
+        67,
+        82,
+        89,
+        83,
+        84,
+        65,
+        76
+      ],
+      "amp": [
+        0,
+        21,
+        23,
+        57
+      ],
+      "warnings": [
+        "Korg VPM replaced by native HYBRID FM; approximate.",
+        "Oscillator 2 sync uses HYBRID hard sync.",
+        "Ring modulation balance is approximated.",
+        "Korg modulation/delay/reverb algorithms are not reproduced; choose SynthMaven effects separately.",
+        "Voice-mode depth and non-poly modes are not translated.",
+        "Filter, pitch/shape response and envelope/LFO time scales are approximate. Sequencer, motion lanes, tuning and controller assignments are not imported."
+      ],
+      "index": 28
+    },
+    {
+      "name": "XD DARKCHD",
+      "source": "Dark_Chord.mnlgxdlib",
+      "entry": "Prog_253.prog_bin",
+      "record": "records/XD_DARKCHD.prog_bin",
+      "originalName": "Dark Chord",
+      "patch": {
+        "osc": [
+          {
+            "type": 2,
+            "coarse": -12,
+            "fine": 0,
+            "level": 107,
+            "shape": 87,
+            "reset": false,
+            "fixed": false
+          },
+          {
+            "type": 8,
+            "coarse": 13,
+            "fine": -48,
+            "level": 0,
+            "shape": 21,
+            "reset": false,
+            "fixed": false
+          },
+          {
+            "type": 0,
+            "coarse": 0,
+            "fine": 0,
+            "level": 0,
+            "shape": 0,
+            "reset": false,
+            "fixed": false
+          }
+        ],
+        "flt": [
+          {
+            "type": 1,
+            "cut": 80,
+            "res": 30,
+            "env": 63,
+            "key": 32,
+            "vel": 0
+          },
+          {
+            "type": 0,
+            "cut": 0,
+            "res": 0,
+            "env": 0,
+            "key": 0,
+            "vel": 0
+          }
+        ],
+        "lfo": [
+          {
+            "wave": 3,
+            "rate": 0,
+            "key": true,
+            "sync": false,
+            "fade": 0
+          },
+          {
+            "wave": 0,
+            "rate": 60,
+            "key": false,
+            "sync": false,
+            "fade": 0
+          }
+        ],
+        "mod": [
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 4,
+            "via": 0,
+            "dst": 12,
+            "amt": 32
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          }
+        ],
+        "ring": 127,
+        "drift": 0,
+        "drive": 40,
+        "route": 0,
+        "fbal": 0,
+        "env2": [
+          94,
+          60,
+          0,
+          0
+        ],
+        "env3": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bend": 2,
+        "level": 100,
+        "name": "XD DARKCHD"
+      },
+      "packed": [
+        2,
+        244,
+        0,
+        107,
+        87,
+        0,
+        8,
+        13,
+        208,
+        0,
+        21,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        127,
+        0,
+        40,
+        0,
+        0,
+        1,
+        80,
+        30,
+        63,
+        32,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        94,
+        60,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0,
+        1,
+        0,
+        0,
+        60,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        12,
+        32,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        100,
+        0,
+        88,
+        68,
+        32,
+        68,
+        65,
+        82,
+        75,
+        67,
+        72,
+        68
+      ],
+      "amp": [
+        0,
+        64,
+        124,
+        4
+      ],
+      "warnings": [
+        "Oscillator 2 sync uses HYBRID hard sync.",
+        "Ring modulation balance is approximated.",
+        "Cross-modulation depth is not translated.",
+        "Korg modulation/delay/reverb algorithms are not reproduced; choose SynthMaven effects separately.",
+        "Voice-mode depth and non-poly modes are not translated.",
+        "Filter, pitch/shape response and envelope/LFO time scales are approximate. Sequencer, motion lanes, tuning and controller assignments are not imported."
+      ],
+      "index": 29
+    },
+    {
+      "name": "XD RHODES",
+      "source": "Ep_Rhodes22_tealizard.mnlgxdprog",
+      "entry": "Prog_000.prog_bin",
+      "record": "records/XD_RHODES.prog_bin",
+      "originalName": "EP Rhodes22",
+      "patch": {
+        "osc": [
+          {
+            "type": 3,
+            "coarse": -12,
+            "fine": -26,
+            "level": 127,
+            "shape": 69,
+            "reset": false,
+            "fixed": false
+          },
+          {
+            "type": 8,
+            "coarse": 0,
+            "fine": -40,
+            "level": 104,
+            "shape": 28,
+            "reset": false,
+            "fixed": false
+          },
+          {
+            "type": 10,
+            "coarse": 0,
+            "fine": 0,
+            "level": 0,
+            "shape": 0,
+            "reset": false,
+            "fixed": false
+          }
+        ],
+        "flt": [
+          {
+            "type": 1,
+            "cut": 35,
+            "res": 54,
+            "env": 27,
+            "key": 0,
+            "vel": 0
+          },
+          {
+            "type": 0,
+            "cut": 0,
+            "res": 0,
+            "env": 0,
+            "key": 0,
+            "vel": 0
+          }
+        ],
+        "lfo": [
+          {
+            "wave": 1,
+            "rate": 84,
+            "key": true,
+            "sync": false,
+            "fade": 0
+          },
+          {
+            "wave": 0,
+            "rate": 60,
+            "key": false,
+            "sync": false,
+            "fade": 0
+          }
+        ],
+        "mod": [
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 4,
+            "via": 0,
+            "dst": 5,
+            "amt": 38
+          },
+          {
+            "src": 4,
+            "via": 0,
+            "dst": 6,
+            "amt": 38
+          },
+          {
+            "src": 4,
+            "via": 0,
+            "dst": 7,
+            "amt": 38
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          }
+        ],
+        "ring": 127,
+        "drift": 0,
+        "drive": 80,
+        "route": 0,
+        "fbal": 0,
+        "env2": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "env3": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bend": 2,
+        "level": 100,
+        "name": "XD RHODES"
+      },
+      "packed": [
+        3,
+        244,
+        230,
+        127,
+        69,
+        0,
+        8,
+        0,
+        216,
+        104,
+        28,
+        0,
+        10,
+        0,
+        0,
+        0,
+        0,
+        0,
+        127,
+        0,
+        80,
+        0,
+        0,
+        1,
+        35,
+        54,
+        27,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        84,
+        1,
+        0,
+        0,
+        60,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        5,
+        38,
+        4,
+        0,
+        6,
+        38,
+        4,
+        0,
+        7,
+        38,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        100,
+        0,
+        88,
+        68,
+        32,
+        82,
+        72,
+        79,
+        68,
+        69,
+        83,
+        0
+      ],
+      "amp": [
+        0,
+        82,
+        65,
+        127
+      ],
+      "warnings": [
+        "Oscillator 2 sync uses HYBRID hard sync.",
+        "Ring modulation balance is approximated.",
+        "Tempo-synced LFO rate approximated with a free-running LFO.",
+        "Korg modulation/delay/reverb algorithms are not reproduced; choose SynthMaven effects separately.",
+        "Filter, pitch/shape response and envelope/LFO time scales are approximate. Sequencer, motion lanes, tuning and controller assignments are not imported."
+      ],
+      "index": 30
+    },
+    {
+      "name": "XD GHOST",
+      "source": "Ghost_Orgpad.mnlgxdprog",
+      "entry": "Prog_000.prog_bin",
+      "record": "records/XD_GHOST.prog_bin",
+      "originalName": "Ghost Orgpad",
+      "patch": {
+        "osc": [
+          {
+            "type": 3,
+            "coarse": 12,
+            "fine": -42,
+            "level": 124,
+            "shape": 36,
+            "reset": false,
+            "fixed": false
+          },
+          {
+            "type": 8,
+            "coarse": -12,
+            "fine": 7,
+            "level": 71,
+            "shape": 13,
+            "reset": false,
+            "fixed": false
+          },
+          {
+            "type": 10,
+            "coarse": 0,
+            "fine": 0,
+            "level": 37,
+            "shape": 62,
+            "reset": false,
+            "fixed": false
+          }
+        ],
+        "flt": [
+          {
+            "type": 1,
+            "cut": 46,
+            "res": 63,
+            "env": 22,
+            "key": 0,
+            "vel": 0
+          },
+          {
+            "type": 0,
+            "cut": 0,
+            "res": 0,
+            "env": 0,
+            "key": 0,
+            "vel": 0
+          }
+        ],
+        "lfo": [
+          {
+            "wave": 1,
+            "rate": 39,
+            "key": true,
+            "sync": false,
+            "fade": 0
+          },
+          {
+            "wave": 0,
+            "rate": 60,
+            "key": false,
+            "sync": false,
+            "fade": 0
+          }
+        ],
+        "mod": [
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 4,
+            "via": 0,
+            "dst": 5,
+            "amt": 38
+          },
+          {
+            "src": 4,
+            "via": 0,
+            "dst": 6,
+            "amt": 38
+          },
+          {
+            "src": 4,
+            "via": 0,
+            "dst": 7,
+            "amt": 38
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          }
+        ],
+        "ring": 127,
+        "drift": 0,
+        "drive": 40,
+        "route": 0,
+        "fbal": 0,
+        "env2": [
+          38,
+          36,
+          0,
+          0
+        ],
+        "env3": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bend": 2,
+        "level": 100,
+        "name": "XD GHOST"
+      },
+      "packed": [
+        3,
+        12,
+        214,
+        124,
+        36,
+        0,
+        8,
+        244,
+        7,
+        71,
+        13,
+        0,
+        10,
+        0,
+        0,
+        37,
+        62,
+        0,
+        127,
+        0,
+        40,
+        0,
+        0,
+        1,
+        46,
+        63,
+        22,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        38,
+        36,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        39,
+        1,
+        0,
+        0,
+        60,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        5,
+        38,
+        4,
+        0,
+        6,
+        38,
+        4,
+        0,
+        7,
+        38,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        100,
+        0,
+        88,
+        68,
+        32,
+        71,
+        72,
+        79,
+        83,
+        84,
+        0,
+        0
+      ],
+      "amp": [
+        12,
+        90,
+        92,
+        82
+      ],
+      "warnings": [
+        "Special noise subtype approximated with HYBRID noise.",
+        "Oscillator 2 sync uses HYBRID hard sync.",
+        "Ring modulation balance is approximated.",
+        "One-shot LFO approximated with a repeating LFO.",
+        "Korg modulation/delay/reverb algorithms are not reproduced; choose SynthMaven effects separately.",
+        "Voice-mode depth and non-poly modes are not translated.",
+        "Filter, pitch/shape response and envelope/LFO time scales are approximate. Sequencer, motion lanes, tuning and controller assignments are not imported."
+      ],
+      "index": 31
+    },
+    {
+      "name": "XD JUNOPAD",
+      "source": "Juno_106_pad.mnlgxdprog",
+      "entry": "Prog_000.prog_bin",
+      "record": "records/XD_JUNOPAD.prog_bin",
+      "originalName": "Juno 106 pad",
+      "patch": {
+        "osc": [
+          {
+            "type": 1,
+            "coarse": 0,
+            "fine": 45,
+            "level": 127,
+            "shape": 0,
+            "reset": false,
+            "fixed": false
+          },
+          {
+            "type": 8,
+            "coarse": -13,
+            "fine": -3,
+            "level": 127,
+            "shape": 0,
+            "reset": false,
+            "fixed": false
+          },
+          {
+            "type": 0,
+            "coarse": 0,
+            "fine": 0,
+            "level": 0,
+            "shape": 0,
+            "reset": false,
+            "fixed": false
+          }
+        ],
+        "flt": [
+          {
+            "type": 1,
+            "cut": 18,
+            "res": 0,
+            "env": 43,
+            "key": 0,
+            "vel": 0
+          },
+          {
+            "type": 0,
+            "cut": 0,
+            "res": 0,
+            "env": 0,
+            "key": 0,
+            "vel": 0
+          }
+        ],
+        "lfo": [
+          {
+            "wave": 1,
+            "rate": 84,
+            "key": true,
+            "sync": false,
+            "fade": 0
+          },
+          {
+            "wave": 0,
+            "rate": 60,
+            "key": false,
+            "sync": false,
+            "fade": 0
+          }
+        ],
+        "mod": [
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 4,
+            "via": 0,
+            "dst": 1,
+            "amt": 32
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          }
+        ],
+        "ring": 127,
+        "drift": 0,
+        "drive": 40,
+        "route": 0,
+        "fbal": 0,
+        "env2": [
+          90,
+          86,
+          0,
+          0
+        ],
+        "env3": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bend": 2,
+        "level": 100,
+        "name": "XD JUNOPAD"
+      },
+      "packed": [
+        1,
+        0,
+        45,
+        127,
+        0,
+        0,
+        8,
+        243,
+        253,
+        127,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        127,
+        0,
+        40,
+        0,
+        0,
+        1,
+        18,
+        0,
+        43,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        90,
+        86,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        84,
+        1,
+        0,
+        0,
+        60,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        1,
+        32,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        100,
+        0,
+        88,
+        68,
+        32,
+        74,
+        85,
+        78,
+        79,
+        80,
+        65,
+        68
+      ],
+      "amp": [
+        41,
+        64,
+        127,
+        70
+      ],
+      "warnings": [
+        "Oscillator 2 sync uses HYBRID hard sync.",
+        "Ring modulation balance is approximated.",
+        "Korg modulation/delay/reverb algorithms are not reproduced; choose SynthMaven effects separately.",
+        "Filter, pitch/shape response and envelope/LFO time scales are approximate. Sequencer, motion lanes, tuning and controller assignments are not imported."
+      ],
+      "index": 32
+    },
+    {
+      "name": "XD STRINGS",
+      "source": "STR-HallStrings.mnlgxdprog",
+      "entry": "Prog_000.prog_bin",
+      "record": "records/XD_STRINGS.prog_bin",
+      "originalName": "STR HallStrg",
+      "patch": {
+        "osc": [
+          {
+            "type": 1,
+            "coarse": 0,
+            "fine": 0,
+            "level": 127,
+            "shape": 0,
+            "reset": false,
+            "fixed": false
+          },
+          {
+            "type": 8,
+            "coarse": 0,
+            "fine": 0,
+            "level": 75,
+            "shape": 0,
+            "reset": false,
+            "fixed": false
+          },
+          {
+            "type": 7,
+            "coarse": 0,
+            "fine": 0,
+            "level": 124,
+            "shape": 0,
+            "reset": false,
+            "fixed": false
+          }
+        ],
+        "flt": [
+          {
+            "type": 1,
+            "cut": 86,
+            "res": 0,
+            "env": 60,
+            "key": 63,
+            "vel": 0
+          },
+          {
+            "type": 0,
+            "cut": 0,
+            "res": 0,
+            "env": 0,
+            "key": 0,
+            "vel": 0
+          }
+        ],
+        "lfo": [
+          {
+            "wave": 1,
+            "rate": 79,
+            "key": true,
+            "sync": false,
+            "fade": 0
+          },
+          {
+            "wave": 0,
+            "rate": 60,
+            "key": false,
+            "sync": false,
+            "fade": 0
+          }
+        ],
+        "mod": [
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 4,
+            "via": 0,
+            "dst": 1,
+            "amt": 32
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          }
+        ],
+        "ring": 127,
+        "drift": 0,
+        "drive": 0,
+        "route": 0,
+        "fbal": 0,
+        "env2": [
+          79,
+          112,
+          0,
+          0
+        ],
+        "env3": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bend": 2,
+        "level": 100,
+        "name": "XD STRINGS"
+      },
+      "packed": [
+        1,
+        0,
+        0,
+        127,
+        0,
+        0,
+        8,
+        0,
+        0,
+        75,
+        0,
+        0,
+        7,
+        0,
+        0,
+        124,
+        0,
+        0,
+        127,
+        0,
+        0,
+        0,
+        0,
+        1,
+        86,
+        0,
+        60,
+        63,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        79,
+        112,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        79,
+        1,
+        0,
+        0,
+        60,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        1,
+        32,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        100,
+        0,
+        88,
+        68,
+        32,
+        83,
+        84,
+        82,
+        73,
+        78,
+        71,
+        83
+      ],
+      "amp": [
+        22,
+        102,
+        45,
+        40
+      ],
+      "warnings": [
+        "Korg VPM replaced by native HYBRID FM; approximate.",
+        "Oscillator 2 sync uses HYBRID hard sync.",
+        "Ring modulation balance is approximated.",
+        "Korg modulation/delay/reverb algorithms are not reproduced; choose SynthMaven effects separately.",
+        "Filter, pitch/shape response and envelope/LFO time scales are approximate. Sequencer, motion lanes, tuning and controller assignments are not imported."
+      ],
+      "index": 33
+    },
+    {
+      "name": "XD SYNWAVE",
+      "source": "Synthwave_Pad.mnlgxdprog",
+      "entry": "Prog_000.prog_bin",
+      "record": "records/XD_SYNWAVE.prog_bin",
+      "originalName": "B-SnthWvPad",
+      "patch": {
+        "osc": [
+          {
+            "type": 2,
+            "coarse": -13,
+            "fine": 18,
+            "level": 127,
+            "shape": 26,
+            "reset": false,
+            "fixed": false
+          },
+          {
+            "type": 8,
+            "coarse": -11,
+            "fine": -20,
+            "level": 127,
+            "shape": 29,
+            "reset": false,
+            "fixed": false
+          },
+          {
+            "type": 10,
+            "coarse": 0,
+            "fine": 0,
+            "level": 0,
+            "shape": 0,
+            "reset": false,
+            "fixed": false
+          }
+        ],
+        "flt": [
+          {
+            "type": 1,
+            "cut": 8,
+            "res": 19,
+            "env": 46,
+            "key": 63,
+            "vel": 0
+          },
+          {
+            "type": 0,
+            "cut": 0,
+            "res": 0,
+            "env": 0,
+            "key": 0,
+            "vel": 0
+          }
+        ],
+        "lfo": [
+          {
+            "wave": 1,
+            "rate": 37,
+            "key": true,
+            "sync": false,
+            "fade": 0
+          },
+          {
+            "wave": 0,
+            "rate": 60,
+            "key": false,
+            "sync": false,
+            "fade": 0
+          }
+        ],
+        "mod": [
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 4,
+            "via": 0,
+            "dst": 5,
+            "amt": 44
+          },
+          {
+            "src": 4,
+            "via": 0,
+            "dst": 6,
+            "amt": 44
+          },
+          {
+            "src": 4,
+            "via": 0,
+            "dst": 7,
+            "amt": 44
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          }
+        ],
+        "ring": 127,
+        "drift": 0,
+        "drive": 0,
+        "route": 0,
+        "fbal": 0,
+        "env2": [
+          0,
+          101,
+          0,
+          0
+        ],
+        "env3": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bend": 2,
+        "level": 100,
+        "name": "XD SYNWAVE"
+      },
+      "packed": [
+        2,
+        243,
+        18,
+        127,
+        26,
+        0,
+        8,
+        245,
+        236,
+        127,
+        29,
+        0,
+        10,
+        0,
+        0,
+        0,
+        0,
+        0,
+        127,
+        0,
+        0,
+        0,
+        0,
+        1,
+        8,
+        19,
+        46,
+        63,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        101,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        37,
+        1,
+        0,
+        0,
+        60,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        5,
+        44,
+        4,
+        0,
+        6,
+        44,
+        4,
+        0,
+        7,
+        44,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        100,
+        0,
+        88,
+        68,
+        32,
+        83,
+        89,
+        78,
+        87,
+        65,
+        86,
+        69
+      ],
+      "amp": [
+        7,
+        118,
+        116,
+        126
+      ],
+      "warnings": [
+        "Oscillator 2 sync uses HYBRID hard sync.",
+        "Ring modulation balance is approximated.",
+        "Korg modulation/delay/reverb algorithms are not reproduced; choose SynthMaven effects separately.",
+        "Filter, pitch/shape response and envelope/LFO time scales are approximate. Sequencer, motion lanes, tuning and controller assignments are not imported."
+      ],
+      "index": 34
+    },
+    {
+      "name": "XD MOOG LD",
+      "source": "Moog_Lead.mnlgxdprog",
+      "entry": "Prog_000.prog_bin",
+      "record": "records/XD_MOOG_LD.prog_bin",
+      "originalName": "Moog Lead",
+      "patch": {
+        "osc": [
+          {
+            "type": 1,
+            "coarse": 0,
+            "fine": 0,
+            "level": 0,
+            "shape": 0,
+            "reset": false,
+            "fixed": false
+          },
+          {
+            "type": 8,
+            "coarse": 0,
+            "fine": 0,
+            "level": 0,
+            "shape": 0,
+            "reset": false,
+            "fixed": false
+          },
+          {
+            "type": 1,
+            "coarse": 0,
+            "fine": 0,
+            "level": 127,
+            "shape": 70,
+            "reset": false,
+            "fixed": false
+          }
+        ],
+        "flt": [
+          {
+            "type": 1,
+            "cut": 127,
+            "res": 0,
+            "env": 0,
+            "key": 0,
+            "vel": 0
+          },
+          {
+            "type": 0,
+            "cut": 0,
+            "res": 0,
+            "env": 0,
+            "key": 0,
+            "vel": 0
+          }
+        ],
+        "lfo": [
+          {
+            "wave": 1,
+            "rate": 84,
+            "key": true,
+            "sync": false,
+            "fade": 0
+          },
+          {
+            "wave": 0,
+            "rate": 60,
+            "key": false,
+            "sync": false,
+            "fade": 0
+          }
+        ],
+        "mod": [
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 4,
+            "via": 0,
+            "dst": 1,
+            "amt": 32
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          },
+          {
+            "src": 0,
+            "via": 0,
+            "dst": 0,
+            "amt": 0
+          }
+        ],
+        "ring": 127,
+        "drift": 0,
+        "drive": 0,
+        "route": 0,
+        "fbal": 0,
+        "env2": [
+          0,
+          64,
+          0,
+          0
+        ],
+        "env3": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bend": 2,
+        "level": 100,
+        "name": "XD MOOG LD"
+      },
+      "packed": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        8,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        127,
+        70,
+        0,
+        127,
+        0,
+        0,
+        0,
+        0,
+        1,
+        127,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        64,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        84,
+        1,
+        0,
+        0,
+        60,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        1,
+        32,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        100,
+        0,
+        88,
+        68,
+        32,
+        77,
+        79,
+        79,
+        71,
+        32,
+        76,
+        68
+      ],
+      "amp": [
+        2,
+        74,
+        99,
+        27
+      ],
+      "warnings": [
+        "Korg user oscillator replaced by native HYBRID saw; approximate.",
+        "Oscillator 2 sync uses HYBRID hard sync.",
+        "Ring modulation balance is approximated.",
+        "Korg modulation/delay/reverb algorithms are not reproduced; choose SynthMaven effects separately.",
+        "Portamento is not translated.",
+        "Voice-mode depth and non-poly modes are not translated.",
+        "Filter, pitch/shape response and envelope/LFO time scales are approximate. Sequencer, motion lanes, tuning and controller assignments are not imported."
+      ],
+      "index": 35
+    }
+  ]
+}

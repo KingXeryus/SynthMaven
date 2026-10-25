@@ -13,6 +13,7 @@
 #define HMOD(s, v, d, a) {HS_##s, HS_##v, HD_##d, a}
 #define HNOOSC {HO_OFF, 0, 0, 0, 0, 0}
 
+#include "korg_factory.h"
 static const hy_patch_t HY_FACTORY[] = {
     /* 0 the signature: two supersaws an octave apart and a sine sub, a 24 dB sweep; M1 opens, M2 spreads */
     {.osc = {HOSC(SUPER, 0, 0, 110, 70, 0), HOSC(SUPER, 12, 4, 70, 60, 0), HOSC(SINE, -12, 0, 80, 0, HOF_RESET)},
@@ -237,13 +238,14 @@ static const hy_patch_t HY_FACTORY[] = {
      .lfo = {HLFO(TRI, 30, 0, 0), HLFO(SINE, 22, 0, 0)},
      .mod = {HMOD(LFO2, NONE, SH1, 30), HMOD(LFO3, NONE, CUT, 8), HMOD(M1, NONE, CUT, 40), HMOD(M2, NONE, RES1, 40)},
      .bend = 2, .level = 100, .name = "LADDER PAD"},
+    SM_KORG_PATCHES
 };
 #define HY_INIT 23u              /* the INIT patch (a start for your own) */
 #define HY_NFACTORY ((uint32_t)NELEM(HY_FACTORY))
 static const char *const N_HY_PATCH[] = {"SYNTHMAVEN", "POLY PAD", "STRINGS", "ACID", "SYNC LEAD", "FM BELL", "FM KEYS",
                                          "WOBBLE", "REESE", "HOOVER", "BRASS", "VOX", "PLUCK", "RISER", "METAL",
                                          "FOLD BASS", "CHIP LEAD", "GLASS PAD", "DRONE", "808 SUB", "TRANCE",
-                                         "SAW PLUCK", "SPACE BEL", "INIT", "MOOG BASS", "MOOG LEAD", "LADDER PAD"};
+                                         "SAW PLUCK", "SPACE BEL", "INIT", "MOOG BASS", "MOOG LEAD", "LADDER PAD", SM_KORG_NAMES};
 _Static_assert(NELEM(N_HY_PATCH) == NELEM(HY_FACTORY), "a name per factory patch");
 
 /* the presets: {CUT, RES, FENV, PTCH, M1..M4}, {A D S R}, ENV -> FILTER (the part's), mono */
@@ -285,5 +287,6 @@ static const preset_t HY_PRESETS[] = {
     HYP("BRIGHT BEL", 22, 80, 0, 0, 110, 0, 104, 0, FX(0, 30, 30, 70)),
     HYP("SOFT SYNC", 4, 70, 0, 10, 80, 110, 60, 1, FX(0, 20, 26, 30), XP(P_GLIDE + 1, 40)),
 #endif
+    SM_KORG_PRESETS
 };
 _Static_assert(NELEM(HY_PRESETS) >= NELEM(HY_FACTORY), "a preset per factory patch (SynthMaven: and more)");

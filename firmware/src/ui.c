@@ -590,8 +590,8 @@ static void select_engine(uint32_t e)
 /* the factory presets as one list by kind (basses, keys, organs, pads, leads, plucks and bells, stabs,
  * the rest), then the used user presets: the PRESETS knob and the PRESETS page browse it. By name: an
  * engine's preset table may change order; tests/ui_pages_test.c checks every preset is here once */
-enum { BK_BASS, BK_KEYS, BK_ORGAN, BK_PAD, BK_LEAD, BK_PLUCK, BK_STAB, BK_FX, BK_DX7 };
-static const char *const BANK_KIND[] = {"BASS", "KEYS", "ORGN", "PAD", "LEAD", "PLCK", "STAB", "FX", "DX7"};
+enum { BK_BASS, BK_KEYS, BK_ORGAN, BK_PAD, BK_LEAD, BK_PLUCK, BK_STAB, BK_FX, BK_DX7, BK_XD };
+static const char *const BANK_KIND[] = {"BASS", "KEYS", "ORGN", "PAD", "LEAD", "PLCK", "STAB", "FX", "DX7", "XD"};
 /* the sample-based factory sounds (SAMPLE 4, GRAIN 8): not in the SynthMaven synth, which has no built-in samples */
 #if SYNTHMAVEN_SYNTH
 #define BK_SMP(k, e, n)
@@ -756,6 +756,7 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     {BK_PAD, 4, "SAW ENSEMBLE"}, {BK_LEAD, 4, "AIR FLUTE"},
 #endif
     FM6_STOCK_BANK
+    SM_KORG_BANK
 };
 #define NBANK (sizeof BANK / sizeof BANK[0])
 static uint8_t bank_pi[NBANK];                       /* the preset index of each entry in its engine */

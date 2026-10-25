@@ -1,0 +1,56 @@
+[
+  {
+    "name": "XD 80 BASS",
+    "source": "Bass_for_80s_years.mnlgxdprog",
+    "entry": "Prog_000.prog_bin",
+    "record": "records/XD_80_BASS.prog_bin"
+  },
+  {
+    "name": "XD CRYSTAL",
+    "source": "Crystal_Arp.mnlgxdprog",
+    "entry": "Prog_000.prog_bin",
+    "record": "records/XD_CRYSTAL.prog_bin"
+  },
+  {
+    "name": "XD DARKCHD",
+    "source": "Dark_Chord.mnlgxdlib",
+    "entry": "Prog_253.prog_bin",
+    "record": "records/XD_DARKCHD.prog_bin"
+  },
+  {
+    "name": "XD RHODES",
+    "source": "Ep_Rhodes22_tealizard.mnlgxdprog",
+    "entry": "Prog_000.prog_bin",
+    "record": "records/XD_RHODES.prog_bin"
+  },
+  {
+    "name": "XD GHOST",
+    "source": "Ghost_Orgpad.mnlgxdprog",
+    "entry": "Prog_000.prog_bin",
+    "record": "records/XD_GHOST.prog_bin"
+  },
+  {
+    "name": "XD JUNOPAD",
+    "source": "Juno_106_pad.mnlgxdprog",
+    "entry": "Prog_000.prog_bin",
+    "record": "records/XD_JUNOPAD.prog_bin"
+  },
+  {
+    "name": "XD STRINGS",
+    "source": "STR-HallStrings.mnlgxdprog",
+    "entry": "Prog_000.prog_bin",
+    "record": "records/XD_STRINGS.prog_bin"
+  },
+  {
+    "name": "XD SYNWAVE",
+    "source": "Synthwave_Pad.mnlgxdprog",
+    "entry": "Prog_000.prog_bin",
+    "record": "records/XD_SYNWAVE.prog_bin"
+  },
+  {
+    "name": "XD MOOG LD",
+    "source": "Moog_Lead.mnlgxdprog",
+    "entry": "Prog_000.prog_bin",
+    "record": "records/XD_MOOG_LD.prog_bin"
+  }
+]

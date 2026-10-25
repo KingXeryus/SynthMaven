@@ -12,5 +12,9 @@ for t in synthmaven_test synthmaven_storage_test synthmaven_ui_test synthmaven_s
 done
 $CC -o build/host/midi_uart_test tests/midi_uart_test.c -lm
 build/host/midi_uart_test
-node web/test_web.mjs
+if [ "${SM_SKIP_FULL_WEB:-0}" != 1 ]; then node web/test_web.mjs; fi
 node web/test_synthmaven.mjs
+
+$CC -o build/host/wt_rom_test tests/wt_rom_test.c firmware/vendor/tinf/tinflate.c
+build/host/wt_rom_test
+node web/test_korg.mjs

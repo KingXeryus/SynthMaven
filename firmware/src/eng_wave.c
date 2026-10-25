@@ -68,10 +68,22 @@ static void wt_user_scan(uint32_t k)
         wt_building = -1;
     }
 }
+#if SM_PACKED_WT
+#include "wt_rom.h"
+static uint8_t wt_rom_ok;
+_Static_assert(sizeof wt_mip >= 8192u + WT_NF * WT_NH * 4u, "WAVE ROM decode workspace");
+#endif
 static const int16_t (*wt_spec(uint32_t table, uint32_t f))[2]
 {
-    if (table < WT_NFACTORY)
+    if (table < WT_NFACTORY) {
+#if SM_PACKED_WT
+        int16_t *cache = (int16_t *)wt_mip + WT_NF * WT_PTS - WT_NF * WT_NH * 2u;
+        if (!f) wt_rom_ok = (uint8_t)wt_rom_decode(table, (uint8_t *)wt_mip, cache);
+        return wt_rom_ok ? (const int16_t (*)[2])(cache + f * WT_NH * 2u) : 0;
+#else
         return WT_SPEC[table][f];
+#endif
+    }
     {
         const wt_user_t *u = wt_user(table - WT_NFACTORY);
         return u ? u->spec[f] : 0;
@@ -155,6 +167,12 @@ static void wt_ifft(uint32_t N)
 static void wt_build_frame(uint32_t table, uint32_t f)
 {
     const int16_t (*sp)[2] = wt_spec(table, f);
+#if SM_PACKED_WT
+    int16_t spectrum[WT_NH][2];
+    /* Last output frames overwrite the temporary ROM cache. Copy once before
+     * any mip level writes; every level reads the same original spectrum. */
+    if (table < WT_NFACTORY && sp) { memcpy(spectrum, sp, sizeof spectrum); sp = spectrum; }
+#endif
     uint32_t l;
     for (l = 0; l < WT_LEVELS; l++) {
         uint32_t n, h, N = 1024u >> l, H = 128u >> l, h0 = (H * 3u) / 5u;

@@ -14,6 +14,9 @@ Pure Python (no numpy: it runs in the build on any machine); a cache next to the
 this script has not changed.
   tools/gen_wavetables.py build/gen/felucca_wavetables.h"""
 import hashlib
+import re
+import zlib
+import struct
 import math
 import random
 import sys
@@ -320,6 +323,36 @@ def build():
     return "\n".join(lines) + "\n"
 
 
+def compact(text):
+    frames=[]
+    for row in re.findall(r'^        \{(.*)\},$', text, re.M):
+        v=[int(x) for pair in re.findall(r'\{(-?\d+),(-?\d+)\}',row) for x in pair]
+        frames.append(v+[0]*(NH*2-len(v)))
+    assert len(frames)==len(TABLES)*NF
+    data=bytearray(); offsets=[0]; lengths=[]
+    for start in range(0,len(frames),NF):
+        prev=[0]*(NH*2); encoded=bytearray()
+        for frame in frames[start:start+NF]:
+            for a,b in zip(frame,prev):
+                n=a-b; n=n*2 if n>=0 else -n*2-1
+                while n>=128: encoded.append((n&127)|128); n>>=7
+                encoded.append(n)
+            prev=frame
+        assert len(encoded)<=8192
+        co=zlib.compressobj(9,zlib.DEFLATED,-15)
+        packed=co.compress(encoded)+co.flush()
+        assert zlib.decompress(packed,-15)==encoded
+        data.extend(packed);offsets.append(len(data));lengths.append(len(encoded))
+    a=text.index('static const int16_t WT_SPEC');b=text.index('\n};',a)+3
+    text=text[:a]+'#if !SM_PACKED_WT || SM_WT_TEST\n'+text[a:b]+'\n#endif'+text[b:]
+    text+='\nstatic const uint32_t WT_PACK_OFF[] = {'+','.join(map(str,offsets))+'};\n'
+    text+='static const uint16_t WT_PACK_LEN[] = {'+','.join(map(str,lengths))+'};\n'
+    text+='static const uint8_t WT_PACK_DATA[] = {\n'
+    text+='\n'.join(','.join(map(str,data[i:i+32]))+',' for i in range(0,len(data),32))+'\n};\n'
+    print('wavetables: lossless compressed ROM',len(data),'B (was',len(TABLES)*NF*NH*4,'B)')
+    return text
+
+
 def main(out):
     out = Path(out)
     key = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()[:16]
@@ -327,7 +360,7 @@ def main(out):
     if out.exists() and cache.exists() and cache.read_text().strip() == key:
         print(f"wavetables: {out} (cached)")
         return
-    text = build()
+    text = compact(build())
     out.write_text(text)
     cache.write_text(key + "\n")
     print(f"wavetables: {len(TABLES)} tables x {NF} frames x {NH} harmonics -> {out}")

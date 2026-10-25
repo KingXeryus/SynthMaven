@@ -1,7 +1,7 @@
 name: SynthMaven build and website
 on:
   push:
-    branches: [main]
+    branches: [main, synthmaven-korg-ble]
   workflow_dispatch:
 permissions:
   contents: read
@@ -24,6 +24,8 @@ jobs:
           node-version: '22'
       - run: pip install Pillow
       - name: Host UI, routing, settings and editor tests
+        env:
+          SM_SKIP_FULL_WEB: ${{ github.ref == 'refs/heads/main' && '0' || '1' }}
         run: sh tools/test_synthmaven.sh
       - name: Build development website
         run: python3 tools/make_synthmaven_site.py
@@ -50,11 +52,14 @@ jobs:
           name: SynthMaven-development-build
           path: |
             build/*.fwsc
+            build/*.elf
+            build/*.dis
             build/synthmaven-site/source/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/synthmaven-site
   deploy:
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-24.04
     environment:
