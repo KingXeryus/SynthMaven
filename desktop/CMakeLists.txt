@@ -1,0 +1,41 @@
+cmake_minimum_required(VERSION 3.22)
+project(SynthMaven VERSION 0.1.0 LANGUAGES C CXX OBJCXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version")
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+add_subdirectory(vendor/JUCE-7.0.12 EXCLUDE_FROM_ALL)
+add_library(SynthMavenDSP STATIC ../build/desktop-generated/SynthMavenDSP.c)
+target_compile_options(SynthMavenDSP PRIVATE -O2 -w)
+target_include_directories(SynthMavenDSP PUBLIC Source)
+juce_add_binary_data(SynthMavenAssets SOURCES Resources/SynthMaven-logo.png)
+juce_add_plugin(SynthMaven
+ ICON_BIG Resources/SynthMaven-icon.png
+ COMPANY_NAME "SynthMaven" BUNDLE_ID "com.synthmaven.instrument"
+ PLUGIN_MANUFACTURER_CODE Smvn PLUGIN_CODE SyMv
+ FORMATS VST3 AU Standalone PRODUCT_NAME "SynthMaven"
+ IS_SYNTH TRUE NEEDS_MIDI_INPUT TRUE NEEDS_MIDI_OUTPUT FALSE IS_MIDI_EFFECT FALSE
+ COPY_PLUGIN_AFTER_BUILD FALSE
+ AU_MAIN_TYPE kAudioUnitType_MusicDevice
+ VST3_CATEGORIES Instrument Synth
+ MICROPHONE_PERMISSION_ENABLED FALSE)
+target_sources(SynthMaven PRIVATE Source/PluginProcessor.cpp Source/PluginEditor.cpp)
+target_compile_definitions(SynthMaven PUBLIC JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JUCE_VST3_CAN_REPLACE_VST2=0 JUCE_DISPLAY_SPLASH_SCREEN=0 JUCE_REPORT_APP_USAGE=0)
+target_link_libraries(SynthMaven PRIVATE SynthMavenDSP SynthMavenAssets juce::juce_audio_utils juce::juce_dsp PUBLIC juce::juce_recommended_config_flags juce::juce_recommended_warning_flags)
+add_executable(SynthMavenDSPTests tests/DSPTests.c)
+target_link_libraries(SynthMavenDSPTests PRIVATE SynthMavenDSP)
+enable_testing()
+add_test(NAME DSPIsolationAndPresets COMMAND SynthMavenDSPTests)
+add_executable(SynthMavenProcessorTests tests/ProcessorTests.cpp)
+target_include_directories(SynthMavenProcessorTests PRIVATE Source vendor/JUCE-7.0.12/modules)
+target_compile_definitions(SynthMavenProcessorTests PRIVATE JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1)
+target_link_libraries(SynthMavenProcessorTests PRIVATE SynthMaven)
+add_test(NAME ProcessorRatesAndState COMMAND SynthMavenProcessorTests)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+add_executable(SynthMavenOriginalRender tests/OriginalDSP.c tests/RenderHash.c)
+target_include_directories(SynthMavenOriginalRender PRIVATE Source ../build/gen ../firmware/src ../firmware/hal)
+target_compile_definitions(SynthMavenOriginalRender PRIVATE SYNTHMAVEN_SYNTH=1 SM_BLE=0)
+target_compile_options(SynthMavenOriginalRender PRIVATE -O2 -w)
+add_executable(SynthMavenIsolatedRender tests/RenderHash.c)
+target_link_libraries(SynthMavenIsolatedRender PRIVATE SynthMavenDSP)
+add_test(NAME OriginalDSPEquivalence COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/CompareOriginal.py $<TARGET_FILE:SynthMavenOriginalRender> $<TARGET_FILE:SynthMavenIsolatedRender>)

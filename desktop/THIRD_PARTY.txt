@@ -1,0 +1,19 @@
+SynthMaven software instrument — third-party notices
+
+This open-source software is based on Clipper and preserves the original
+DSP copyright and license notices. See the repository LICENSE and source
+file headers, plus LICENSING.md for preset/asset provenance.
+
+JUCE 7.0.12 — Raw Material Software Limited and JUCE contributors.
+Used under its GPL v3 option. Some core modules use ISC terms; bundled
+modules retain their individual notices. The source distribution includes
+the complete pinned JUCE sources, including SynthMaven's small macOS SDK
+compatibility patch to snapshot only an app-owned NSView.
+
+Steinberg VST3 SDK and AudioUnitSDK portions bundled with JUCE retain their
+original license notices in desktop/vendor/JUCE-7.0.12/modules.
+VST is a trademark of Steinberg Media Technologies GmbH.
+Audio Unit, macOS, Apple and Logic Pro are trademarks of Apple Inc.
+SynthMaven is not affiliated with Korg, Yamaha, Native Instruments or Xfer.
+The interface is original artwork and controls; no Massive or Serum assets
+or source code are included.

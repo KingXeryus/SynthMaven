@@ -1,0 +1,26 @@
+SynthMaven software instrument 0.1.0 — validation
+Development Mac: Apple Silicon, macOS; universal arm64 + x86_64 build,
+minimum deployment target macOS 11.0. JUCE 7.0.12 (GPL v3).
+
+PASS: 23 engines, 449 factory programs, 160 native parameters;
+      147 synthesis parameters exposed to host automation.
+PASS: every factory preset renders finite audio.
+PASS: concurrent and interleaved DSP contexts retain independent state.
+PASS: all enumeration strings across every engine and valid value.
+PASS: all 449 presets yield byte-identical 8192-frame float output to
+      the untransformed original desktop DSP adapter at 44.1 kHz.
+PASS: rates 44100, 48000, 88200, 96000, 192000;
+      buffer sizes 1, 32, 127, 512, 1024.
+PASS: every factory preset through the JUCE processor at 48 kHz.
+PASS: factory program and edited parameter state round trip.
+PASS: all 32 ROM1A DX7 voices import, render and recall in project state.
+PASS: custom editor construction and rendered visual inspection.
+PASS: x86_64 DSP executable through Rosetta.
+PASS: Apple auval, aumu/SyMv/Smvn.
+PASS: pluginval VST3 strictness 5, including editor automation.
+
+Final distribution validation logs accompany the DMG.
+Individual DAW session compatibility is not exhaustively tested.
+Developer ID signing / notarization: pending paid Apple Developer Program
+membership. Current account is an Apple Personal Team. Local-Test bundles
+use ad-hoc signatures and do not have Apple notarization tickets.

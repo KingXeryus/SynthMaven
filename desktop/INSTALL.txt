@@ -1,0 +1,43 @@
+SynthMaven 0.1.0 — macOS Universal
+
+Open the SynthMaven installer package inside this disk image.
+The package installs:
+  /Applications/SynthMaven.app
+  /Library/Audio/Plug-Ins/VST3/SynthMaven.vst3
+  /Library/Audio/Plug-Ins/Components/SynthMaven.component
+Restart your DAW and rescan plug-ins after installation.
+
+Use Audio Unit in Logic Pro/GarageBand, and VST3 or Audio Unit in other
+compatible Mac DAWs. Pro Tools/AAX is not included. macOS 11 or later,
+Apple Silicon or Intel. Validation was performed on the development Mac;
+every DAW/version has not been individually tested.
+
+LOCAL TEST BUILD
+If the filename contains Local-Test, it is ad-hoc signed, not Developer ID
+signed or notarized. Gatekeeper may prevent installation/loading on other
+Macs. A paid Apple Developer Program membership is needed to produce the
+notarized distribution. Do not disable system security protections.
+
+Standalone: choose your audio output and MIDI inputs using Options >
+Audio/MIDI Settings. Click the on-screen keyboard or connect a MIDI keyboard.
+Browser: search/filter factory sounds, then click a sound to load it.
+Sound / Modulation / Effects / All Parameters expose the synthesis controls.
+Drag knobs; double-click to reset. DAWs can automate the exposed parameters.
+Import accepts .synthmaven presets and valid DX7 32-voice .syx banks; choose
+any of the bank's 32 voices. Save stores an instrument preset. DAW projects
+recall the program, parameter edits and imported DX7 voice.
+
+449 factory presets across all 23 firmware engines are included. The nine
+XD defaults are the existing SynthMaven HYBRID translations, not Korg binary
+oscillators or an emulation of the original analog circuitry. FM6 includes
+ROM1A and ARABESC defaults. No Bluetooth, USB-host or TRS hardware settings.
+
+MIDI notes, velocity, sustain, mod wheel, aftertouch and pitch bend use the
+firmware implementation. Bank Select CC0 + Program Change selects factory
+sounds (bank * 128 + program, both zero based); program changes are applied
+from the message thread, so allow about 34 ms. Host tempo follows the DAW.
+The original DSP runs at 44.1 kHz; other rates use cubic interpolation.
+
+License: GPL-3.0-only, with original third-party notices retained.
+This open-source software is based on Clipper.
+Source and build instructions are included with this distribution.
