@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Charles Vestal (fm1_guard_stack_floor)
  * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
 /* FM-1 hardware guards. Every violation raises the CPU exception (vector 1) and
  * ends in the fault report of fm1_irq.h, so install that first.

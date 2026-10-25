@@ -3000,7 +3000,7 @@ function makeMockDevice(opt = {}) {
         break;
       }
       case CMD.INFO:
-        s(opt.synthmaven ? "FELUCCA SYNTHMAVEN 0.2 DEV (MOCK)" : opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : (opt.synthmaven ? "FELUCCA SYNTHMAVEN 0.2 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)")); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
+        s(opt.synthmaven ? "FELUCCA SYNTHMAVEN 0.3 DEV (MOCK)" : opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : (opt.synthmaven ? "FELUCCA SYNTHMAVEN 0.3 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)")); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
         ENG.forEach((e) => s(e.name));
         if (!opt.legacy) b(NTRK);
         if (v5) b(opt.synthmaven ? 15 : opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : opt.synthmaven ? (JU_E >= 0 ? (opt.synthmaven === "0.8" ? 13 : 14) : FX_E >= 0 ? 12 : 11) : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
@@ -9768,6 +9768,7 @@ async function hyReadTrack(quiet) {
   if (r.rc) { if (!quiet) checkRc(r.rc); return; }
   hyv = HY.unpack(r.bytes);
   renderHy();
+  korgShowStock();
   if (!quiet) sayK("hyRead", ` ${hyTrack() + 1}: ${hyv.name}`);
 }
 async function hySend(quiet) {
@@ -9789,6 +9790,7 @@ $("hyload").addEventListener("click", () => op(async () => {
   checkRc(r.rc);
   hyv = HY.unpack(r.bytes);
   renderHy();
+  korgShowStock();
   hyChanged();
   sayK("hyLoaded", ` F${i + 1}: ${hyv.name}`);
 }));
@@ -9811,6 +9813,15 @@ $("hyfile").addEventListener("change", async (e) => {
   } catch (err) { sayK("hyBadFile", ` ${f.name}`); }
 });
 let korgStaged = null, korgLibrary = null;
+function korgShowStock() {
+  korgStaged=null; $('korgsend').disabled=true;
+  const item=KORG_STOCK.items.find(x=>x.name===hyv.name);
+  if(item) $('korgreport').replaceChildren(...[
+    item.originalName+' · default HYBRID compatibility preset',
+    'Use the main preset list to load the sound and its amp envelope together.',
+    ...(item.warnings||[])].map(text=>el('p',{text})));
+  else $('korgreport').textContent='Import a .mnlgxdprog or .mnlgxdlib to preview a translation, or inspect a .mnlgxdunit.';
+}
 function korgReport(r) {
   const lines = [`${r.name || 'Korg file'} · ${r.kind === 'unit' ? 'unit inspection only' : 'HYBRID translation preview'}`,
     ...(r.kind === 'program' ? ['Mapped: two VCOs, mixer, filter, amp/mod envelopes and LFO.', `Amp ADSR: ${r.amp.join(', ')}. Use Send translated patch to apply this envelope too.`] : []),
@@ -10392,11 +10403,22 @@ function smBleStatus(state) {
   $('sm-ble-device').disabled=!(state.caps&4)||!state.bt;
   $('sm-ble-connect').disabled=!(state.caps&4)||!state.bt||!$('sm-ble-device').options.length||state.state===6;
 }
+function smParseDevices(a) {
+  if(!a || a.length<2 || a[0] || a[1]>8)throw new Error('Bluetooth device list unavailable');
+  let at=2;const entries=[],seen=new Set();
+  for(let i=0;i<a[1];i++) {
+    const index=a[at++];if(index==null||index>7||seen.has(index))throw new Error('Invalid Bluetooth device list');
+    seen.add(index);let name='';
+    while(at<a.length && a[at] && name.length<31)name+=String.fromCharCode(a[at++]);
+    if(at>=a.length||a[at++]!==0||at>=a.length)throw new Error('Invalid Bluetooth device list');
+    const rssi=a[at++]-127;entries.push({index,name,rssi});
+  }
+  if(at!==a.length)throw new Error('Invalid Bluetooth device list');
+  return entries;
+}
 async function smBleList() {
   if(!dev || !smState || !(smState.caps&4))return;
-  const a=await rq([103,[]]);if(!a || a.length<2 || a[0])throw new Error('Bluetooth device list unavailable');
-  const r=new Reader(a.slice(2)), entries=[];
-  for(let i=0;i<a[1];i++){const index=r.b(),name=r.s(),rssi=r.b()-127;entries.push({index,name,rssi});}
+  const entries=smParseDevices(await rq([103,[]]));
   const select=$('sm-ble-device'),keep=select.value;
   select.replaceChildren(...entries.map(x=>el('option',{value:x.index,text:x.name+' ('+x.rssi+' dBm)'})));
   if(entries.some(x=>String(x.index)===keep))select.value=keep;

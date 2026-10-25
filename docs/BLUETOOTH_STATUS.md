@@ -4,7 +4,7 @@ The development branch integrates the [fm1-base BLE MIDI runtime](https://github
 
 The port includes central scan, explicit device selection, GATT discovery/subscription, disconnect controls, timestamp/running-status decoding, a dedicated MIDI queue and persisted radio configuration. The driver and upstream licence notices are in `firmware/vendor/fm1-base`.
 
-All 23 synth engines remain. To make space, factory WAVE spectra use a lossless delta/DEFLATE codec (35,606 bytes instead of 131,072). All 256 decoded spectra and rendered table/mip buffers are compared against the original data. Decode workspace reuses the stopped WAVE builder's buffer. The synth build allocates engine arenas to its two active instrument/layer parts; the three-part project record layout stays unchanged. BLE task stacks use the pool and the 20-KiB RF-accessible heap uses low SRAM. USB debug CDC is disabled in BLE builds.
+All 23 synth engines remain. To make space, factory WAVE spectra use a lossless predictive/DEFLATE codec (30,778 bytes instead of 131,072). All 256 decoded spectra and rendered table/mip buffers are compared against the original data. Decode workspace reuses the stopped WAVE builder's buffer. The synth build allocates engine arenas to its two active instrument/layer parts; the three-part project record layout stays unchanged. BLE task stacks use the pool and the 20-KiB RF-accessible heap uses low SRAM. USB debug CDC is disabled in BLE builds.
 
 Target compilation and enforced flash/RAM/pool bounds must pass before publication. Hardware validation remains outstanding: both Chocolate models, reconnect and power cycles, discovery under nearby BLE traffic, sustained MIDI and audio timing. No simulated success is presented as real pairing.
 

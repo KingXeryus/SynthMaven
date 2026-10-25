@@ -329,7 +329,7 @@ def compact(text):
         v=[int(x) for pair in re.findall(r'\{(-?\d+),(-?\d+)\}',row) for x in pair]
         frames.append(v+[0]*(NH*2-len(v)))
     assert len(frames)==len(TABLES)*NF
-    data=bytearray(); offsets=[0]; lengths=[]
+    data=bytearray(); offsets=[0]; lengths=[]; modes=[]
     for start in range(0,len(frames),NF):
         prev=[0]*(NH*2); encoded=bytearray()
         for frame in frames[start:start+NF]:
@@ -342,10 +342,27 @@ def compact(text):
         co=zlib.compressobj(9,zlib.DEFLATED,-15)
         packed=co.compress(encoded)+co.flush()
         assert zlib.decompress(packed,-15)==encoded
-        data.extend(packed);offsets.append(len(data));lengths.append(len(encoded))
+        candidates=[(packed,bytes(encoded),0)]
+        fs=frames[start:start+NF]
+        for mode in (1,2,3):
+            values=[]
+            for f in range(NF):
+                for h in range(NH*2):
+                    n=fs[f][h]
+                    if mode>=2: n-=fs[f-1][h] if f else 0
+                    if mode==3: n-=(fs[f-1][h]-(fs[f-2][h] if f>1 else 0)) if f else 0
+                    values.append(n&65535)
+            raw=struct.pack('<4096H',*values)
+            planar=raw[::2]+raw[1::2]
+            co=zlib.compressobj(9,zlib.DEFLATED,-15)
+            candidates.append((co.compress(planar)+co.flush(),planar,mode))
+        packed,encoded,mode=min(candidates,key=lambda x:len(x[0]))
+        assert zlib.decompress(packed,-15)==encoded
+        data.extend(packed);offsets.append(len(data));lengths.append(len(encoded));modes.append(mode)
     a=text.index('static const int16_t WT_SPEC');b=text.index('\n};',a)+3
     text=text[:a]+'#if !SM_PACKED_WT || SM_WT_TEST\n'+text[a:b]+'\n#endif'+text[b:]
     text+='\nstatic const uint32_t WT_PACK_OFF[] = {'+','.join(map(str,offsets))+'};\n'
+    text+='static const uint8_t WT_PACK_MODE[] = {'+','.join(map(str,modes))+'};\n'
     text+='static const uint16_t WT_PACK_LEN[] = {'+','.join(map(str,lengths))+'};\n'
     text+='static const uint8_t WT_PACK_DATA[] = {\n'
     text+='\n'.join(','.join(map(str,data[i:i+32]))+',' for i in range(0,len(data),32))+'\n};\n'

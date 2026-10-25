@@ -69,4 +69,8 @@ by those owners.
 
 ## Radio
 
-Felucca never enables the Bluetooth / Wi-Fi radio of the hardware.
+SynthMaven BLE builds enable the FM1 Bluetooth radio through fm1-base (Charles Vestal), MPL-2.0, with retained notices and Apache-2.0 SDK dependencies. Adapted sources and licences are in `firmware/vendor/fm1-base`; JieLi stack libraries are obtained from the SDK during the build. Wi-Fi is not enabled.
+
+Lossless factory wavetable decoding uses Jibsen tinf, zlib licence; source and notice are in `firmware/vendor/tinf`.
+
+The supplied Korg program records and translated defaults are patch data, separate from the firmware code licence. See `assets/korg/README.md`. No Korg user-unit executable is redistributed or executed.

@@ -8,17 +8,21 @@ SynthMaven is an open-source firmware based on [Clipper](https://github.com/isod
 
 ## Development status
 
-**Not a hardware-validated release. No Bluetooth pedal pairing or native USB host driver is included.** The Bluetooth setting and pairing action report unavailable; the web editor disables them based on device capabilities. Selecting USB keyboard input means USB device-mode MIDI input from a host, not direct support for a USB keyboard plugged into the FM1. A power bank provides power only.
+**Development firmware; hardware validation is outstanding.** Native BLE builds include MIDI pedal discovery, explicit device selection, connection and disconnect controls. Original Chocolate and Chocolate Plus pairing, reconnect and audio timing still need testing on the FM1. The public 0.2 package predates this integration.
 
-The requested no-computer, no-MIDI-box rig using either Chocolate model over USB/Bluetooth remains unfinished. TRS keyboard input works through the existing UART path. USB MIDI input and Program Change switching can be used with a host. Do not infer direct device compatibility from the presence of a dropdown.
+Native USB host support is not implemented. Selecting USB input means device-mode MIDI from a host; a USB keyboard or USB pedal cannot connect directly using a power bank alone. TRS keyboard plus BLE pedal is the intended computer-free combination.
 
-The website build never presents an upstream binary as a SynthMaven build. If target compilation fails, it publishes the editor and a disabled installer with a clear message. Successful CI target builds produce development `.fwsc` packages, not a tested stable release.
+CI must build a real SynthMaven target package and pass the enforced memory bounds before deploying the installer. It never substitutes an upstream binary.
 
 ## Stock DX7 sounds
 
 The supplied ROM1A bank (32 voices) and ARABESC voice are built into FM6 as F9–F41, alongside the original eight sounds. Select FM6 in the four-patch PRESETS browser, highlight a voice, then Load or Edit. The editor lists the same read-only factory sounds. Existing B1–B27 slots and saved references retain their original parameter IDs. See [stock data](assets/fm6/README.md).
 
-Bluetooth is still pending: the optimized 0.2 build has about 28 KB of app-flash and 23 KB of static-RAM headroom, while the available BLE central port needs about 132 KB of flash and 46 KB of static RAM. The user chose to preserve all engines. See the measured [Bluetooth integration status](docs/BLUETOOTH_STATUS.md).
+## Default Korg compatibility sounds
+
+Nine supplied minilogue xd programs append to the HYBRID factory list as XD presets, with a dedicated XD browser category. In the editor, select HYBRID and choose an XD sound from the main preset list to load its patch and amplitude envelope together. The Minilogue XD panel imports `.mnlgxdprog` and selects individual `.mnlgxdlib` programs. Custom `.mnlgxdunit` files are inspected only; their ARM binaries cannot run on the FM1. These are native approximations, with digital oscillator substitutions and compatibility notes. See [the preset list and mappings](docs/KORG.md).
+
+All 23 synth engines remain. Lossless wavetable compression and memory reuse make room for the BLE runtime. See [Bluetooth integration status](docs/BLUETOOTH_STATUS.md) for validation limits.
 
 ## Hardware controls
 
@@ -35,11 +39,11 @@ This replaces the synth browser's FAV knob action; existing favourites are retai
 
 ## MIDI settings
 
-GLO > PATCH MIDI: PROG enables/disables patch switching. PORT depends on PROG. USB selects USB input; BLE is reserved for an unavailable future BLE-central driver; ANY preserves legacy routing.
+GLO > PATCH MIDI: PROG enables/disables patch switching. PORT depends on PROG. USB selects USB input; BLE selects the native BLE pedal input when the radio runtime is present; ANY preserves legacy routing.
 
 GLO > KEY MIDI: KEY IN selects USB, TRS or BOTH. USB in this build needs an external host. Note-offs from the previous input are still processed after changing source, to avoid hanging notes.
 
-GLO > BLUETOOTH exposes BT MIDI and PAIR. **These actions cannot enable or connect Bluetooth in this build.** Firmware refuses unsupported requests, and the editor disables unavailable controls rather than simulating pairing. Original Chocolate and Chocolate Plus have not been tested.
+GLO > BLUETOOTH: enable BT MIDI, start SCAN, select PEDAL, then use LINK to connect. A connected link can be disconnected with LINK. Only MIDI READY means service discovery/subscription has completed. The editor provides the same discovery, selection and link status. Original Chocolate and Chocolate Plus remain untested; non-radio builds disable unavailable controls.
 
 Routing preferences persist in a separately checksummed extension of the existing settings side record. Existing compatible settings keep their existing layout. Firmware protocol v15 commands are documented in [MIDI protocol](docs/SYNTHMAVEN_MIDI.md). Editor settings require SynthMaven v15 and refuse older firmware.
 
@@ -47,7 +51,7 @@ For stable pedal addressing, send Bank Select MSB (CC0) 127 and Program Change d
 
 ## Building and verification
 
-See [BUILDING.md](BUILDING.md) for the JieLi pi32v2 toolchain and AC79 SDK. Linux x86-64 runs the target compiler directly; macOS requires Docker. Target builds use `sh build.sh`; the internal package remains `build/felucca.fwsc` for loader compatibility. The product name reported to USB and the UI is SynthMaven.
+See [BUILDING.md](BUILDING.md) for the JieLi pi32v2 toolchain and AC79 SDK. Linux x86-64 runs the target compiler directly; macOS requires Docker. Native BLE target builds use `SYNTHMAVEN_BLE=1 sh build.sh`; the internal package remains `build/felucca.fwsc` for loader compatibility. The product name reported to USB and the UI is SynthMaven.
 
 ```
 pip install Pillow

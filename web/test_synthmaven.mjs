@@ -22,3 +22,14 @@ assert.equal(context.toPtch(67,41),34);
 assert.equal(context.toPtch(8,41),35);
 assert.equal(context.toPtch(40,41),67);
 console.log('SynthMaven stock mappings: 41 factory / 27 bank, stable old PTCH IDs PASS');
+
+const ls=html.slice(html.indexOf('function smParseDevices('),html.indexOf('async function smBleList('));
+vm.runInContext(ls+';this.devices=smParseDevices',context);
+assert.equal(context.devices([0,1,2,...Buffer.from('Chocolate'),0,80])[0].name,'Chocolate');
+assert.equal(context.devices([0,0]).length,0);
+for(const a of [[0,9],[0,1,8,0,80],[0,1,0,65],[0,1,0,...Array(32).fill(65),0,80],[0,0,1]])assert.throws(()=>context.devices(a));
+context.dev.info.version='FELUCCA SYNTHMAVEN 0.3 DEV';context.rq=async r=>(sent=r,[0,1,7,1,1,1,1,3]);
+assert.equal((await context.request(102)).state,3);
+await context.request(104,[2]);assert.equal(sent[1][0],2);
+await context.request(105);assert.equal(sent[0],105);
+console.log('SynthMaven BLE web: bounded peer decoding, scan/connect/disconnect wire commands PASS');

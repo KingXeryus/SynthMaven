@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* Lossless factory spectra: per-table DEFLATE of signed frame deltas as LEB128.
+/* Lossless factory spectra: per-table DEFLATE; best of LEB128 frame deltas or byte-planar 16-bit predictors.
  * Both buffers are in the WAVE mipmap while wt_have == -1; no permanent RAM. */
 int tinf_uncompress(void *dest, unsigned int *dest_len, const void *source, unsigned int source_len);
 static int wt_rom_decode(uint32_t table, uint8_t *scratch, int16_t *out)
@@ -9,6 +9,18 @@ static int wt_rom_decode(uint32_t table, uint8_t *scratch, int16_t *out)
     if (table >= WT_NFACTORY || tinf_uncompress(scratch, &n, WT_PACK_DATA + WT_PACK_OFF[table],
         WT_PACK_OFF[table + 1u] - WT_PACK_OFF[table]) || n != WT_PACK_LEN[table])
         return 0;
+    if(WT_PACK_MODE[table]) {
+        const uint32_t count=WT_NF*WT_NH*2u, stride=WT_NH*2u;
+        uint32_t mode=WT_PACK_MODE[table];
+        if(n!=count*2u || mode>3u)return 0;
+        for(i=0;i<count;i++) {
+            uint32_t v=(uint32_t)scratch[i] | (uint32_t)scratch[count+i]<<8;
+            if(mode>=2u && i>=stride)v+=(uint16_t)out[i-stride];
+            if(mode==3u && i>=stride)v+=(uint16_t)out[i-stride]-(i>=stride*2u?(uint16_t)out[i-stride*2u]:0u);
+            out[i]=(int16_t)(uint16_t)v;
+        }
+        return 1;
+    }
     for (i = 0; i < WT_NF * WT_NH * 2u; i++) {
         uint32_t v = 0, sh = 0, b;
         int32_t delta, value;

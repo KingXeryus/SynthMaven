@@ -27,15 +27,16 @@ void shim_log(const char *s) { str_cpy(sm_ble_log, s, sizeof sm_ble_log); }
 void shim_reboot(void) { fm1_reboot(); }
 #ifdef SM_BLE_HOST_TEST
 #define SM_RADIO_RAM
-#define SM_RADIO_TICKS() fm1_ticks()
 #else
 #define SM_RADIO_RAM __attribute__((section(".radio_ram"),noinline,used))
-#define SM_RADIO_TICKS() FM1_T4_CNT
 #endif
 SM_RADIO_RAM void shim_delay_us(uint32_t us)
 {
-    uint32_t t = SM_RADIO_TICKS(), span = us * FM1_TICKS_PER_US;
-    while ((uint32_t)(SM_RADIO_TICKS() - t) < span) { __asm__ volatile("nop"); }
+#ifdef SM_BLE_HOST_TEST
+    (void)us;
+#else
+    fm1_radio_delay_us(us);
+#endif
 }
 void shim_idle(void)
 {

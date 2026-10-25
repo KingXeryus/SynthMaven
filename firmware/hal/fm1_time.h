@@ -44,3 +44,11 @@ static inline void fm1_delay_ms(uint32_t ms)
     while (ms--)
         fm1_delay_us(1000u);
 }
+
+/* Radio calibration executes from low SRAM; never outline this register loop
+ * into an XIP helper (the RAM-to-XIP distance exceeds a short call). */
+static inline __attribute__((always_inline)) void fm1_radio_delay_us(uint32_t us)
+{
+    uint32_t t=FM1_T4_CNT, span=us*FM1_TICKS_PER_US;
+    while((uint32_t)(FM1_T4_CNT-t)<span) __asm__ volatile("nop");
+}
