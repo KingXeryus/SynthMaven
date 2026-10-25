@@ -145,7 +145,43 @@ def radio_units():
     linked = (BLE_LIBS if BLE else RADIO_LIBS) + WIFI_LIBS * WIFI
     if BLE and CONF.get("ble_trim") and CONF.get("ble_central"):
         raise SystemExit("build: ble_trim cuts the central's scan, connecting and GATT client: not with ble_central")
-    trimmed = ble_trim(dst) if BLE and CONF.get("ble_trim") else {}
+    trimmed = ble_trim(dst)
     libs = ["--start-group", *[trimmed.get(f, dst / "lib" / f) for f in linked], dst / "lib" / "libcompiler_rt.a",
             "--end-group"]
     return units, objs, libs
+
+# Central-safe trimming only: no scan, GATT, connection, bonding or encryption
+# routines are replaced. These are Bluetooth Classic ACL and Apple notification
+# service entry points unused by BLE MIDI; adapted from fm1-base's verified cuts.
+BLE_TRIM = {
+ ("btctrler.a", "bredr_link.c.o"): "int link_conn_tx_bulk_avaiable(void) { return 0; }",
+ ("btstack.a", "ancs_client.c.o"): "void ancs_client_btstack_init_for_check(void) {}",
+}
+def ble_trim(dst):
+    """OUT/ble/trim/LIB: the libraries with BLE_TRIM's functions replaced (cached by their stubs); {LIB: path}"""
+    import shutil
+    trim = OUT / "ble" / "trim"
+    pick = os.environ.get("FM1B_STUBS")           # (a bisection: only these members' stubs, e.g. "ll_scan,gatt_client")
+    items = {k: v for k, v in BLE_TRIM.items() if not pick or k[1].replace(".c.o", "") in pick.split(",")}
+    key = repr(sorted(items.items()))
+    libs = {lib: trim / lib for lib, _ in items}
+    if (trim / "key").exists() and (trim / "key").read_text() == key:
+        return libs
+    if trim.exists():
+        shutil.rmtree(trim)
+    trim.mkdir(parents=True)
+    for (lib, member), src in items.items():
+        if not (trim / lib).exists():
+            shutil.copy(dst / "lib" / lib, trim / lib)
+        w = trim / member.replace(".c.o", "")
+        w.mkdir()
+        (w / "stub.c").write_text(src + "\n")
+        tc("common/bin/llvm-ar", "x", trim / lib, member)         # (into ROOT, the tools' cwd: moved below)
+        shutil.move(ROOT / member, w / member)
+        tc("cc", "-mcpu=r3", "-mfprev1", "-Oz", "-flto", "-c", w / "stub.c", "-o", w / "stub.bc")
+        tc("common/bin/llvm-link", w / member, f"-override={(w / 'stub.bc').resolve().relative_to(ROOT)}",
+           "-o", w / "out.bc")
+        shutil.copy(w / "out.bc", w / member)
+        tc("common/bin/llvm-ar", "r", trim / lib, w / member)
+    (trim / "key").write_text(key)
+    return libs

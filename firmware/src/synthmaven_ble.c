@@ -9,6 +9,7 @@ extern int le_controller_set_mac(void *);
 extern void ble_midi_enable(int), ble_midi_poll(void), ble_midi_scan(int), ble_midi_disconnect(void);
 extern int ble_midi_found(int, char *, int *), ble_midi_connect(int), ble_midi_central_state(void);
 extern int syscfg_read(uint16_t, void *, uint16_t), syscfg_write(uint16_t, void *, uint16_t);
+volatile uint32_t shim_isr_blocks; /* upstream shim counts refused waits in IRQ context */
 static uint8_t sm_ble_up, sm_ble_started, sm_ble_on, sm_ble_failed, sm_scan_requested;
 static uint32_t sm_ble_t0, sm_scan_t0, sm_irq_depth;
 static char sm_ble_log[40];
