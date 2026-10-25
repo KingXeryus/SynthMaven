@@ -248,12 +248,12 @@
     <p><button id="stock-go" disabled data-t="stockGo"></button></p>
     <p class="small" data-t="back"></p>
   </details>
-  <p class="small"><b>SynthMaven</b> by 3dSam (<a href="https://github.com/isod89" target="_blank" rel="noopener">isod89</a>), grown from <a href="https://github.com/isod89/sloop-fm1" target="_blank" rel="noopener">SLOOP</a> and based on <a href="https://github.com/hugelton/Felucca" target="_blank" rel="noopener">Felucca</a> by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener">Hügelton Instruments</a>.
+  <p class="small"><b>SynthMaven</b>, based on Clipper by 3dSam (<a href="https://github.com/isod89" target="_blank" rel="noopener">isod89</a>), grown from <a href="https://github.com/isod89/sloop-fm1" target="_blank" rel="noopener">SLOOP</a> and based on <a href="https://github.com/hugelton/Felucca" target="_blank" rel="noopener">Felucca</a> by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener">Hügelton Instruments</a>.
     FM6: msfa / Dexed (Apache-2.0). PHYS: DaisySP and Mutable Instruments Rings (MIT). Supersaw after Adam Szabo's JP-8000 analysis; ladder after Vadim Zavalishin; plate after Jon Dattorro. JUNO, VECTOR, FMX, WSEQ, MACRO, the filter models and TURNG are SynthMaven's own code after the ideas of the Roland Juno, the Prophet VS and Wavestation, the Korg opsix, Mutable Instruments Plaits, the MS-20, SEM and diode ladders, Music Thing Modular's Turing Machine, and SPICE / DICE after the Arturia MicroFreak; .scl is the Scala format.
     Hold OCT− alone while switching on for USB rescue.<br>
     Font: Terminus (Dimitar Toshkov Zhekov, SIL OFL 1.1).<br>
     M-VAVE, FM-1 and the other product names above are trademarks of their respective owners; SynthMaven is not affiliated with them.<br>
-    <span data-t="license"></span> <a href="https://github.com/hugelton/Felucca" target="_blank" rel="noopener">github.com/hugelton/Felucca</a></p>
+    <span data-t="license"></span> <a href="https://github.com/KingXeryus/SynthMaven" target="_blank" rel="noopener">github.com/KingXeryus/SynthMaven</a></p>
 </main>
 <script type="module">
 /*LIB*/
@@ -261,8 +261,8 @@ const $ = (id) => document.getElementById(id);
 const TEXT = {
   ja: {
     kicker: "M-VAVE FM-1 のためのシンセサイザー・ファームウェア",
-    expTitle: "実験版 — SYNTHMAVEN 1.1",
-    expText: "SynthMaven 1.1 は実験的なリリースです。パソコン上のテストはすべて通っていますが、FM-1 本体での確認はまだわずかです。CPU 負荷、クリック、保存まわりの問題が残っているかもしれません。やるべきことはまだたくさんあります。インストール前にエディタでバックアップを取り、気づいたことを知らせてください。",
+    expTitle: "実験版 — SYNTHMAVEN 0.1 DEV",
+    expText: "SynthMaven 0.1 は開発版です。Bluetooth ペダル接続と USB ホスト機能は未実装です。ホスト上のテストは実機での動作を保証しません。インストール前にバックアップしてください。",
     tEng: "音源エンジン", tSnd: "音色、レベル調整済み", tHy: "フィルター・モデル", tMx: "チューニング＋自分の Scala 音階",
     intro: "FM-1 を USB で接続してください。（Chrome か Edge で使えます）",
     warn: "書き込み中は USB を抜かないでください。",
@@ -298,7 +298,7 @@ const TEXT = {
   },
   en: {
     kicker: "Synthesizer firmware for the M-VAVE FM-1",
-    expTitle: "EXPERIMENTAL — SYNTHMAVEN 1.1",
+    expTitle: "EXPERIMENTAL — SYNTHMAVEN 0.1 DEV",
     expText: "SynthMaven 0.1 is a development build. Native Bluetooth pairing and USB host mode are not implemented. Host UI/MIDI tests do not establish hardware compatibility. Back up your device before installing a built package.",
     tEng: "synthesis engines", tSnd: "sounds, level-matched", tHy: "filter models", tMx: "tunings + your own Scala scales",
     intro: "Connect the FM-1 by USB. (Works in Chrome or Edge.)",
@@ -335,8 +335,8 @@ const TEXT = {
   },
   fr: {
     kicker: "Firmware synthétiseur pour la M-VAVE FM-1",
-    expTitle: "EXPÉRIMENTAL — SYNTHMAVEN 1.1",
-    expText: "SynthMaven 1.1 est une version expérimentale. Elle passe toute sa suite de tests sur ordinateur, mais elle a encore très peu tourné sur la FM-1 elle-même : il peut rester des défauts (charge processeur, clics, sauvegarde). Il reste énormément de travail à faire. Fais une sauvegarde avec l'éditeur avant d'installer, et signale ce que tu trouves.",
+    expTitle: "EXPÉRIMENTAL — SYNTHMAVEN 0.1 DEV",
+    expText: "SynthMaven 0.1 est une version de développement. Le Bluetooth MIDI et le mode hôte USB ne sont pas implémentés. Les tests sur ordinateur ne garantissent pas le fonctionnement sur le matériel. Sauvegardez avant installation.",
     tEng: "moteurs de synthèse", tSnd: "sons, niveaux égalisés", tHy: "modèles de filtre", tMx: "accordages + tes gammes Scala",
     intro: "Branche la FM-1 en USB. (Fonctionne dans Chrome ou Edge.)",
     warn: "Ne débranche pas le câble USB pendant l'écriture.",
