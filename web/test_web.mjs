@@ -490,15 +490,15 @@ async function editorV9() {
   const info = E.parse[C.INFO](await rq(E.req.info()));
   ok(info.proto === 10 && info.nengines === 12 && info.engines[9] === "FM6", "v9: INFO ends with 10 (v10 includes v9), FM6 is engine 9");
   const L = E.parse[C.FM6_LIST](await rq(E.req.fm6List()));
-  if (!(L.factory === 8 && L.bank === 27 && L.slots.length === 35)) console.log("  FM6_LIST", L.factory, L.bank, L.slots.length, js(L.slots.slice(0, 10)));
-  ok(L.factory === 8 && L.bank === 27 && L.slots.length === 35 && L.slots[0].used, "v9: FM6_LIST: 8 factory patches, 27 bank slots");
+  if (!(L.factory === 41 && L.bank === 27 && L.slots.length === 68)) console.log("  FM6_LIST", L.factory, L.bank, L.slots.length, js(L.slots.slice(0, 10)));
+  ok(L.factory === 41 && L.bank === 27 && L.slots.length === 68 && L.slots[0].used, "v9: FM6_LIST: 41 factory patches, 27 bank slots");
   const mine = F.factory(3); F.setName(mine, "MY BELL");
   let r = E.parse[C.FM6_PUT](await rq(E.req.fm6Put(F.TARGET.TRACK, 1, F.pack(mine))));
   const g = E.parse[C.FM6_GET](await rq(E.req.fm6Get(F.TARGET.TRACK, 1)));
   ok(r.rc === 0 && g.rc === 0 && F.name(F.unpack(g.packed)).trim() === "MY BELL", "v9: FM6_PUT to track 2, FM6_GET reads it back");
   r = E.parse[C.FM6_PUT](await rq(E.req.fm6Put(F.TARGET.BANK, 4, F.pack(mine)), { timeout: 3000 }));
   const L2 = E.parse[C.FM6_LIST](await rq(E.req.fm6List()));
-  ok(r.rc === 0 && L2.slots[8 + 4].used && L2.slots[8 + 4].name.trim() === "MY BELL", "v9: stored in bank slot B5, listed by name");
+  ok(r.rc === 0 && L2.slots[L2.factory + 4].used && L2.slots[L2.factory + 4].name.trim() === "MY BELL", "v9: stored in bank slot B5, listed by name");
   m.sim.play(true);
   r = E.parse[C.FM6_PUT](await rq(E.req.fm6Put(F.TARGET.BANK, 5, F.pack(mine)), { timeout: 3000 }));
   const re = E.parse[C.FM6_ERASE](await rq(E.req.fm6Erase(4), { timeout: 3000 }));
@@ -506,7 +506,7 @@ async function editorV9() {
   m.sim.play(false);
   const e1 = E.parse[C.FM6_ERASE](await rq(E.req.fm6Erase(4), { timeout: 3000 }));
   const ge = E.parse[C.FM6_GET](await rq(E.req.fm6Get(F.TARGET.BANK, 4)));
-  const bad = E.parse[C.FM6_GET](await rq(E.req.fm6Get(F.TARGET.FACTORY, 30)));
+  const bad = E.parse[C.FM6_GET](await rq(E.req.fm6Get(F.TARGET.FACTORY, 41)));
   ok(e1.rc === 0 && ge.rc === 2 && bad.rc === 1, "v9: FM6_ERASE empties the slot (GET rc 2), a bad index is rc 1");
   done();
   const old = attachMock({ v8: true });
@@ -1219,13 +1219,13 @@ async function editorCart() {
   m.sim.play(true);
   const r3 = await E.fm6CartWrite(rq, packs);
   let L = E.parse[C.FM6_LIST](await rq(E.req.fm6List()));
-  ok(r3 === 3 && L.slots[8 + 1].name.trim() === "MY BELL" && L.slots[8].name.trim() === "MY TINES", "cart: while the song plays: rc 3, the bank unchanged");
+  ok(r3 === 3 && L.slots[L.factory + 1].name.trim() === "MY BELL" && L.slots[L.factory].name.trim() === "MY TINES", "cart: while the song plays: rc 3, the bank unchanged");
   m.sim.play(false);
   const p0 = sent[C.BK_PUT] || 0, r0 = await E.fm6CartWrite(rq, packs), puts = sent[C.BK_PUT] - p0;
   L = E.parse[C.FM6_LIST](await rq(E.req.fm6List()));
   const g = E.parse[C.FM6_GET](await rq(E.req.fm6Get(F.TARGET.BANK, 2)));
-  ok(r0 === 0 && L.slots.slice(8, 11).map((x) => x.name.trim()).join() === "CART 1,CART 2,CART 3" && L.slots[8 + 4].name.trim() === "MY BELL"
-    && !L.slots[8 + 3].used && js(Array.from(F.unpack(g.packed))) === js(Array.from(pb.voices[2].v)) && puts === 2 + Math.ceil(3472 / 256),
+  ok(r0 === 0 && L.slots.slice(L.factory, L.factory + 3).map((x) => x.name.trim()).join() === "CART 1,CART 2,CART 3" && L.slots[L.factory + 4].name.trim() === "MY BELL"
+    && !L.slots[L.factory + 3].used && js(Array.from(F.unpack(g.packed))) === js(Array.from(pb.voices[2].v)) && puts === 2 + Math.ceil(3472 / 256),
   "cart: 3 voices -> B1-B3 in one write (B2 replaced, B5 kept, B4 still empty)");
   const all = pb.voices.slice(0, 27).map((x) => F.pack(x.v));
   const rAll = await E.fm6CartWrite(rq, all);

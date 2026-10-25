@@ -161,10 +161,12 @@ static void fm6_set_patch(uint32_t tr, const uint8_t *v)
 /* PTCH value s -> its packed record (F1..F8; the bank, an empty slot: the init voice) */
 static void fm6_slot_get(uint32_t s, uint8_t *pk)
 {
-    if (s < FM6_NFACTORY)
+    if (s < 8u)
         memcpy(pk, FM6_FACTORY[s], FM6_PACKED);
-    else if (s >= FM6_NSLOT || !fm6_bank_read || ((fm6_bank_fmx >> (s - FM6_NFACTORY)) & 1u) ||
-             fm6_bank_read(s - FM6_NFACTORY, pk))
+    else if (s >= 35u && s < FM6_NSLOT)
+        memcpy(pk, FM6_FACTORY[s - FM6_BANK_N], FM6_PACKED);
+    else if (s >= 35u || !fm6_bank_read || ((fm6_bank_fmx >> (s - 8u)) & 1u) ||
+             fm6_bank_read(s - 8u, pk))
         memcpy(pk, FM6_INIT, FM6_PACKED);           /* (SynthMaven 0.6: an FMX patch there: empty to FM6) */
 }
 
@@ -361,15 +363,13 @@ static void fm6_render(track_t *t, voice_t *v, int32_t *out, uint32_t len, const
 static const char *const N_FM6_ALG[] = {"PAT", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13",
                                         "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25",
                                         "26", "27", "28", "29", "30", "31", "32", 0};
-static const char *const N_FM6_PATCH[] = {"F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "B1", "B2", "B3", "B4",
-                                          "B5", "B6", "B7", "B8", "B9", "B10", "B11", "B12", "B13", "B14", "B15",
-                                          "B16", "B17", "B18", "B19", "B20", "B21", "B22", "B23", "B24", "B25",
-                                          "B26", "B27", 0};
+static const char *const N_FM6_PATCH[] = {FM6_PTCH_NAMES};
 _Static_assert(NELEM(N_FM6_PATCH) == FM6_NSLOT + 1u, "a PTCH name per slot");
 
 /* {ALG, FB, MLVL, MRAT, MEG, VMOD, DTUN, PTCH}: the factory patch F1..F8 as it is, DTUN on the pad. The ADSR
  * does nothing on this engine (ownenv): kept at its defaults. Names as ui.c BANK[] lists them (by kind) */
 static const preset_t FM6_PRESETS[] = {
+    /* Original eight remain first: saved preset numbers are stable. */
     {"TINE EP", {0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 127, 0}, 0, 0, FX(0, 45, 25, 35)},
     {"GLASS BELL", {0, 0, 0, 0, 0, 0, 0, 1}, {0, 0, 127, 0}, 0, 0, FX(0, 10, 30, 70)},
     {"ROUND BASS", {0, 0, 0, 0, 0, 0, 0, 2}, {0, 0, 127, 0}, 0, 1, FX(0, 0, 10, 10)},
@@ -378,6 +378,7 @@ static const preset_t FM6_PRESETS[] = {
     {"WOOD BARS", {0, 0, 0, 0, 0, 0, 0, 5}, {0, 0, 127, 0}, 0, 0, FX(0, 0, 25, 40)},
     {"DRAWBARS", {0, 0, 0, 0, 0, 0, 0, 6}, {0, 0, 127, 0}, 0, 0, FX(10, 40, 0, 30)},
     {"NYLON PICK", {0, 0, 0, 0, 0, 0, 0, 7}, {0, 0, 127, 0}, 0, 0, FX(0, 20, 35, 30)},
+    FM6_STOCK_PRESETS
 };
 
 static const engine_t ENG_FM6 = {

@@ -14,6 +14,12 @@ The requested no-computer, no-MIDI-box rig using either Chocolate model over USB
 
 The website build never presents an upstream binary as a SynthMaven build. If target compilation fails, it publishes the editor and a disabled installer with a clear message. Successful CI target builds produce development `.fwsc` packages, not a tested stable release.
 
+## Stock DX7 sounds
+
+The supplied ROM1A bank (32 voices) and ARABESC voice are built into FM6 as F9–F41, alongside the original eight sounds. Select FM6 in the four-patch PRESETS browser, highlight a voice, then Load or Edit. The editor lists the same read-only factory sounds. Existing B1–B27 slots and saved references retain their original parameter IDs. See [stock data](assets/fm6/README.md).
+
+Bluetooth is still pending: the existing build has only 780 bytes of app-flash headroom, while the available BLE central port needs about 132 KB. The user chose to preserve all engines. See the measured [Bluetooth integration status](docs/BLUETOOTH_STATUS.md).
+
 ## Hardware controls
 
 Tap SAVE to PRESETS. Four names are visible per page (fewer in a short final page).

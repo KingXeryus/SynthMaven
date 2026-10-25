@@ -27,8 +27,8 @@ static void sloop_splash(void)
     sloop_logo_draw(10);
     const char *v = FELUCCA_VERSION;
     char vb[24];
-    if (v[0] == 'C' && v[1] == 'L' && v[7] == ' ')
-        v += 8;                                         /* "SYNTHMAVEN 0.1" -> "0.1" under the wordmark */
+    if (v[0] == 'S' && v[1] == 'Y' && v[10] == ' ')
+        v += 11;                                         /* "SYNTHMAVEN 0.1" -> "0.1" under the wordmark */
     {   /* (1.0) "1.0 EXP" -> "1.0 EXPERIMENTAL": the boot screen says it whole */
         uint32_t n = 0;
         while (v[n] && n < 12u)

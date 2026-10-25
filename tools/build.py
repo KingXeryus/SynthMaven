@@ -338,11 +338,12 @@ def main():
     try:
         img, syms, dis, rt = build_app()
     except SystemExit:
-        # (2.7) the flash is full: the boot logo as text ("S" and "LOOP" in the tracks' colours, splash.c) gives 4.6 KB
-        if "overflow" not in LAST_ERR or os.environ.get("FELUCCA_LOGO_TEXT") == "1":
+        # Keep every engine and the supplied logo. Try Clang's size-focused mode
+        # before failing the fixed flash limit; never drop features silently.
+        if "overflow" not in LAST_ERR or CFLAGS[0] == "-Oz":
             raise
-        print("build: the flash is full: building again with the boot logo as text (FELUCCA_LOGO_TEXT=1, 4.6 KB less)")
-        os.environ["FELUCCA_LOGO_TEXT"] = "1"
+        print("build: flash limit reached with -Os; retrying with -Oz (all engines and logo retained)")
+        CFLAGS[0] = "-Oz"
         img, syms, dis, rt = build_app()
     errors, notes = check(img, syms, dis, rt)
     hal_err = mmio_check()
