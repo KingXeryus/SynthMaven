@@ -79,7 +79,8 @@ static const uint8_t profile_data[] = {
 #define ATT_RAM_BUFSIZE      (ATT_CTRL_BLOCK_SIZE + ATT_LOCAL_MTU_SIZE + ATT_SEND_CBUF_SIZE)
 static u8 att_ram_buffer[ATT_RAM_BUFSIZE] __attribute__((aligned(4)));
 
-static const char gap_device_name[] = "FM-1";
+/* SynthMaven: full name in scan response, keeping the ADV packet <=31 B. */
+static const char gap_device_name[] = "SynthMaven";
 #if BLE_MIDI_CENTRAL
 #define ROLE_SERVER 0                            /* the SDK's MULTI_ROLE_SLAVE / MASTER */
 #define ROLE_CLIENT 1
@@ -590,7 +591,6 @@ static int make_set_adv_data(void)
     u8 offset = 0, *buf = adv_data;
     offset += make_eir_packet_val(&buf[offset], offset, HCI_EIR_DATATYPE_FLAGS, 0x06, 1);
     offset += make_eir_packet_data(&buf[offset], offset, HCI_EIR_DATATYPE_COMPLETE_128BIT_SERVICE_UUIDS, (void *)svc, 16);
-    offset += make_eir_packet_data(&buf[offset], offset, HCI_EIR_DATATYPE_COMPLETE_LOCAL_NAME, (void *)gap_device_name, sizeof gap_device_name - 1);
     if (offset > ADV_RSP_PACKET_MAX)
         return -1;
     log_info("adv_data(%d)\n", offset);

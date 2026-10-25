@@ -179,6 +179,12 @@ def build_loader():
 # ---- app
 
 def build_app():
+    ble = os.environ.get("SYNTHMAVEN_BLE", "0") == "1"
+    radio_units, radio_objs, radio_libs = [], [], []
+    if ble:
+        import synthmaven_radio_build as radio
+        radio.configure(SRC, OUT, tc)
+        radio_units, radio_objs, radio_libs = radio.radio_units()
     flags = [*CFLAGS, "-Ifirmware/hal", "-Ifirmware/src", "-Ibuild/gen"]
     for flag in ("FELUCCA_FLASH", "FELUCCA_OTA", "FELUCCA_OTA_DRYRUN", "FELUCCA_CDC", "FELUCCA_UART",
                  "FELUCCA_ICONS", "FELUCCA_SLICE", "FELUCCA_CPU1", "NVOICE"):   # (SynthMaven: NVOICE=12 ./build.sh, the CPU trials)
@@ -186,6 +192,8 @@ def build_app():
         if v in ("0", "1") or (flag == "NVOICE" and v in ("8", "12", "16")):
             flags.append(f"-D{flag}={v}")
     flags.append("-DSM_PACKED_WT=1")
+    if ble:
+        flags += ["-DSM_BLE=1", "-DFELUCCA_CDC=0", "-Ifirmware/vendor/fm1-base/shim"]
     flags.append(f'-DFELUCCA_ID="{PRODUCT}"')
     if VERSION:
         flags.append(f'-DFELUCCA_VERSION="{VERSION}"')
@@ -194,16 +202,20 @@ def build_app():
            ("cc", "-c", FW / "hal" / "fm1_isr.S", "-o", OUT / "fm1_isr.o"),
            ("cc", "-c", FW / "hal" / "fm1_cpu1.S", "-o", OUT / "fm1_cpu1.o"),
            ("cc", *flags, "-c", FW / "src" / "felucca.c", "-o", OUT / "felucca.o"))
-    tc("cc", "-Oz", "-DNDEBUG", "-c", FW / "vendor/tinf/tinflate.c", "-o", OUT / "tinflate.o")
+    if radio_units: tc_all(*radio_units)
+    tc("cc", "-Oz", "-DNDEBUG", "-DSM_TINF_FREESTANDING", "-c", FW / "vendor/tinf/tinflate.c", "-o", OUT / "tinflate.o")
     elf = OUT / "felucca.elf"
-    tc("pi32v2/bin/ld", "--gc-sections", "-e", "_start", "-T", FW / "app.ld", OUT / "crt0.o", OUT / "fm1_vec.o", OUT / "fm1_isr.o",
-       OUT / "fm1_cpu1.o", OUT / "felucca.o", OUT / "tinflate.o", "-o", elf)
-    for sect in ("text.bin", "data.bin", "ramtext.bin", "c1text.bin"):
+    lto = ["--plugin", "/opt/jieli/pi32v2/bin/LLVMgold.so" if use_docker() else str(toolchain()/"pi32v2/bin/LLVMgold.so"),
+           "--plugin-opt=mcpu=r3", "--plugin-opt=-pi32v2-large-program=true"] if ble else []
+    tc("pi32v2/bin/ld", *lto, "--gc-sections", "-e", "_start", "-T", FW / "app.ld", OUT / "crt0.o", OUT / "fm1_vec.o", OUT / "fm1_isr.o",
+       OUT / "fm1_cpu1.o", OUT / "felucca.o", OUT / "tinflate.o", *radio_objs, *radio_libs, "-o", elf)
+    for sect in ("text.bin", "data.bin", "ramtext.bin", "c1text.bin", "radio.bin"):
         (OUT / sect).unlink(missing_ok=True)
     *_, syms, dis, rt = tc_all(("common/bin/objcopy", "-O", "binary", "-j", ".text", elf, OUT / "text.bin"),
                                ("common/bin/objcopy", "-O", "binary", "-j", ".data", elf, OUT / "data.bin"),
                                ("common/bin/objcopy", "-O", "binary", "-j", ".ram_text", elf, OUT / "ramtext.bin"),
                                ("common/bin/objcopy", "-O", "binary", "-j", ".c1_text", elf, OUT / "c1text.bin"),
+                               ("common/bin/objcopy", "-O", "binary", "-j", ".radio_ram", elf, OUT / "radio.bin"),
                                ("common/bin/objdump", "-t", elf),
                                ("common/bin/objdump", "-d", elf),
                                ("common/bin/objdump", "-d", "-j", ".ram_text", elf))
@@ -214,7 +226,7 @@ def build_app():
     img = bytearray((OUT / "text.bin").read_bytes())
     # .ram_text, .c1_text (the second core's loop) and .data follow .text at their load addresses, in
     # that order; main.c copies them by words at boot
-    for sect, lname in (("ramtext.bin", "_rt_load"), ("c1text.bin", "_c1_load"), ("data.bin", "_data_load")):
+    for sect, lname in (("ramtext.bin", "_rt_load"), ("c1text.bin", "_c1_load"), ("radio.bin", "_radio_load"), ("data.bin", "_data_load")):
         load = symv(lname)
         if load % 4:
             raise SystemExit(f"{lname} {load:#x} is not word aligned")

@@ -40,12 +40,13 @@ jobs:
         if: steps.deps.outcome == 'success'
         continue-on-error: true
         run: |
-          JIELI_TOOLCHAIN="$RUNNER_TEMP/jieli/toolchain" AC79_SDK="$RUNNER_TEMP/ac79" sh build.sh
+          SYNTHMAVEN_BLE=1 JIELI_TOOLCHAIN="$RUNNER_TEMP/jieli/toolchain" AC79_SDK="$RUNNER_TEMP/ac79" sh build.sh
           python3 tools/make_synthmaven_site.py --package build/felucca.fwsc
       - name: Report target build status
         run: |
           if [ ! -f build/felucca.fwsc ]; then
-            echo 'Target firmware not built; published installer stays disabled.' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Target firmware not built; deployment is blocked.' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
           fi
       - uses: actions/upload-artifact@v4
         with:

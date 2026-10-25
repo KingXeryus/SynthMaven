@@ -21,18 +21,25 @@ MEMORY
 }
 SECTIONS
 {
-    .text : { KEEP(*(.text.crt0)) *(.text*) *(.rodata*) . = ALIGN(4); _etext = .; } > XIP
+    .text : { KEEP(*(.text.crt0)) *(.text*) *(.rodata*)
+              *(.bt_stack_code .ble_sm_code .hci_controller_code .ble_hci_code .ble_att_code .ble_db_code
+                .classic_lmp_code .link_bulk_code .classic_rf_code .lmp_irq_code .ble_gatt_code .ble_ll_code
+                .ble_rf_code .bt_rf_code .hci_interface_code .vendor_manager_code .device_manager_code)
+              *(.*_const) . = ALIGN(4); _etext = .; } > XIP
     .ram_text : { _rt_start = .; KEEP(*(.ram_text*)) . = ALIGN(4); } > RAMTEXT AT > XIP
     _rt_load = LOADADDR(.ram_text);
     .c1_text : { _c1_start = .; KEEP(*(.c1_text*)) . = ALIGN(4); _c1_end = .; } > RAMTEXT AT > XIP
     _c1_load = LOADADDR(.c1_text);
-    _rt_end = _c1_end;                  /* the guard's RAM code window covers both (fm1_cpu1.h) */
+    .radio_ram : { _radio_start = .; *(.radio_ram*) *(.volatile_ram_code) *(*.rf.text.cache.L2.rf_trim)
+                  . = ALIGN(4); _radio_end = .; } > RAMTEXT AT > XIP
+    _radio_load = LOADADDR(.radio_ram);
+    _rt_end = _radio_end;                  /* the guard's RAM code window covers both (fm1_cpu1.h) */
     /* the SRAM left below the RAM region: section(".lowram") buffers and the second core's stacks (fm1_cpu1.S
      * .bss.c1stack), outside the guard's RAM code window; zeroed at boot as .pool is (main.c lowram_test) */
     .lowram (NOLOAD) : { . = ALIGN(8); _lr_start = .; *(.bss.c1stack) *(.lowram*) . = ALIGN(4); _lr_end = .; } > RAMTEXT
-    .data : { . = ALIGN(4); _data_start = .; *(.data*) *(.sdata*) . = ALIGN(4); _data_end = .; } > RAM AT > XIP
+    .data : { . = ALIGN(4); _data_start = .; *(.data*) *(.sdata*) *(.*_data) . = ALIGN(4); _data_end = .; } > RAM AT > XIP
     _data_load = LOADADDR(.data);
-    .bss (NOLOAD) : { _bss_start = .; *(.bss*) *(.sbss*) *(COMMON) . = ALIGN(4); _bss_end = .; } > RAM
+    .bss (NOLOAD) : { _bss_start = .; *(.bss*) *(.sbss*) *(COMMON) *(.*_bss) *(.bd_base) . = ALIGN(4); _bss_end = .; } > RAM
     .pool (NOLOAD) : { _pool_start = .; *(.pool*) . = ALIGN(4); _pool_end = .; } > POOL
     .noinit (NOLOAD) : { *(.noinit*) } > NOINIT
     _guard0 = 0x01C74000; _ustack_lo = 0x01C74100; _ustack_top = 0x01C7A000;

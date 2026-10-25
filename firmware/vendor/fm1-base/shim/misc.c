@@ -64,7 +64,8 @@ static uint32_t heap[HEAP_BYTES / 4u] __attribute__((section(".pool")));
 /* in .bss, low in RAM, not the pool: the radio's buffers come from here, and the hardware does not reach the pool's
  * top (a CTL-1 with two links, its heap at 0x01C4F028, had stacks overwritten 0.55 s into every Bluetooth start, in
  * the radio's calibration; at 0x01C121F0 it starts cleanly) */
-static uint32_t heap[HEAP_BYTES / 4u];
+/* SynthMaven adaptation: low SRAM remains DMA-accessible; reserve via linker. */
+static uint32_t heap[HEAP_BYTES / 4u] __attribute__((section(".lowram")));
 #endif
 #if SHIM_WIFI
 /* and a second part in .bss, the RAM the task queues gave up (os.c QLEN): one heap across both */

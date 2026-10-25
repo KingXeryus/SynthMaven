@@ -245,6 +245,9 @@ static void fm1_main(void)
     healthy_since = fm1_ms;
     for (;;) {
         uint32_t m = fm1_ms;
+#if SM_BLE
+        sm_ble_poll();
+#endif
         fm1_wdt_feed();
         usb_retry(fm1_ms);
         if ((uint32_t)(m - healthy_since) >= 30000u && bootguard.pending) {
@@ -349,7 +352,10 @@ static void fm1_main(void)
         sections_flush();                               /* live sections / the recorded song, when quiet */
 #endif
         felucca_dbg.stage = 9;
-        while (fm1_ms - m < 15u) {                               /* ~60 UI frames/s at most */
+        while (fm1_ms - m < 15u) {
+#if SM_BLE
+            sm_ble_poll();
+#endif                               /* ~60 UI frames/s at most */
             ui_input();
 #if FELUCCA_OTA
             ed_service();                       /* editor replies without waiting for the next frame */

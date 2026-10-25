@@ -71,7 +71,8 @@ typedef union {
     fmx_part_t fmx;                      /* eng_fmx.c: the voices */
 #endif
 } eng_arena_t;
-static eng_arena_t eng_arena[NPART] __attribute__((section(".pool")));
+#define ENG_ARENA_PARTS ((SM_BLE && SYNTHMAVEN_SYNTH) ? 2u : NPART)
+static eng_arena_t eng_arena[ENG_ARENA_PARTS] __attribute__((section(".pool")));
 static uint8_t eng_arena_own[NPART];            /* the engine + 1 whose state is in it, 0 = none */
 #ifdef ARENA_STATS
 static uint32_t eng_arena_claims, eng_arena_bad;   /* host tests: claims, accesses by an engine the part does not play */
@@ -79,7 +80,7 @@ static uint32_t eng_arena_claims, eng_arena_bad;   /* host tests: claims, access
 static void *eng_arena_of(const track_t *t, uint32_t eng)
 {
     uint32_t p = (uint32_t)(t - trk);
-    if (p >= NPART)
+    if (p >= ENG_ARENA_PARTS)
         return 0;
 #ifdef ARENA_STATS
     if (t->engine != eng)

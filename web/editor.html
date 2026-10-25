@@ -849,8 +849,10 @@
 <p><label><input type="checkbox" id="sm-patch-enabled" disabled> Enable patch switching</label></p>
 <div id="sm-patch-options" hidden><label>Pedal connection <select id="sm-patch-port"><option value="0">USB</option><option value="1">Bluetooth</option><option value="2">Any input (legacy)</option></select></label></div>
 <p><label>Keyboard connection <select id="sm-key-port" disabled><option value="0">USB (external host required in this build)</option><option value="1">TRS MIDI</option><option value="2">USB + TRS (legacy)</option></select></label></p>
-<p><label><input type="checkbox" id="sm-bt" disabled> Enable Bluetooth MIDI</label> <button id="sm-pair" disabled>Find / connect pedal</button></p>
-<p id="sm-limit" class="dim">Native Bluetooth pedal pairing and USB keyboard host mode require drivers not included in this development build. A power bank supplies power only.</p>
+<p><label><input type="checkbox" id="sm-bt" disabled> Enable Bluetooth MIDI</label> <button id="sm-pair" disabled>Scan for MIDI pedals</button></p>
+<p><label>Bluetooth pedal <select id="sm-ble-device" disabled></select></label> <button id="sm-ble-connect" disabled>connect selected pedal</button> <button id="sm-ble-disconnect" disabled>disconnect pedal</button></p>
+<p id="sm-ble-status" role="status"></p>
+<p id="sm-limit" class="dim">Bluetooth availability is reported by the connected firmware. USB keyboards still require a USB MIDI host; a power bank supplies power only.</p>
 <p class="bar"><button id="sm-read">Read settings</button><button id="sm-save" disabled>Apply settings</button></p>
 </div><div class="groups" id="setgroups"></div>
       <div class="card">
@@ -10358,7 +10360,7 @@ async function smRequest(cmd, values = []) {
   if (!dev || !dev.info || dev.info.proto < 15 || !/SYNTHMAVEN/i.test(dev.info.version)) throw new Error("SynthMaven v15 protocol required; installed firmware is unchanged.");
   const a = await rq([cmd, values]);
   if (!a || a.length !== 8 || a[1] !== 1) throw new Error("Invalid SynthMaven settings reply");
-  if (a[0]) throw new Error(a[0] === 4 ? "Connection unavailable: this firmware has no Bluetooth central driver." : "Invalid MIDI settings");
+  if (a[0]) throw new Error(a[0] === 4 ? "Connection unavailable or not ready: enable Bluetooth, wait for startup, then scan/select a MIDI pedal." : "Invalid MIDI settings");
   return {caps:a[2], enabled:a[3], patch:a[4], key:a[5], bt:a[6], state:a[7]};
 }
 async function smRefresh() {
@@ -10373,6 +10375,7 @@ async function smRefresh() {
     $("sm-bt").disabled = !(smState.caps & 4);
     $("sm-pair").disabled = !(smState.caps & 4) || !smState.bt;
     $("sm-status").textContent = "Read from SynthMaven. Bluetooth: " + ((smState.caps & 4) ? "available" : "driver unavailable");
+    smBleStatus(smState);
     smCascade();
   } catch(e) { $("sm-status").textContent = e.message; for (const id of ["sm-patch-enabled","sm-key-port","sm-save","sm-bt","sm-pair"]) $(id).disabled = true; }
 }
@@ -10382,9 +10385,43 @@ $("sm-save").addEventListener("click", async () => {
  try { await smRequest(101, [+$("sm-patch-enabled").checked, +$("sm-patch-port").value, +$("sm-key-port").value, +$("sm-bt").checked]); await smRefresh(); }
  catch(e) { $("sm-status").textContent = e.message; }
 });
-$("sm-pair").addEventListener("click", async () => {
- try { await smRequest(102); await smRefresh(); } catch(e) { $("sm-status").textContent = e.message; }
+const SM_BLE_STATES=['off','starting radio','idle','scanning','connecting','discovering MIDI service','MIDI ready','radio startup failed'];
+function smBleStatus(state) {
+  $('sm-ble-status').textContent=(state.caps&4)?'Bluetooth: '+(SM_BLE_STATES[state.state]||'unknown'):'Bluetooth central driver unavailable in this firmware.';
+  $('sm-ble-disconnect').disabled=!(state.caps&4)||state.state<4||state.state>6;
+  $('sm-ble-device').disabled=!(state.caps&4)||!state.bt;
+  $('sm-ble-connect').disabled=!(state.caps&4)||!state.bt||!$('sm-ble-device').options.length||state.state===6;
+}
+async function smBleList() {
+  if(!dev || !smState || !(smState.caps&4))return;
+  const a=await rq([103,[]]);if(!a || a.length<2 || a[0])throw new Error('Bluetooth device list unavailable');
+  const r=new Reader(a.slice(2)), entries=[];
+  for(let i=0;i<a[1];i++){const index=r.b(),name=r.s(),rssi=r.b()-127;entries.push({index,name,rssi});}
+  const select=$('sm-ble-device'),keep=select.value;
+  select.replaceChildren(...entries.map(x=>el('option',{value:x.index,text:x.name+' ('+x.rssi+' dBm)'})));
+  if(entries.some(x=>String(x.index)===keep))select.value=keep;
+  smBleStatus(smState);
+}
+$('sm-pair').addEventListener('click', async () => {
+ try { smState=await smRequest(102);await smBleList();smBleStatus(smState); }
+ catch(e){$('sm-status').textContent=e.message;}
 });
+$('sm-ble-connect').addEventListener('click', async () => {
+ try {smState=await smRequest(104,[+$('sm-ble-device').value]);smBleStatus(smState);}
+ catch(e){$('sm-status').textContent=e.message;}
+});
+$('sm-ble-disconnect').addEventListener('click', async () => {
+ try {smState=await smRequest(105);smBleStatus(smState);}
+ catch(e){$('sm-status').textContent=e.message;}
+});
+let smBlePolling=false;
+setInterval(async()=>{
+ if(smBlePolling || !dev || !smState || !(smState.caps&4) || !smState.bt || $('p-settings').hidden)return;
+ smBlePolling=true;
+ try{smState=await smRequest(100);await smBleList();smBleStatus(smState);}catch(e){$('sm-ble-status').textContent=e.message;}
+ finally{smBlePolling=false;}
+},1000);
+
 
 var smPage = 0;
 function renderSmCards() {

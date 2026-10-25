@@ -28,6 +28,7 @@ static uint32_t scope_w;
 static void audio_block(int32_t *out, uint32_t n)       /* mix (fx.c), then Q15 -> 24 bit */
 {
     uint32_t i;
+    if (SM_BLE && sm_radio_quiet) { memset(out,0,n*2u*sizeof *out); return; }
     mix_block(out, n);
 #if FELUCCA_UAC
     uac_tap(usb_full_now ? usb_out : out, n);           /* the USB audio input: the master output, or at full level */

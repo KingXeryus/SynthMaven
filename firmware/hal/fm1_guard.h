@@ -120,6 +120,16 @@ static inline uint32_t fm1_usp(void) { uint32_t v; __asm__ volatile("%0 = usp" :
 static int fm1_guard_top_locked(void) { return (FM1_C0_WR_LIMIT_EN & 4u) != 0; }
 
 /* reopen the reserved top of RAM (mailbox write before a UBOOT reset) */
+/* Radio tasks have real stacks in the checked pool; extend only the floor. */
+static void fm1_guard_stack_floor(uint32_t lo)
+{
+    fm1__dbg_unlock();
+    FM1_EMU_CON &= ~(1u << 3);
+    FM1_EMU_SSP_L = lo; FM1_EMU_USP_L = lo;
+    FM1_EMU_CON |= 1u << 3;
+    fm1__dbg_lock();
+}
+
 static void fm1_guard_unlock_top(void)
 {
     fm1__dbg_unlock();

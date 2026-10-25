@@ -671,7 +671,21 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         return;
     }
 #endif
-    if (cmd >= 100u && cmd <= 102u) {
+    if (cmd == 103u) {
+        ed_begin(cmd);
+#if SM_BLE
+        if(na) {ed_b(1);ed_b(0);} else {
+            uint32_t i,n=0; char name[32];int rssi;
+            for(i=0;i<8u && sm_ble_device(i,name,&rssi);i++)n++;
+            ed_b(0);ed_b(n);
+            for(i=0;i<n;i++){sm_ble_device(i,name,&rssi);ed_b(i);ed_str(name,31);ed_b(clamp(rssi+127,0,127));}
+        }
+#else
+        ed_b(4);ed_b(0);
+#endif
+        ed_send();return;
+    }
+    if (cmd >= 100u && cmd <= 105u) {
         uint32_t rc = 0;
         if (cmd == 100u && na) rc = 1;
         if (cmd == 101u) {
@@ -681,10 +695,22 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
                 if (!rc) { midi_pc_off = !a[0]; settings_later = 1; ui.force = 1; }
             }
         }
-        if (cmd == 102u) rc = 4; /* no BLE central driver: never fake a connection */
+        if(cmd==102u || cmd==104u || cmd==105u) {
+#if SM_BLE
+            if(cmd==102u)rc=na?1u:sm_ble_scan_start();
+            if(cmd==104u)rc=na!=1u?1u:sm_ble_connect_device(a[0]);
+            if(cmd==105u){rc=na?1u:0u;if(!rc)sm_ble_disconnect_device();}
+#else
+            rc=4;
+#endif
+        }
         ed_begin(cmd); ed_b(rc); ed_b(1); ed_b(SM_CAPS);
         ed_b(!midi_pc_off); ed_b(sm_patch_port); ed_b(sm_key_port); ed_b(sm_bluetooth);
-        ed_b(0); /* BLE state: unavailable, no peer */
+#if SM_BLE
+        ed_b(sm_ble_state());
+#else
+        ed_b(0);
+#endif
         ed_send(); return;
     }
     switch (cmd) {

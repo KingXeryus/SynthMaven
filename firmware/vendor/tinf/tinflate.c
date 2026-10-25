@@ -25,8 +25,15 @@
 
 #include "tinf.h"
 
+/* SynthMaven freestanding adaptation: the target has no hosted C headers.
+ * NDEBUG builds already omit assertions; all decompression bounds checks stay. */
+#ifdef SM_TINF_FREESTANDING
+#define assert(x) ((void)0)
+#define UINT_MAX 0xFFFFFFFFu
+#else
 #include <assert.h>
 #include <limits.h>
+#endif
 
 #if defined(UINT_MAX) && (UINT_MAX) < 0xFFFFFFFFUL
 #  error "tinf requires unsigned int to be at least 32-bit"

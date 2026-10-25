@@ -23,7 +23,7 @@ enum { X_LYMODE, X_LYSOUND, X_LYSPLIT, X_LYLEVEL, X_LYOCT, X_LYPAN, X_LYFILT, X_
        X_MIN, X_MOUT,                                  /* 1.0: GLO > MIDI, the instrument's channels (seq.c midi_in_ch) */
        X_MBEND, X_MLOCAL, X_MPROG, X_MCCO,             /* 1.0: the bend range (voice.c midi_bend), LOCAL, PROG, CC OUT */
        X_MBRTH,                                        /* 1.0: EWI (seq.c midi_breath) */
-       X_SMPORT, X_SMKEY, X_SMBT, X_SMPAIR, X_COUNT };
+       X_SMPORT, X_SMKEY, X_SMBT, X_SMPAIR, X_SMDEV, X_SMCON, X_COUNT };
 static void mseq_fill(struct track *t, uint32_t l, uint32_t f);
 static const char *const N_QFILL[] = {"--", "RAMP+", "RAMP-", "TRI", "SINE", "SQR", "RND", "FLAT", "INVRT", "SHIFT"};
 enum { QF_NONE, QF_UP, QF_DOWN, QF_TRI, QF_SINE, QF_SQR, QF_RND, QF_FLAT, QF_INV, QF_SHIFT, QF_N };
@@ -101,7 +101,9 @@ static const param_desc_t XD[X_COUNT] = {
     [X_SMPORT] = PE("PORT", N_SM_PATCH, 2),
     [X_SMKEY] = PE("KEY IN", N_SM_KEY, 2),
     [X_SMBT] = PE("BT MIDI", N_ONOFF, 0),
-    [X_SMPAIR] = PE("PAIR", N_GO, 0),
+    [X_SMPAIR] = PE("SCAN", N_GO, 0),
+    [X_SMDEV] = PD("PEDAL", F_INT, 0, 7, 0),
+    [X_SMCON] = PE("LINK", N_GO, 0),
     [X_MCCO] = PE("SEND", N_MCCO, 0),
     [X_MBRTH] = PE("EWI", N_MBRTH, 0),       /* (a breath controller, CC 2) */
     [X_FSTORE] = PE("STORE", N_GO, 0),
@@ -610,6 +612,15 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
         return &d;
     }
     case X_SMKEY: xv[X_SMKEY] = sm_key_port; *valp = &xv[X_SMKEY]; break;
+    case X_SMDEV: {
+#if SM_BLE
+        static param_desc_t d;static char names[8][32];static const char *ptrs[9];uint32_t i,n=0;int rssi;
+        for(i=0;i<8u;i++){if(!sm_ble_device(i,names[i],&rssi))break;ptrs[i]=names[i];n++;}
+        if(!n){str_cpy(names[0],"--",32);ptrs[0]=names[0];n=1;}ptrs[n]=0;
+        d=XD[X_SMDEV];d.names=ptrs;d.max=(int16_t)(n-1u);xv[X_SMDEV]=(int16_t)clamp(xv[X_SMDEV],0,d.max);*valp=&xv[X_SMDEV];return &d;
+#endif
+        break;
+    }
     case X_SMBT: xv[X_SMBT] = sm_bluetooth; *valp = &xv[X_SMBT]; break;
     case X_MCCO: xv[X_MCCO] = midi_cc_out != 0u; *valp = &xv[X_MCCO]; break;
     case X_MBRTH: xv[X_MBRTH] = (int16_t)(midi_breath % 3u); *valp = &xv[X_MBRTH]; break;
@@ -784,7 +795,27 @@ static void syn_changed(uint32_t id, int16_t *vp)
         else settings_later = 1;
         break;
     case X_SMPAIR:
-        *vp = 0; ui_message("BLE NOT AVAILABLE"); break;
+        *vp = 0;
+#if SM_BLE
+        ui_message(sm_ble_scan_start()?"ENABLE BT FIRST":"SCANNING MIDI");
+#else
+        ui_message("BLE NOT AVAILABLE");
+#endif
+        break;
+    case X_SMDEV:
+#if SM_BLE
+        {char name[32];int rssi;if(sm_ble_device((uint32_t)*vp,name,&rssi))ui_message(name);}
+#endif
+        break;
+    case X_SMCON:
+        *vp=0;
+#if SM_BLE
+        if(sm_ble_state()==6u){sm_ble_disconnect_device();ui_message("BLE DISCONNECT");}
+        else ui_message(sm_ble_connect_device((uint32_t)xv[X_SMDEV])?"SELECT A PEDAL":"BLE CONNECTING");
+#else
+        ui_message("BLE NOT AVAILABLE");
+#endif
+        break;
     case X_MPROG:
         midi_pc_off = !*vp;
         settings_later = 1;

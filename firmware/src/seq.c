@@ -3194,12 +3194,20 @@ static void events_block(uint32_t n)
     keyboard_block();
     drum_audition_poll();                             /* (the editor's DRUM SYNTH page) */
     strum_block(n);                                   /* (voice.c: the strummed notes due) */
-    while (mi_r != mi_w) {                            /* USB-MIDI (and TRS) in */
-        uint32_t pkt = midi_in_q[mi_r % MQ], st = (pkt >> 8) & 0xF0u, ch = (pkt >> 8) & 0x0Fu;
+    while (mi_r != mi_w
+#if SM_BLE
+           || sm_ble_pending()
+#endif
+    ) {
+        uint32_t pkt;
+        if(mi_r != mi_w) {pkt=midi_in_q[mi_r % MQ];mi_r++;}
+#if SM_BLE
+        else if(!sm_ble_read(&pkt))break;
+#endif
+        uint32_t st = (pkt >> 8) & 0xF0u, ch = (pkt >> 8) & 0x0Fu;
         uint32_t d1 = (pkt >> 16) & 0x7Fu, d2 = (pkt >> 24) & 0x7Fu;
         uint32_t port = (pkt >> 4) & 15u;
         track_t *t;
-        mi_r++;
         if ((pkt & 15u) == 0xFu) {                    /* clock / transport: cable 0 USB, 1 TRS */
             mclk_event((pkt >> 8) & 0xFFu, ((pkt >> 4) & 15u) ? 2u : 1u);
             continue;

@@ -20,6 +20,10 @@ static volatile uint32_t diag_peak;      /* the worst half (render + TIMER5 in i
 #define NVOICE 8                 /* voices per part, and the budget shared by all parts (SynthMaven: -DNVOICE=12 / 16) */
 #endif
 #define NPOLY NVOICE
+#ifndef SM_BLE
+#define SM_BLE 0
+#endif
+static volatile uint8_t sm_radio_quiet;
 #define NPART 3                  /* synth parts: tracks 1..3 */
 #define NTRK 4                   /* + the drum track */
 #define TRK_DRUM 3
