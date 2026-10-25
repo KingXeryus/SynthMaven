@@ -12,7 +12,7 @@ SynthMaven is an open-source firmware based on [Clipper](https://github.com/isod
 
 The requested no-computer, no-MIDI-box rig using either Chocolate model over USB/Bluetooth remains unfinished. TRS keyboard input works through the existing UART path. USB MIDI input and Program Change switching can be used with a host. Do not infer direct device compatibility from the presence of a dropdown.
 
-The website build never substitutes a SynthMaven binary for SynthMaven. If target compilation fails, it publishes the editor and a disabled installer with a clear message. Successful CI target builds produce development `.fwsc` packages, not a tested stable release.
+The website build never presents an upstream binary as a SynthMaven build. If target compilation fails, it publishes the editor and a disabled installer with a clear message. Successful CI target builds produce development `.fwsc` packages, not a tested stable release.
 
 ## Hardware controls
 
