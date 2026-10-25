@@ -18,7 +18,7 @@ The website build never presents an upstream binary as a SynthMaven build. If ta
 
 The supplied ROM1A bank (32 voices) and ARABESC voice are built into FM6 as F9–F41, alongside the original eight sounds. Select FM6 in the four-patch PRESETS browser, highlight a voice, then Load or Edit. The editor lists the same read-only factory sounds. Existing B1–B27 slots and saved references retain their original parameter IDs. See [stock data](assets/fm6/README.md).
 
-Bluetooth is still pending: the existing build has only 780 bytes of app-flash headroom, while the available BLE central port needs about 132 KB. The user chose to preserve all engines. See the measured [Bluetooth integration status](docs/BLUETOOTH_STATUS.md).
+Bluetooth is still pending: the optimized 0.2 build has about 28 KB of app-flash and 23 KB of static-RAM headroom, while the available BLE central port needs about 132 KB of flash and 46 KB of static RAM. The user chose to preserve all engines. See the measured [Bluetooth integration status](docs/BLUETOOTH_STATUS.md).
 
 ## Hardware controls
 
