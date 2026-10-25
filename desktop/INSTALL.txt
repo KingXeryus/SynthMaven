@@ -1,6 +1,8 @@
 SynthMaven 0.2.0 — macOS Universal
 
 Open the SynthMaven installer package inside this disk image.
+The installer lets you independently select Standalone, VST3 and Audio Unit.
+All three are selected by default; deselect formats you do not need.
 The package installs:
   /Applications/SynthMaven.app
   /Library/Audio/Plug-Ins/VST3/SynthMaven.vst3
@@ -69,3 +71,7 @@ scope. Master, Scala data, memories, root, A4 and offsets persist in patches
 and DAW projects. Master Tuning is available as a DAW/MIDI mapping target.
 Commercial Yamaha ESP / TAQS.IM preset and sample libraries are not bundled;
 the new Oriental voices are original synthesis approximations.
+
+Legacy VST2 is not included: this project has no licensed VST2 SDK and
+Steinberg no longer grants new VST2 agreements. VST3 is the included VST
+format. Audio Unit is the included format for Logic Pro and GarageBand.
