@@ -1,32 +1,124 @@
-> Inherited implementation notes; this is not a SynthMaven release announcement.
+# SynthMaven 1.0 firmware
 
-# SynthMaven 1.0 (experimental)
+## Changes
 
-**A free, open-source synthesizer firmware for the M-VAVE FM-1.** It grew out of [SLOOP](https://github.com/isod89/sloop-fm1) and, like SLOOP, it is based on [Felucca](https://github.com/hugelton/Felucca) by Leo Kuroshita / Hügelton Instruments.
+- Adds 88 Oriental / Middle Eastern melodic presets: 44 instruments, with Dry
+  and Expressive variations. No percussion is added. Chorus, delay and reverb
+  sends start at zero; set effects on the FM1 or in the web editor.
+- Adds an ORIENTAL filter to the four-patch hardware browser and a full-name
+  collection selector to the web editor. Original factory IDs remain unchanged.
+- Preserves all 23 engines, the DX7/FM6 and nine XD compatibility presets, and
+  the native Bluetooth runtime. Total factory collection: 537 presets.
+- Keeps patch settings through project recall and fixes a parameter-name table
+  bounds error. Keyboard performance controllers follow KEY IN; patch changes
+  follow the independent PATCH MIDI route.
+- Editor protocol 16 supports extended preset indices/counts. Use the matching
+  online editor when updating firmware.
 
-> ⚠️ **This is an experimental release.** It passes its whole test suite on a computer, but it has run very little on a real FM-1. Expect rough edges (CPU load, clicks, storage), and there is still a huge amount of work to do. **Make a backup with the editor before installing.** You can always go back to the official V15 firmware from the installer page.
+## Load and edit
 
-## What it is
+Back up the FM1 with the web editor before installing. Open the
+[installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) in Chrome
+or Edge. After updating, tap SAVE for PRESETS and select ORIENTAL with KNOB 2.
+KNOB 1 highlights; KNOB 3 loads; KNOB 4 loads and opens Edit. D/E in the short
+name means Dry/Expressive. Save edits as a USER preset. In the
+[editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/), choose a full
+name from the Oriental / Middle Eastern selector. Tuning is independent; choose
+Scala/custom tuning for the desired maqam.
 
-- **23 engines, 407 sounds**: HYBRID (three oscillators, two filters, a 16-slot matrix), FMX (six operators after the opsix), FM6 (DX7, loads `.syx` banks), DIGITAL, WAVE (wavetables, and your own), WSEQ (wave sequencing), VECTOR, JUNO (with its chorus), ANALOG (eight filter models), ACID, STRINGS, MACRO, PHASE, VPS, TERRAIN, PHYS (physical models), TRIO, LOFI, WHEEL, VOICE, NOISE, GRAIN and SAMPLE (on SynthMaven's own synthesized sources).
-- **On every engine**: a 12-slot modulation matrix, LFO 2 and 3, ENV 2 (one-shot or looping), the MOD SEQ, four macros (BRITE, TIMBR, MOTN, SPACE, also on CC 16-19), SPREAD (each voice its own place in the stereo field), VINTAGE, an insert effect.
-- **Effects**: distortion, chorus, a tempo-synced delay (mono, ping-pong, tape), room, plate, hall and shimmer reverbs, a master EQ, compressor and limiter.
-- **Playing**: 8 voices on both cores (12 / 16 as a build option), poly unison, layer / split / multi, a 15-mode arpeggiator with a Turing machine, a step sequencer, MPE, MIDI over USB and TRS, microtuning with Scala scales; the FM-1 is a USB audio interface too.
-- **A web editor** (Chrome or Edge, nothing to install) for every parameter, the HYBRID and FMX patches, DX7 banks, wavetables, the tuning, and full backups.
+## Validation and limits
 
-## New in 1.0
+Host tests cover all 88 patches and 126 track parameters, hardware browser
+indexing, MIDI response, project recall, routing, storage and editor transfers.
+The actual BLE-enabled target passed [CI run 40243154995](https://github.com/KingXeryus/SynthMaven/actions/runs/40243154995):
+580568/581564 bytes app flash, 92132/98304 bytes static RAM, 24832/25672 bytes
+low SRAM, and 329008/344064 bytes pool. Package size: 610045 bytes.
+The publication workflow repeats the checks before deployment. Version 1.0 still requires hardware validation: actual FM1 listening,
+Chocolate pairing/reconnect and audio timing under wireless load remain pending.
+USB device MIDI works through a host; direct USB keyboard host mode is not yet
+integrated. A separately powered keyboard does not supply that host function.
 
-SPREAD; the matrix grows to 12 slots with LFO 3 and the macros as sources; ENV 2 LOOP; four macros on every engine; HALL and SHIMMER reverbs; the delay's PING and TAPE modes; a crack of the JUNO chorus on loud chords fixed; no samples and no project page on the FM-1 any more (one instrument: the autosave keeps what you play, user presets keep your sounds). The full list is in the [README](https://github.com/KingXeryus/SynthMaven/blob/main/README.md).
+These are original SynthMaven parameter recipes using the existing engines;
+no Yamaha ESP or TAQS.IM commercial samples or preset binaries are included.
+See [bank provenance](../assets/oriental/README.md), [Bluetooth status](BLUETOOTH_STATUS.md)
+and [USB MIDI status](USB_MIDI_STATUS.md).
 
-## Install
+## Melodic instrument catalog
 
-- **From the browser**: open the [installer page](https://kingxeryus.github.io/SynthMaven/webapp/installer/) (Chrome or Edge, the FM-1 on USB; the [editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) is next to it), make a backup with the editor first, then click Install.
-- **From the source, on Windows**: see [QUICKSTART.md](https://github.com/KingXeryus/SynthMaven/blob/main/QUICKSTART.md) (French: [DEMARRAGE-RAPIDE-FR.md](https://github.com/KingXeryus/SynthMaven/blob/main/DEMARRAGE-RAPIDE-FR.md)) — `INSTALL-SYNTHMAVEN.bat` builds the firmware (WSL and the JieLi toolchain, as SLOOP) and opens the installer.
+Each instrument below has Dry and Expressive variants (88 presets total).
 
-## What is left to do
+| Instrument | Native engine | OLED stem |
+|---|---:|---|
+| Oud Amber | PHYS | OUD AMBER |
+| Oud Silk | PHYS | OUD SILK |
+| Electric Oud | PHYS | ELECTRIC O |
+| Qanun Pearl | PHYS | QANUN PEAR |
+| Qanun Felt | PHYS | QANUN FELT |
+| Baglama Wire | PHYS | BAGLAMA WI |
+| Saz Long Neck | PHYS | SAZ LONG N |
+| Buzuk Copper | PHYS | BUZUK COPP |
+| Tanbur Cedar | PHYS | TANBUR CED |
+| Santur Glass | PHYS | SANTUR GLA |
+| Semsemeya Lyre | PHYS | SEMSEMEYA |
+| Levant Lyre | PHYS | LEVANT LYR |
+| Dutar Wood | PHYS | DUTAR WOOD |
+| Silk Road Koto | PHYS | SILK ROAD |
+| Shamisen Pick | PHYS | SHAMISEN P |
+| Pipa Bamboo | PHYS | PIPA BAMBO |
+| Ney Dawn | FM6 | NEY DAWN |
+| Kawala Breath | FM6 | KAWALA BRE |
+| Duduk Velvet | VOICE | DUDUK VELV |
+| Mey Ember | VOICE | MEY EMBER |
+| Balaban Warm | VOICE | BALABAN WA |
+| Mizmar Fire | VOICE | MIZMAR FIR |
+| Zurna Festival | VOICE | ZURNA FEST |
+| Shehnai Gold | VOICE | SHEHNAI GO |
+| Kaval Air | FM6 | KAVAL AIR |
+| Arab Clarinet | FM6 | ARAB CLARI |
+| Accordion Reed | VOICE | ACCORDION |
+| Shawm Copper | VOICE | SHAWM COPP |
+| Arab Strings | STRINGS | ARAB STRIN |
+| Turk Ensemble | STRINGS | TURK ENSEM |
+| Persian Strings | STRINGS | PERSIAN ST |
+| Kamanche Bow | PHYS | KAMANCHE B |
+| Rebab Desert | PHYS | REBAB DESE |
+| Erhu Silk | PHYS | ERHU SILK |
+| Silk Ensemble | STRINGS | SILK ENSEM |
+| Levant Cloud | VECTOR | LEVANT CLO |
+| Desert Ribbon | ANALOG | DESERT RIB |
+| Dabke Pulse | ANALOG | DABKE PULS |
+| Shabi Saw | JUNO | SHABI SAW |
+| Rai Brass | FM6 | RAI BRASS |
+| Balkan Pulse | ACID | BALKAN PUL |
+| Turk Solo | VPS | TURK SOLO |
+| Golden Reed | FMX | GOLDEN REE |
+| Oriental Vox | VOICE | ORIENTAL V |
 
-Testing on real units (CPU, flash, RAM, clicks, storage across power cuts); room for many more SysEx banks; a sound-design pass so the presets use what 1.0 added; editor pages for the matrix and the banks; a real manual. See [What is left to do](https://github.com/KingXeryus/SynthMaven/blob/main/README.md#what-is-left-to-do).
+## Factory presets by engine
 
-**Please report what you find** in the [Issues](https://github.com/KingXeryus/SynthMaven/issues): bugs, crashes (photograph the FELUCCA CRASH screen), stuck notes, crackles, CPU readings (GLO → SYSTEM).
-
-SynthMaven is not affiliated with M-VAVE. GPL-3.0.
+| Engine | Existing factory presets | New melodic presets | Total |
+|---|---:|---:|---:|
+| ANALOG | 32 | 4 | 36 |
+| DIGITAL | 30 | 0 | 30 |
+| PHASE | 16 | 0 | 16 |
+| LOFI | 12 | 0 | 12 |
+| SAMPLE | 4 | 0 | 4 |
+| VOICE | 12 | 18 | 30 |
+| TRIO | 20 | 0 | 20 |
+| WHEEL | 14 | 0 | 14 |
+| GRAIN | 10 | 0 | 10 |
+| FM6 | 41 | 10 | 51 |
+| PHYS | 32 | 38 | 70 |
+| NOISE | 14 | 0 | 14 |
+| HYBRID | 41 | 0 | 41 |
+| WAVE | 28 | 0 | 28 |
+| ACID | 16 | 2 | 18 |
+| STRINGS | 16 | 8 | 24 |
+| MACRO | 24 | 0 | 24 |
+| VPS | 10 | 2 | 12 |
+| TERRAIN | 10 | 0 | 10 |
+| FMX | 16 | 2 | 18 |
+| WSEQ | 16 | 0 | 16 |
+| JUNO | 17 | 2 | 19 |
+| VECTOR | 18 | 2 | 20 |
+| **Total: 23 engines** | **449** | **88** | **537** |

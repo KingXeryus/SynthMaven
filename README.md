@@ -6,11 +6,11 @@ SynthMaven is an open-source firmware based on [Clipper](https://github.com/isod
 
 [Web installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Web editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [Build status](https://github.com/KingXeryus/SynthMaven/actions)
 
-[0.4 release notes and melodic preset catalog](docs/RELEASE-0.4.md)
+[1.0 release notes and melodic preset catalog](docs/release-1.0.md)
 
-## Development status
+## Version 1.0 status
 
-**Development firmware; hardware validation is outstanding.** Native BLE builds include MIDI pedal discovery, explicit device selection, connection and disconnect controls. Original Chocolate and Chocolate Plus pairing, reconnect and audio timing still need testing on the FM1. Version 0.2 predates this integration.
+**SynthMaven 1.0: 23 engines and 537 factory presets. Hardware validation is outstanding.** Native BLE builds include MIDI pedal discovery, explicit device selection, connection and disconnect controls. Original Chocolate and Chocolate Plus pairing, reconnect and audio timing still need testing on the FM1. Version 0.2 predates this integration.
 
 Native USB host support is not implemented. Selecting USB input means device-mode MIDI from a host; a USB keyboard or USB pedal cannot connect directly using a power bank alone. TRS keyboard plus BLE pedal is the intended computer-free combination.
 
@@ -39,7 +39,7 @@ Tap SAVE to PRESETS. Four names are visible per page (fewer in a short final pag
 
 This replaces the synth browser's FAV knob action; existing favourites are retained. HOME browsing remains available. The web editor provides a matching four-patch user-preset browser with Load/Edit actions. Full DX7 operator editing remains in the web FM6 panel.
 
-## Oriental / Middle Eastern collection (0.4 development)
+## Oriental / Middle Eastern collection (1.0)
 
 The melodic collection adds 88 virtual factory presets: 44 original modeled
 instrument recipes, each with Dry and Expressive variations.

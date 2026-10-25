@@ -120,11 +120,18 @@ cd /tmp/felucca-site && python3 -m http.server 8000
 Installing firmware is at your own risk. If an install fails and the FM-1 no longer
 starts, recovery needs [FM-1-transporter](https://github.com/kurogedelic/FM-1-transporter).
 
-## Publishing a release on GitHub
+## Publishing SynthMaven 1.0
 
-`PUBLISH-GITHUB.bat` (Windows, after `INSTALL-SYNTHMAVEN.bat` has built the firmware) publishes from the SYNTHMAVEN folder with
-your own Git and GitHub CLI login: the source from `synthmaven-1.1.bundle` to `YOUR-NAME/synthmaven-fm1` (created if needed;
-an existing repository with another history stops it, nothing is forced on `main`), the tag and the pre-release
-`v1.1-experimental` (notes: `docs/release-1.1.md`, the `.fwsc` package and the demo WAV attached), and the installer and
-the editor (`build/synthmaven-site`) on GitHub Pages (branch `gh-pages`, replaced each time):
-`https://YOUR-NAME.github.io/synthmaven-fm1/webapp/installer/`. `PUBLISH-GITHUB.bat -Repo another-name` for another name.
+The `main` branch of `KingXeryus/SynthMaven` publishes the installer and editor
+through `.github/workflows/synthmaven.yml`. The workflow runs host/editor tests,
+compiles the BLE-enabled target with all 23 engines and 537 factory presets,
+enforces memory limits, packages the actual firmware, and then deploys GitHub Pages.
+Deployment stops if tests or target compilation fail. The site includes matching
+GPL source and licence notices. No upstream binary is substituted.
+
+Current release notes and the melodic preset catalog: [release-1.0.md](docs/release-1.0.md).
+For a local matching site after a successful build:
+
+```
+python3 tools/make_synthmaven_site.py --package build/felucca.fwsc
+```

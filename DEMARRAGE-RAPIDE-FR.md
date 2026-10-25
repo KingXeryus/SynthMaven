@@ -1,254 +1,38 @@
-# SynthMaven — démarrage rapide (version 0.4 développement)
-
-**SynthMaven** est un firmware de **synthétiseur** pour le M-VAVE FM-1 : un seul instrument, comme le firmware d'origine, Felucca ou Baudgirl. Ce n'est plus une groovebox : pas de pistes, pas de boîte à rythmes, pas de mode song, pas de samples intégrés. Il garde de SLOOP les 12 moteurs, les effets, l'arpégiateur, le séquenceur de pas, l'audio USB et le MIDI. Il ajoute **HYBRID**, une voix à 3 oscillateurs, 2 filtres et une matrice de modulation de 16 slots, avec 32 sons d'usine. Il ajoute aussi le pitch bend, la molette, l'aftertouch et la pédale de sustain sur tous les moteurs.
-
-> **Version 0.4 DÉVELOPPEMENT.** C'est une version jeune et expérimentale, et il reste énormément de travail à faire (voir [Ce qui reste à faire](#ce-qui-reste-à-faire)). Elle passe toute sa suite de tests sur ordinateur, mais elle a encore très peu tourné sur une vraie FM-1 : attends-toi à des défauts. Avant d'installer, fais une **sauvegarde** dans l'éditeur (celui de SynthMaven ou de SLOOP, selon ce qui est installé) : onglet Backup (Projects → Backup dans SLOOP ou une ancienne version) → *Save a backup*.
-
-## Collection orientale / Moyen-Orient
-
-88 presets mélodiques : 44 instruments, chacun en variantes Dry et Expressive.
-Aucune percussion ajoutée. Les envois chorus, delay et réverb sont à zéro ;
-ajoute les effets sur la FM1. SAVE → PRESETS, KNOB 2 : ORIENTAL ; KNOB 1
-sélectionne, KNOB 3 charge, KNOB 4 charge et ouvre EDIT. L’éditeur propose les
-noms complets. Voir les [notes 0.4 et le catalogue](docs/RELEASE-0.4.md).
-
-## En bref
-
-**23 moteurs, 537 sons**, tous au même niveau :
-
-- **HYBRID** (3 oscillateurs, 2 filtres, matrice de 16 slots, 4 macros), **FMX** (6 opérateurs façon opsix, routage libre, PM / FM / RING), **FM6** (DX7, banques `.syx`), **DIGITAL** (FM 4 opérateurs), **WAVE** (tables d'ondes, et les tiennes), **WSEQ** (wave sequencing façon Wavestation), **VECTOR** (Prophet VS / joystick du Wavestation), **JUNO** (Juno-6 / 60 / 106 et son chorus I / II / I+II), **ANALOG** (analogique virtuel, 8 modèles de filtre), **ACID** (303), **STRINGS** (string machine), **MACRO** (façon Plaits), **PHASE** (façon CZ), **VPS** (vector phaseshaping), **TERRAIN** (wave terrain), **PHYS** (modèles physiques), **TRIO** (puce 8 bits), **LOFI** (chiptune), **WHEEL** (orgue à roues phoniques), **VOICE** (voyelles chantées), **NOISE**, **GRAIN** et **SAMPLE** (sur quatre sources synthétisées de SynthMaven, VOX, GLASS, PAD et AIR).
-- **Sculpter le son** (tous les moteurs) : une **matrice de modulation** de 12 slots, **LFO 2**, **LFO 3**, **ENV 2** (simple ou en boucle), quatre **MACROS** (BRITE, TIMBR, MOTN, SPACE, aussi en CC 16 à 19), **SPREAD** (chaque voix à sa place dans la stéréo), le **MOD SEQ** (séquenceur de modulation à 4 pistes), **8 modèles de filtre** sur ANALOG, WAVE et VECTOR (SVF, ladder Moog, MS-20, ladder à diodes, SEM, notch, passe-bande, passe-haut), **VINTAGE** (chaque voix dérive comme sur un vrai polyphonique analogique), un effet **INSERT** par son (SOFT, HARD, FOLD, FUZZ, CRUSH, PHASER, FLANGER, CHORUS et le chorus JUNO).
-- **Effets** : distorsion, chorus stéréo, delay synchronisé (MONO, PING-PONG, TAPE), quatre réverbs (ROOM, PLATE, HALL, SHIMMER à l'octave), filtre DJ, EQ 3 bandes, compresseur de bus et limiteur. Les réglages glissent au lieu de claquer.
-- **Accordage** : le **La 4 de référence de 400 à 480 Hz** (432, 415, 442…), et égal, juste, Pythagore, mésotonique, Werckmeister III, Kirnberger III, maqams Rast et Bayati, slendro, pelog, 19 / 24 / 31-EDO, et toute gamme **Scala `.scl`** envoyée depuis l'éditeur.
-- **Jouer** : 8 voix (12 ou 16 en option, sur les deux cœurs), POLY, MONO, LEGATO, UNISON et unisson polyphonique, glide ; **LAYER**, **SPLIT** et **MULTI** (deux parties sur deux canaux MIDI) ; un **arpégiateur** à 15 modes, dont une **machine de Turing** (TURNG), et les variations **SPICE / DICE** ; le séquenceur de pas avec accords et enregistrement ; gammes et accords sur les touches, KBD HOLD ; **MPE** ; MIDI USB et TRS ; interface audio USB.
-- **Travailler** : **UNDO** et **COMPARE** sur la FM-1, favoris, **MORPH** entre deux versions d'un son, **randomiseur** par section, presets utilisateur et projets qui gardent tout.
-- **L'éditeur web** (Chrome ou Edge) : chaque paramètre en direct, un séquenceur pro (outils, générateurs, lignes de vélocité, bibliothèque de motifs), les patchs HYBRID et FMX en entier, les pistes du MOD SEQ, l'accordage et les fichiers `.scl`, les banques DX7, tes propres tables d'ondes, une bibliothèque de sons, des outils undo / compare / A-B / random, la sauvegarde complète de la FM-1.
-
-## Ce qui reste à faire
-
-La 1.1 est expérimentale. Ce dont elle a le plus besoin, à peu près dans l'ordre :
-
-- **Des tests sur la FM-1.** Tout ce qui est nouveau dans la 1.0 et la 1.1 n'a été mesuré que sur ordinateur. La charge processeur sur la FM-1 (SPREAD, SHIMMER, 8 voix sur les deux cœurs ; 12 et 16 voix), la flash et la RAM du vrai firmware compilé, les clics ou craquements que seul le matériel montre, les presets utilisateur après une coupure de courant : tout ça doit être vérifié sur de vraies machines (voir la section 5).
-- **Plus de place pour tes propres sons.** La banque de patchs FM6 / FMX a 27 emplacements, même pas une banque DX7 entière (32 voix). La flash libérée par les samples et les projets (environ 300 Ko) pourrait accueillir 32 banques de 32 voix ; le format, la page de l'éditeur et la façon de les choisir sur la FM-1 restent à faire.
-- **Les sons.** Les presets d'usine utilisent à peine ce que la 1.0 a ajouté (les macros, le LFO 3, ENV 2 LOOP, les slots 7 à 12, PING / TAPE, HALL / SHIMMER). Une passe de sound design sur les 407 sons est à faire, et les macros sont à régler moteur par moteur.
-- **L'éditeur.** Il montre tous les paramètres, mais certaines choses méritent leur propre page (une matrice de modulation visuelle, un gestionnaire de banques SysEx). Il a été beaucoup moins utilisé avec la 1.0 qu'avec la 0.9.
-- **La documentation.** Un vrai manuel (chaque page de la FM-1, chaque moteur), des captures, de courtes vidéos ; les textes français et japonais sont incomplets.
-- **Les limites de stockage.** Les valeurs 1.0 d'un projet ne sont gardées que si sa piste 3 n'a pas de pas (le format est plein) ; les sons plus anciens se chargent avec les valeurs 1.0 par défaut.
-- **Vos retours.** Bugs, plantages (prends en photo l'écran **FELUCCA CRASH** : il reste 10 s), notes coincées, sons trop forts ou trop faibles, contrôleurs bizarres (MPE, CC 16 à 19) : signale-les dans les [Issues](https://github.com/KingXeryus/SynthMaven/issues).
-
-## Un dossier à part
-
-SynthMaven vit dans son propre dossier, **`SYNTHMAVEN`**, à côté de celui de SLOOP. Rien n'est partagé entre les deux :
-
-| | SLOOP | SynthMaven |
-| --- | --- | --- |
-| Lancer l'installation | `INSTALL-SLOOP.bat` | `INSTALL-SYNTHMAVEN.bat` |
-| Ouvrir l'éditeur | `OPEN-EDITOR.bat` | `OPEN-EDITOR.bat` (du dossier SYNTHMAVEN) |
-| Adresse | http://localhost:**8766** | http://localhost:**8767** |
-| Écran de démarrage | voilier, « sloop » | trois-mâts, « synthmaven » |
-
-Sur la FM-1, SynthMaven se reconnaît à son écran de démarrage (**0.4 DEV** sous le logo) et à HOME (maintenu) → SYS → ABOUT, qui affiche **SYNTHMAVEN 0.4 DEV**.
-
-## 1. Compiler et installer
-
-**Sans rien compiler** : ouvre la [page d'installation en ligne](https://kingxeryus.github.io/SynthMaven/webapp/installer/) dans Chrome ou Edge, la FM-1 branchée en USB ; fais d'abord une sauvegarde avec l'[éditeur en ligne](https://kingxeryus.github.io/SynthMaven/webapp/editor/), puis clique sur **Install**. Le firmware est aussi joint à chaque [release](https://github.com/KingXeryus/SynthMaven/releases).
-
-**Depuis le code source** :
-
-1. Ferme la fenêtre de SLOOP si elle tourne encore. Ce n'est pas obligatoire, mais c'est plus clair.
-2. Double-clique sur **`INSTALL-SYNTHMAVEN.bat`**. Il utilise les mêmes outils que SLOOP (WSL MinUI-Build, la chaîne JieLi). La première fois, il copie les trois fichiers du SDK depuis `..\SLOOP\build\deps\ac79`. S'il ne les trouve pas, copie ce dossier `build\deps\ac79` de SLOOP dans `SYNTHMAVEN\build\deps\`.
-3. La page d'installation s'ouvre sur http://localhost:8767/webapp/installer/ (Chrome ou Edge, FM-1 en USB). Clique sur **Install**.
-4. La FM-1 redémarre sur l'écran **synthmaven**. Tes projets, presets, samples et réglages de SLOOP sont toujours là.
-
-## Nouveau dans la 1.1 (expérimentale) : un MIDI ultra-compatible, le séquenceur de SLOOP 2.7.2, et une réverb propre
-
-- **Corrigé : le craquement à gauche avec la réverb** (entendu par plusieurs joueurs, absent du firmware d'origine). **PLATE, HALL et SHIMMER** lisaient une de leurs prises de sortie gauche 1417 échantillons en arrière sur une ligne de 1334 : en dehors de la ligne, un clic toutes les 60 ms, à gauche seulement (les prises de droite étaient toutes dedans). ROOM ne l'avait pas. Un second cas est corrigé aussi : **la réverb ROOM débordait** avec DAMP baissé (sous ~35) et un son fort (LEVEL et REV montés, un accord), et sa traîne devenait un craquement à pleine échelle qui continuait après les notes. Le mixage et le master sont protégés de la même façon. Tous les autres effets ont été vérifiés (`tests/fx_sweep_test.c` : une sinusoïde dans chaque réverb, chaque MODE et TIME du delay, le chorus, les INSERT, le chorus JUNO et le master, à leurs extrêmes) : aucun n'avait ce bug. Si un bruit reste, les tests qui disent d'où il vient sont plus bas (Un bruit d'un seul côté ?).
-- **Fait pour les contrôleurs MIDI et les DAW** (la liste complète : [docs/midi-fr.md](docs/midi-fr.md)) : les **program changes** chargent les sons (avec la **banque**, CC 0 : le programme *p* de la banque *b* est le son *b* × 128 + *p* de la liste ; GLO > MIDI 2 > PROG les coupe) ; le **CC 11 expression** est le volume du son ; les **CC 120 / 123** arrêtent toutes les notes (le bouton panic d'un DAW), le **CC 121** remet les contrôleurs à zéro ; l'**amplitude du pitch bend** est GLO > MIDI > **BEND** (AUTO, ou 1 à 24 demi-tons) et le **RPN 0** la règle ; **LOCAL** OFF (et le CC 122) pour un DAW qui renvoie la piste ; les **CC 76 / 77 / 78** la vitesse, le vibrato et le fade du LFO ; GLO > MIDI 2 > **SEND CC** : les knobs envoient leurs CC, un DAW enregistre et rejoue les mouvements ; GLO > MIDI 2 > **EWI** : un **contrôleur de souffle** (CC 2) joue le volume, et avec V+AT l'aftertouch aussi (la coupure suit le souffle ; demandé par un joueur d'EWI) ; SynthMaven répond à la **MIDI identity request**. Les knobs ne sautent plus de crans quand on les tourne vite (l'encodeur de SLOOP 2.7.2).
-- **Un canal MIDI pour le synthé** (GLO > **MIDI**, un réglage de la FM-1) : **IN CH** OMNI comme avant, ou de 1 à 16, pour qu'un KeyStep Pro ou les autres canaux d'un DAW ne jouent plus SynthMaven ; **OUT**, le canal sur lequel partent le clavier, l'arpège et le séquenceur. (Demandé dans un commentaire.)
-- **Le séquenceur de SLOOP 2.7.2 sur la FM-1** : SEQ appuyé ouvre la page **NOTES**, le motif en piano roll où chaque note se règle (KNOB 1 la note, celles d'un accord une par une ; 2 la hauteur ; 3 la durée ; 4 la force, de GHOST à HARD et ACC ; PRESETS le zoom, de 8 à 64 pas), et **OCT+ maintenu** ouvre sa fiche (SLIDE, NUDGE, FILL, MOVE, COPY, DELETE) ; EDIT appuyé efface la note. Le clavier et **un clavier MIDI** écrivent le pas (MENU > **SEQ** > **STEP ADVANCE** OFF : le curseur reste, pour réessayer un accord). **EDIT, ARP et GLO redeviennent des couches** quand on les maintient : EDIT efface une note du motif (pendant la lecture, ou tout le motif à l'arrêt) et règle SHIFT, LENGTH x2 / moitié, TRANSPOSE, avec annuler / refaire sur OCT- / OCT+ ; ARP répète une touche sur la grille (enregistré en ratchets) ; GLO lance un fill (touche 9 maintenue, touche 10 la mesure suivante), le tap tempo (touche 16) et le volume (KNOB 1). SEQ + un pas tenu + KNOB 2 règle sa vélocité. À l'enregistrement, plusieurs notes tenues continuent chacune jusqu'à ce que leur touche soit lâchée, et sur un son MONO ou LEGATO une note jouée par-dessus la précédente est enregistrée et rejouée legato (sans nouvelle attaque). Le tempo d'une horloge MIDI maître s'affiche stable (140 reste 140). FX et SAVE maintenus laissent toujours jouer le clavier.
-- **Un séquenceur pro dans l'éditeur web** (onglet Sequencer, avec le séquenceur de pas de la FM-1 tel qu'il est) : **undo / redo** (Ctrl+Z / Ctrl+Shift+Z, 64 pas, les modifications à la main aussi) ; une **plage** (Maj+clic sur la grille) pour chaque outil ; **transposer** (±1, ±12), **décaler** en boucle, **inverser** (les accords gardent leur durée), **doubler** la longueur, **copier / coller** (Ctrl+C / Ctrl+V), effacer ; des **accords** sur la note de chaque pas (maj, min, 7, m7, sus, add9... ou les triades et septièmes de la tonalité), accents et slides sur une plage ; des **générateurs** : rythmes euclidiens, mélodies aléatoires dans la gamme (densité, sauts, liaisons, accents, slides, accords, une graine pour en retrouver une), 22 motifs tout faits (basses acid, octaves, offbeat et rolling, arpèges, Berlin school, stabs et progressions d'accords, gates) et un **texte de motif** pour écrire les tiens (`1 3 5 8'`, `1+3+5>`, `-` liaison, `.` silence), **humaniser** (vélocité et nudge) ; des **lignes** à dessiner pour la vélocité, le nudge, le ratchet (x1 à x4) et le niveau (GHOST à HARD), et des colonnes ratchet / niveau dans la liste des pas ; une **bibliothèque de motifs** : une banque dans le navigateur, des fichiers `.synthmaven-pattern.json` (notes, liaisons, accents, slides, vélocités, ratchets, niveaux, nudges, fills, locks, longueur).
-- **La page PRESETS filtre par moteur** (SAVE > PRESETS, KNOB 2 : ALL, un moteur, ou USER) : KNOB 1 et le bouton PRESETS ne parcourent alors que les sons de ce moteur, et la liste n'affiche qu'eux, avec leur nombre (avant, KNOB 2 sautait seulement au premier son du moteur suivant). (Demandé dans un commentaire.)
-- **Les sons d'usine se chargent sans effets** : plus d'envoi vers le délai ni la réverb (demandé par les utilisateurs) ; FX > DLY / REV, ou la macro SPACE, les ajoutent, et tes presets utilisateur gardent ce que tu as enregistré.
-- **A4 en Hz** (GLO → TUNING → **A4**, de 400 à 480 Hz, et dans la carte Tuning de l'éditeur) : 432, 415 (baroque), 442 / 443 (orchestres)… sous tous les systèmes d'accordage, gardé avec les réglages. (Demandé dans un commentaire de la vidéo de lancement.)
-
-## Nouveau dans la 1.0 (expérimentale) : une voix stéréo, plus de modulation, quatre macros, un hall et un shimmer
-
-- **SPREAD** (VOICE 3 → **SPRED**, tous les moteurs) : chaque voix a sa place entre gauche et droite (les voix extérieures d'abord, les suivantes entre elles) : un accord s'ouvre dans la stéréo, les voix de UNI2 / UNI4 s'écartent. Le centre ne change pas (gauche + droite = le son sans SPREAD, au bit près à 0). Les nappes et les sons en unisson en ont un peu d'origine (48).
-- **La matrice a 12 slots** (MATRIX 1 à 12, sur la FM-1 et dans l'éditeur) et de nouvelles sources : **LFO 3** (page LFO 3 : RATE, WAVE, MODE FREE / KEY) et les quatre macros **MAC1 à MAC4**.
-- **ENV 2 LOOP** (page ENV 2 LOOP) : ONE comme avant, ou **LOOP** : arrivée au bout de sa décroissance, elle repart en attaque tant que la note est tenue : une enveloppe qui cycle, un modulateur rythmique dans la matrice.
-- **Quatre MACROS sur tous les moteurs** (EDIT → **MACROS** ; CC MIDI 16 à 19 ; HYBRID garde ses M1..M4) : **BRITE** (la coupure, ±2,5 octaves), **TIMBR** (la forme du moteur), **MOTN** (un vibrato et le LFO 3 sur la coupure : du mouvement), **SPACE** (plus de réverb, de delay et de SPREAD). Ce sont aussi des sources de la matrice.
-- **HALL et SHIMMER** (REVERB → TYPE) : HALL, c'est la plaque devenue une grande salle de pierre (décroissance longue, pré-délai, aigus plus sombres) ; SHIMMER la nourrit à l'octave au-dessus, la traîne qui monte des disques d'ambient. Changer de TYPE fait disparaître l'ancienne traîne en fondu (pas de clic).
-- **Le delay a un MODE** (DLY 2 → **MODE**) : **MONO** comme avant, **PING** (le premier écho à gauche à TIME, le suivant à droite à deux fois TIME, et ainsi de suite), **TAPE** (le pleurage et le scintillement font bouger les échos ; les répétitions saturent en s'empilant). Changer de MODE se fait en fondu.
-- **Gardé avec le son** : les presets utilisateur gardent toutes les valeurs de la 1.0 dans une « queue » après la banque (SLOOP et les anciennes versions de SynthMaven lisent la banque comme avant et ne la voient pas) ; les projets les gardent dans les nudges de la piste 3 tant que la piste 3 n'a pas de pas (un projet dont la piste 3 a des pas les charge à leurs valeurs par défaut).
-- **Corrigé** : l'arpège qui s'allumait tout seul en changeant de son. Quatre sons apportent un arpège (8BIT ARP, ACID ARP, ARP PLUCK, TURING JUNO), et depuis la 0.7 un arpège en marche continuait d'un son à l'autre : passer sur l'un d'eux laissait l'arpège allumé pour tous les sons suivants. Maintenant, l'arpège d'un son s'éteint au son suivant ; seul un arpège que tu allumes (ou changes) toi-même continue.
-- **Corrigé** : les valeurs 1.0 des presets utilisateur (SPREAD, LFO 3, les macros, les slots 7 à 12...) n'étaient pas relues après avoir éteint la FM-1, et le démarrage écrivait après la fin de leur table (une erreur de la première version de la 1.0).
-- **Corrigé** : le chorus du JUNO (CHOR I / II / I+II, et les types JUNO de l'INSERT) craquait sur un accord fort de beaucoup de voix (son calcul débordait au-delà de 16 bits ; maintenant en 64 bits, et la ligne garde un huitième du son au lieu d'un quart : plus d'écrêtage non plus).
-- **Plus simple** : plus de page PROJECT sur la FM-1 (SynthMaven est un seul instrument : la sauvegarde automatique garde ce que tu joues, les presets utilisateur gardent tes sons) ; SAMPLE et GRAIN jouent seulement les quatre sources intégrées de SynthMaven (USER SMP et USER GRAIN retirés : 407 sons) ; dans l'éditeur, l'onglet Samples devient **Wavetables** (les USR1..USR4 de WAVE) et l'onglet Projects devient **Backup**.
-- **Changé** : l'historique UNDO est sorti de la zone RAM de 96 Ko (les nouveaux buffers avaient besoin de la place).
-- **L'éditeur web** : les nouvelles pages (VOICE 3, LFO 3, ENV 2 LOOP, MACROS, DLY 2) et les 12 slots de la matrice (toujours le protocole 14). Un fichier de son de la 0.9 se charge dans la 1.0, les nouvelles valeurs restant comme elles sont.
-
-## Nouveau dans la 0.9 : modèles de filtre, VINTAGE, micro-accordage, une machine de Turing, un son propre
-
-- **Modèles de filtre** (FILTER → **MODL**, sur ANALOG, WAVE et VECTOR ; HYBRID garde ses deux filtres) : **SVF** (12 dB, comme avant), **MOOG** (le ladder 24 dB), **MS20** (2 pôles avec l'écrêtage à diodes dans la réinjection : il hurle à forte résonance sans décrocher), **DIODE** (le ladder à diodes 4 pôles, famille TB-303 / EMS : caoutchouteux, perd moins de basses), **SEM** (le state variable 12 dB d'Oberheim, résonance douce), **NOTCH**, **BP** et **HP**. Changer de modèle sur une note tenue fait un petit creux puis revient (pas de clic).
-- **VINTAGE** (VOICE 2 → **VINTG**, tous les moteurs) : chaque voix a sa propre petite erreur d'accord et de filtre (sa « carte de voix »), une lente dérive de hauteur, et chaque note un peu de la sienne. À 127 : carte ±6 cents, dérive ±5, note ±2, coupure ±1,5 pas. À 0 : identique à avant, au bit près.
-- **TUNING** (GLO → **TUNING**, pour tous les sons, gardé avec les réglages) : **EQUAL**, **JUST** (intonation juste), **PYTHA**gore, **MEANT**one (1/4 de comma), **WERCK**meister III, **KIRNB**erger III, les maqams **RAST** et **BAYAT**i (tierces neutres), **SLEND**ro et **PELOG** (gamelan), **19**, **24** et **31-EDO**, et **USER** : n'importe quelle gamme **Scala .scl** (jusqu'à 48 notes par période, n'importe quelle période, même la tritave de Bohlen-Pierce) envoyée depuis l'éditeur web. ROOT choisit la tonique.
-- **TURNG**, une machine de Turing dans l'arpégiateur (ARP MODE → TURNG, d'après la Turing Machine de Music Thing) : un registre à décalage en boucle choisit parmi les notes tenues. Sur la page SPICE : **MUTAT** (0 figé, 127 aléatoire), **SEED** (un autre motif), **LOOP** (longueur 1..16). LOOP fixe aussi sur combien de notes SPICE / DICE varient avant de se répéter.
-- **Un son propre, sans clics** (un nouveau test de 46 cas rend chaque changement et vérifie qu'aucun échantillon ne saute) : le limiteur de sortie bouge en courbe en S ; les envois (CHOR / DLY / REV) et la DIST de l'INSERT glissent au lieu de sauter ; le TIME du delay passe en fondu de l'ancienne à la nouvelle prise ; la DEPTH du chorus glisse ; le FILT du master passe par le milieu entre LP et HP ; FLANG / CHOR de l'INSERT attendent que leur ligne soit pleine ; une table WAVE, un patch FMX ou un modèle de filtre changés sur une note tenue font un creux et reviennent.
-- **GRAIN et SAMPLE sonnent dès l'installation** : quatre sources propres à SynthMaven, synthétisées (aucun enregistrement, 25 Ko de flash) : **VOX** (un petit chœur qui s'ouvre de « ou » à « a » : le POS de GRAIN parcourt la voyelle), **GLASS** (un harmonica de verre), **PAD** (sept dents de scie, le filtre qui s'ouvre), **AIR** (du souffle sur les harmoniques de la note). Dix sons GRAIN (VOX CLOUD, VOWEL DRIFT, ANGEL HALO, GLASS RAIN, CRYSTAL SWELL, FROZEN PAD, DARK DRONE, SCAN PAD, WIND CHOIR, BREATH GRAIN) et quatre SAMPLE (SAMPLE CHOIR, GLASS HARP, SAW ENSEMBLE, AIR FLUTE). SET / SRC 0 à 3 restent tes emplacements USR1 à USR4 ; les sources viennent après.
-- **17 nouveaux sons** (ceux-là, TURING JUNO, MS20 VECTOR, DIODE VS BASS). **409 sons, 23 moteurs.**
-- **Une passe sur tous les sons** (chacun rendu, mesuré et son spectre regardé) : la FM de DIGITAL ne se replie plus en bruit dans les aigus (son index tenu sous la limite de Nyquist, et qui glisse dans chaque bloc : plus de marche quand une basse mono redéclenche) ; CLAV moins agressif ; les plateaux de l'EQ master font glisser leur fréquence aussi.
-- **Un nouveau logo** : un synthmaven sous voiles, dans la ligne de celui de SLOOP (sa voile devient quatre, une par couleur de piste), sur l'écran de démarrage, l'installeur, l'éditeur et ici.
-- **Corrigé** : un projet SLOOP 2.6 chargé dans SynthMaven lisait ses valeurs MOD SEQ / SPICE au-delà de celles de son INSERT (maintenant leurs valeurs par défaut).
-- **L'éditeur web** (protocole 14) : une carte **Tuning** (système, tonique, charger un .scl) et les nouveaux réglages.
-
-## Nouveau dans la 0.8 : JUNO et son chorus, VECTOR, un séquenceur de modulation, SPICE / DICE
-
-- **JUNO**, le polyphonique des Roland Juno-6 / 60 / 106 (l'idée, aucun code de Roland) : un DCO par voix avec une **dent de scie**, une **impulsion** dont le LFO fait varier la largeur (PWM : LFO DEST SHP, la molette, SHAPE dans la matrice) ou **les deux** (**S+P**, les deux boutons du 106), un **sub** carré une octave en dessous et du **bruit** ; le **HPF** aux quatre positions du 106 (0 un peu de basses en plus, 1 neutre, 2 et 3 plus fin), le **filtre ladder 24 dB** résonant, et le **chorus** : **I** (0,5 Hz, large), **II** (0,8 Hz, plus profond), **I+II** (8 Hz, léger, les deux boutons du 60 ensemble) : un chorus BBD stéréo, deux prises d'une même ligne balayées en sens opposés, assombries comme un BBD, gauche = son sec + l'une, droite = son sec + l'autre. Changer de mode pendant un accord tenu se fait en fondu (pas de clic). EDIT : WAVE PW SUB NOIS / HPF CUT RES CHOR. 16 sons (nappes, cuivres, cordes, basses, claviers, lead synthwave, un hoover).
-- **Le chorus du JUNO sur n'importe quel son** : l'INSERT a trois types de plus, **JUNO1**, **JUNO2**, **JUN12** (A WIDTH, B TONE, C NOISE : le souffle du BBD ; MIX le chorus).
-- **VECTOR**, la synthèse vectorielle du Sequential Prophet VS et du joystick du Wavestation : quatre formes d'onde aux coins d'un carré (**A B C D**, 16 formes de SynthMaven, chacune en trois copies sans repliement), un point dans le carré (**X**, **Y**) les mélange, et **MOVE** fait voyager le point tout seul dès le début de chaque note : CIRC, 8, SWEEP (de A jusqu'au point : l'enveloppe de mixage du VS), LOOP (A B D C), RND, chacun lent ou rapide (+). SHAPE déplace X ; la matrice déplace X et Y par leur nom. Puis un passe-bas 12 dB. EDIT : A B C D / X Y MOVE CUT. 16 sons.
-- **MOD SEQ**, un séquenceur de modulation dans chaque son (LFO → **MOD SEQ**, **MOD SEQ 2**) : quatre lignes de 16 pas (-8..7) qui avancent à **RATE** (1/32 à 2 mesures, au tempo), sur **LEN** pas, chaque ligne avec son lissage (**SMTH**), à partir de chaque première touche (**START KEY**) ou sur la grille du morceau (**SYNC**). La matrice les lit comme quatre sources de plus, **SEQ1..SEQ4** : une ligne sur le cutoff, une autre sur la hauteur, un rythme sur le volume, n'importe quel réglage EDIT par son nom. Sur la FM-1 : LANE STEP VALUE et **SHAPE** (RAMP+ RAMP- TRI SINE SQR RND FLAT INVRT SHIFT : tourne pour écouter chaque forme), la ligne dessinée en grand, le pas joué allumé, les quatre lignes en petit dessous. Un son chargé apporte quatre formes de départ (une rampe, un triangle, un rythme, une ligne aléatoire). Gardé avec le son : UNDO, COMPARE, le SWAP du layer, les presets utilisateur, les projets.
-- **SPICE / DICE** (ARP → **SPICE**, comme sur l'Arturia MicroFreak) : les notes de l'arpégiateur et les pas du séquenceur varient autant que SPICE le dit : certaines se taisent, d'autres sautent d'une octave, la vélocité et la durée bougent ; toujours de la même façon à chaque tour (16 notes, ou les pas du motif), jusqu'à ce qu'on tourne **DICE** (une autre variation). Ce qui est enregistré ne change jamais. SPICE à 0 : exactement comme avant.
-- **L'éditeur web** (protocole 13) : une carte **MOD SEQ** (les quatre lignes en barres à tirer, les formes, LIVE), les nouvelles pages (MOD SEQ 2, SPICE, les types JUNO de l'INSERT), JUNO et VECTOR.
-- **Les deux nouveaux moteurs tournent sur les deux cœurs** (au bit près, comme les autres). **392 sons, 23 moteurs.**
-- **Corrigé** : un preset utilisateur envoyé depuis l'éditeur web était écrit au format de SLOOP par-dessus l'enregistrement de SynthMaven (LFO 2, ENV 2, matrice et INSERT perdus, et quelques octets écrits après l'enregistrement).
-
-## Nouveau dans la 0.7 : les deux cœurs, l'historique du son, et le meilleur de SLOOP 2.7
-
-- **Le 2e cœur de la FM-1 calcule la moitié des voix.** Le démarrage du 2e cœur vient de X0X (Charles Vestal), via SLOOP 2.7 (Andre Rezemini), avec le correctif de la 2.7.1. SLOOP partage par piste ; SynthMaven joue un seul son, donc il partage **les voix d'un même son** : le 1er cœur calcule les modulations, donne la 2e moitié des voix au 2e cœur, calcule la 1re moitié, attend et additionne. Le son est identique au bit près (prouvé par les tests sur ordinateur pour chaque preset). Moteurs partagés : HYBRID, FMX, WAVE, ANALOG, FM6, VPS, TERRAIN, WSEQ, MACRO, STRINGS, TRIO, PHASE, DIGITAL, LOFI. **MENU → SYS → 2ND CORE** ON / OFF ; ABOUT affiche **2 CORES** ou **1 CORE**.
-- **UNDO et COMPARE sur la FM-1** (EDIT → **UNDO**) : chaque changement du son devient une étape dès qu'il s'arrête (un balayage de knob = une étape), un son chargé aussi. KNOB 1 recule (gauche) et avance (droite) sur 16 étapes ; la page les liste. KNOB 2 **CMP** : ORIG fait entendre le son tel qu'il a été chargé, EDIT tes modifications. HOME affiche **EDITED** quand le son a été modifié, et charger un autre son ne perd jamais tes modifications : UNDO les ramène.
-- **RANDOM par section** : WHAT propose aussi **ENV**, **MOD**, **FX** et **OPS** (sur FMX : les opérateurs eux-mêmes, comme le randomizer de l'opsix).
-- **Favoris** : page PRESETS, KNOB 4 à droite met le son en haut de la liste (16 max), à gauche le retire.
-- **De SLOOP 2.7** : **KBD HOLD** (ARP 2 → HOLD ON avec l'arpège OFF : les notes continuent de sonner, l'accord suivant les remplace), **15 modes d'arpège**, le **swing de l'arpège** marche aussi à l'arrêt, un son chargé pendant que l'arpège joue le garde, **CC 74** sur le cutoff propre à chaque moteur, **REC QUANT OFF** (KNOB 4 de l'écran REC), l'overdub sur des notes tenues, **l'accélération des knobs** (MENU → SCREEN → KNOB ACCEL), le **glissement de LEVEL et PAN**, les samples qui **bouclent tant que la touche est tenue**, **USB RATE** (MENU → AUDIO, pour Android), **CLOCK OUT** MIDI sur USB (MENU → MIDI).
-- **L'éditeur web** : une carte **Sound tools** avec **Undo / Redo** (Ctrl+Z), **Compare with loaded**, **A / B**, un **randomizer par section** avec un dosage, la liste **de ce qui a changé** et **l'enveloppe dessinée**. La page Samples règle la **boucle** de chaque fichier (ONE SHOT, LOOP, LOOP+TAIL, ou la boucle du WAV lui-même). L'éditeur trouve la FM-1 même si Windows a gardé un autre nom de port.
-
-## Nouveau dans la 0.6 : deux parties, un effet insert par son, FMX et le wave sequencing
-
-- **MULTI (bi-timbral)** : EDIT → LAYER → MODE a un 4e choix, **MULTI** : le son du layer devient une partie à lui, sur son propre canal MIDI (**CH**, sur le bouton qui sert à SPLIT dans les autres modes ; 2 par défaut), avec son propre pitch bend, sa molette, sa pression et sa pédale de sustain ; tous les autres canaux, le clavier, le séquenceur et l'arpégiateur jouent le son principal. Les voix sont partagées (8, ou 12 / 16 avec `INSTALL-SYNTHMAVEN.bat 12` / `16`). LAYER et SPLIT comme avant.
-- **Un effet INSERT par son** (FX → INSERT, INSERT 2), celui de SLOOP 2.6 : TYPE OFF, SOFT, HARD, FOLD, FUZZ (DRIVE TONE LEVEL), CRUSH (BITS RATE LPF), PHASR, FLANG, CHOR (RATE DEPTH FDBK), et MIX. Après la saturation du son, avant son filtre et les envois ; le son principal et le layer ont chacun le leur ; gardé avec le son (presets, presets utilisateur, projets). OFF ou MIX 0 : le son exactement comme avant. Un son ou un projet de SLOOP 2.6 garde son INSERT.
-- **FMX**, un moteur à six opérateurs inspiré du Korg opsix : chaque opérateur a sa **forme d'onde** (SINE TRI SAW SQR HALF ABS QUART PULSE SIN8 NOISE) et son **mode** : **PM** (la « FM » du DX7), **FM** (la vraie, linéaire) ou **RING** ; un rapport (x0.5 à x31, FINE) ou une fréquence fixe ; niveau, ADSR, vélocité, suivi de clavier, désaccord. **Routage libre** : n'importe quel opérateur module n'importe quel autre, chaque liaison avec sa quantité, un opérateur sur lui-même c'est son feedback, n'importe lequel vers la sortie. 40 modèles (ALG : les 32 du DX7, puis CASCADE, 2 STACKS, STAR, 2 x 2>1, RING 3, LOOP, Y, 1 > 5) pour partir, puis chaque liaison se change. Une enveloppe de hauteur (PEG). EDIT 1 / 2 : PTCH ALG MOD FB / TIME DTN VEL KTRK (des macros sur le patch) ; sur FMX, six pages EDIT de plus modifient le patch lui-même : **OP** (OP WAVE MODE RATIO), **OP 2** (FINE LEVEL VEL KSC), **OP ENV**, **ROUTE** (TO FROM AMT OUT, avec le routage dessiné en grille), **FMX** (DTN FIX PEG PTIM) et **STORE** (dans la banque, B1..B27, la lecture arrêtée). La banque est celle de FM6 : un emplacement contient un patch FMX ou une voix DX7, et FMX joue une voix DX7 convertie. Dans l'éditeur : tout le patch, le routage dessiné, les modèles, LIVE, STORE, les fichiers (`.synthmaven-fmx.json`). 16 sons. Une voix coûte à peu près une voix de HYBRID.
-- **WSEQ**, le « wave sequencing » inspiré du Korg Wavestation : chaque note joue une suite de pas, chacun avec sa forme d'onde, sa hauteur et son niveau, au tempo du morceau, le pas suivant arrivant en fondu sur la fin du précédent. SEQ (16 suites), RATE (1/32 à une mesure), XFADE, LOOP (FWD BACK PING ONCE), START, PITCH (l'écart des hauteurs des pas : 0 aucun, 127 le double), CUT, RES. 16 sons ; léger (un tiers de HYBRID).
-- **360 sons, 21 moteurs.** L'éditeur web connaît les nouvelles pages (INSERT, et le patch de FMX).
-
-## Nouveau dans la 0.5.1 : un relevé du temps audio (la chasse aux craquements)
-
-GLO > SYSTEM, la colonne CPU alterne maintenant toutes les 1,5 s : **CPU** (ou l'état USB), **LATE** (les tampons audio calculés trop tard depuis l'allumage : chacun est un clic) et **PEAK** (le tampon le plus lent des dernières secondes, en % du temps dont il dispose ; au-dessus de 100, il est en retard). Si tu entends des craquements, regarde si LATE monte pendant qu'ils se produisent.
-
-## Nouveau dans la 0.5 : deux moteurs de plus, VPS et TERRAIN
-
-Tous deux proposés dans les discussions de Felucca (#145, #146) comme des façons légères d'obtenir des sons qu'aucun oscillateur ne fait ; chacun coûte à peu près ce que coûte ANALOG (un tiers de HYBRID).
-
-- **VPS**, la synthèse par « vector phaseshaping » (d'après Kleimola, Lazzarini, Timoney et Välimäki, DAFx 2011) : un sinus lu à travers une phase pliée. Le pli est un point : **D** (où dans la période) et **V** (combien de cycles à ce moment-là). V sous 1 : des ondes à distorsion de phase, façon CZ ; V au-dessus de 1 : V cycles serrés dans le début de la période, un formant à V fois la note, comme un hard sync ou un balayage de voyelle. Uniquement des cycles entiers (entre deux entiers, V fond les deux) : pas de pointe, pas de repliement. **VENV** balaie V avec l'enveloppe à chaque note, **OSC2** ajoute un 2e oscillateur au D inversé et désaccordé (**DTN**), **SUB** un sinus à l'octave du dessous, puis CUT et RES. La modulation SHAPE (LFO, enveloppe, molette, matrice) déplace D. EDIT : D V VENV OSC2 / CUT RES DTN SUB. 10 sons.
-- **TERRAIN**, la synthèse par « wave terrain », version légère : une orbite tourne au-dessus d'une surface, et la hauteur de la surface sous elle est le son. Un tour est une période : le son a une hauteur juste ; la position de l'orbite (**X**, **Y**) et sa largeur (**RAD**) choisissent les harmoniques ; **ORB** l'aplatit ou en fait un huit ; **DRIFT** la déplace lentement, chaque note à sa façon, pour des timbres qui évoluent sans cesse. Huit surfaces de 32 × 32 (**TERR** : WAVES, RIPPLE, CRYSTAL, BUMPS, SADDLE, FOLDS, TWIST, CHAOS), périodiques dans les deux sens et à bande limitée ; l'orbite se resserre dans les aigus. EDIT : TERR RAD X Y / ORB DRIFT CUT RES. 10 sons.
-- **328 sons, 19 moteurs.** Chaque réglage EDIT des deux est une destination de la matrice (X et Y bougés par LFO 2 ou par la position de la touche, par exemple).
-
-## Nouveau dans la 0.4.1 : les correctifs de SLOOP 2.6, et la cohabitation avec SLOOP 2.6
-
-- **Une sortie plus propre** : le limiteur du master regarde un bloc (0,7 ms) en avance : une attaque forte est déjà baissée quand elle arrive, au lieu que ses premiers échantillons passent dans l'écrêteur doux de la sortie (un craquement avec MASTER fort, surtout au casque) ; une basse forte tenue garde un seul gain (plus de sifflement). D'après SLOOP 2.6.
-- **Plus de clic quand un filtre commence à se fermer** : le FILTER du son et le FILT du master démarrent leur passe-bas là où est le signal (il partait du silence sous le son : un craquement).
-- **FM6** : un son changé pendant que des notes tiennent les fait disparaître avec leur propre patch ; le nouveau patch vient après (elles le prenaient tout de suite : un clic).
-- **Arpégiateur** (#191, d'après Felucca 1.5) : un arpège verrouillé suit TRN, ROOT, SCALE et QNT changés après l'appui sur ses touches.
-- **Charger un projet ou NEW** remet le pitch bend au milieu, la pression à 0 et relève la pédale de sustain (ses notes s'arrêtent) ; les bends MPE de chaque note aussi.
-- **Éditeur web** : une valeur remise (la même sur un autre son, ou après qu'un knob l'a bougée sur la FM-1) est renvoyée (elle était ignorée pour de bon) ; un fichier de son d'une autre version se charge selon sa disposition ; une sauvegarde avec des projets plus récents que le firmware s'arrête avant d'écrire quoi que ce soit.
-- **Installateur** : il trouve une FM-1 qui tourne sous SLOOP (passer de SLOOP à SYNTHMAVEN ne s'arrête plus sur *FM-1 introuvable*) ; sinon, le message liste les ports MIDI vus.
-- **Passer de SLOOP 2.6 à SYNTHMAVEN sur la même FM-1** : SYNTHMAVEN lit les projets de SLOOP 2.6 (ils apparaissaient comme des emplacements vides, et sauvegarder dessus les écrasait) ; il garde les réglages MIDI et le MIDI LEARN de SLOOP 2.6, et les kits SYN de SLOOP ; son réglage MPE n'est plus rangé là où SLOOP 2.6 garde GLO > SYSTEM > IN. Les presets utilisateur redeviennent une seule banque pour les deux (enregistrements de 192 octets : la première version 0.4 les passait à 232, que SLOOP lisait comme vides ; ils sont convertis à l'allumage) : la matrice, LFO 2 et ENV 2 sont rangés dans les valeurs libres de l'enregistrement, SLOOP voit le son tel quel. Un projet garde LFO 2, ENV 2 et la matrice dans les emplacements de lock libres de la piste 3, que SLOOP ignore (la première 0.4 les mettait dans les réglages des pistes 3 et 4 ; toujours lus).
-
-## Nouveau dans la 0.4 : une matrice de modulation sur tous les moteurs, et le MPE
-
-- **MATRIX** (LFO → MATRIX), sur tous les moteurs : six slots, chacun une **SOURCE** → une **DESTINATION** × une **QUANTITÉ** (±). SLOT choisit le slot que les trois autres knobs règlent ; l'écran montre les six. Sources : **LFO1**, **LFO2**, **ENV1** (l'enveloppe de volume), **ENV2**, **VEL**, **KEY** (la note, autour du Do 4), **MW** (molette), **AT** (aftertouch, canal ou polyphonique), **RAND** (une valeur au hasard à chaque note), **SLIDE** (MPE). Destinations : **PITCH** (jusqu'à ±24 demi-tons, plus fin près de 0), **CUT**, **SHAPE**, **AMP**, **PAN**, **LFO2** (sa vitesse) et n'importe lequel des huit réglages EDIT du moteur, par son nom (CUT d'ANALOG, POS de WAVE, les ratios de FM6…), note par note. Un slot à 0 ne coûte rien et ne change rien.
-- **LFO 2** (LFO → LFO 2) : RATE, WAVE (SIN TRI SAW SQR S&H), MODE : **FREE** (un pour le son) ou **KEY** (un par note, relancé à chaque note).
-- **ENV 2** (ENV → ENV 2) : une 2e enveloppe ADSR, pour la matrice.
-- **MPE** (HOME maintenu → SYSTEM → MPE) : OFF, ou la plage de bend des canaux de notes (48 ST, le standard MPE, ou 2, 12, 24, 96). Pour l'Osmose d'Expressive E, les ROLI, la LinnStrument, etc. : le canal 1 est le canal maître (bend, molette, pédale de toutes les notes), les canaux 2 à 16 portent chacun une note avec **son propre pitch bend**, **sa propre pression** (la source AT et MOD AT>) et **son propre slide** (CC 74 : la source SLIDE ; si aucun slot ne l'utilise, il ouvre le filtre de la note).
-- **Gardés avec le son** : les projets gardent LFO 2, ENV 2 et la matrice des deux sons (le layer aussi) dans une place que le synthé n'utilisait pas (0.4.1 : les emplacements de lock libres de la piste 3) ; un projet garde sa taille, les anciens se chargent avec la matrice vide. Les presets utilisateur les gardent aussi (0.4.1 : dans l'enregistrement que SLOOP lit). RANDOM ALL bouge aussi LFO 2, ENV 2 et les quantités des slots utilisés ; MORPH les fait tous glisser.
-
-## Nouveau dans la 0.3 : jouer comme sur un grand synthé
-
-- **EQ et compresseur du master** : FX → **EQ+COMP** : LOW (étagère à 150 Hz), MID (cloche à 1 kHz), HIGH (étagère à 5 kHz), ±12 dB (MID ±10) par pas de 1 dB, et **COMP**, un compresseur de bus stéréo (le « glue » : un seul bouton baisse le seuil de -6 à -30 dB et monte le ratio de 2:1 à 4:1, avec gain de compensation automatique). À plat et à 0, ils sont court-circuités. Tout glisse, aucun clic.
-- **Layer et split** : EDIT → **LAYER** : MODE (OFF / LAYER / SPLIT), SOUND (n'importe lequel des 308 sons ou de tes presets comme 2e son), SPLIT (la note de partage : le layer en dessous, le son principal à partir d'elle), LEVEL ; **LAYER 2** : OCT (le layer de -2 à +2 octaves), PAN, FILT et **SWAP** (les deux sons échangent leur place : toutes les pages éditent alors l'autre son ; SWAP encore pour revenir). Clavier, MIDI, séquenceur et arpégiateur jouent les deux.
-- **Unisson polyphonique sur tous les moteurs** : EDIT → VOICE : **UNI2** et **UNI4** empilent 2 ou 4 voix désaccordées par note (DTUNE sur VOICE 2). UNI reste l'empilement mono de 8 voix.
-- **Morph et randomiseur** : EDIT → **MORPH** : SET A, SET B, puis MORPH fait passer tout le son de l'un à l'autre (MIDI CC 20). EDIT → **RANDOM** : AMT, WHAT (EDIT, +ENV, ALL), RAND, et BACK pour annuler.
-- **Modulation** : LFO → **MOD** : VEL>F (vélocité vers le cutoff), MW> et AT> (molette et aftertouch) vers VIB (vibrato 5,5 Hz), CUT, SHP, WAH ou TREM. Sur tous les moteurs (HYBRID garde sa matrice).
-- **Changements de son sans clic** : un preset, un moteur, un preset utilisateur, SWAP, RAND ou BACK changé pendant que des notes sonnent les fait disparaître en 6 ms avec leurs propres réglages ; les notes jouées pendant ce temps attendent le nouveau son.
-- **WAVE charge 6 fois plus vite** : les tables sont calculées par FFT inverse au lieu de sommes additives, 4 frames par passage de la boucle : une nouvelle table est prête en 4 passages.
-- **Plus de visualiseur plein écran** (son code et 5,5 Ko de mémoire vont au synthé) ; HOME garde son oscilloscope.
-- **308 sons** : 99 nouveaux sur tous les moteurs, chacun au même niveau à travers la vraie chaîne de sortie du synthé.
-
-## Nouveau dans la 0.2 : le son
-
-- **Ladder MOOG** : un filtre 4 pôles 24 dB à retour sans délai, avec une saturation tanh à l'entrée. Il chauffe quand on le pousse, sa résonance sature en douceur et il auto-oscille juste. C'est un type de filtre dans HYBRID. Sur ANALOG : FX → FILTER → **MODL** (SVF 12 dB ou MOOG 24 dB).
-- **Résonance douce** : les filtres SVF d'HYBRID saturent en douceur au lieu d'écrêter.
-- **Anti-aliasing** : triangles à bande limitée, hard sync corrigé à chaque reset, FM, feedback et wavefolder tenus sous 20 kHz dans les aigus.
-- **Réverb plate** (d'après Dattorro) : FX → REVERB : TYPE (ROOM ou PLATE), SIZE, DAMP et PRE (pré-délai en ms). Le chorus a sa propre page CHORUS.
-- **WAVE, tables d'ondes** : 16 tables de 16 frames (formes classiques, PWM, sync, FM, fold, formants, balayages façon PPG, orgue, chip, comb…). POS les parcourt, et l'enveloppe et le LFO le font bouger (ENV DEST et LFO DEST → SHP). DTN ajoute un 2e oscillateur, SUB un sinus à l'octave du dessous, puis le filtre d'ANALOG (SVF ou MOOG). Sans repliement. Tes propres tables (WAV façon Serum) s'envoient dans un emplacement USR depuis l'onglet Samples de l'éditeur, mode WAVETABLE ; TABL = USR1 à USR4 les joue.
-- **ACID** : une basse façon 303, une voix. Dent de scie ou carré dans le ladder, puis DIST. L'enveloppe de filtre (ENV, DEC), l'**accent** (une note à vélocité 120 ou plus, les pas ACCENT du séquenceur : plus fort, enveloppe plus courte et plus profonde) et son **balayage** (SWP : une suite d'accents pousse le cutoff de plus en plus haut, le « squelch »), et les **slides** : un pas SLIDE, ou du legato avec GLIDE en mode TIME, glisse sans relancer l'enveloppe. EDIT : WAVE CUT RES ENV / DEC ACC DIST SWP.
-- **STRINGS** : une string machine des années 70 (Solina, ARP, Elka). Registres 16', 8' et 4', de la dent de scie au carré (SHP), un ensemble à trois lignes (balayage lent et vibrato rapide : ENS, RATE), un passe-bas qui suit le clavier. EDIT : 16' 8' 4' ENS / CUT RATE SHP RES.
-- **MACRO** : quatre modèles inspirés de Mutable Instruments Plaits sur trois boutons HARM, TIMB, MORPH : **CHORD** (onze accords, renversements), **SWARM** (huit oscillateurs qui dérivent), **ADDTV** (16 harmoniques sous une bosse mobile), **SPEECH** (des formants qui disent AI, AU, OI, UA, WOW, YEAH, AEIOU, MAMA, tenus ou parlés). Puis un passe-bas et un **low-pass gate** (DEC, LPG). EDIT : MODL HARM TIMB MRPH / CUT RES DEC LPG.
-- **Plus de samples intégrés** : 300 Ko de flash libérés pour la synthèse. SAMPLE et GRAIN jouent tes propres samples (onglet Samples de l'éditeur, 4 emplacements). 209 sons d'usine en 0.2 (308 en 0.3) : cinq nouveaux sur le ladder (MOOG BASS, MOOG LEAD, LADDER PAD, MINI BASS, MINI LEAD), seize sur WAVE, huit sur ACID, huit sur STRINGS, douze sur MACRO. 17 moteurs.
-
-## 2. Sur la FM-1
-
-| | |
-| --- | --- |
-| **HOME** | L'écran du synthé : le nom du son, sa famille, son numéro dans la liste, le moteur et un oscilloscope. Les 4 knobs règlent les contrôles principaux du son. |
-| **PRESETS** | Tous les sons, un par un. Sur la page SAVE > PRESETS, KNOB 2 filtre la liste par moteur (ALL, un moteur, USER). |
-| **ALGORITHM** | Saute à la famille suivante (PAD, BASS, LEAD, PLCK, KEYS, STAB, FX…). |
-| **FX, EDIT, ARP, GLO, SAVE** | Un appui ouvre les pages. FX ou SAVE maintenu, le clavier joue toujours (EDIT, ARP et GLO maintenus sont des couches du séquenceur, voir plus bas). Pages FX : FX, FILTER (avec MODL, le modèle de filtre), INSERT, INSERT 2, DLY, REVERB, CHORUS, EQ+COMP. Pages GLO : GLOBAL (tempo, swing, métronome, accord fin), MASTER, **TUNING** (l'accordage), SYSTEM (sortie MIDI, synchro, CPU / LATE / PEAK), **MIDI** (IN CH : OMNI ou 1 à 16 ; OUT ; BEND ; LOCAL), **MIDI 2** (PROG : les program changes ; SEND : les CC des knobs ; EWI : un contrôleur de souffle). |
-| **SEQ, SEL, EDIT, ARP, GLO** | Maintenus, les couches du séquenceur (comme SLOOP 2.7.2) : SEQ les 16 pas sur les touches (un pas tenu : KNOB 1 la note, 2 la vélocité, 3 le ratchet, 4 le nudge, PRESETS un lock), SEL la tonalité et les accords, EDIT efface (une touche : cette note sort du motif ; les knobs SHIFT, LENGTH, TRANSPOSE ; OCT- / OCT+ annuler / refaire), ARP répète une note sur la grille, GLO un fill (touche 9), un fill sur la mesure suivante (touche 10), le tap tempo (touche 16), le volume (KNOB 1). Un appui ouvre leurs pages. |
-| **SEQ appuyé : NOTES** | Le motif en piano roll. KNOB 1 passe de note en note (celles d'un accord une par une), KNOB 2 la hauteur, KNOB 3 la durée, KNOB 4 la force (GHOST SOFT NORM HARD ACC), PRESETS le zoom ; le clavier ou un clavier MIDI écrit le pas ; EDIT appuyé efface la note ; **OCT+ maintenu** : la fiche de la note (SLIDE, NUDGE, FILL, MOVE, COPY, DELETE ; KNOB 1 la ligne, KNOB 2 la valeur, OCT+ fait, OCT- ferme). MENU > SEQ > STEP ADVANCE OFF : le curseur reste après un accord. |
-| **REC** | Enregistre ce que tu joues dans le pattern. REC maintenu efface le pattern. |
-| **MIDI** | GLO > **MIDI** : **IN CH** OMNI (tous les canaux, par défaut) ou un seul canal de 1 à 16 ; **OUT**, le canal sur lequel SynthMaven envoie ; **BEND**, l'amplitude du pitch bend (AUTO ou 1 à 24 demi-tons) ; **LOCAL** OFF : les touches partent seulement en MIDI (un DAW qui renvoie la piste). GLO > **MIDI 2** : **PROG** ON charge un son sur un program change ; **SEND** CC : les knobs envoient leurs CC à un DAW ; **EWI** VOL : un contrôleur de souffle (CC 2) joue le volume, V+AT l'aftertouch aussi (mets l'AT de la page MOD sur CUT : le souffle ouvre le filtre ; VOICE en MONO ou LEGATO). Tout ce que SynthMaven reçoit et envoie : [docs/midi-fr.md](docs/midi-fr.md). |
-
-Un projet de SLOOP se charge avec seulement sa première piste.
-
-## 3. Jouer HYBRID
-
-- Tourne **PRESETS** (ou **ALGORITHM** pour changer de famille). Les sons HYBRID sont rangés dans les familles : **SYNTHMAVEN**, POLY PAD, STRINGS, VOX, GLASS PAD et DRONE (PAD) ; ACID, WOBBLE, REESE, FOLD BASS et 808 SUB (BASS) ; SYNC LEAD, HOOVER, CHIP LEAD et TRANCE (LEAD) ; PLUCK, SAW PLUCK, FM BELL, SPACE BEL et METAL (PLCK) ; FM KEYS (KEYS) ; BRASS (STAB) ; RISER et INIT (FX) ; et aussi MOOG BASS, MOOG LEAD, LADDER PAD, CLIP WIDE, DARK PAD, ACID HARD, BRIGHT BEL et SOFT SYNC.
-- Sur **HOME**, les 4 knobs règlent **CUT**, **RES**, **M1** et **M2**.
-- Page **EDIT** : CUT, RES, FENV (décalages sur les deux filtres), **PTCH** (le patch d'usine), et **M1 à M4**, quatre macros dont chaque patch choisit l'effet. Par exemple, sur SYNTHMAVEN, M1 ouvre le filtre et M2 élargit les supersaws.
-- Avec un clavier MIDI : pitch bend, molette (vibrato sur plusieurs patchs), aftertouch, sustain, et M1 à M4 sur les CC 16 à 19.
-- Avec un contrôleur ou un DAW : les **program changes** (et la banque, CC 0) choisissent les sons dans l'ordre de la liste ; le **CC 11** est l'expression (le volume) ; les **CC 120 / 123** (panic) arrêtent toutes les notes, le **CC 121** remet les contrôleurs à zéro ; le **RPN 0** règle l'amplitude du bend ; CC 7 le volume, 10 le pan, 71..75 résonance et enveloppe, 74 la coupure, 76..78 le LFO, 91 / 93 / 94 les envois. La liste : [docs/midi-fr.md](docs/midi-fr.md).
-
-## 4. Éditer tout le patch dans l'éditeur
-
-Double-clique sur `OPEN-EDITOR.bat` (http://localhost:8767/webapp/editor/), clique sur **Connect**, puis choisis un son HYBRID. Les pages Tracks, Song et Drum kit n'apparaissent plus avec SynthMaven. Dans l'onglet **Sound**, le panneau **HYBRID patch** montre tout : oscillateurs, filtres et routage, ENV2 et ENV3, LFO2 et LFO3 (synchro au tempo possible), la matrice de 16 slots et le bend. Avec **live** coché, chaque réglage s'entend tout de suite.
-
-Les autres boutons du panneau :
-- **Export patch** et **Import patch** gardent tes sons dans des fichiers `.synthmaven.json`.
-- **factory** + **load** recharge un patch d'usine.
-
-Un projet garde le PTCH, mais pas le patch modifié : exporte-le pour le garder.
-
-Les autres panneaux de l'onglet **Sound** : **FMX patch** (les six opérateurs, le routage en grille, STORE dans la banque, fichiers `.synthmaven-fmx.json`), **FM6** (les banques DX7 `.syx`), **MOD SEQ** (les quatre pistes à dessiner), **Tuning** (le système, la tonique, charger une gamme `.scl`), **Sound tools** (undo / redo, comparer, A / B, randomiser, ce qui a changé, l'enveloppe dessinée). Les onglets **Library**, **Wavetables** (tes tables d'ondes pour WAVE) et **Backup** (sauvegarde complète) complètent.
-
-L'onglet **Sequencer** est un séquenceur de pas complet : undo / redo, une plage (Maj+clic sur la grille) pour transposer, décaler, inverser, doubler, copier / coller et faire des accords ; des générateurs (rythmes euclidiens, mélodies aléatoires dans la gamme, 22 basses, arpèges et motifs d'accords tout faits, un texte de motif, humaniser) ; des lignes pour dessiner vélocité, nudge, ratchet et niveau ; et une bibliothèque de motifs (une banque dans le navigateur, des fichiers `.synthmaven-pattern.json`).
-
-Pour essayer l'éditeur sans la FM-1, ouvre `web/editor.html?mock=1` dans Chrome.
-
-## 5. Le test dont j'ai besoin : les deux cœurs et la charge processeur
-
-C'est ce qui décide combien de voix SynthMaven peut jouer. La FM-1 doit être branchée en USB à l'ordinateur, sinon la case CPU affiche l'état USB à la place.
-
-1. Après l'installation, tiens HOME (le menu) → **SYS** → **ABOUT** : il doit afficher **2 CORES**. Si c'est **1 CORE**, dis-le-moi.
-2. Choisis le son **SYNTHMAVEN** avec PRESETS, va sur **GLO → SYSTEM** : la 4e case alterne **CPU**, **LATE** et **PEAK**.
-3. Tiens **8 notes** et note CPU et PEAK. Puis MENU → SYS → **2ND CORE OFF**, et refais la même mesure : la différence, c'est le gain du 2e cœur. Remets **ON**.
-4. Refais avec **POLY PAD**, **TRANCE**, un son **FMX** (FMX EP) et **ENSEMBLE** (STRINGS).
-5. Si PEAK reste sous ~70 % et LATE ne monte pas, ferme la fenêtre, puis lance **`INSTALL-SYNTHMAVEN.bat 12`** (12 voix) et refais la mesure avec 12 notes. Si ça tient encore, essaie **`INSTALL-SYNTHMAVEN.bat 16`**.
-
-Pour la 0.9, refais aussi la mesure avec **VINTAGE** à 127 et le filtre en **MOOG** ou **DIODE** sur un son ANALOG (8 notes), et tourne les réglages pendant qu'un accord est tenu (MODL, les envois, TIME du delay, INSERT FLANG / CHOR) : aucun clic ne doit s'entendre.
-
-Pour la 1.0, refais la mesure avec **SPREAD** à 127 (VOICE 3), la réverb en **SHIMMER** (REVERB → TYPE) et le delay en **TAPE** (DLY 2 → MODE) sur 8 notes ; tourne **BRITE** et **SPACE** (EDIT → MACROS) pendant un accord tenu, et change de TYPE et de MODE : aucun clic ne doit s'entendre. Sauve un preset utilisateur avec des réglages 1.0, éteins la FM-1, rallume-la et recharge-le.
-
-Envoie-moi les chiffres (avec et sans 2ND CORE). Signale aussi un son qui craque, une note qui reste coincée, un écran **FELUCCA CRASH** (prends-le en photo : il reste 10 s) ou un écran bizarre.
-
-## Un bruit d'un seul côté ?
-
-Certains entendent un craquement ou un bruit dans le canal gauche, avec la réverb et sur certains sons, que le firmware d'origine n'a pas. Trouvé et corrigé dans la 1.1 : **PLATE, HALL et SHIMMER** (FX > REVERB > TYPE) lisaient une de leurs prises de gauche en dehors de sa ligne de retard, un craquement à gauche seulement ; et avec REVERB > DAMP baissé et un son fort, ROOM débordait en un craquement qui continuait après les notes. La 1.1 déplace aussi la mémoire de la réverb. À part ça, le son que SynthMaven calcule est propre des deux côtés (tous les sons d'usine vérifiés, avec tous les effets au maximum). Si tu l'entends encore, ces tests nous disent d'où il vient (une réponse sur GitHub ou YouTube avec les résultats aide beaucoup) :
-1. FX > FX : REV à 0. Le bruit s'arrête ? FX > REVERB > TYPE ROOM, puis PLATE : sur les deux ?
-2. Quitte HOME pour une page fixe (GLO > TUNING) : le bruit change ?
-3. GLO > SYSTEM, la dernière colonne (CPU, puis LATE, puis PEAK, à tour de rôle) : LATE monte quand tu l'entends ?
-4. MENU > SYS > 2ND CORE OFF, éteins et rallume, le même son : toujours là ? (Remets ON après.)
-5. Il est là sans aucune note jouée ?
-
-## Revenir en arrière
-
-- **Vers SLOOP** : lance `INSTALL-SLOOP.bat` depuis le dossier de SLOOP. Un son réglé sur HYBRID y jouera un autre moteur.
-- **Vers le firmware officiel** : passe par la page d'installation (« Revenir au firmware officiel (V15) »), après avoir fait une sauvegarde.
+# SynthMaven 1.0 — démarrage rapide
+
+**23 moteurs et 537 presets d’usine**, dont 41 voix FM6, neuf sons compatibles XD
+et 88 presets mélodiques orientaux / Moyen-Orient. Les essais d’écoute sur FM1,
+la connexion/reconnexion Chocolate et l’audio sous charge Bluetooth restent à faire.
+
+## Installation
+
+Dans Chrome ou Edge, connecte la FM1 en USB et sauvegarde-la avec
+[l’éditeur](https://kingxeryus.github.io/SynthMaven/webapp/editor/). Lance ensuite
+[l’installateur](https://kingxeryus.github.io/SynthMaven/webapp/installer/).
+Le démarrage et About indiquent SynthMaven 1.0.
+
+## Presets
+
+SAVE → PRESETS affiche quatre noms. KNOB 1 sélectionne ; KNOB 2 filtre par
+moteur, USER, XD, ORIENTAL ou ALL ; KNOB 3 charge ; KNOB 4 charge et ouvre EDIT.
+ORIENTAL contient 44 instruments mélodiques en variantes Dry et Expressive
+(88 presets, suffixes D/E). Aucune percussion ajoutée. Les envois chorus, delay
+et réverb sont à zéro ; ajoute les effets avec FX. Sauvegarde tes modifications
+sous USER. L’éditeur affiche les noms complets. L’accordage est indépendant :
+utilise Scala ou l’accordage personnalisé pour le maqam souhaité.
+
+## Connexions MIDI
+
+GLO → KEY MIDI → KEY IN : USB, TRS ou BOTH. GLO → PATCH MIDI → PROG active ou
+désactive les changements de son ; PORT choisit USB, BLE ou ANY. Pour USER,
+envoie CC0=127 puis Program Change 0 pour U01, 1 pour U02, etc.
+
+GLO → BLUETOOTH : BT MIDI, SCAN, sélection PEDAL, puis LINK. MIDI READY signifie
+que le service MIDI est prêt. Les deux modèles Chocolate restent à valider sur
+le matériel. USB est actuellement en mode périphérique : un hôte MIDI est requis.
+Un clavier alimenté séparément ne remplace pas cet hôte. TRS clavier + BLE pédale
+est la combinaison autonome prévue.
+
+Voir le [catalogue et les notes 1.0](docs/release-1.0.md), le
+[guide anglais](QUICKSTART.md), [l’état USB](docs/USB_MIDI_STATUS.md) et
+[l’état Bluetooth](docs/BLUETOOTH_STATUS.md).
