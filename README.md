@@ -57,4 +57,4 @@ Host validation covers the browser, separate Load/Edit actions, keyboard source 
 
 ## Credits and licence
 
-GPL-3.0-only unless stated otherwise in the retained notices. SynthMaven by isod89/3dSam, SLOOP, and Felucca by Leo Kuroshita / Hügelton Instruments provide the foundation. See [LICENSE](LICENSE), [LICENSING.md](LICENSING.md). M-VAVE/FM-1 are their respective owners' trademarks. The supplied SynthMaven logo is branding, separate from third-party code notices.
+GPL-3.0-only unless stated otherwise in the retained notices. Upstream work by isod89/3dSam, SLOOP, and Felucca by Leo Kuroshita / Hügelton Instruments provides the foundation. See [LICENSE](LICENSE), [LICENSING.md](LICENSING.md). M-VAVE/FM-1 are their respective owners' trademarks. The supplied SynthMaven logo is branding, separate from third-party code notices.
