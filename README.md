@@ -41,7 +41,7 @@ This replaces the synth browser's FAV knob action; existing favourites are retai
 
 GLO > PATCH MIDI: PROG enables/disables patch switching. PORT depends on PROG. USB selects USB input; BLE selects the native BLE pedal input when the radio runtime is present; ANY preserves legacy routing.
 
-GLO > KEY MIDI: KEY IN selects USB, TRS or BOTH. USB in this build needs an external host. Note-offs from the previous input are still processed after changing source, to avoid hanging notes.
+GLO > KEY MIDI: KEY IN selects USB, TRS or BOTH. USB in this build needs an external host. Keyboard performance controls (modulation, expression, bend, pressure and MPE) follow KEY IN too. Note-offs, sustain-up and safety resets from the previous input are still processed after changing source, to avoid hanging notes. Bank/program switching uses the independent PATCH MIDI route.
 
 GLO > BLUETOOTH: enable BT MIDI, start SCAN, select PEDAL, then use LINK to connect. A connected link can be disconnected with LINK. Only MIDI READY means service discovery/subscription has completed. The editor provides the same discovery, selection and link status. Original Chocolate and Chocolate Plus remain untested; non-radio builds disable unavailable controls.
 

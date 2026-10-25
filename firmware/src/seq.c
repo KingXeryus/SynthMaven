@@ -3212,6 +3212,13 @@ static void events_block(uint32_t n)
             mclk_event((pkt >> 8) & 0xFFu, ((pkt >> 4) & 15u) ? 2u : 1u);
             continue;
         }
+/* Performance controls follow KEY IN, just like note-ons. Bank selection
+         * and Program Change keep their independent PATCH MIDI route. Release
+         * messages remain accepted after a source change to prevent stuck notes. */
+        if (!sm_key_accept(port) &&
+            (st == 0xE0u || st == 0xD0u || st == 0xA0u ||
+             (st == 0xB0u && d1 != 0u && d1 < 120u && !(d1 == 64u && d2 < 64u))))
+            continue;
 #if SYNTHMAVEN_SYNTH
         if (mpe_mode && ch && !song.g[G_ROUTE] &&     /* SynthMaven 0.4: MPE, a member channel's own controls */
             !(layer_multi() && ch + 1u == layer_ch()) &&   /* (0.6: not the MULTI layer's channel) */

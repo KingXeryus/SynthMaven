@@ -1,7 +1,7 @@
 name: SynthMaven build and website
 on:
   push:
-    branches: [main, synthmaven-korg-ble]
+    branches: [main, synthmaven-korg-ble, usb-midi-performance]
   workflow_dispatch:
 permissions:
   contents: read
