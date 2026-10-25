@@ -1,25 +1,17 @@
 # Native Bluetooth MIDI integration status
 
-The radio is present on the FM1. SynthMaven's current bare-metal audio platform does not initialize it or run a BLE stack. Enabling a UI flag cannot provide a connection.
+The development branch integrates the [fm1-base BLE MIDI runtime](https://github.com/charlesvestal/fm1-base), pinned at fa7b203e6803a23a8be0bf560c46d07db836ee89. The public 0.2 installer predates this integration. Do not infer hardware support from simulated editor tests.
 
-A concrete implementation is available in [fm1-base](https://github.com/charlesvestal/fm1-base), including [BLE MIDI central discovery and subscription](https://github.com/charlesvestal/fm1-base/blob/main/ble/midi/le_midi.c), OS/task/timer shims and JieLi stack libraries. Its documented additional cost for peripheral plus central is about 132 KB flash, 46 KB static RAM and 24 KB task-stack pool. It is a port, not a single header or toggle.
+The port includes central scan, explicit device selection, GATT discovery/subscription, disconnect controls, timestamp/running-status decoding, a dedicated MIDI queue and persisted radio configuration. The driver and upstream licence notices are in `firmware/vendor/fm1-base`.
 
-The preceding SynthMaven build (Actions run 40227249183) measured:
+All 23 synth engines remain. To make space, factory WAVE spectra use a lossless delta/DEFLATE codec (35,606 bytes instead of 131,072). All 256 decoded spectra and rendered table/mip buffers are compared against the original data. Decode workspace reuses the stopped WAVE builder's buffer. The synth build allocates engine arenas to its two active instrument/layer parts; the three-part project record layout stays unchanged. BLE task stacks use the pool and the 20-KiB RF-accessible heap uses low SRAM. USB debug CDC is disabled in BLE builds.
 
-| Region | Used | Capacity | Free |
-|---|---:|---:|---:|
-| App flash | 580784 B | 581564 B | 780 B |
-| Static RAM | 74872 B | 98304 B | 23432 B |
-| Pool | 313024 B | 344064 B | 31040 B |
+Target compilation and enforced flash/RAM/pool bounds must pass before publication. Hardware validation remains outstanding: both Chocolate models, reconnect and power cycles, discovery under nearby BLE traffic, sustained MIDI and audio timing. No simulated success is presented as real pairing.
 
-The BLE port does not fit this memory layout. The supplied stock DX7 voices also consume app space; the build retries Clang `-Oz` if `-Os` reaches the fixed flash limit, retaining all engines and the supplied logo. The linker and image checks still enforce all region bounds.
+Radio syscfg uses a journal in the formerly unused 0xFB000 sector, outside sample/project/preset/settings storage. Saves wait for stopped playback and no active voices. Interrupting a journal append preserves the preceding committed entry; power loss during rollover may forget bonds.
 
-The user chose to preserve all engines rather than produce an FM6-only Bluetooth edition. Native Bluetooth therefore remains pending a larger memory-layout/size redesign and a real driver integration. No capability bit, pairing-success message or mock connection is presented as working hardware.
+Native USB MIDI host support remains absent. A power bank supplies power, not a USB host. TRS keyboard input and BLE pedal input are the intended computer-free combination for this build.
 
-A complete port must reserve controller/stack/heap/task memory, integrate IRQ/clock/calibration/store hooks without starving audio, add explicit scan/select/connect/disconnect controls, and deliver decoded MIDI to input port 2. It then needs device tests with both Chocolate models, program changes and simultaneous keyboard playback. Manufacturer APIs also exist in [fm1_open](https://github.com/m-vave/fm1_open/blob/main/sdk/include/fm1.h), but belong to its binary SDK/runtime; these cannot be linked into this firmware without reconciling startup, interrupts, audio ownership and memory layout.
+## Published 0.2 baseline
 
-## SynthMaven 0.2 target build
-
-Actions run 40228205416 compiled all engines, all 33 added stock voices and the supplied logo. `-Os` exceeded app flash by 5428 bytes; `-Oz` passed with an image of 553352 bytes (28212 bytes free), static RAM of 75352 bytes (22952 free), and the same 313024-byte pool. This is still substantially below the BLE central port's requirements.
-
-Removing VOICE, WHEEL and NOISE alone is insufficient for RAM. WHEEL owns 288 bytes of per-track state and 2208 bytes of per-voice state (2496 total). VOICE and NOISE keep their working state in shared generic voices; removing them does not release that allocation while the other engines remain. The shared engine arena also remains required by GRAIN, FM6, PHYS, HYBRID and FMX. These sizes were checked with the current C types; a final port still requires a target-linked memory audit and hardware validation.
+Actions run 40228205416 compiled all engines and 41 stock FM6 voices. The optimized image measured 553352 bytes of 581564 app flash, 75352 bytes of 98304 static RAM, and 313024 bytes of 344064 pool. These measurements do not describe the new BLE development build.

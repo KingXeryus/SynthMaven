@@ -12,6 +12,9 @@
 #pragma once
 #include <stdint.h>
 #include "fm1_xip.h"
+#ifndef SM_BLE
+#define SM_BLE 0
+#endif
 
 #define RAMFN  __attribute__((section(".ram_text"), noinline, used))
 #define RAMINL static inline __attribute__((always_inline))

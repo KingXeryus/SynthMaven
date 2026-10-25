@@ -38,11 +38,13 @@ def ble_config(sdk, dst):
     """the SDK's configuration sources into dst, as BLE_CONFIG cuts them (ble_trim); written only when changed"""
     import re as _re
     import shutil
-    cuts = {}
-    if BLE and CONF.get("ble_trim"):
-        for d in (BLE_CONFIG, BLE_CONFIG_NO_SM if CONF.get("ble_no_pairing") else {}):
-            for f, rs in d.items():
-                cuts.setdefault(f, []).extend(rs)
+    # Keep LE scan/master/GATT/security intact. Remove only SDK RF certification
+    # tests and unused Bluetooth Classic profile features from this BLE product.
+    cuts = {"apps/common/config/log_config/lib_btctrler_config.c": [
+        (r"(const int " + name + r"\s*=\s*)1", r"\g<1>0") for name in (
+            "CONFIG_TEST_DUT_CODE", "CONFIG_TEST_FCC_CODE", "CONFIG_LMP_NAME_REQ_ENABLE",
+            "CONFIG_LMP_PASSKEY_ENABLE", "CONFIG_LMP_MASTER_ESCO_ENABLE", "CONFIG_BREDR_INQUIRY",
+            "config_btctler_dual_a2dp", "config_multilink_support_esco_enalbe")]}
     for f in BLE_SDK_SRC:
         text = (sdk / f).read_text(errors="ignore")
         for rx, rep in cuts.get(f, []):

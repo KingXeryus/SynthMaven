@@ -26,13 +26,15 @@ void shim_log(const char *s) { str_cpy(sm_ble_log, s, sizeof sm_ble_log); }
 void shim_reboot(void) { fm1_reboot(); }
 #ifdef SM_BLE_HOST_TEST
 #define SM_RADIO_RAM
+#define SM_RADIO_TICKS() fm1_ticks()
 #else
 #define SM_RADIO_RAM __attribute__((section(".radio_ram"),noinline,used))
+#define SM_RADIO_TICKS() FM1_T4_CNT
 #endif
 SM_RADIO_RAM void shim_delay_us(uint32_t us)
 {
-    uint32_t t = fm1_ticks(), span = us * FM1_TICKS_PER_US;
-    while ((uint32_t)(fm1_ticks() - t) < span) { __asm__ volatile("nop"); }
+    uint32_t t = SM_RADIO_TICKS(), span = us * FM1_TICKS_PER_US;
+    while ((uint32_t)(SM_RADIO_TICKS() - t) < span) { __asm__ volatile("nop"); }
 }
 void shim_idle(void)
 {
@@ -156,7 +158,7 @@ static void sm_ble_poll(void)
     if(!sm_ble_started)return;
     shim_timers();shim_run();
     if(sm_ble_up) {
-        if(sm_ble_on!=sm_bluetooth){ble_midi_enable(sm_bluetooth);sm_ble_on=sm_bluetooth;if(!sm_ble_on)sm_ble_r=sm_ble_w;}
+        if(sm_ble_on!=sm_bluetooth){ble_midi_enable(sm_bluetooth);sm_ble_on=sm_bluetooth;if(!sm_ble_on){sm_ble_r=sm_ble_w;sm_scan_requested=0;}}
         ble_midi_poll();
         if(sm_scan_requested){ble_midi_scan(1);sm_scan_t0=shim_ms();sm_scan_requested=0;}
         if(ble_midi_central_state()==1 && shim_ms()-sm_scan_t0>15000u)ble_midi_scan(0);

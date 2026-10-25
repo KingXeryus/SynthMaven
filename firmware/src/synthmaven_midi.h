@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* SynthMaven routing. Cable tags: USB=0, TRS=1, BLE=2. Native USB host
- * and BLE central are NOT supplied by this port; capabilities must stay honest. */
+ * is not supplied; BLE central is advertised only when its runtime is compiled. */
 #ifndef SYNTHMAVEN_MIDI_H
 #define SYNTHMAVEN_MIDI_H
 #define SM_CAP_USB_DEVICE 1u

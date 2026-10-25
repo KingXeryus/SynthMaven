@@ -21,3 +21,10 @@ node web/test_korg.mjs
 
 $CC -o build/host/synthmaven_ble_test tests/synthmaven_ble_test.c
 build/host/synthmaven_ble_test
+
+for packed in 0 1; do
+ $CC -DSM_PACKED_WT=$packed -o build/host/wt_render_$packed tests/wt_render_test.c firmware/vendor/tinf/tinflate.c -lm
+ build/host/wt_render_$packed > build/host/wt_render_$packed.txt
+done
+cmp build/host/wt_render_0.txt build/host/wt_render_1.txt
+echo 'WAVE render: every table/mip buffer matches unpacked ROM PASS'
