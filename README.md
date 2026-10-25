@@ -45,7 +45,7 @@ The melodic collection adds 88 virtual factory presets: 44 original modeled
 instrument recipes, each with Dry and Expressive variations.
 It covers oud, qanun, saz/baglama, santur, ney/kawala, duduk/mizmar/zurna,
 regional strings and leads. Percussion is excluded. Chorus, delay and reverb
-sends are off; add effects using the FM1 FX controls. These are SynthMaven synthesis
+sends and SPACE are off; add effects using the FM1 FX controls. These are SynthMaven synthesis
 recipes, not commercial Yamaha ESP or TAQS.IM samples.
 
 Tap SAVE for PRESETS, then use KNOB 2 to select ORIENTAL. KNOB 1 highlights;
@@ -58,7 +58,7 @@ Original factory IDs and favourite keys are unchanged. New preset IDs append
 within their native engine; projects and user presets retain the patch settings.
 Use the matching protocol-16 web editor. Host tests compare all 126 track
 parameters of all 88 loaded patches to the selected software recipes, with the
-three effect sends explicitly disabled.
+three effect sends and the SPACE macro explicitly disabled.
 See [bank provenance and limits](assets/oriental/README.md). The BLE-enabled target passed all enforced memory bounds; see the
 [1.0 validation results](docs/BLUETOOTH_STATUS.md#native-10-target-validation).
 Hardware listening and radio validation remain outstanding.

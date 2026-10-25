@@ -25,7 +25,7 @@ The compact table shares per-variation and per-instrument columns. It generates
 one loaded patch directly into the existing track, with no new audio engine or
 additional voice arena. Audio rendering remains the existing engine implementation.
 Project recall and all parameter values are verified against the selected software
-recipes after disabling the three effect sends. `tools/oriental_selection.py`
+recipes after disabling the three effect sends and SPACE macro. `tools/oriental_selection.py`
 selects the first 44 melodic recipes and the Dry/Expressive variants from the
 frozen reference; its remaining percussion/effect variants are not shipped.
 The ASan/UBSan test excludes shift-base checks for the existing signed fixed-point

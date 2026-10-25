@@ -12,6 +12,7 @@ int main(int argc,char**argv){
   uint32_t p,e=base_at(NBASE+n,&p),w,v,total;set_engine(e);apply_preset(p);
   check(sm_or_find(e,p,&w,&v)&&w*2u+v==n,"world engine/preset ID resolves reversibly");
   check(TSEL->preset==p&&base_pos(&total)==NBASE+n,"hardware browser highlights loaded world patch");
+  check(!TSEL->p[P_CHOR]&&!TSEL->p[P_DLY]&&!TSEL->p[P_REV]&&!TSEL->p[P_MAC4],"melodic preset starts with no chorus/delay/reverb sends or SPACE boost");
   check(total==NBANK+up_count()&&str_eq(base_kind(NBASE+n),"ORIENTAL"),"world bank and user slots counted correctly");
   check(str_len(sm_factory_name(e,p))<=12u,"OLED and editor name fits 12 characters");
   fprintf(out,"%s{\"engine\":%u,\"preset\":%u,\"name\":\"%s\",\"values\":[",n?",":"",e,p,sm_factory_name(e,p));for(uint32_t k=0;k<P_COUNT;k++)fprintf(out,"%s%d",k?",":"",TSEL->p[k]);fprintf(out,"]}");

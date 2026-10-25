@@ -96,7 +96,7 @@ recipes × two variations = 88 presets**. It includes plucked strings, winds,
 regional strings, reeds and leads. No percussion is added in this collection.
 
 The short hardware name ends in **D** for Dry or **E** for Expressive. Both start
-with chorus, delay and reverb sends at zero. Add the effects you want from FX.
+with chorus, delay and reverb sends and the SPACE macro at zero. Add the effects you want from FX.
 The Expressive variation changes the performance/tone recipe rather than
 providing an additional hall or live-effects version.
 

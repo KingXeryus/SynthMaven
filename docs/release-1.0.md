@@ -4,7 +4,7 @@
 
 - Adds 88 Oriental / Middle Eastern melodic presets: 44 instruments, with Dry
   and Expressive variations. No percussion is added. Chorus, delay and reverb
-  sends start at zero; set effects on the FM1 or in the web editor.
+  sends and SPACE start at zero; set effects on the FM1 or in the web editor.
 - Adds an ORIENTAL filter to the four-patch hardware browser and a full-name
   collection selector to the web editor. Original factory IDs remain unchanged.
 - Preserves all 23 engines, the DX7/FM6 and nine XD compatibility presets, and

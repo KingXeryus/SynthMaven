@@ -6,7 +6,7 @@ def select_presets(reference):
         for variation in (0, 2):
             source = reference[recipe * 4 + variation]
             item = dict(source, values=list(source['values']))
-            for parameter in (34, 35, 36):
+            for parameter in (34, 35, 36, 99):
                 item['values'][parameter] = 0
             selected.append(item)
     return selected
