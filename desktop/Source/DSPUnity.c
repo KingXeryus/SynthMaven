@@ -88,3 +88,9 @@ void sm_tempo(sm_context *ctx,double bpm){SM_ENTER(ctx);if(isfinite(bpm))song.g[
 int sm_control_period(void){return CTL;}
 int sm_custom_patch(sm_context *ctx,int kind,const uint8_t *b,int n){SM_ENTER(ctx);if(n!=128)return 0;if(kind==12){hy_patch_t p;memcpy(&p,b,128);hy_set_patch(0,&p);return 1;}if(kind==9){uint8_t v[FP_SIZE+1];fm6_unpack(b,v);fm6_set_patch(0,v);return 1;}return 0;}
 static void sm_init_voice(void){uint32_t i,k;for(i=0;i<G_COUNT;i++)song.g[i]=GP[i].def;for(k=0;k<NTRK;k++){for(i=0;i<P_E0;i++)trk[k].p[i]=TP[i].def;steps_clear(&trk[k]);}song.master_q12=4096;song.g[G_BPM]=120;}
+
+double sm_portamento_ms(float normalized){int n=clamp((int)lroundf(normalized*127),0,127);return (double)glide_ticks(n)*CTL*1000.0/FS;}
+double sm_voice_pitch(sm_context *ctx){SM_ENTER(ctx);voice_t *v=0;for(int i=0;i<NVOICE;i++)if(trk[0].v[i].active&&(!v||trk[0].v[i].age>v->age))v=&trk[0].v[i];return v?((double)v->pitch_cur+(double)v->pitch_frac/256)/16:-1;}
+
+void sm_set_tuning(sm_context *ctx,const double*cents){SM_ENTER(ctx);int on=0;for(int i=0;i<128;i++){double c=isfinite(cents[i])?fmax(-10000,fmin(10000,cents[i])):0;int32_t v=(int32_t)lround(c*4096/100);tun_tab[i]=v;on|=v!=0;}tun_tab[128]=tun_tab[127];tun_on=on;}
+double sm_tuning_offset(sm_context *ctx,int note){SM_ENTER(ctx);return tun_on?tun_tab[clamp(note,0,127)]*100.0/4096:0;}

@@ -23,7 +23,7 @@ for fmt,sub,name in [('Standalone','Applications','SynthMaven.app'),('AU','Libra
  args=['codesign','--force','--sign',identity]
  if identity!='-':args+=['--timestamp','--options','runtime']
  run(*args,dest);run('codesign','--verify','--strict',dest)
-version='0.1.0';signed=bool(os.environ.get('SYNTHMAVEN_SIGN_ID'));suffix='' if signed else '-Local-Test'
+version='0.2.0';signed=bool(os.environ.get('SYNTHMAVEN_SIGN_ID'));suffix='' if signed else '-Local-Test'
 pkg=DMGROOT/f'SynthMaven-{version}{suffix}.pkg'
 components=WORK/'components.plist'
 run('pkgbuild','--analyze','--root',STAGE,components)
@@ -36,11 +36,11 @@ run(*args,pkg)
 shutil.copy2(ROOT/'desktop/INSTALL.txt',DMGROOT/'Read Me.txt')
 shutil.copy2(ROOT/'LICENSE',DMGROOT/'GPL-3.0.txt')
 shutil.copy2(ROOT/'desktop/THIRD_PARTY.txt',DMGROOT/'Third Party Notices.txt')
-source=OUT/'SynthMaven-Software-0.1.0-Source.zip'
+source=OUT/'SynthMaven-Software-0.2.0-Source.zip'
 run(sys.executable,ROOT/'desktop/tools/source-archive.py',source)
 shutil.copy2(source,DMGROOT/source.name)
 dmg=OUT/f'SynthMaven-{version}-macOS-Universal{suffix}.dmg'
-run('hdiutil','create','-volname','SynthMaven 0.1.0','-srcfolder',DMGROOT,'-format','UDZO','-ov',dmg)
+run('hdiutil','create','-volname','SynthMaven 0.2.0','-srcfolder',DMGROOT,'-format','UDZO','-ov',dmg)
 if signed:run('codesign','--sign',os.environ['SYNTHMAVEN_SIGN_ID'],'--timestamp',dmg)
 profile=os.environ.get('SYNTHMAVEN_NOTARY_PROFILE')
 if profile:

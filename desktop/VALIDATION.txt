@@ -1,9 +1,10 @@
-SynthMaven software instrument 0.1.0 — validation
+SynthMaven software instrument 0.2.0 — validation
 Development Mac: Apple Silicon, macOS; universal arm64 + x86_64 build,
 minimum deployment target macOS 11.0. JUCE 7.0.12 (GPL v3).
 
 PASS: 23 engines, 449 factory programs, 160 native parameters;
-      147 synthesis parameters exposed to host automation.
+      147 synthesis parameters per layer; eight layers plus tuning/routing
+      parameters and the Master Tuning toggle exposed to host automation.
 PASS: every factory preset renders finite audio.
 PASS: concurrent and interleaved DSP contexts retain independent state.
 PASS: all enumeration strings across every engine and valid value.
@@ -24,3 +25,17 @@ Individual DAW session compatibility is not exhaustively tested.
 Developer ID signing / notarization: pending paid Apple Developer Program
 membership. Current account is an Apple Personal Team. Local-Test bundles
 use ad-hoc signatures and do not have Apple notarization tickets.
+
+0.2 ADDITIONAL VALIDATION (2026-10-25)
+PASS: 3383 library entries across 24 populated browser banks, finite render.
+PASS: eight independent engines/layers; gain/pan/transpose/channel recall.
+PASS: CC assignment, MIDI Learn, channel filtering, portamento CC5/65.
+PASS: legacy 0.1 state migration and full layered project recall.
+PASS: Scala ratio/cents/integer-ratio parsing and invalid-input rejection.
+PASS: native DSP audio changes with scale tuning; per-layer isolation.
+PASS: Master Tuning overrides all eight layers; OFF restores layer scales.
+PASS: master toggle MIDI mapping and DAW state persistence.
+PASS: five scale memories, bypass, non-12-tone Scala data and project recall.
+PASS: all five CTest suites; AUval; pluginval strictness 5 for AU and VST3.
+GUI: tuning panel rendered and visually inspected at 1180x880.
+No claim of certification in every DAW or of Intel hardware testing.

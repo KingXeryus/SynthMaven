@@ -1,4 +1,4 @@
-SynthMaven 0.1.0 — macOS Universal
+SynthMaven 0.2.0 — macOS Universal
 
 Open the SynthMaven installer package inside this disk image.
 The package installs:
@@ -27,7 +27,10 @@ Import accepts .synthmaven presets and valid DX7 32-voice .syx banks; choose
 any of the bank's 32 voices. Save stores an instrument preset. DAW projects
 recall the program, parameter edits and imported DX7 voice.
 
-449 factory presets across all 23 firmware engines are included. The nine
+3383 browser entries across 24 banks are included: 449 original factory
+sounds, 2694 labelled performance variations, 208 original Oriental /
+Middle Eastern modeled instrument articulations, and 32 CC0 YSE FM voices.
+The 24 banks cover 23 native engines plus a dedicated XD catalog. The nine
 XD defaults are the existing SynthMaven HYBRID translations, not Korg binary
 oscillators or an emulation of the original analog circuitry. FM6 includes
 ROM1A and ARABESC defaults. No Bluetooth, USB-host or TRS hardware settings.
@@ -41,3 +44,28 @@ The original DSP runs at 44.1 kHz; other rates use cubic interpolation.
 License: GPL-3.0-only, with original third-party notices retained.
 This open-source software is based on Clipper.
 Source and build instructions are included with this distribution.
+
+0.2 PERFORMANCE AND TUNING
+LAYERS: enable up to eight independent engines in one saved patch. Select a
+layer to edit, or use LAYERS for its engine, preset, level, pan, transpose
+and MIDI channel. The mix applies headroom normalization as layers are added.
+PORTAMENTO: SOUND includes enable, voice mode, glide time and glide mode.
+MIDI MAP: select target, Learn and move a CC; or assign channel/CC manually.
+Right-click native synthesis controls for Learn. All maps persist in patches.
+Browser filters combine sound type, engine, collection, character and search.
+
+TUNING: twelve note buttons toggle -50 cents; sliders/type-in offsets range
+from -200 to +200 cents. ROOT rotates the note offsets. A4 is 400-480 Hz.
+The note names refer to intervals relative to ROOT. Editable Rast, Bayati,
+Sikah and quarter-tone starting points are not fixed rules for maqam playing.
+LOAD .SCL imports ratios or cents; successive keys step through the scale's
+degrees, anchored at MIDI note 60 + ROOT. Limits: 1-4096 degrees, period up to
+12000 cents, generated offsets within +/-10000 cents. Scala .kbm is not read.
+USE SCALA combines imported degrees with the twelve editable offsets.
+STORE then 1-5 writes a tuning memory; 1-5 recalls it for the displayed scope.
+MASTER TUNING uses a separate master scale for ALL eight layers. Turning it
+off restores each layer's own scale. BYPASS skips tuning for the displayed
+scope. Master, Scala data, memories, root, A4 and offsets persist in patches
+and DAW projects. Master Tuning is available as a DAW/MIDI mapping target.
+Commercial Yamaha ESP / TAQS.IM preset and sample libraries are not bundled;
+the new Oriental voices are original synthesis approximations.

@@ -17,3 +17,9 @@ Audio Unit, macOS, Apple and Logic Pro are trademarks of Apple Inc.
 SynthMaven is not affiliated with Korg, Yamaha, Native Instruments or Xfer.
 The interface is original artwork and controls; no Massive or Serum assets
 or source code are included.
+
+YSE original 32-voice FM bank — CC0-1.0. See desktop/Resources/Banks/
+YSE-CONTENT-LICENSES.md and PROVENANCE.md for the upstream source and license.
+Oriental/Middle Eastern recipes and performance articulations are original
+SynthMaven parameter settings. No Yamaha ESP or TAQS.IM commercial sample
+or preset libraries are included.

@@ -26,6 +26,10 @@ void sm_tempo(sm_context *,double);
 int sm_control_period(void);
 int sm_custom_patch(sm_context *,int kind,const uint8_t *,int);
 int sm_context_bytes(void);
+double sm_portamento_ms(float normalized);
+double sm_voice_pitch(sm_context *);
+void sm_set_tuning(sm_context *,const double* cents);
+double sm_tuning_offset(sm_context *,int note);
 #ifdef __cplusplus
 }
 #endif

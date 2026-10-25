@@ -2,7 +2,7 @@
 
 Mac standalone, VST3 and Audio Unit versions of the SynthMaven firmware DSP.
 This open-source software is based on Clipper. This desktop project uses the
-same 23 synthesis engines and all 449 factory presets, including the FM6
+same 23 synthesis engines and the original 449 factory presets, including the FM6
 ROM1A/ARABESC bank and the nine XD HYBRID translations. The latter approximate
 Korg program settings in the existing HYBRID engine; they do not execute Korg
 user oscillator binaries or reproduce analog circuitry exactly.
@@ -10,8 +10,9 @@ user oscillator binaries or reproduce analog circuitry exactly.
 The original interface has a searchable engine/preset browser, live output
 scope, engine controls, amplitude/filter controls, four performance macros,
 LFO/envelope and twelve-slot modulation matrix controls, effects, a complete
-parameter page and an on-screen keyboard. 147 synthesis parameters are exposed
-to host automation. The eight engine parameter meanings follow the selected
+parameter page and an on-screen keyboard. Each of eight layers exposes 147 synthesis parameters plus routing and
+portamento controls. Layer scales and a separate master scale expose note
+offsets, root, A4, bypass and Scala enable to host automation. The eight engine parameter meanings follow the selected
 engine, with stable host IDs `p118`–`p125`. Hardware connection, radio, storage
 and device maintenance settings are omitted.
 
@@ -98,3 +99,28 @@ are run on the development Mac; no hardware firmware is flashed by this work.
 
 License: GPL-3.0-only, preserving all original copyright/third-party notices.
 See [THIRD_PARTY.txt](THIRD_PARTY.txt), the root LICENSE and LICENSING.md.
+
+## 0.2 performance library and tuning
+
+The browser has 3383 entries: 449 originals, six labelled articulations per
+original (2694), 208 original modeled Oriental/Middle Eastern articulations,
+and 32 YSE original CC0 FM voices. Variations are identified as variations.
+Filter by engine, sound type, collection and character, or search text.
+The 23 native engines plus the separate XD catalog give 24 browser banks.
+See [preset provenance](Resources/Banks/PROVENANCE.md).
+
+Eight independently enabled layers have their own engine, preset, MIDI
+channel, pan, level, transpose, portamento and scale. MIDI Learn and explicit
+channel/CC mappings are stored in project and preset state. See INSTALL.txt
+for default controllers and routing. The TUNING page provides 12 editable
+note offsets, quarter-tone buttons, root, A4 reference, Scala import, bypass,
+editable temperament/maqam starting points and five store/recall memories.
+The Master Tuning toggle beside the scale panel switches all layers to a
+separate master scale. Turning it off restores their independent scales.
+All tuning data and memories persist in project/preset state.
+
+Scala follows the [official pitch syntax](https://www.huygens-fokker.org/scala/scl_format.html).
+Successive keys map to successive degrees, anchored at MIDI 60 plus root.
+`.kbm` mappings are not supported. This is an original interface informed by
+arranger keyboard workflows, including the Yamaha PSR-A5000's scale memories;
+no Yamaha graphics or proprietary tuning code are included.

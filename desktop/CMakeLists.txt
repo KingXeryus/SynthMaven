@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(SynthMaven VERSION 0.1.0 LANGUAGES C CXX OBJCXX)
+project(SynthMaven VERSION 0.2.0 LANGUAGES C CXX OBJCXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version")
@@ -8,7 +8,7 @@ add_subdirectory(vendor/JUCE-7.0.12 EXCLUDE_FROM_ALL)
 add_library(SynthMavenDSP STATIC ../build/desktop-generated/SynthMavenDSP.c)
 target_compile_options(SynthMavenDSP PRIVATE -O2 -w)
 target_include_directories(SynthMavenDSP PUBLIC Source)
-juce_add_binary_data(SynthMavenAssets SOURCES Resources/SynthMaven-logo.png)
+juce_add_binary_data(SynthMavenAssets SOURCES Resources/SynthMaven-logo.png Resources/Banks/YSE-Originals.syx)
 juce_add_plugin(SynthMaven
  ICON_BIG Resources/SynthMaven-icon.png
  COMPANY_NAME "SynthMaven" BUNDLE_ID "com.synthmaven.instrument"
@@ -19,7 +19,7 @@ juce_add_plugin(SynthMaven
  AU_MAIN_TYPE kAudioUnitType_MusicDevice
  VST3_CATEGORIES Instrument Synth
  MICROPHONE_PERMISSION_ENABLED FALSE)
-target_sources(SynthMaven PRIVATE Source/PluginProcessor.cpp Source/PluginEditor.cpp)
+target_sources(SynthMaven PRIVATE Source/PluginProcessor.cpp Source/PluginEditor.cpp Source/PresetLibrary.cpp Source/ScaleTuning.cpp)
 target_compile_definitions(SynthMaven PUBLIC JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JUCE_VST3_CAN_REPLACE_VST2=0 JUCE_DISPLAY_SPLASH_SCREEN=0 JUCE_REPORT_APP_USAGE=0)
 target_link_libraries(SynthMaven PRIVATE SynthMavenDSP SynthMavenAssets juce::juce_audio_utils juce::juce_dsp PUBLIC juce::juce_recommended_config_flags juce::juce_recommended_warning_flags)
 add_executable(SynthMavenDSPTests tests/DSPTests.c)
@@ -39,3 +39,13 @@ target_compile_options(SynthMavenOriginalRender PRIVATE -O2 -w)
 add_executable(SynthMavenIsolatedRender tests/RenderHash.c)
 target_link_libraries(SynthMavenIsolatedRender PRIVATE SynthMavenDSP)
 add_test(NAME OriginalDSPEquivalence COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/CompareOriginal.py $<TARGET_FILE:SynthMavenOriginalRender> $<TARGET_FILE:SynthMavenIsolatedRender>)
+add_executable(SynthMavenLayerMidiTests tests/LayerMidiTests.cpp)
+target_include_directories(SynthMavenLayerMidiTests PRIVATE Source vendor/JUCE-7.0.12/modules)
+target_compile_definitions(SynthMavenLayerMidiTests PRIVATE JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1)
+target_link_libraries(SynthMavenLayerMidiTests PRIVATE SynthMaven)
+add_test(NAME LayersMidiAndCatalog COMMAND SynthMavenLayerMidiTests)
+add_executable(SynthMavenTuningTests tests/TuningTests.cpp)
+target_include_directories(SynthMavenTuningTests PRIVATE Source vendor/JUCE-7.0.12/modules)
+target_compile_definitions(SynthMavenTuningTests PRIVATE JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1)
+target_link_libraries(SynthMavenTuningTests PRIVATE SynthMaven)
+add_test(NAME ScalaAndMasterTuning COMMAND SynthMavenTuningTests)
