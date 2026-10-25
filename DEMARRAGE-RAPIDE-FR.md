@@ -1,12 +1,20 @@
-# SynthMaven — démarrage rapide (version 1.1 expérimentale)
+# SynthMaven — démarrage rapide (version 0.4 développement)
 
 **SynthMaven** est un firmware de **synthétiseur** pour le M-VAVE FM-1 : un seul instrument, comme le firmware d'origine, Felucca ou Baudgirl. Ce n'est plus une groovebox : pas de pistes, pas de boîte à rythmes, pas de mode song, pas de samples intégrés. Il garde de SLOOP les 12 moteurs, les effets, l'arpégiateur, le séquenceur de pas, l'audio USB et le MIDI. Il ajoute **HYBRID**, une voix à 3 oscillateurs, 2 filtres et une matrice de modulation de 16 slots, avec 32 sons d'usine. Il ajoute aussi le pitch bend, la molette, l'aftertouch et la pédale de sustain sur tous les moteurs.
 
-> **Version 1.1 EXPÉRIMENTALE.** C'est une version jeune et expérimentale, et il reste énormément de travail à faire (voir [Ce qui reste à faire](#ce-qui-reste-à-faire)). Elle passe toute sa suite de tests sur ordinateur, mais elle a encore très peu tourné sur une vraie FM-1 : attends-toi à des défauts. Avant d'installer, fais une **sauvegarde** dans l'éditeur (celui de SynthMaven ou de SLOOP, selon ce qui est installé) : onglet Backup (Projects → Backup dans SLOOP ou une ancienne version) → *Save a backup*.
+> **Version 0.4 DÉVELOPPEMENT.** C'est une version jeune et expérimentale, et il reste énormément de travail à faire (voir [Ce qui reste à faire](#ce-qui-reste-à-faire)). Elle passe toute sa suite de tests sur ordinateur, mais elle a encore très peu tourné sur une vraie FM-1 : attends-toi à des défauts. Avant d'installer, fais une **sauvegarde** dans l'éditeur (celui de SynthMaven ou de SLOOP, selon ce qui est installé) : onglet Backup (Projects → Backup dans SLOOP ou une ancienne version) → *Save a backup*.
+
+## Collection orientale / Moyen-Orient
+
+88 presets mélodiques : 44 instruments, chacun en variantes Dry et Expressive.
+Aucune percussion ajoutée. Les envois chorus, delay et réverb sont à zéro ;
+ajoute les effets sur la FM1. SAVE → PRESETS, KNOB 2 : ORIENTAL ; KNOB 1
+sélectionne, KNOB 3 charge, KNOB 4 charge et ouvre EDIT. L’éditeur propose les
+noms complets. Voir les [notes 0.4 et le catalogue](docs/RELEASE-0.4.md).
 
 ## En bref
 
-**23 moteurs, 407 sons**, tous au même niveau :
+**23 moteurs, 537 sons**, tous au même niveau :
 
 - **HYBRID** (3 oscillateurs, 2 filtres, matrice de 16 slots, 4 macros), **FMX** (6 opérateurs façon opsix, routage libre, PM / FM / RING), **FM6** (DX7, banques `.syx`), **DIGITAL** (FM 4 opérateurs), **WAVE** (tables d'ondes, et les tiennes), **WSEQ** (wave sequencing façon Wavestation), **VECTOR** (Prophet VS / joystick du Wavestation), **JUNO** (Juno-6 / 60 / 106 et son chorus I / II / I+II), **ANALOG** (analogique virtuel, 8 modèles de filtre), **ACID** (303), **STRINGS** (string machine), **MACRO** (façon Plaits), **PHASE** (façon CZ), **VPS** (vector phaseshaping), **TERRAIN** (wave terrain), **PHYS** (modèles physiques), **TRIO** (puce 8 bits), **LOFI** (chiptune), **WHEEL** (orgue à roues phoniques), **VOICE** (voyelles chantées), **NOISE**, **GRAIN** et **SAMPLE** (sur quatre sources synthétisées de SynthMaven, VOX, GLASS, PAD et AIR).
 - **Sculpter le son** (tous les moteurs) : une **matrice de modulation** de 12 slots, **LFO 2**, **LFO 3**, **ENV 2** (simple ou en boucle), quatre **MACROS** (BRITE, TIMBR, MOTN, SPACE, aussi en CC 16 à 19), **SPREAD** (chaque voix à sa place dans la stéréo), le **MOD SEQ** (séquenceur de modulation à 4 pistes), **8 modèles de filtre** sur ANALOG, WAVE et VECTOR (SVF, ladder Moog, MS-20, ladder à diodes, SEM, notch, passe-bande, passe-haut), **VINTAGE** (chaque voix dérive comme sur un vrai polyphonique analogique), un effet **INSERT** par son (SOFT, HARD, FOLD, FUZZ, CRUSH, PHASER, FLANGER, CHORUS et le chorus JUNO).
@@ -39,7 +47,7 @@ SynthMaven vit dans son propre dossier, **`SYNTHMAVEN`**, à côté de celui de 
 | Adresse | http://localhost:**8766** | http://localhost:**8767** |
 | Écran de démarrage | voilier, « sloop » | trois-mâts, « synthmaven » |
 
-Sur la FM-1, SynthMaven se reconnaît à son écran de démarrage (**1.1 EXPERIMENTAL** sous le logo) et à HOME (maintenu) → SYS → ABOUT, qui affiche **SYNTHMAVEN 1.1 EXP**.
+Sur la FM-1, SynthMaven se reconnaît à son écran de démarrage (**0.4 DEV** sous le logo) et à HOME (maintenu) → SYS → ABOUT, qui affiche **SYNTHMAVEN 0.4 DEV**.
 
 ## 1. Compiler et installer
 

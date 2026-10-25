@@ -1,14 +1,14 @@
-# SynthMaven — quick start (1.1, experimental)
+# SynthMaven — quick start (0.4 development)
 
 **SynthMaven** is a **synthesizer** firmware for the M-VAVE FM-1: one instrument, like the original firmware, Felucca or Baudgirl's FM-1+VA. It is not a groovebox: no tracks, no drum machine, no song mode, no built-in samples. It keeps SLOOP's engines, effects, arpeggiator, step sequencer, USB audio and MIDI, and adds **HYBRID** (three oscillators, two filters, a 16-slot matrix) and many more engines. Pitch bend, mod wheel, aftertouch and the sustain pedal work on every engine. *(En français : [DEMARRAGE-RAPIDE-FR.md](DEMARRAGE-RAPIDE-FR.md).)*
 
-> **Version 1.1, EXPERIMENTAL.** This is an early, experimental release, and there is still a huge amount of work to do (see [What is left to do](README.md#what-is-left-to-do)). It passes its whole test suite on a computer, but it has run very little on a real FM-1: expect rough edges. **Before installing, make a backup** with the editor (SynthMaven's or SLOOP's, whichever is installed): the Backup tab (Projects → Backup in SLOOP or an older version) → *Save a backup*.
+> **Version 0.4, DEVELOPMENT.** Hardware validation remains outstanding (see [development status](README.md#development-status)). It passes its whole test suite on a computer, but it has run very little on a real FM-1: expect rough edges. **Before installing, make a backup** with the editor (SynthMaven's or SLOOP's, whichever is installed): the Backup tab (Projects → Backup in SLOOP or an older version) → *Save a backup*.
 
-On the FM-1, SynthMaven shows its boot screen (**1.1 EXPERIMENTAL** under the logo), and HOME (held) → SYS → ABOUT reads **SYNTHMAVEN 1.1 EXP**.
+On the FM-1, SynthMaven shows its boot screen (development version under the logo), and HOME (held) → SYS → ABOUT reads **SYNTHMAVEN 0.4 DEV**.
 
 ## 1. Install
 
-**Without building anything**: open the [installer page](https://kingxeryus.github.io/SynthMaven/webapp/installer/) in Chrome or Edge with the FM-1 on USB. Make a backup with the [online editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) first, then click **Install**. The firmware package is also attached to each [release](https://github.com/KingXeryus/SynthMaven/releases).
+**Without building anything**: open the [installer page](https://kingxeryus.github.io/SynthMaven/webapp/installer/) in Chrome or Edge with the FM-1 on USB. Make a backup with the [online editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) first, then click **Install**. The installer embeds the matching firmware package; build artifacts are available in [GitHub Actions](https://github.com/KingXeryus/SynthMaven/actions).
 
 **From the source, on Windows**:
 
@@ -24,7 +24,7 @@ Elsewhere than Windows: see [BUILDING.md](BUILDING.md).
 | | |
 | --- | --- |
 | **HOME** | The synth screen: the sound's name, its family, its number in the list, the engine and a scope. The four knobs play the sound's main controls. |
-| **PRESETS** | Every sound, one by one, factory and user presets. On the SAVE > PRESETS page, KNOB 2 filters the list by engine (ALL, an engine, USER). |
+| **PRESETS** | Every sound, one by one, factory and user presets. On the SAVE > PRESETS page, KNOB 2 filters the list by engine (ALL, an engine, USER, XD or ORIENTAL). |
 | **ALGORITHM** | Jumps to the next family (PAD, BASS, LEAD, PLCK, KEYS, STAB, FX…). |
 | **FX, EDIT, ARP, GLO, SAVE** | A tap opens the pages; while FX or SAVE is held, the keys still play (EDIT, ARP and GLO held are sequencer layers, see below). FX pages: FX (sends), FILTER (and MODL, the filter model), INSERT, INSERT 2, DLY, DLY 2 (the delay's MODE), REVERB (TYPE: ROOM, PLATE, HALL, SHIMMER), CHORUS, EQ+COMP. EDIT: the engine's pages, MACROS, VOICE 1–3 (SPREAD on VOICE 3), the envelopes, LFOs and the 12-slot MATRIX. GLO: GLOBAL (tempo, swing, metronome, fine tune), MASTER, **TUNING** (the system, its root, and **A4** from 400 to 480 Hz: 432, 415, 442...), SYSTEM (MIDI out, sync, CPU / LATE / PEAK), **MIDI** (IN CH: OMNI or 1 to 16; OUT; BEND range; LOCAL), **MIDI 2** (PROG: program changes; SEND: the knobs' CCs; EWI: a breath controller). SAVE: PRESETS, USER (your presets), TOOLS. |
 | **SEQ, SEL, EDIT, ARP, GLO** | Held, the sequencer's layers (as SLOOP 2.7.2): SEQ the 16 steps on the keys (a step held: KNOB 1 note, 2 velocity, 3 ratchet, 4 nudge, PRESETS a lock), SEL the key and the chords, EDIT erase (a key: that note out of the pattern; KNOBs SHIFT, LENGTH, TRANSPOSE; OCT- / OCT+ undo / redo), ARP note repeat, GLO fill (key 9), fill bar (key 10), tap tempo (key 16), level (KNOB 1). A tap opens their pages. |
@@ -33,6 +33,15 @@ Elsewhere than Windows: see [BUILDING.md](BUILDING.md).
 | **MIDI** | GLO > **MIDI**: **IN CH** OMNI (every channel, the default) or one channel 1 to 16; **OUT**, the channel SynthMaven sends on; **BEND**, the pitch bend range (AUTO or 1 to 24 semitones); **LOCAL** OFF: the keys only go out (a DAW sending the track back). GLO > **MIDI 2**: **PROG** ON loads a sound on a program change; **SEND** CC: the knobs send their CCs to a DAW; **EWI** VOL: a breath controller (CC 2) plays the volume, V+AT the aftertouch too (set the MOD page's AT to CUT: the breath opens the filter; VOICE MONO or LEGATO). Everything SynthMaven receives and sends: [docs/midi.md](docs/midi.md). |
 
 What you are playing is kept by the autosave across power cycles; save a sound you like as a **user preset** (SAVE → USER).
+
+## Oriental / Middle Eastern presets
+
+SAVE → PRESETS → KNOB 2 **ORIENTAL** selects 88 melodic presets (44 instruments,
+Dry and Expressive variations). KNOB 1 highlights, KNOB 3 loads, and KNOB 4 loads
+and opens Edit. Short names end in D or E. No percussion is included. Add chorus,
+delay or reverb from FX; the preset sends start at zero. Save changes under USER.
+The web editor offers the same collection with full instrument names. Tuning is
+independent: select a Scala/custom scale for the desired maqam.
 
 ## 3. Playing HYBRID
 

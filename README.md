@@ -6,6 +6,8 @@ SynthMaven is an open-source firmware based on [Clipper](https://github.com/isod
 
 [Web installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Web editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [Build status](https://github.com/KingXeryus/SynthMaven/actions)
 
+[0.4 release notes and melodic preset catalog](docs/RELEASE-0.4.md)
+
 ## Development status
 
 **Development firmware; hardware validation is outstanding.** Native BLE builds include MIDI pedal discovery, explicit device selection, connection and disconnect controls. Original Chocolate and Chocolate Plus pairing, reconnect and audio timing still need testing on the FM1. Version 0.2 predates this integration.
@@ -31,7 +33,7 @@ Tap SAVE to PRESETS. Four names are visible per page (fewer in a short final pag
 | Control | Action |
 |---|---|
 | KNOB 1 / PRESETS | Move highlight without loading |
-| KNOB 2 / ALGORITHM | Filter by engine or USER |
+| KNOB 2 / ALGORITHM | Filter by engine, USER, XD or ORIENTAL |
 | KNOB 3 clockwise | Load highlighted patch |
 | KNOB 4 clockwise | Load patch and open EDIT macro pages |
 
@@ -39,22 +41,24 @@ This replaces the synth browser's FAV knob action; existing favourites are retai
 
 ## Oriental / Middle Eastern collection (0.4 development)
 
-The full desktop collection is included as 208 virtual factory presets: 52
-original modeled instrument recipes with Dry, Live, Expressive and Hall variants.
+The melodic collection adds 88 virtual factory presets: 44 original modeled
+instrument recipes, each with Dry and Expressive variations.
 It covers oud, qanun, saz/baglama, santur, ney/kawala, duduk/mizmar/zurna,
-regional strings, leads and hand percussion. These are SynthMaven synthesis
+regional strings and leads. Percussion is excluded. Chorus, delay and reverb
+sends are off; add effects using the FM1 FX controls. These are SynthMaven synthesis
 recipes, not commercial Yamaha ESP or TAQS.IM samples.
 
 Tap SAVE for PRESETS, then use KNOB 2 to select ORIENTAL. KNOB 1 highlights;
-KNOB 3 loads; KNOB 4 loads and edits. D/L/E/H in the short OLED names identifies
+KNOB 3 loads; KNOB 4 loads and edits. D/E in the short OLED names identifies
 the variation. The engine filters also include their Oriental sounds. The web
 editor has a full-name Oriental/Middle Eastern selector. Save as a user preset
 to keep edits, and use CC0=127 with Program Change for existing user-slot access.
 
 Original factory IDs and favourite keys are unchanged. New preset IDs append
 within their native engine; projects and user presets retain the patch settings.
-Use the matching protocol-16 editor for indices above 126. Host tests compare
-all 126 track parameters of all 208 loaded patches to the software collection.
+Use the matching protocol-16 web editor. Host tests compare all 126 track
+parameters of all 88 loaded patches to the selected software recipes, with the
+three effect sends explicitly disabled.
 See [bank provenance and limits](assets/oriental/README.md). Hardware validation
 and the actual Bluetooth build's flash/RAM checks gate a usable release.
 
