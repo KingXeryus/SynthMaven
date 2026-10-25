@@ -666,7 +666,7 @@ async function fmxPatch() {
   const empty = E.parse[E.CMD.FMX_GET](await rq(E.req.fmxGet(2, 6)));
   const st = E.parse[E.CMD.FMX_STORE](await rq(E.req.fmxStore(6, X.pack(kick))));
   const back = E.parse[E.CMD.FMX_GET](await rq(E.req.fmxGet(2, 6)));
-  ok(info.proto === 14 && info.engines.includes("FMX") && !put.rc && eq(Array.from(got.bytes), fx.factory[0]) && empty.rc === 2 && !st.rc
+  ok(info.proto === 15 && info.engines.includes("FMX") && !put.rc && eq(Array.from(got.bytes), fx.factory[0]) && empty.rc === 2 && !st.rc
     && eq(Array.from(back.bytes), fx.factory[10]), "FMX: through the mock: PUT, GET back, an empty slot (rc 2), STORE, the slot read");
   /* SynthMaven 0.8 (protocol 13): JUNO and VECTOR, the MOD SEQ's steps (editor_fmx.c ed_mseq_handle) */
   const q = E.req.mseqPut(1, Array.from({ length: 64 }, (_, i) => (i % 16) - 8));
@@ -724,7 +724,7 @@ async function editorV5() {
     && names.indexOf("ED_MICRO_GET") + 1 === C.MICRO_GET && names.indexOf("ED_MICRO_SET") + 1 === C.MICRO_SET
     && names.indexOf("ED_FILL_GET") + 1 === C.FILL_GET && names.indexOf("ED_FILL_SET") + 1 === C.FILL_SET
     && /ED_FM6_GET = 68, ED_FM6_PUT, ED_FM6_LIST, ED_FM6_ERASE/.test(ec) && C.FM6_GET === 68 && C.FM6_ERASE === 71
-    && /#define ED_PROTO \(SYNTHMAVEN_SYNTH \? 15u : 11u\)/.test(ec) && /ed_b\(ED_PROTO\);/.test(ec)
+    && /#define ED_PROTO \(SYNTHMAVEN_SYNTH \? 16u : 11u\)/.test(ec) && /ed_b\(ED_PROTO\);/.test(ec)
     && /enum \{ ED_FMX_GET = 90, ED_FMX_PUT, ED_FMX_STORE \};/.test(readFileSync(join(HERE, "../firmware/src/editor_fmx.c"), "utf8"))
     && C.FMX_GET === 90 && C.FMX_STORE === 92
     && /enum \{ ED_MSEQ_GET = 93, ED_MSEQ_PUT, ED_TUNE_GET, ED_TUNE_PUT \};/.test(readFileSync(join(HERE, "../firmware/src/editor_fmx.c"), "utf8"))

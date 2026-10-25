@@ -30,11 +30,11 @@ enum { ED_INFO = 1, ED_GET, ED_SET, ED_DUMP, ED_DESC, ED_STEP_GET, ED_STEP_SET, 
        ED_FM6_GET = 68, ED_FM6_PUT, ED_FM6_LIST, ED_FM6_ERASE };                /* v9: FM6 patches (Felucca's numbers) */
 /* v10 (SLOOP 2.5): DSYN_LIST .. DSYN_PLAY = 72..76, editor_dsyn.c; backup object 9 = the SYN kits */
 /* v11 (SynthMaven): HY_GET, HY_PUT = 77, 78, editor_hybrid.c */
-#define ED_PROTO (SYNTHMAVEN_SYNTH ? 15u : 11u)           /* the protocol version INFO ends with (12: SynthMaven's FMX, 13: its
+#define ED_PROTO (SYNTHMAVEN_SYNTH ? 16u : 11u)           /* the protocol version INFO ends with (12: SynthMaven's FMX, 13: its
                                                         * MOD SEQ, JUNO, VECTOR, 14: the TUNING) */
 
-/* Full FM6 stock + user list: 68 used entries need up to 824 wire bytes. */
-static uint8_t ed_out[1024];
+/* Extended PHYS list: 140 entries need up to 1828 wire bytes. */
+static uint8_t ed_out[2048];
 static uint32_t ed_n;
 
 static void ed_begin(uint32_t cmd)
@@ -51,6 +51,9 @@ static void ed_b(uint32_t v)
     if (ed_n < sizeof ed_out - 1u)
         ed_out[ed_n++] = (uint8_t)(v & 0x7Fu);
 }
+/* Protocol 16: indices/counts 127..254 escape as 127, value-127.
+ * Old factory IDs keep their single-byte representation. */
+static void ed_preset(uint32_t p){ed_b(p<127u?p:127u);if(p>=127u)ed_b(p-127u);}
 static void ed_v(int32_t v)
 {
     uint32_t u = (uint32_t)(clamp(v, -8192, 8191) + 8192);
@@ -333,7 +336,7 @@ static void ed_sync(void)                                /* main loop */
         ed_shadow();
         ed_begin(ED_RELOAD);
         ed_b(ed_eng(TSEL));
-        ed_b(TSEL->preset);
+        ed_preset(TSEL->preset);
         ed_b(song.sel);
         ed_send();
         return;
@@ -747,7 +750,7 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         for (i = 0; i < ED_NV; i++)                       /* the editor gets them all here */
             ed_w.v[i] = *ed_val(i);
         ed_b(ed_eng(TSEL));
-        ed_b(TSEL->preset);
+        ed_preset(TSEL->preset);
         for (i = 0; i < P_COUNT; i++)
             ed_v(TSEL->p[i]);
         for (i = 0; i < G_COUNT; i++)
@@ -787,10 +790,10 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
             return;
         if (a[0] != TSEL->eng_req)
             set_engine(a[0]);
-        apply_preset(a[1]);
+        apply_preset(a[1]==127u&&na>=3u?127u+a[2]:a[1]);
         ui.force = 1;
         ed_b(ed_eng(TSEL));
-        ed_b(TSEL->preset);
+        ed_preset(TSEL->preset);
         break;
     case ED_PROJECT:                                       /* 0 = load, 1 = save, 2 = query; slot 0..3 */
         if (na < 2u || a[0] > 2u)
@@ -814,9 +817,9 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         if (na < 1u || a[0] >= NENGINES)
             return;
         ed_b(a[0]);
-        ed_b(ENGINES[a[0]]->npresets);
-        for (i = 0; i < ENGINES[a[0]]->npresets; i++)
-            ed_str(ENGINES[a[0]]->presets[i].name, 12);
+        ed_preset(sm_factory_count(a[0]));
+        for (i = 0; i < sm_factory_count(a[0]); i++)
+            ed_str(sm_factory_name(a[0],i), 12);
         for (i = 0; i < 2u; i++)                           /* then the two edit-page titles */
             ed_str(ENGINES[a[0]]->page_title[i], 8);
         break;
@@ -1002,7 +1005,7 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         ed_b(NTRK);
         for (i = 0; i < NTRK; i++) {
             ed_b(ed_eng(&trk[i]));
-            ed_b(trk[i].preset);
+            ed_preset(trk[i].preset);
             ed_v(i == TRK_DRUM ? song.g[G_DRLVL] : trk[i].p[P_LEVEL]);
             ed_b(trk[i].p[P_MUTE] != 0);
             ed_b((song.rec >> i) & 1u);
@@ -1036,7 +1039,7 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
             return;
         ed_b(a[0]);
         ed_b(ed_eng(&trk[a[0]]));
-        ed_b(trk[a[0]].preset);
+        ed_preset(trk[a[0]].preset);
         for (i = 0; i < P_COUNT; i++)
             ed_v(trk[a[0]].p[i]);
         break;

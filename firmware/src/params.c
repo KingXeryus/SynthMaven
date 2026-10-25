@@ -470,7 +470,7 @@ static void param_format(const param_desc_t *d, int32_t v, char *val, const char
     default:
         if (d->names) {                               /* F_INT with a 0-terminated name list: the range */
             uint32_t k = 0;                           /* split evenly over the names (engine desc hooks) */
-            while (d->names[k])
+            while (k < (uint32_t)(d->max-d->min+1) && d->names[k])
                 k++;
             str_cpy(val, d->names[(uint32_t)(clamp(v, d->min, d->max) - d->min) * k / (uint32_t)(d->max - d->min + 1)], 6);
         } else {
@@ -642,3 +642,5 @@ static const param_desc_t *page_desc(const page_t *pg, uint32_t slot, int16_t **
     *valp = &TSEL->p[id];
     return track_desc(TSEL, id);
 }
+
+#include "oriental.c"

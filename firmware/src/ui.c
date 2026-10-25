@@ -3,7 +3,7 @@
 /* Felucca user interface. Four columns map to KNOB 1..4. Rendering is lazy:
  * every element remembers what it last drew and is redrawn only on change. */
 #ifndef FELUCCA_VERSION
-#define FELUCCA_VERSION "SYNTHMAVEN 0.3 DEV"  /* (experimental) the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
+#define FELUCCA_VERSION "SYNTHMAVEN 0.4 DEV"  /* (experimental) the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
 #endif
 static void project_save(uint32_t slot);
 static void arrangement_save(void);
@@ -501,10 +501,11 @@ static void apply_preset_to(track_t *t, uint32_t pi)
     t->user = 0;
     if (t == TSEL)
         sync_reload = 1;
-    if (!e->npresets)
+    if (!sm_factory_count(t->eng_req))
         return;
-    pi %= e->npresets;
-    t->preset = (uint8_t)pi;
+    uint32_t logical_pi=pi%sm_factory_count(t->eng_req);
+    pi=sm_factory_base(t->eng_req,logical_pi);
+    t->preset = (uint8_t)logical_pi;
     for (i = 0; i < P_E0; i++)                        /* the rest of the sound to its defaults: a preset */
         if (!param_kept(i) && !(keep_arp && arp_param(i)) && !(kbd_hold && i == P_AHOLD))
             t->p[i] = TP[i].def;                     /* sounds the same after any edit (not the pattern, not the mix) */
@@ -541,6 +542,7 @@ static void apply_preset_to(track_t *t, uint32_t pi)
 #if SYNTHMAVEN_SYNTH
     mseq_init(t);                                    /* (0.8) the MOD SEQ: the shapes to start from */
 #endif
+    sm_or_apply(t,logical_pi);
     fm6_track_loaded(t);                             /* FM6: the preset's patch (its PTCH) */
 }
 
@@ -590,8 +592,8 @@ static void select_engine(uint32_t e)
 /* the factory presets as one list by kind (basses, keys, organs, pads, leads, plucks and bells, stabs,
  * the rest), then the used user presets: the PRESETS knob and the PRESETS page browse it. By name: an
  * engine's preset table may change order; tests/ui_pages_test.c checks every preset is here once */
-enum { BK_BASS, BK_KEYS, BK_ORGAN, BK_PAD, BK_LEAD, BK_PLUCK, BK_STAB, BK_FX, BK_DX7, BK_XD };
-static const char *const BANK_KIND[] = {"BASS", "KEYS", "ORGN", "PAD", "LEAD", "PLCK", "STAB", "FX", "DX7", "XD"};
+enum { BK_BASS, BK_KEYS, BK_ORGAN, BK_PAD, BK_LEAD, BK_PLUCK, BK_STAB, BK_FX, BK_DX7, BK_XD, BK_ORIENTAL };
+static const char *const BANK_KIND[] = {"BASS", "KEYS", "ORGN", "PAD", "LEAD", "PLCK", "STAB", "FX", "DX7", "XD", "ORIENTAL"};
 /* the sample-based factory sounds (SAMPLE 4, GRAIN 8): not in the SynthMaven synth, which has no built-in samples */
 #if SYNTHMAVEN_SYNTH
 #define BK_SMP(k, e, n)
@@ -758,13 +760,14 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     FM6_STOCK_BANK
     SM_KORG_BANK
 };
-#define NBANK (sizeof BANK / sizeof BANK[0])
-static uint8_t bank_pi[NBANK];                       /* the preset index of each entry in its engine */
+#define NBASE (sizeof BANK / sizeof BANK[0])
+#define NBANK (NBASE + SM_OR_COUNT)
+static uint8_t bank_pi[NBASE];                       /* the preset index of each entry in its engine */
 static uint8_t bank_ready;
 static void bank_resolve(void)
 {
     uint32_t i, k;
-    for (i = 0; i < NBANK; i++) {
+    for (i = 0; i < NBASE; i++) {
         const engine_t *e = ENGINES[BANK[i].e % NENGINES];
         bank_pi[i] = 0xFF;
         for (k = 0; k < e->npresets; k++)
@@ -778,9 +781,10 @@ static uint32_t base_pos(uint32_t *total)            /* list index of the select
     uint32_t i, cur = 0;
     if (!bank_ready)
         bank_resolve();
-    for (i = 0; i < NBANK; i++)
+    for (i = 0; i < NBASE; i++)
         if (BANK[i].e == TSEL->eng_req && bank_pi[i] == TSEL->preset)
             cur = i;
+    {uint32_t w,v;if(sm_or_find(TSEL->eng_req,TSEL->preset,&w,&v))cur=NBASE+w*2u+v;}
     if (user_of(TSEL) < UP_SLOTS)
         cur = NBANK + up_rank(user_of(TSEL));
     *total = NBANK + up_count();
@@ -796,10 +800,11 @@ static uint32_t base_at(uint32_t n, uint32_t *k)
         *k = up_nth(n - NBANK);
         return NENGINES;
     }
+    if(n>=NBASE)return sm_or_at(n-NBASE,k);
     *k = bank_pi[n] == 0xFF ? 0u : bank_pi[n];
     return BANK[n].e;
 }
-static const char *base_kind(uint32_t n) { return n < NBANK ? BANK_KIND[BANK[n].kind] : "USER"; }
+static const char *base_kind(uint32_t n) { return n < NBASE ? BANK_KIND[BANK[n].kind] : n < NBANK ? "ORIENTAL" : "USER"; }
 
 /* 0.7, favourites (after SLOOP 2.7; PRESETS page, KNOB 4): up to 16 sounds at the top of the PRESETS list, kept in the
  * FM-1's settings (project.c, the settings' side record). An entry: a factory sound, its BANK index; a user preset,
@@ -835,7 +840,8 @@ static uint32_t fav_key(void)                        /* the selected part's soun
         bank_resolve();
     if (user_of(TSEL) < UP_SLOTS)
         return FAV_USER | user_of(TSEL);
-    for (i = 0; i < NBANK; i++)
+    {uint32_t w,v;if(sm_or_find(TSEL->eng_req,TSEL->preset,&w,&v))return NBASE+w*2u+v;}
+    for (i = 0; i < NBASE; i++)
         if (BANK[i].e == TSEL->eng_req && bank_pi[i] == TSEL->preset)
             return i;
     return FAV_NONE;
@@ -922,12 +928,14 @@ static void preset_go(uint32_t n)                    /* load list index n into t
  * the PRESETS knob on that page and the list shown go through that engine's sounds only, in the list's order (the
  * favourites, their own copies, are left out of a filter). HOME's PRESETS knob always browses the whole list */
 #define BR_ALL 0xFFu
+#define BR_ORIENTAL (NENGINES+1u)
 static uint8_t br_eng = BR_ALL;
 static int br_match(uint32_t n, uint32_t nf)         /* entry n of the list (nf favourites first) is in the filter */
 {
     uint32_t k;
     if (br_eng == BR_ALL)
         return 1;
+    if(br_eng==BR_ORIENTAL)return n>=nf && n-nf>=NBASE && n-nf<NBANK;
     return n >= nf && preset_at(n, &k) == br_eng;
 }
 /* Browsing in synth mode is silent: only LOAD / EDIT changes the instrument. */
@@ -1003,13 +1011,14 @@ static int br_engine_has(uint32_t e)                  /* the list holds sounds o
 }
 static void br_filter_step(int32_t s)                 /* KNOB 2: ALL, the engines, USER, round */
 {
-    uint32_t e = br_eng == BR_ALL ? NENGINES + 1u : br_eng, guard = NENGINES + 2u, total, cur = preset_pos(&total), b[FAV_N];
+    uint32_t all=NENGINES+1u+(SM_OR_COUNT?1u:0u);
+    uint32_t e = br_eng == BR_ALL ? all : br_eng, guard = all+1u, total, cur = preset_pos(&total), b[FAV_N];
     if (is_drum(TSEL))
         return;
     do                                                /* (0..NENGINES-1 the engines, NENGINES USER, NENGINES + 1 ALL) */
-        e = s > 0 ? (e + 1u) % (NENGINES + 2u) : (e + NENGINES + 1u) % (NENGINES + 2u);
+        e = s > 0 ? (e + 1u) % (all+1u) : (e + all) % (all+1u);
     while (--guard && e <= NENGINES && !br_engine_has(e));
-    br_eng = (uint8_t)(e > NENGINES ? BR_ALL : e);
+    br_eng = (uint8_t)(e == all ? BR_ALL : e);
 #if SYNTHMAVEN_SYNTH
     br_valid = 0;
     br_current();
@@ -1020,7 +1029,7 @@ static void br_filter_step(int32_t s)                 /* KNOB 2: ALL, the engine
     {
         uint32_t pos, c = br_count(&pos);
         char m[24];
-        str_cpy(m, br_eng == BR_ALL ? "ALL" : br_eng == NENGINES ? "USER" : ENGINES[br_eng]->name, sizeof m);
+        str_cpy(m, br_eng == BR_ALL ? "ALL" : br_eng == NENGINES ? "USER" : br_eng==BR_ORIENTAL ? "ORIENTAL" : ENGINES[br_eng]->name, sizeof m);
         str_cpy(m + str_len(m), " (", 3);
         fmt_int(m + str_len(m), (int32_t)c);
         str_cpy(m + str_len(m), ")", 2);
@@ -1034,7 +1043,7 @@ static void br_filter_step(int32_t s)                 /* KNOB 2: ALL, the engine
 static uint32_t kind_at(uint32_t n)                  /* (0.7: the favourites first, a kind of their own) */
 {
     uint32_t b[FAV_N], nf = fav_list(b);
-    return n < nf ? 0xFEu : n - nf < NBANK ? BANK[n - nf].kind : 0xFFu;
+    return n < nf ? 0xFEu : n - nf < NBASE ? BANK[n - nf].kind : n-nf<NBANK ? BK_ORIENTAL : 0xFFu;
 }
 static void preset_kind_jump(int32_t s)
 {

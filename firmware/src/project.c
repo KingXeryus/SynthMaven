@@ -659,7 +659,7 @@ static void proj_apply(const project_t *p, int all)
 #endif
             t->p[i] = (int16_t)clamp(v, d->min, d->max);
         }
-        t->preset = (uint8_t)(ENGINES[e]->npresets ? (s->preset == 0xFFu ? 0u : s->preset) % ENGINES[e]->npresets : 0u);
+        t->preset = (uint8_t)(sm_factory_count(e) ? (s->preset == 0xFFu ? 0u : s->preset) % sm_factory_count(e) : 0u);
         arp_snd[k % NTRK] = (uint8_t)t->p[P_AMODE];     /* (1.0) a loaded project's arp is its sounds': the next sound
                                                          * loaded turns it off (seq.c arp_snd) */
         memcpy(t->step, s->step, sizeof t->step);

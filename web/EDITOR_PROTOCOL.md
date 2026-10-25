@@ -540,3 +540,13 @@ them). UP_PUT carries P_COUNT values as before (126).
   Felucca's own storage; never the app or the update area. Since SLOOP 2.4 every one of them, and
   `BK_PUT` of a preset bank, answers rc 3 while the song plays (as the panel refuses to save then): a
   flash erase silences the audio for about 50 ms.
+
+### SynthMaven protocol 16: extended factory preset indices/counts
+
+Original values 0..126 keep their one-byte encoding. A preset index or NAMES
+count from 127..254 is encoded as two 7-bit bytes: `127, value-127`. This applies
+to preset fields in DUMP, PRESET replies, RELOAD, TRACK and TRACK_DUMP, and to
+the NAMES count. PRESET requests use `engine,127,index-127` for an extended
+index; original requests stay `engine,index`. All other fields are unchanged.
+Protocol 16 allows the complete Oriental bank's PHYS presets (through 139) and
+140-name list without changing existing factory IDs. Use the matching editor.

@@ -94,14 +94,14 @@ int main(int argc, char **argv)
     }
     {   /* the preset list: every name found; every preset of SynthMaven's own engines (WAVE .. MACRO) there once */
         uint32_t e, k, n, hits, ok = 1;
-        for (n = 0; n < NBANK; n++)
+        for (n = 0; n < NBASE; n++)
             if (bank_pi[n] == 0xFF) {
                 printf("synthmaven: BANK %s: no such preset in engine %u\n", BANK[n].name, BANK[n].e);
                 ok = 0;
             }
         for (e = 0; e < NENGINES; e++)
             for (k = 0; k < ENGINES[e]->npresets; k++) {
-                for (hits = 0, n = 0; n < NBANK; n++)
+                for (hits = 0, n = 0; n < NBASE; n++)
                     hits += BANK[n].e == e && bank_pi[n] == k;
                 if (hits != 1) {
                     printf("synthmaven: preset %s (engine %u) is %u times in BANK\n", ENGINES[e]->presets[k].name, e, hits);
@@ -183,12 +183,12 @@ int main(int argc, char **argv)
         { uint32_t pk; ok &= preset_at(br_current(), &pk) == e; }
         ui.force = 1; frame(); ppm("synthmaven-presets-filter");
         check(ok && c >= 2u && seen >= c, "PRESETS page: KNOB 2 filters by engine (the first one with sounds); KNOB 1 and PRESETS go through its sounds only");
-        for (k = 0; k < NENGINES + 2u && br_eng != BR_ALL; k++) {
+        for (k = 0; k < NENGINES + 3u && br_eng != BR_ALL; k++) {
             encs[panel.enc[EN_K2]] = 1; frames(1);
         }
         check(br_eng == BR_ALL, "KNOB 2 round the engines (and USER when there are user presets) back to ALL");
         encs[panel.enc[EN_K2]] = -1; frames(1);
-        ok = br_eng == NENGINES || (br_eng < NENGINES);   /* (the harness's user presets: names only) */
+        ok = br_eng == BR_ORIENTAL || br_eng == NENGINES || (br_eng < NENGINES);   /* (the harness's user presets: names only) */
         check(ok, "KNOB 2 left from ALL: the last filter (USER, or the last engine and its first sound)");
         while (br_eng != BR_ALL) { encs[panel.enc[EN_K2]] = 1; frames(1); }
         {

@@ -37,6 +37,27 @@ Tap SAVE to PRESETS. Four names are visible per page (fewer in a short final pag
 
 This replaces the synth browser's FAV knob action; existing favourites are retained. HOME browsing remains available. The web editor provides a matching four-patch user-preset browser with Load/Edit actions. Full DX7 operator editing remains in the web FM6 panel.
 
+## Oriental / Middle Eastern collection (0.4 development)
+
+The full desktop collection is included as 208 virtual factory presets: 52
+original modeled instrument recipes with Dry, Live, Expressive and Hall variants.
+It covers oud, qanun, saz/baglama, santur, ney/kawala, duduk/mizmar/zurna,
+regional strings, leads and hand percussion. These are SynthMaven synthesis
+recipes, not commercial Yamaha ESP or TAQS.IM samples.
+
+Tap SAVE for PRESETS, then use KNOB 2 to select ORIENTAL. KNOB 1 highlights;
+KNOB 3 loads; KNOB 4 loads and edits. D/L/E/H in the short OLED names identifies
+the variation. The engine filters also include their Oriental sounds. The web
+editor has a full-name Oriental/Middle Eastern selector. Save as a user preset
+to keep edits, and use CC0=127 with Program Change for existing user-slot access.
+
+Original factory IDs and favourite keys are unchanged. New preset IDs append
+within their native engine; projects and user presets retain the patch settings.
+Use the matching protocol-16 editor for indices above 126. Host tests compare
+all 126 track parameters of all 208 loaded patches to the software collection.
+See [bank provenance and limits](assets/oriental/README.md). Hardware validation
+and the actual Bluetooth build's flash/RAM checks gate a usable release.
+
 ## MIDI settings
 
 GLO > PATCH MIDI: PROG enables/disables patch switching. PORT depends on PROG. USB selects USB input; BLE selects the native BLE pedal input when the radio runtime is present; ANY preserves legacy routing.

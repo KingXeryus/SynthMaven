@@ -70,17 +70,17 @@
   <div class="exp" role="note"><b data-t="expTitle"></b><p data-t="expText"></p></div>
   <h1 data-t="kicker"></h1>
   <section data-l="en">
-  <p class="lead">SynthMaven turns the FM-1 into a deep polyphonic synthesizer: 23 synthesis engines and 440 sounds, from HYBRID (three oscillators, two filters, a 16-slot matrix) to FM, wavetables, vector, wave sequencing, a Juno with its chorus and physical models; a 12-slot modulation matrix, four macros, a modulation sequencer and stereo voices on every sound, hall and shimmer reverbs, eight filter models, microtuning with Scala scales, and every parameter editable in your browser.</p>
+  <p class="lead">SynthMaven turns the FM-1 into a deep polyphonic synthesizer: 23 synthesis engines and 537 sounds, from HYBRID (three oscillators, two filters, a 16-slot matrix) to FM, wavetables, vector, wave sequencing, a Juno with its chorus and physical models; a 12-slot modulation matrix, four macros, a modulation sequencer and stereo voices on every sound, hall and shimmer reverbs, eight filter models, microtuning with Scala scales, and every parameter editable in your browser.</p>
   </section>
   <section data-l="fr">
-  <p class="lead">SynthMaven fait de la FM-1 un vrai synthétiseur polyphonique : 23 moteurs de synthèse et 440 sons, de HYBRID (trois oscillateurs, deux filtres, une matrice de 16 slots) à la FM, aux tables d'ondes, au vectoriel, au wave sequencing, à un Juno avec son chorus et aux modèles physiques ; une matrice de modulation de 12 slots, quatre macros, un séquenceur de modulation et des voix stéréo sur chaque son, des réverbs hall et shimmer, huit modèles de filtre, le micro-accordage avec les gammes Scala, et chaque paramètre éditable dans ton navigateur.</p>
+  <p class="lead">SynthMaven fait de la FM-1 un vrai synthétiseur polyphonique : 23 moteurs de synthèse et 537 sons, de HYBRID (trois oscillateurs, deux filtres, une matrice de 16 slots) à la FM, aux tables d'ondes, au vectoriel, au wave sequencing, à un Juno avec son chorus et aux modèles physiques ; une matrice de modulation de 12 slots, quatre macros, un séquenceur de modulation et des voix stéréo sur chaque son, des réverbs hall et shimmer, huit modèles de filtre, le micro-accordage avec les gammes Scala, et chaque paramètre éditable dans ton navigateur.</p>
   </section>
   <section data-l="ja">
-  <p class="lead">SynthMaven は FM-1 を本格的なポリフォニック・シンセサイザーに変えます。23 の音源エンジンと 440 の音色：HYBRID（3 オシレーター、2 フィルター、16 スロットのマトリクス）から FM、ウェーブテーブル、ベクター、ウェーブ・シーケンス、コーラス付きの Juno、物理モデリングまで。すべての音色に 12 スロットのモジュレーション・マトリクス、4 つのマクロ、モジュレーション・シーケンサー、ステレオ・ボイス。ホールとシマーのリバーブ、8 種類のフィルター・モデル、Scala 音階によるマイクロチューニング。すべてのパラメーターをブラウザから編集できます。</p>
+  <p class="lead">SynthMaven は FM-1 を本格的なポリフォニック・シンセサイザーに変えます。23 の音源エンジンと 537 の音色：HYBRID（3 オシレーター、2 フィルター、16 スロットのマトリクス）から FM、ウェーブテーブル、ベクター、ウェーブ・シーケンス、コーラス付きの Juno、物理モデリングまで。すべての音色に 12 スロットのモジュレーション・マトリクス、4 つのマクロ、モジュレーション・シーケンサー、ステレオ・ボイス。ホールとシマーのリバーブ、8 種類のフィルター・モデル、Scala 音階によるマイクロチューニング。すべてのパラメーターをブラウザから編集できます。</p>
   </section>
   <div class="tiles">
     <div class="tile" style="--c: var(--blue)"><b>23</b><span data-t="tEng"></span></div>
-    <div class="tile" style="--c: var(--green)"><b>440</b><span data-t="tSnd"></span></div>
+    <div class="tile" style="--c: var(--green)"><b>537</b><span data-t="tSnd"></span></div>
     <div class="tile" style="--c: var(--yellow)"><b>8</b><span data-t="tHy"></span></div>
     <div class="tile" style="--c: var(--orange)"><b>13</b><span data-t="tMx"></span></div>
   </div>
@@ -261,8 +261,8 @@ const $ = (id) => document.getElementById(id);
 const TEXT = {
   ja: {
     kicker: "M-VAVE FM-1 のためのシンセサイザー・ファームウェア",
-    expTitle: "実験版 — SYNTHMAVEN 0.3 DEV",
-    expText: "SynthMaven 0.3 は XD 互換プリセット9音色と実験的な BLE MIDI を搭載します。Chocolate 接続と無線使用中の音声は実機検証が必要です。USB ホストは未対応です。インストール前にバックアップしてください。",
+    expTitle: "実験版 — SYNTHMAVEN 0.4 DEV",
+    expText: "SynthMaven 0.4 は XD 互換プリセット9音色と実験的な BLE MIDI を搭載します。Chocolate 接続と無線使用中の音声は実機検証が必要です。USB ホストは未対応です。インストール前にバックアップしてください。",
     tEng: "音源エンジン", tSnd: "音色、レベル調整済み", tHy: "フィルター・モデル", tMx: "チューニング＋自分の Scala 音階",
     intro: "FM-1 を USB で接続してください。（Chrome か Edge で使えます）",
     warn: "書き込み中は USB を抜かないでください。",
@@ -298,8 +298,8 @@ const TEXT = {
   },
   en: {
     kicker: "Synthesizer firmware for the M-VAVE FM-1",
-    expTitle: "EXPERIMENTAL — SYNTHMAVEN 0.3 DEV",
-    expText: "SynthMaven 0.3 includes nine XD compatibility presets and experimental native BLE MIDI. Chocolate pairing and audio under wireless load still need hardware validation. Native USB host mode is unavailable. Back up your device before installing.",
+    expTitle: "EXPERIMENTAL — SYNTHMAVEN 0.4 DEV",
+    expText: "SynthMaven 0.4 adds 88 Oriental/Middle Eastern presets, nine XD compatibility presets and experimental native BLE MIDI. Chocolate pairing and audio under wireless load still need hardware validation. Native USB host mode is unavailable. Back up your device before installing.",
     tEng: "synthesis engines", tSnd: "sounds, level-matched", tHy: "filter models", tMx: "tunings + your own Scala scales",
     intro: "Connect the FM-1 by USB. (Works in Chrome or Edge.)",
     warn: "Do not unplug the USB cable while writing.",
@@ -335,8 +335,8 @@ const TEXT = {
   },
   fr: {
     kicker: "Firmware synthétiseur pour la M-VAVE FM-1",
-    expTitle: "EXPÉRIMENTAL — SYNTHMAVEN 0.3 DEV",
-    expText: "SynthMaven 0.3 inclut neuf presets compatibles XD et le BLE MIDI expérimental. La connexion Chocolate et l’audio sous charge sans fil restent à tester sur le matériel. Le mode hôte USB est indisponible. Sauvegardez avant installation.",
+    expTitle: "EXPÉRIMENTAL — SYNTHMAVEN 0.4 DEV",
+    expText: "SynthMaven 0.4 inclut neuf presets compatibles XD et le BLE MIDI expérimental. La connexion Chocolate et l’audio sous charge sans fil restent à tester sur le matériel. Le mode hôte USB est indisponible. Sauvegardez avant installation.",
     tEng: "moteurs de synthèse", tSnd: "sons, niveaux égalisés", tHy: "modèles de filtre", tMx: "accordages + tes gammes Scala",
     intro: "Branche la FM-1 en USB. (Fonctionne dans Chrome ou Edge.)",
     warn: "Ne débranche pas le câble USB pendant l'écriture.",

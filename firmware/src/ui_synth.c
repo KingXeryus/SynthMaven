@@ -327,7 +327,7 @@ static void hist_label(const hist_t *a, const hist_t *b, char *out, uint32_t cap
         if (b->s.user && b->s.user <= UP_SLOTS && up_used(b->s.user - 1u))
             up_name(b->s.user - 1u, out);
         else
-            str_cpy(out, e->npresets ? e->presets[b->s.preset % e->npresets].name : e->name, cap);
+            str_cpy(out, e->npresets ? sm_factory_name(b->s.eng,b->s.preset) : e->name, cap);
         return;
     }
     for (i = 0; i < P_COUNT; i++)
@@ -420,7 +420,7 @@ static void syn_rnd_range(uint32_t i, const param_desc_t *d, int32_t *lo, int32_
         *lo = -r;
         *hi = r;
     }
-    if (i >= P_E0 && d->names) {                      /* no empty user slot (WAVE's USR1..4 and the like) */
+    if (i >= P_E0 && d->fmt == F_ENUM && d->names) {                      /* no empty user slot (WAVE's USR1..4 and the like) */
         while (*hi > *lo && d->names[*hi - d->min] && d->names[*hi - d->min][0] == 'U' && d->names[*hi - d->min][1] == 'S')
             (*hi)--;
     }
@@ -969,7 +969,7 @@ static void graph_layer(void)
     if (l->user && l->user <= UP_SLOTS && up_used(l->user - 1u))
         up_name(l->user - 1u, nm);
     else
-        str_cpy(nm, e->npresets ? e->presets[l->preset % e->npresets].name : e->name, sizeof nm);
+        str_cpy(nm, e->npresets ? sm_factory_name(l->eng_req,l->preset) : e->name, sizeof nm);
     if (m == LY_MULTI) {                              /* 0.6: two parts, the layer on its channel */
         char c[12];
         str_cpy(c, "MULTI  CH ", sizeof c);
@@ -1005,7 +1005,7 @@ static void graph_morph(void)
         int32_t y = 6 + (int32_t)k * 22;
         cv_text(8, y, &FONT_S, AB[k], s->ok ? C_WHITE : C_DIM);
         if (s->ok)
-            str_cpy(nm, e->npresets ? e->presets[s->preset % e->npresets].name : e->name, sizeof nm);
+            str_cpy(nm, e->npresets ? sm_factory_name(s->eng,s->preset) : e->name, sizeof nm);
         else
             str_cpy(nm, "--", sizeof nm);
         cv_text(28, y, &FONT_S, nm, s->ok ? C_GRAY : C_DIM);

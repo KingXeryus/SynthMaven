@@ -482,7 +482,7 @@ static void graph_browse(void)
             up_name(k, nm);
         } else {
             str_cpy(tag, preset_kind(n), sizeof tag);
-            str_cpy(nm, ENGINES[e]->presets[k].name, sizeof nm);
+            str_cpy(nm, sm_factory_name(e,k), sizeof nm);
         }
         if (sel)
             cv_rect(4, y, 232, 24, C_DIM);
@@ -509,7 +509,7 @@ static void graph_browse(void)
             up_name(k, nm);
         } else {                                         /* its kind: BASS, KEYS, PAD... */
             str_cpy(tag, preset_kind(n), sizeof tag);
-            str_cpy(nm, ENGINES[e]->presets[k].name, sizeof nm);
+            str_cpy(nm, sm_factory_name(e,k), sizeof nm);
         }
         if (sel)
             cv_rect(4, y + 6, 3, 3, C_WHITE);
@@ -597,7 +597,7 @@ static void trk_short_name(uint32_t c, char *b)      /* the track's sound, b hol
     else if (user_of(t) < UP_SLOTS)
         up_name(user_of(t), b);
     else if (e->npresets)
-        str_cpy(b, e->presets[t->preset % e->npresets].name, 13);
+        str_cpy(b, sm_factory_name(t->eng_req,t->preset), 13);
     else
         str_cpy(b, e->name, 13);
 }
@@ -759,7 +759,7 @@ static void graph_home(uint16_t c)
     if (user_of(TSEL) < UP_SLOTS)
         up_name(user_of(TSEL), name);
     else if (e->npresets)
-        str_cpy(name, e->presets[TSEL->preset % e->npresets].name, sizeof name);
+        str_cpy(name, sm_factory_name(TSEL->eng_req,TSEL->preset), sizeof name);
     if (text_w(f, name) > 236)
         f = &FONT_S;
     cv_text((240 - text_w(f, name)) / 2, f == &FONT_L ? 0 : 8, f, name, C_WHITE);
@@ -944,7 +944,7 @@ static void draw_foot(void)
     else if (user_of(t) < UP_SLOTS)
         up_name(user_of(t), pn);                       /* a user preset */
     else if (e->npresets)
-        str_cpy(pn, e->presets[TSEL->preset % e->npresets].name, sizeof pn);
+        str_cpy(pn, sm_factory_name(TSEL->eng_req,TSEL->preset), sizeof pn);
     if (ui.home) {
         str_cpy(ti, "HOME", sizeof ti);
     } else {                                           /* page title + number in its family: "ENV DEST 2/2" */
@@ -1065,7 +1065,7 @@ static void draw_columns(void)
             fmt_int(u + 1, (int32_t)c);
         }
         draw_column(0, "No.", val, u, VAL(0u), -1, ICON_NONE);
-        draw_column(1, "ENG", br_eng == BR_ALL ? "ALL" : br_eng == NENGINES ? "USER" : ENGINES[br_eng]->name, "", VAL(1u), -1,
+        draw_column(1, "ENG", br_eng == BR_ALL ? "ALL" : br_eng == NENGINES ? "USER" : br_eng==BR_ORIENTAL ? "ORIENTAL" : ENGINES[br_eng]->name, "", VAL(1u), -1,
                     br_eng < NENGINES ? engine_icon(ENGINES[br_eng]->name) : ICON_NONE);   /* (1.0: the filter) */
 #if SYNTHMAVEN_SYNTH
         draw_column(2, "LOAD", "GO", "", VAL(2u), -1, ICON_NONE);

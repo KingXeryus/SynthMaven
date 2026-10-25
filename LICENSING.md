@@ -74,3 +74,10 @@ SynthMaven BLE builds enable the FM1 Bluetooth radio through fm1-base (Charles V
 Lossless factory wavetable decoding uses Jibsen tinf, zlib licence; source and notice are in `firmware/vendor/tinf`.
 
 The supplied Korg program records and translated defaults are patch data, separate from the firmware code licence. See `assets/korg/README.md`. No Korg user-unit executable is redistributed or executed.
+
+## SynthMaven Oriental/Middle Eastern recipes
+
+The 208 articulation presets in `assets/oriental` and their generated firmware
+representation are original SynthMaven synthesis parameter recipes, GPL-3.0-only.
+No commercial Yamaha ESP or TAQS.IM sample/preset library is redistributed.
+See `assets/oriental/README.md` for the frozen software reference and generator.
