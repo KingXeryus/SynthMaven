@@ -422,7 +422,7 @@ void P33_SYSTEM_RESET(void) { shim_reboot(); }
 u32 clk_get(const char *name) { (void)name; return 24000000u; }   /* the radio asks for "osc" */
 
 /* in RAM, as the radio trim that calls them (app.ld): no flash access while it draws its current */
-#define SHIM_RAMFN __attribute__((section(".ram_text"), noinline, used))
+#define SHIM_RAMFN __attribute__((section(".radio_ram"), noinline, used))
 SHIM_RAMFN void delay(u32 n) { shim_delay_us(n); }
 SHIM_RAMFN void delay_us(u32 us) { shim_delay_us(us); }
 SHIM_RAMFN void hw_udelay(u32 us) { shim_delay_us(us); }

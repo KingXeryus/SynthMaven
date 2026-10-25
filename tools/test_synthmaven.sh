@@ -6,9 +6,9 @@ for g in font:felucca_font icons:felucca_icons samples:felucca_samples drumkits:
  python3 "tools/gen_${g%%:*}.py" "build/gen/${g#*:}.h" >/dev/null
 done
 CC="${CC:-cc} -O1 -w -DSYNTHMAVEN_SYNTH=1 -Ibuild/gen -Ifirmware/src -Ifirmware/hal"
-for t in synthmaven_test synthmaven_storage_test synthmaven_ui_test synthmaven_stock_test; do
+for t in synthmaven_test synthmaven_storage_test synthmaven_ui_test synthmaven_stock_test hybrid_editor_test; do
  $CC -o "build/host/$t" "tests/$t.c" -lm
- "build/host/$t"
+ if [ "$t" = hybrid_editor_test ]; then "build/host/$t" build/host/hy_factory.json; else "build/host/$t"; fi
 done
 $CC -o build/host/midi_uart_test tests/midi_uart_test.c -lm
 build/host/midi_uart_test

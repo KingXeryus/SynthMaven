@@ -56,7 +56,7 @@ void shim_task_end(int pid);
 uint32_t shim_irq_hold(void);         /* SHIM_WIFI: interrupts off; the current nesting (a task switch) */
 void shim_irq_resume(uint32_t depth); /* SHIM_WIFI: a task resumes: its nesting, interrupts on at 0 */
 void shim_timers_post(void);          /* due timers posted to their owners (a task's idle) */
-void shim_delay_us(uint32_t us);      /* a busy wait in RAM (.ram_text), the watchdog fed: the radio trim's delays */
+void shim_delay_us(uint32_t us);      /* a busy wait in RAM (.radio_ram): the radio trim's delays */
 void shim_log(const char *s);         /* a line for the screen's log */
 int shim_store_load(void *dst, uint32_t max);   /* syscfg's flash object */
 int shim_store_save(const void *src, uint32_t len);
