@@ -1,6 +1,6 @@
 # Native Bluetooth MIDI integration status
 
-The development branch integrates the [fm1-base BLE MIDI runtime](https://github.com/charlesvestal/fm1-base), pinned at fa7b203e6803a23a8be0bf560c46d07db836ee89. The public 0.2 installer predates this integration. Do not infer hardware support from simulated editor tests.
+The development branch integrates the [fm1-base BLE MIDI runtime](https://github.com/charlesvestal/fm1-base), pinned at fa7b203e6803a23a8be0bf560c46d07db836ee89. Version 0.2 predates this integration. Do not infer hardware support from simulated editor tests.
 
 The port includes central scan, explicit device selection, GATT discovery/subscription, disconnect controls, timestamp/running-status decoding, a dedicated MIDI queue and persisted radio configuration. The driver and upstream licence notices are in `firmware/vendor/fm1-base`.
 
@@ -15,3 +15,9 @@ Native USB MIDI host support remains absent. A power bank supplies power, not a 
 ## Published 0.2 baseline
 
 Actions run 40228205416 compiled all engines and 41 stock FM6 voices. The optimized image measured 553352 bytes of 581564 app flash, 75352 bytes of 98304 static RAM, and 313024 bytes of 344064 pool. These measurements do not describe the new BLE development build.
+
+## Native 0.3 target validation
+
+[Actions run 40231787333](https://github.com/KingXeryus/SynthMaven/actions/runs/40231787333) built the complete native BLE firmware and package. The optimized image is 578456 bytes (of 581564), static RAM is 91092 bytes (of 98304), low-SRAM data is 24832 bytes (of 25672 remaining after RAM code), and the pool is 329008 bytes (of 344064). All enforced region bounds pass. The flash driver contains 932 instructions with no calls; radio calibration runs separately in `.radio_ram`. The package is 610045 bytes.
+
+Host validation covers MIDI routing, persistent settings, interrupted radio journal writes, explicit peer selection, real-state reporting, Korg/default patch mappings and lossless WAVE reconstruction/rendering. This establishes a buildable development package, not a hardware-validated Chocolate connection.

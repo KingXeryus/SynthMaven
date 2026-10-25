@@ -8,7 +8,7 @@ SynthMaven is an open-source firmware based on [Clipper](https://github.com/isod
 
 ## Development status
 
-**Development firmware; hardware validation is outstanding.** Native BLE builds include MIDI pedal discovery, explicit device selection, connection and disconnect controls. Original Chocolate and Chocolate Plus pairing, reconnect and audio timing still need testing on the FM1. The public 0.2 package predates this integration.
+**Development firmware; hardware validation is outstanding.** Native BLE builds include MIDI pedal discovery, explicit device selection, connection and disconnect controls. Original Chocolate and Chocolate Plus pairing, reconnect and audio timing still need testing on the FM1. Version 0.2 predates this integration.
 
 Native USB host support is not implemented. Selecting USB input means device-mode MIDI from a host; a USB keyboard or USB pedal cannot connect directly using a power bank alone. TRS keyboard plus BLE pedal is the intended computer-free combination.
 
@@ -35,7 +35,7 @@ Tap SAVE to PRESETS. Four names are visible per page (fewer in a short final pag
 | KNOB 3 clockwise | Load highlighted patch |
 | KNOB 4 clockwise | Load patch and open EDIT macro pages |
 
-This replaces the synth browser's FAV knob action; existing favourites are retained. HOME browsing and groovebox mode retain their original operation. The web editor provides a matching four-patch user-preset browser with Load/Edit actions. Full DX7 operator editing remains in the web FM6 panel.
+This replaces the synth browser's FAV knob action; existing favourites are retained. HOME browsing remains available. The web editor provides a matching four-patch user-preset browser with Load/Edit actions. Full DX7 operator editing remains in the web FM6 panel.
 
 ## MIDI settings
 
