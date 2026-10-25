@@ -8,8 +8,8 @@
  * right, as if MASTER were all the way up: the picture does not follow the volume knob, even at 0), the tracks' peaks (fx.c / drums.c, as the TRACKS meters read them), the notes that started
  * (voice.c vis_hit) and the transport clock. Everything is drawn in the main loop, every other frame, in two
  * bands of 120 rows (the canvas holds 124): no cost to the audio. */
-#if CLIPPER_SYNTH
-/* Clipper 0.3: no full-screen visualiser (its code and its 5.5 KB of the pool go to the synth); HOME keeps its scope */
+#if SYNTHMAVEN_SYNTH
+/* SynthMaven 0.3: no full-screen visualiser (its code and its 5.5 KB of the pool go to the synth); HOME keeps its scope */
 #define VIS_N 1u
 static const char *const VIS_NAME[VIS_N] = {"OFF"};
 static int vis_shown(void) { return 0; }
@@ -19,7 +19,7 @@ static void vis_select(int32_t s) { (void)s; }
 #else
 #define VIS_N 12u
 static const char *const VIS_NAME[VIS_N] = {"OSCILLOSCOPE", "SPECTRUM", "SPECTROGRAM", "LISSAJOUS", "VU METERS",
-                                            "CIRCLE", "TAPE", "LCD", "BOUNCE", "ORBIT", "WIRES", "CLIPPER"};
+                                            "CIRCLE", "TAPE", "LCD", "BOUNCE", "ORBIT", "WIRES", "SYNTHMAVEN"};
 /* vis_on, vis_shown_last, vis_name_t: ui_draw.c; vis_style: panel.c (kept with the settings) */
 #define VIS_FFT 512u
 #define VIS_SG_W 48u                                /* spectrogram: 48 columns of 5 px, 72 rows of 3 px */
@@ -44,9 +44,9 @@ static struct {
 static const uint8_t VIS_EDGE[33] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 25, 29, 35,
                                      41, 49, 58, 69, 82, 98, 116, 138, 164, 195, 232};
 
-static int vis_shown(void)   /* (over the TRACKS screen; Clipper: over HOME) */
+static int vis_shown(void)   /* (over the TRACKS screen; SynthMaven: over HOME) */
 {
-    return vis_on && !ui.menu && (CLIPPER_SYNTH ? ui.home : !ui.home && cur_page()->scope == SC_TRK);
+    return vis_on && !ui.menu && (SYNTHMAVEN_SYNTH ? ui.home : !ui.home && cur_page()->scope == SC_TRK);
 }
 static void vis_open(void)
 {

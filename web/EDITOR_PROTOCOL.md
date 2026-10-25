@@ -413,7 +413,7 @@ Backup object **9** is the four kits (`dsu_bank_t`, 1464 bytes: "DSU1", version 
 crush, src, 2 reserved, 16 x 22). Its commit answers rc 3 while the song plays. A device before v10 answers the
 begin of object 9 with rc 5: the editor skips it (as object 8 on a v8 device).
 
-## v11: HYBRID patches (Clipper)
+## v11: HYBRID patches (SynthMaven)
 
 The HYBRID engine (`firmware/src/eng_hybrid.c`, engine 12) plays a 128-byte patch on each synth part
 (`hy_patch_t`; the editor's `HY` module packs and unpacks it field by field). INFO ends with protocol 11.
@@ -436,7 +436,7 @@ ENV2 35..38 and ENV3 39..42 (A D S R), LFO 2 and 3 43..50 (4 each: wave, rate, f
 fade), the matrix 51..114 (16 slots of source, via, destination, amount -64..63), bend range 115 (0..24), level 116,
 0 at 117, the name 118..127 (ASCII, NUL-padded).
 
-## v12: FMX patches (Clipper 0.6)
+## v12: FMX patches (SynthMaven 0.6)
 
 The FMX engine (`firmware/src/eng_fmx.c`, engine 19) plays a 128-byte patch on each synth part (`fmx_patch_t`, every
 byte 0..127; the editor's `FX` module packs and unpacks it). INFO ends with protocol 12.
@@ -461,7 +461,7 @@ scaling, detune 0..14 with 7 in tune), the routing 72..107 (`mod[to][from]`, 0..
 feedback), the outputs 108..113, the template it came from 114 (1..40, 0 none), the pitch envelope 115 (64 none, +-24
 semitones) and its time 116, the level 117 (100 unity), the name 118..127.
 
-## v13: the MOD SEQ (Clipper 0.8)
+## v13: the MOD SEQ (SynthMaven 0.8)
 
 INFO ends with 13. Each synth part (0 the instrument, 1 the layer) has a MOD SEQ (`seq.c mseq_tick`): four lanes of
 16 steps, each -8..7, read by the matrix as the sources SEQ1..SEQ4 (`MS_SEQ1..MS_SEQ4`, 11..14). Its RATE, LEN, SMTH,
@@ -481,7 +481,7 @@ START (ids 83..86) and SPICE, DICE (87, 88: the arp's and the sequencer's notes 
 - 0.8 also has the engines JUNO (21) and VECTOR (22), and the INSERT's types JUNO1, JUNO2, JUN12 (9..11: the JUNO
   chorus on any sound; A WIDTH, B TONE, C NOISE).
 
-## v14: the TUNING (Clipper 0.9)
+## v14: the TUNING (SynthMaven 0.9)
 
 INFO ends with 14. 0.9 adds two parameters before P_E0: VINTAGE (89, VOICE 2: each voice's own tuning, drift and
 cutoff, 0..127) and LOOP (90, the SPICE page: 1..16, how many notes SPICE / DICE and the TURNG arp repeat); P_E0 is 91,
@@ -493,7 +493,7 @@ a scale sent here (a Scala .scl file: the editor reads it):
 
 | cmd | name | request | reply |
 |---|---|---|---|
-| 95 | TUNE_GET | - | rc, system, root, n, period (3 bytes), n - 1 degrees (3 bytes each), (Clipper 1.0) A4 - 400 Hz |
+| 95 | TUNE_GET | - | rc, system, root, n, period (3 bytes), n - 1 degrees (3 bytes each), (SynthMaven 1.0) A4 - 400 Hz |
 | 96 | TUNE_PUT | system, root, n, period (3 bytes), n - 1 degrees (3 bytes each) [, A4 - 400 Hz] | rc |
 
 - system 0..13: EQUAL, JUST, PYTHA, MEANT, WERCK (Werckmeister III), KIRNB (Kirnberger III), RAST, BAYAT, SLEND,
@@ -501,12 +501,12 @@ a scale sent here (a Scala .scl file: the editor reads it):
 - The USER scale: n 1..48 degrees (the first, 0, not sent), the period and the degrees in 1/16 cent, each 21 bits as
   3 bytes of 7 bits (low first). The degrees rise and stay below the period (16..65535). Each key plays the next degree;
   a period other than 1200 cents (the tritave of Bohlen-Pierce, ...) is kept as it is.
-- (Clipper 1.0) the reference A4, 400..480 Hz, as one byte (0..80) after the degrees: GET always sends it, PUT takes it
+- (SynthMaven 1.0) the reference A4, 400..480 Hz, as one byte (0..80) after the degrees: GET always sends it, PUT takes it
   optionally (without it, A4 stays as it is). 0.9 sends none and refuses a PUT with it: send it only when GET gave one.
 - rc 0 ok, 1 bad request (a system / root out of range, n 0 or above 48, the bytes not as n says, degrees not rising).
   TUNE_PUT keeps the scale even when another system plays (USER plays it); the settings are written a few seconds later.
 
-## Clipper 1.0: the same protocol (14), a larger layout
+## SynthMaven 1.0: the same protocol (14), a larger layout
 
 No new command: INFO still ends with 14 and reports the layout. 1.0 adds 27 parameters before P_E0 and one global:
 

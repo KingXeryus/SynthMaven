@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.3: the synth's own pages (scope SC_SYN, params.c): the LAYER, the A/B MORPH and the RANDOMIZER.
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.3: the synth's own pages (scope SC_SYN, params.c): the LAYER, the A/B MORPH and the RANDOMIZER.
  *   LAYER    MODE (OFF, LAYER, SPLIT, MULTI), SOUND (any factory or user sound for track 2), SPLIT (track 1 from that
  *            note up, track 2 below; MULTI: CH, the MIDI channel track 2 answers on its own, every other channel and
  *            the keys playing track 1: bi-timbral, 0.6), LEVEL; LAYER 2: OCT, PAN, FILT (track 2's), SWAP (the two sounds trade places: the
@@ -23,7 +23,7 @@ enum { X_LYMODE, X_LYSOUND, X_LYSPLIT, X_LYLEVEL, X_LYOCT, X_LYPAN, X_LYFILT, X_
        X_MIN, X_MOUT,                                  /* 1.0: GLO > MIDI, the instrument's channels (seq.c midi_in_ch) */
        X_MBEND, X_MLOCAL, X_MPROG, X_MCCO,             /* 1.0: the bend range (voice.c midi_bend), LOCAL, PROG, CC OUT */
        X_MBRTH,                                        /* 1.0: EWI (seq.c midi_breath) */
-       X_COUNT };
+       X_SMPORT, X_SMKEY, X_SMBT, X_SMPAIR, X_COUNT };
 static void mseq_fill(struct track *t, uint32_t l, uint32_t f);
 static const char *const N_QFILL[] = {"--", "RAMP+", "RAMP-", "TRI", "SINE", "SQR", "RND", "FLAT", "INVRT", "SHIFT"};
 enum { QF_NONE, QF_UP, QF_DOWN, QF_TRI, QF_SINE, QF_SQR, QF_RND, QF_FLAT, QF_INV, QF_SHIFT, QF_N };
@@ -41,6 +41,8 @@ _Static_assert(X_FOP == 19 && X_FSTORE == 40 && X_HPOS == 41 && X_QLANE == 43 &&
 static const char *const N_CMP[] = {"EDIT", "ORIG"};
 static const char *const N_MIN_CH[17] = {"OMNI", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
                                          "15", "16"};
+static const char *const N_SM_PATCH[] = {"USB", "BLE", "ANY"};
+static const char *const N_SM_KEY[] = {"USB", "TRS", "BOTH"};
 static const char *const N_MBEND[25] = {"AUTO", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13",
                                         "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"};
 static const char *const N_MCCO[] = {"OFF", "CC"};   /* (5 characters a value: "IN+OUT" did not fit) */
@@ -96,6 +98,10 @@ static const param_desc_t XD[X_COUNT] = {
     [X_MBEND] = PE("BEND", N_MBEND, 0),
     [X_MLOCAL] = PE("LOCAL", N_ONOFF, 1),
     [X_MPROG] = PE("PROG", N_ONOFF, 1),
+    [X_SMPORT] = PE("PORT", N_SM_PATCH, 2),
+    [X_SMKEY] = PE("KEY IN", N_SM_KEY, 2),
+    [X_SMBT] = PE("BT MIDI", N_ONOFF, 0),
+    [X_SMPAIR] = PE("PAIR", N_GO, 0),
     [X_MCCO] = PE("SEND", N_MCCO, 0),
     [X_MBRTH] = PE("EWI", N_MBRTH, 0),       /* (a breath controller, CC 2) */
     [X_FSTORE] = PE("STORE", N_GO, 0),
@@ -209,7 +215,7 @@ static void hist_commit(void)                         /* what changed since the 
  * sound loaded the new ORIG (hist_poll, the next frame) */
 static void hist_before_load(void)
 {
-    if (!CLIPPER_SYNTH || !hist_ready || hist_load_req)
+    if (!SYNTHMAVEN_SYNTH || !hist_ready || hist_load_req)
         return;                                       /* (a load under way this frame: one step for all of it) */
     if (hist_cmp_on)                                  /* (comparing: the edits back first, as a step) */
         hist_cur = hist_cmp, hist_cmp_on = 0;
@@ -597,6 +603,14 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
     case X_MBEND: xv[X_MBEND] = (int16_t)(midi_bend % 25u); *valp = &xv[X_MBEND]; break;
     case X_MLOCAL: xv[X_MLOCAL] = !midi_local_off; *valp = &xv[X_MLOCAL]; break;
     case X_MPROG: xv[X_MPROG] = !midi_pc_off; *valp = &xv[X_MPROG]; break;
+    case X_SMPORT: {
+        static param_desc_t d;
+        xv[X_SMPORT] = sm_patch_port; *valp = &xv[X_SMPORT]; d = XD[X_SMPORT];
+        if (midi_pc_off) d.min = d.max = sm_patch_port;
+        return &d;
+    }
+    case X_SMKEY: xv[X_SMKEY] = sm_key_port; *valp = &xv[X_SMKEY]; break;
+    case X_SMBT: xv[X_SMBT] = sm_bluetooth; *valp = &xv[X_SMBT]; break;
     case X_MCCO: xv[X_MCCO] = midi_cc_out != 0u; *valp = &xv[X_MCCO]; break;
     case X_MBRTH: xv[X_MBRTH] = (int16_t)(midi_breath % 3u); *valp = &xv[X_MBRTH]; break;
     case X_QVAL:                                      /* (0.8) the selected step of the selected lane */
@@ -756,6 +770,21 @@ static void syn_changed(uint32_t id, int16_t *vp)
         panic_req |= 1u;                              /* (a key held: none stuck) */
         settings_later = 1;
         break;
+    case X_SMPORT:
+        if (midi_pc_off) { ui_message("ENABLE PROG FIRST"); break; }
+        if (sm_set(*vp, sm_key_port, sm_bluetooth)) ui_message("BLE NOT AVAILABLE");
+        else settings_later = 1;
+        break;
+    case X_SMKEY:
+        sm_set(sm_patch_port, *vp, sm_bluetooth); settings_later = 1;
+        if (*vp == 0) ui_message("USB HOST REQUIRED");
+        break;
+    case X_SMBT:
+        if (sm_set(sm_patch_port, sm_key_port, *vp)) ui_message("BLE NOT AVAILABLE");
+        else settings_later = 1;
+        break;
+    case X_SMPAIR:
+        *vp = 0; ui_message("BLE NOT AVAILABLE"); break;
     case X_MPROG:
         midi_pc_off = !*vp;
         settings_later = 1;
@@ -878,8 +907,18 @@ static void syn_tick(void)
                                                        * in order, then the user presets) */
         midi_pc_req = 0;
         base_pos(&total);
-        if (pc - 1u < total)
+        /* Bank MSB 127 addresses physical user slots, independent of factory count,
+         * favourites or gaps. Standard banks retain their existing list mapping. */
+        if (((pc - 1u) >> 7) == 127u) {
+            uint32_t slot = (pc - 1u) & 127u;
+            if (slot < UP_SLOTS && up_used(slot))
+                up_load(slot);
+            else
+                ui_message("EMPTY USER SLOT");
+        } else if (pc - 1u < total)
             preset_go(fav_list(b) + pc - 1u);
+        br_valid = 0;
+        ui.force = 1;
     }
     if (r >= 0) {
         syn_morph_req = -1;

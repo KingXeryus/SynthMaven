@@ -42,10 +42,10 @@ class Link:
         except ImportError:
             sys.exit("needs mido: pip install mido python-rtmidi")
         self.mido = mido
-        outs = [n for n in mido.get_output_names() if "Clipper" in n or "Felucca" in n]
-        ins = [n for n in mido.get_input_names() if "Clipper" in n or "Felucca" in n]
+        outs = [n for n in mido.get_output_names() if "SynthMaven" in n or "Felucca" in n]
+        ins = [n for n in mido.get_input_names() if "SynthMaven" in n or "Felucca" in n]
         if not outs or not ins:
-            sys.exit("no MIDI port named Clipper: connect the FM-1 (running Clipper) by USB")
+            sys.exit("no MIDI port named SynthMaven: connect the FM-1 (running SynthMaven) by USB")
         self.o = mido.open_output(outs[0])
         self.i = mido.open_input(ins[0])
         for _ in range(3):                          # the first frame after opening the port can be lost
@@ -138,4 +138,4 @@ if __name__ == "__main__":
     try:
         main()
     except TimeoutError as e:
-        sys.exit(f"{e}: is Clipper running, and no other app using its MIDI port?")
+        sys.exit(f"{e}: is SynthMaven running, and no other app using its MIDI port?")

@@ -127,7 +127,7 @@ static uint32_t keys_lit(void)
             return (blink ? scale_keys(1) : 0u) | keys_sounding(t) | fm1_in.notes;
         return scale_keys(0) & ~(blink ? 0u : scale_keys(1));
     case LY_MIX:                                   /* tracks heard: 1..4; soloed: 5..8; a fill: 9, armed / on: 10; tap: the beat */
-        for (i = 0; i < 4u && !CLIPPER_SYNTH; i++) {   /* (Clipper: one instrument, no mute / solo) */
+        for (i = 0; i < 4u && !SYNTHMAVEN_SYNTH; i++) {   /* (SynthMaven: one instrument, no mute / solo) */
             if (!trk_silent(&trk[i]))
                 m |= 1u << key_of_white(i);
             if ((song.solo >> i) & 1u)
@@ -469,7 +469,7 @@ static void project_new(void)
     }
     TDRUM->p[P_E0] = DRUM_DEFAULT_KIT;
     for (i = 0; i < G_COUNT; i++)
-        if (i != G_SLOT && (i != G_DRCH || CLIPPER_SYNTH) && i != G_SYNC && i != G_MIDI && i != G_ROUTE)
+        if (i != G_SLOT && (i != G_DRCH || SYNTHMAVEN_SYNTH) && i != G_SYNC && i != G_MIDI && i != G_ROUTE)
             song.g[i] = GP[i].def;
     song.solo = 0;
     song.octave = 0;
@@ -500,8 +500,18 @@ static void edit_param(uint32_t slot, int32_t steps)
             br_step(steps);
         } else if (slot == 1u && !is_drum(TSEL)) {
             br_filter_step(steps > 0 ? 1 : -1);
+#if SYNTHMAVEN_SYNTH
+        } else if ((slot == 2u || slot == 3u) && steps > 0 && !is_drum(TSEL)) {
+            uint32_t pos;
+            if (br_count(&pos)) {
+                preset_go(br_current());
+                if (slot == 3u)
+                    open_family(FAM_EDIT);
+            }
+#else
         } else if (slot == 3u && !is_drum(TSEL)) {          /* (0.7) KNOB 4: FAV, right adds the sound, left removes it */
             fav_toggle(steps > 0);
+#endif
         }
         return;
     }
@@ -528,7 +538,7 @@ static void edit_param(uint32_t slot, int32_t steps)
     if (!d || !vp || d->max == d->min)
         return;
     v = clamp(*vp + accel(EN_K1 + slot, steps, d->names ? 0 : d->max - d->min), d->min, d->max);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     {
         int32_t old = *vp;
         *vp = (int16_t)v;
@@ -537,7 +547,7 @@ static void edit_param(uint32_t slot, int32_t steps)
 #else
     *vp = (int16_t)v;
 #endif
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     if (pg->scope == SC_SYN) {                            /* the layer, MORPH, RANDOM (ui_synth.c) */
         syn_changed(id, vp);
         return;
@@ -765,8 +775,8 @@ static void layer_tap(uint32_t layer)
         open_family(FAM_GLO);
         break;
     case LY_SONG:                                         /* SAVE tapped: TRACKS -> the song, else the SAVE pages */
-        if (CLIPPER_SYNTH)
-            open_family(FAM_SAVE);                        /* (Clipper: no song: the SAVE pages) */
+        if (SYNTHMAVEN_SYNTH)
+            open_family(FAM_SAVE);                        /* (SynthMaven: no song: the SAVE pages) */
         else if (on_song_page())
             arrangement_save();
         else if (!ui.home && cur_page()->scope == SC_TRK)
@@ -829,7 +839,7 @@ static int layers_input(uint32_t note_edges, uint32_t *pressed, uint32_t home)
         if (d && note_edges)
             used[l] = 1;                                  /* a key while held: not a tap */
         if (!d && down[l] && !used[l] && (now - t0[l] < TAP_MS || !ly_on(l)) && !ui.menu && !ui.confirm)
-            layer_tap(l);                                 /* (Clipper: a button with no layer opens its pages
+            layer_tap(l);                                 /* (SynthMaven: a button with no layer opens its pages
                                                            * on release however long it was held) */
         if (!d && down[l] && l == LY_SONG)
             chain_release();                              /* SAVE let go: the section taps of the hold (ui_layers.c) */
@@ -986,16 +996,16 @@ static void holds_input(uint32_t pressed, uint32_t now_ms)
         track_t *t = &trk[ui.hold_trk % NTRK];
         char b[12] = "1 CLEARED";
         undo_mark(t, (undo_sess += 4u) | 3u);
-        if (CLIPPER_SYNTH)
+        if (SYNTHMAVEN_SYNTH)
             str_cpy(b, "CLEARED", sizeof b);
         fm1_irq_off();
         track_defaults_steps(t);
         t->nheld = 0;                                     /* and the latched arp chord */
         t->arp_phys = 0;
         fm1_irq_on();
-        if (!CLIPPER_SYNTH)
+        if (!SYNTHMAVEN_SYNTH)
             b[0] = (char)('1' + ui.hold_trk);
-        ui_say(CLIPPER_SYNTH ? "PATTERN " : "TRACK ", b);
+        ui_say(SYNTHMAVEN_SYNTH ? "PATTERN " : "TRACK ", b);
         ui.hold_kind = 0;
         rec_on = 0;                                       /* (until REC is up: nothing more) */
         ui.force = 1;
@@ -1016,9 +1026,9 @@ static void ui_input(void)
     uint32_t home = btn_hold(&ui.home_t0, B_HOME, now, 1);
     int32_t s;
     int layered;
-    if (CLIPPER_SYNTH && song.sel)                      /* Clipper: one instrument (an editor, an old project) */
+    if (SYNTHMAVEN_SYNTH && song.sel)                      /* SynthMaven: one instrument (an editor, an old project) */
         song.sel = 0;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     syn_tick();                                         /* MIDI CC 20: MORPH */
 #endif
     enc_hold = 0;                                       /* (panel.c: every knob readable again this pass) */
@@ -1095,7 +1105,7 @@ static void ui_input(void)
     }
 #endif
     if (home == BT_TAP) {                               /* HOME acts on release: a hold opens the menu */
-        if ((CLIPPER_SYNTH ? ui.home : !ui.home && cur_page()->scope == SC_TRK) && !vis_on)
+        if ((SYNTHMAVEN_SYNTH ? ui.home : !ui.home && cur_page()->scope == SC_TRK) && !vis_on)
             vis_open();                                 /* HOME on HOME: the visualiser (ui_vis.c) */
         else {
             vis_on = 0;                                 /* (HOME again: back to the TRACKS screen) */
@@ -1175,9 +1185,13 @@ static void ui_input(void)
         else if (total)
             preset_go((uint32_t)(((int32_t)cur + s % (int32_t)total + (int32_t)total) % (int32_t)total));
     }
-#if CLIPPER_SYNTH
-    if ((s = panel_enc(EN_ALGO)) != 0 && (ui.home || cur_page()->graph == GR_BROWSE))
-        preset_kind_jump(s);                            /* Clipper: ALGORITHM, the kind of sound (BASS, KEYS, PAD...) */
+#if SYNTHMAVEN_SYNTH
+    if ((s = panel_enc(EN_ALGO)) != 0 && (ui.home || cur_page()->graph == GR_BROWSE)) {
+        if (!ui.home && cur_page()->graph == GR_BROWSE)
+            br_filter_step(s > 0 ? 1 : -1);
+        else
+            preset_kind_jump(s);
+    }
 #else
     if ((s = panel_enc(EN_ALGO)) != 0 && !ft_on)     /* ALGORITHM: the selected track, on every page (not in a take) */
         track_select((uint32_t)clamp((int32_t)song.sel + (s > 0 ? 1 : -1), 0, NTRK - 1));
@@ -1209,7 +1223,7 @@ static void ui_input(void)
             const param_desc_t *d = home_param(k, &vp);
             int32_t old = *vp;
             *vp = (int16_t)clamp(*vp + accel(EN_K1 + k, s, d->names ? 0 : d->max - d->min), d->min, d->max);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
             cc_out_knob(vp, old);                     /* (1.0) CC OUT */
 #endif
             (void)old;

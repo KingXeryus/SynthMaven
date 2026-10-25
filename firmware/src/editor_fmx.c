@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* v12 (Clipper 0.6): the FMX engine's patches (eng_fmx.c), EDITOR_PROTOCOL.md "FMX patches".
+ * Copyright (C) 2026 3dSam */
+/* v12 (SynthMaven 0.6): the FMX engine's patches (eng_fmx.c), EDITOR_PROTOCOL.md "FMX patches".
  *   FMX_GET    target, index        -> target, index, rc, [pack7 of the 128-byte patch]
  *              target 0: the part `index` plays now (0..2), 1: factory patch `index`, 2: bank slot `index` (0..26:
  *              an FMX record as it is, a DX7 voice converted, an empty slot rc 2)
@@ -68,12 +68,12 @@ static int ed_fmx_handle(uint32_t cmd, const uint8_t *a, uint32_t n)
     return 0;
 }
 
-/* v13 (Clipper 0.8): the MOD SEQ's steps of a part (its RATE LEN SMTH START, SPICE, DICE: parameters as any other)
+/* v13 (SynthMaven 0.8): the MOD SEQ's steps of a part (its RATE LEN SMTH START, SPICE, DICE: parameters as any other)
  *   MSEQ_GET  part              -> part, rc, 64 bytes (lane 1's 16 steps, then lane 2's ..: each value + 8, 0..15)
  *   MSEQ_PUT  part, 64 bytes    -> part, rc        the part's steps at once (each clamped to -8..7)
  * rc: 0 ok, 1 bad request */
 enum { ED_MSEQ_GET = 93, ED_MSEQ_PUT, ED_TUNE_GET, ED_TUNE_PUT };
-/* v14 (Clipper 0.9): the TUNING (voice.c tune_cfg), kept with the settings
+/* v14 (SynthMaven 0.9): the TUNING (voice.c tune_cfg), kept with the settings
  *   TUNE_GET                                   -> rc, system, root, n, period (3 x 7 bits), n - 1 degrees (3 x 7 bits),
  *                                                 (1.0) A4 - 400 Hz (0..80)
  *   TUNE_PUT  system, root, n, period, degrees [, A4 - 400] -> rc   (the USER scale: n 1..48 degrees of a period, 1/16

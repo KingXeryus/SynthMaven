@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* WSEQ: wave sequencing (Clipper 0.6, after the Korg Wavestation and wavestate: the idea, not any code). Each note
+ * Copyright (C) 2026 3dSam */
+/* WSEQ: wave sequencing (SynthMaven 0.6, after the Korg Wavestation and wavestate: the idea, not any code). Each note
  * plays a sequence of steps, each its own wave, pitch and level, one after the other at the song's tempo, the next
  * one fading in over the end of the one before (XFADE): rhythmic, stepping timbres from a single key, or (long steps,
  * full crossfade) a sound that keeps changing.

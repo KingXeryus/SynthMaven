@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 1.0 (CLIPPER_SYNTH 1): SPREAD, the matrix's 12 slots, LFO 3, ENV 2 LOOP, the MACROS, HALL and SHIMMER,
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 1.0 (SYNTHMAVEN_SYNTH 1): SPREAD, the matrix's 12 slots, LFO 3, ENV 2 LOOP, the MACROS, HALL and SHIMMER,
  * the delay's PING and TAPE, and where they are kept.
  *   SPREAD   0: left = right, bit for bit; up: the voices apart (left != right), the middle ((L + R) / 2) as at 0
  *   MATRIX   slots 7..12 move the sound; an AMT of 0 there: bit for bit as no slot; the sources LFO 3 and MAC1..4
@@ -22,7 +22,7 @@
 #include "hostsim.c"
 #undef main
 #define PROJ_HOST 1
-static const uint8_t TRK_DEF[NPART][2] = {{ENGI_HYBRID, 0}, {1, 0}, {4, 5}};   /* (ui.c, Clipper) */
+static const uint8_t TRK_DEF[NPART][2] = {{ENGI_HYBRID, 0}, {1, 0}, {4, 5}};   /* (ui.c, SynthMaven) */
 static uint32_t trk_def_engine(uint32_t i) { return i < NPART ? TRK_DEF[i][0] : 0u; }
 #include "../firmware/src/project.c"
 #define UP_HOST 1
@@ -658,7 +658,7 @@ int main(void)
     host_tracks_init();
     for (i = 0; i < NPART; i++)
         host_preset(&trk[i], TRK_DEF[i][0], TRK_DEF[i][1]);
-    clipper_proj_neutral();
+    synthmaven_proj_neutral();
     trk[1].p[P_LYMODE] = LY_OFF;
     t_spread();
     t_matrix();

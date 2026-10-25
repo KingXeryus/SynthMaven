@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.7, the voices on both cores (voice.c track_render, vs_finish): every preset of every engine, a chord of
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.7, the voices on both cores (voice.c track_render, vs_finish): every preset of every engine, a chord of
  * six notes at six velocities, held then released, rendered with the split (cpu1_units -1) and without (0): the same
  * output, bit for bit. Half the cases with a matrix slot moving an EDIT value (the late voices: after the wait; such a
  * part stays on this core), the others handed over (ACID: one voice, never). (1.0) Half with SPREAD (the voices'
@@ -25,7 +25,7 @@ static uint64_t render_case(uint32_t e, uint32_t pi, int matrix, int32_t units, 
     host_tracks_init();
     for (i = 0; i < NPART; i++)
         host_preset(&trk[i], i ? 1u : e, i ? 0u : pi);
-    clipper_proj_neutral();
+    synthmaven_proj_neutral();
     trk[1].p[P_LYMODE] = LY_OFF;
     trk[0].p[P_VOICE] = V_POLY;
     if (matrix) {                                   /* LFO 1 -> the engine's second EDIT value, and VEL -> its fifth */

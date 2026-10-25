@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-# Copyright (C) 2026 3dSam (Clipper)
-"""VECTOR's waves (firmware/src/eng_vector.c, Clipper 0.8): 16 single cycles of Clipper's own, each in three
+# Copyright (C) 2026 3dSam
+"""VECTOR's waves (firmware/src/eng_vector.c, SynthMaven 0.8): 16 single cycles of SynthMaven's own, each in three
 band-limited copies (the voice reads the one whose top harmonic stays under ~20 kHz at its pitch):
   512 points, harmonics to the 96th (notes to ~208 Hz), 128 points to the 24th (~833 Hz), 32 points to the 6th.
 Written to firmware/src/vector_tables.h (committed: no build step). Usage: python3 tools/gen_vector.py [out.h]

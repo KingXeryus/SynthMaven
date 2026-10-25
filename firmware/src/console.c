@@ -172,7 +172,7 @@ static void con_flr(const char *p)                  /* flash read over SPI (no X
 static void con_status(void)
 {
     const engine_t *e = ENGINES[TSEL->eng_req % NENGINES];
-    con_puts(FELUCCA_VERSION);   /* CLIPPER 0.1 */
+    con_puts(FELUCCA_VERSION);   /* SYNTHMAVEN 0.1 */
     con_puts("\r\n");
     con_kv("uptime_ms", (int32_t)fm1_ms);
     con_kv("cpu_pct", (int32_t)(song.cpu_q8 * 100u / 256u));
@@ -181,7 +181,7 @@ static void con_status(void)
     con_kx("cpu1_trace", fm1_c1_trace);
     con_kv("cpu1_timeouts", (int32_t)cpu1_timeouts);
     con_kv("cpu1_units", cpu1_units);                    /* -1 the voices split, 0 off (menu 2ND CORE) */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     con_kv("cpu1_blocks", (int32_t)vs_jobs);             /* blocks a part's voices went to both cores (voice.c) */
     con_kv("cpu1_voices", (int32_t)vs_split);            /* .. voices it rendered in all */
 #endif

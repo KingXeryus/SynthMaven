@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper), after Leo Kuroshita (@kurogedelic), Hügelton Instruments (Felucca) */
-/* HYBRID: the Clipper voice. Three oscillators, two filters, two envelopes and two LFOs of its own per voice,
+ * Copyright (C) 2026 3dSam, after Leo Kuroshita (@kurogedelic), Hügelton Instruments (Felucca) */
+/* HYBRID: the SynthMaven voice. Three oscillators, two filters, two envelopes and two LFOs of its own per voice,
  * and a 16-slot modulation matrix, on top of what every engine gets from voice.c (the amplitude ADSR, the
  * part's LFO, glide, unison, the pitch envelope).
  *
@@ -38,7 +38,7 @@
 #define HY_SUPER 7u
 
 enum { HO_OFF, HO_SAW, HO_PULSE, HO_TRI, HO_SINE, HO_MORPH, HO_SUPER, HO_FM, HO_SYNC, HO_FOLD, HO_NOISE, HO_N };
-enum { HF_OFF, HF_LP12, HF_LP24, HF_BP, HF_HP, HF_NOTCH, HF_PEAK, HF_MOOG, HF_N };   /* (MOOG: Clipper 0.2) */
+enum { HF_OFF, HF_LP12, HF_LP24, HF_BP, HF_HP, HF_NOTCH, HF_PEAK, HF_MOOG, HF_N };   /* (MOOG: SynthMaven 0.2) */
 enum { HR_SER, HR_PAR, HR_SPLIT, HR_N };
 enum { HW_SINE, HW_TRI, HW_SAW, HW_SQR, HW_SH, HW_SMOOTH, HW_N };   /* the voices' LFO waves */
 /* matrix sources: Q15, bipolar (LFOs, KEY, BEND, RAND) or unipolar (the rest) */
@@ -178,7 +178,7 @@ static inline int32_t hy_damp(int32_t res) { return 8192 - clamp(res, 0, 127) * 
 /* one SVF stage over a buffer: one loop per output (the choice made once a block, not per sample). Inputs within
  * +-60000 (the mix is, by construction; hybrid_render bounds a filter's output going into another): with the states
  * clamped at +-150000 every product fits in 32 bits at any cutoff and resonance (checked over the whole table) */
-/* Clipper 0.2: the states saturate softly above 96000 (a tanh knee towards 150000) instead of being cut there:
+/* SynthMaven 0.2: the states saturate softly above 96000 (a tanh knee towards 150000) instead of being cut there:
  * a screaming resonance rounds off like an analog one instead of clipping */
 static inline int32_t hsvf_sat(int32_t x)
 {
@@ -346,7 +346,7 @@ static inline int32_t hy_saw(uint32_t ph, uint32_t inc)
     return s;
 }
 
-/* Clipper 0.2: how far an index (FM, feedback, fold) may go at this pitch before its partials pass 20 kHz and fold
+/* SynthMaven 0.2: how far an index (FM, feedback, fold) may go at this pitch before its partials pass 20 kHz and fold
  * back: (20 kHz / f0 - 1) x k (k: the index units per unit of bandwidth / f0). One 32-bit divide a block. */
 #define HY_FM_K 10                /* FM: 127 = ~1.98 cycles = 12.4 rad; Carson: (beta + 1) f0 < 20 kHz */
 #define HY_FB_K 90                /* SINE feedback: g 4064 = ~0.5 cycle; tuned on tests/alias_test.c (2.4 kHz) */
@@ -380,7 +380,7 @@ static void hy_osc_run(const hy_osc_t *o, hy_voice_t *hv, uint32_t k, uint32_t i
         break;
     case HO_SINE: {                                  /* self feedback: the mean of the last two outputs */
         int32_t fb = hv->fb[k], last = hv->nlp[k], g = sh >> 3;          /* 0..4064 */
-        if (inc >= 65536u)                           /* (Clipper 0.2: held on the high notes, see hy_index_max) */
+        if (inc >= 65536u)                           /* (SynthMaven 0.2: held on the high notes, see hy_index_max) */
             g = clamp(g, 0, hy_index_max(inc, HY_FB_K));
         for (i = 0; i < n; i++, ph += inc) {
             int32_t s = osc_sine(ph + ((uint32_t)(((fb + last) >> 1) * g) << 4));
@@ -439,7 +439,7 @@ static void hy_osc_run(const hy_osc_t *o, hy_voice_t *hv, uint32_t k, uint32_t i
     }
     case HO_FM: {                                    /* phase modulation by the buffer before, up to ~2 cycles */
         int32_t g = sh >> 8;
-        if (inc >= 65536u)                           /* (Clipper 0.2: Carson's bandwidth kept under 20 kHz) */
+        if (inc >= 65536u)                           /* (SynthMaven 0.2: Carson's bandwidth kept under 20 kHz) */
             g = clamp(g, 0, hy_index_max(inc, HY_FM_K));
         for (i = 0; i < n; i++, ph += inc)
             y[i] = osc_sine(ph + ((uint32_t)(prev[i] * g) << 11));
@@ -456,7 +456,7 @@ static void hy_osc_run(const hy_osc_t *o, hy_voice_t *hv, uint32_t k, uint32_t i
             m1ph += m1inc;
             if (m1ph < was && m1inc >= 4096u) {      /* the master wrapped in this sample: restart, by the fraction
                                                       * (in 32 bits: the master's overshoot / its increment, Q12) */
-                /* Clipper 0.2: band-limited. The saw falls by h (its value then) at t samples before this one: the
+                /* SynthMaven 0.2: band-limited. The saw falls by h (its value then) at t samples before this one: the
                  * polyBLEP residual of that step, scaled by h, on this sample ((1 - t)^2 / 2) and the one before
                  * (t^2 / 2; the first sample of a block cannot reach back: one reset in 32 there) */
                 uint32_t q12 = m1ph / (m1inc >> 12), at = ph - (inc >> 12) * q12;
@@ -473,7 +473,7 @@ static void hy_osc_run(const hy_osc_t *o, hy_voice_t *hv, uint32_t k, uint32_t i
         break;
     case HO_FOLD: {                                  /* sin(pi/2 g sin x), g 1 .. 8 */
         int32_t g = 256 + ((sh * 7) >> 7);           /* Q8 */
-        /* Clipper 0.2: its partials reach about (pi / 2 g + 2) f0: g is held where they would pass 20 kHz (the
+        /* SynthMaven 0.2: its partials reach about (pi / 2 g + 2) f0: g is held where they would pass 20 kHz (the
          * fold opens up less on the high notes, as nothing folds back into the band) */
         if (inc >= 65536u) {
             int32_t b = (int32_t)(1948000000u / (inc >> 8)) - 512;    /* (pi / 2 g)max x 256: 20 kHz / f0 - 2 */

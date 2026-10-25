@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.6 WSEQ (CLIPPER_SYNTH 1): wave sequencing.
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.6 WSEQ (SYNTHMAVEN_SYNTH 1): wave sequencing.
  *   STEPS   at the song's tempo (1/16 at 120 BPM: 5512 samples), each at its own pitch (MINOR: 0 3 7 10 12 10 7 3)
  *   LOOP    FWD, BACK, PING (back and forth, the ends once), ONCE (stays on the last step)
  *   PITCH   0: every step at the note; 127: twice the intervals
@@ -120,7 +120,7 @@ int main(int argc, char **argv)
     host_tracks_init();
     for (i = 0; i < NPART; i++)
         host_preset(&trk[i], i ? 1u : ENGI_WSEQ, 0);
-    clipper_proj_neutral();
+    synthmaven_proj_neutral();
     trk[1].p[P_LYMODE] = LY_OFF;
     {   /* MINOR (4): 0 3 7 10 12 10 7 3, FWD */
         static const int want[10] = {0, 3, 7, 10, 12, 10, 7, 3, 0, 3};

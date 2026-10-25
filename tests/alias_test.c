@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Aliasing of the oscillators (Clipper 0.2): each oscillator renders exactly K cycles in N samples (K = 449, a prime:
+ * Copyright (C) 2026 3dSam */
+/* Aliasing of the oscillators (SynthMaven 0.2): each oscillator renders exactly K cycles in N samples (K = 449, a prime:
  * its harmonics land on the bins m K, what folds back over Nyquist lands between them), an FFT, then the energy on
  * the bins that are not harmonics against the harmonics' ("alias / signal", dB). Below 15 kHz too: what an ear
  * notices most, the folded partials that fall in the band and sound out of tune.

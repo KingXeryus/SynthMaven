@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* STRINGS: a string machine in the manner of the 1970s ensembles (Solina, ARP, Elka) (Clipper 0.2).
+ * Copyright (C) 2026 3dSam */
+/* STRINGS: a string machine in the manner of the 1970s ensembles (Solina, ARP, Elka) (SynthMaven 0.2).
  * Divide-down registers: per tap one phase at the 16' pitch, the 8' and the 4' its double and quadruple, so the
  * registers stay locked as on the originals (polyBLEP saws, or towards a square with SHP). The ensemble is three taps,
  * each a copy of the registers whose pitch two LFOs move, 120 degrees apart from tap to tap (the slow ~0.6 Hz sweep
@@ -88,7 +88,7 @@ static const preset_t STRINGS_PRESETS[] = {
     {"GLASS STR", {0, 90, 127, 120, 110, 70, 50, 30}, {70, 100, 120, 95}, 0, 0, FX(0, 0, 24, 70)},
     {"DARK ENS", {127, 100, 20, 100, 64, 35, 0, 15}, {80, 100, 125, 100}, 0, 0, FX(0, 0, 10, 65)},
     {"PULSE STR", {50, 127, 60, 90, 90, 50, 110, 10}, {40, 100, 120, 70}, 0, 0, FX(0, 0, 10, 50)},
-    /* Clipper 0.3 */
+    /* SynthMaven 0.3 */
     {"OMNI STR", {60, 127, 90, 110, 96, 55, 10, 15}, {50, 100, 120, 80}, 0, 0, FX(0, 0, 10, 55)},
     {"SLOW STR", {40, 127, 60, 100, 84, 40, 0, 10}, {100, 100, 125, 105}, 0, 0, FX(0, 0, 10, 65)},
     {"STR STAB", {50, 127, 80, 90, 100, 60, 0, 10}, {0, 80, 60, 50}, 20, 0, FX(0, 0, 20, 40)},

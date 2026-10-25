@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
+ * Copyright (C) 2026 3dSam */
 /* MACRO: four macro-oscillator models in the spirit of Mutable Instruments Plaits (Emilie Gillet, MIT): one MODEL,
- * three macro knobs (HARM, TIMB, MORPH) that each model reads its own way, a low-pass and a low-pass gate (Clipper 0.2).
- * Written for Clipper (fixed point, the FM-1's budget); the ideas are Plaits', not its code.
+ * three macro knobs (HARM, TIMB, MORPH) that each model reads its own way, a low-pass and a low-pass gate (SynthMaven 0.2).
+ * Written for SynthMaven (fixed point, the FM-1's budget); the ideas are Plaits', not its code.
  *   CHORD   four oscillators on a chord: HARM the chord (OCT 5TH SUS4 m m7 m9 m11 6/9 M9 M7 M), TIMB the inversion,
  *           MORPH saw -> square
  *   SWARM   eight oscillators spread around the note (HARM: up to a semitone each way), each drifting on its own
@@ -216,7 +216,7 @@ static const preset_t MACRO_PRESETS[] = {
     {"YEAH", {3, 80, 64, 90, 127, 0, 0, 0}, {5, 90, 110, 40}, 0, 1, FX(0, 0, 20, 30)},
     {"WOW BASS", {3, 66, 40, 100, 127, 0, 0, 0}, {0, 90, 110, 30}, 0, 1, FX(10, 0, 0, 10), XP(P_TRANS + 1, -12)},
     {"VOWELS", {3, 100, 70, 30, 127, 0, 0, 0}, {20, 90, 120, 60}, 0, 0, FX(0, 30, 10, 50)},
-    /* Clipper 0.3 */
+    /* SynthMaven 0.3 */
     {"HOUSE CHRD", {0, 52, 30, 30, 90, 20, 50, 60}, {0, 90, 100, 40}, 0, 0, FX(0, 20, 30, 40)},
     {"SUS PAD", {0, 28, 60, 10, 90, 10, 0, 0}, {80, 100, 120, 90}, 0, 0, FX(0, 40, 20, 65)},
     {"6/9 KEYS", {0, 87, 40, 40, 100, 10, 60, 60}, {0, 90, 100, 50}, 0, 0, FX(0, 20, 20, 40)},

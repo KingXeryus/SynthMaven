@@ -132,7 +132,7 @@ static int st_load(uint32_t obj, void *dst, uint32_t max)
 #define ST_SIDE_MAX (ST_PAYLOAD_OFF - ST_SIDE_OFF)
 static const void *st_side;                         /* the next save's side record (0: none), for one save */
 static uint32_t st_side_len;
-/* (Clipper 1.0) a tail: bytes right after the payload, in the rest of the copy's sector, outside the payload's length
+/* (SynthMaven 1.0) a tail: bytes right after the payload, in the rest of the copy's sector, outside the payload's length
  * and CRC (an older version reads the payload as before and never sees them; its save erases them). The tail checks
  * itself (upreset.c: a magic and a CRC) */
 static const void *st_tail;                         /* the next save's tail (0: none), for one save */
@@ -158,7 +158,7 @@ static int st_tail_load(uint32_t obj, void *dst, uint32_t n)
 }
 
 /* an object in up to three parts, src then src2 then src3 (SLOOP 2.5: the settings and the SYN kits after them; SLOOP
- * 2.6: then its MIDI settings, which Clipper keeps as they are: project.c set_tail) */
+ * 2.6: then its MIDI settings, which SynthMaven keeps as they are: project.c set_tail) */
 static int st_save3(uint32_t obj, const void *src, uint32_t len, const void *src2, uint32_t len2, const void *src3,
                     uint32_t len3)
 {

@@ -6,24 +6,24 @@
  * pattern and the pattern parameters of its track_t). The parts share one budget of
  * NVOICE sounding voices (voice.c). */
 #include <stdint.h>
-/* Clipper: a synthesizer, one instrument (track 1: song.sel is always 0). Tracks 2..4 and the drum machine stay in
+/* SynthMaven: a synthesizer, one instrument (track 1: song.sel is always 0). Tracks 2..4 and the drum machine stay in
  * the data (the project formats are SLOOP's) but are silent, never selected, their sequencers stopped; MIDI plays the
  * instrument on every channel. 0 = SLOOP's four-track groovebox (the host tests of the shared code build it). */
-#ifndef CLIPPER_SYNTH
-#define CLIPPER_SYNTH 1
+#ifndef SYNTHMAVEN_SYNTH
+#define SYNTHMAVEN_SYNTH 1
 #endif
-/* Clipper 0.5.1 (the crackle hunt): written by the audio interrupt (audio.c), shown in GLO > SYSTEM's CPU column
+/* SynthMaven 0.5.1 (the crackle hunt): written by the audio interrupt (audio.c), shown in GLO > SYSTEM's CPU column
  * (ui_draw.c) */
 static volatile uint32_t diag_late;      /* halves the DMA had already moved past: since power-on */
 static volatile uint32_t diag_peak;      /* the worst half (render + TIMER5 in it), % of its deadline, since shown */
 #ifndef NVOICE
-#define NVOICE 8                 /* voices per part, and the budget shared by all parts (Clipper: -DNVOICE=12 / 16) */
+#define NVOICE 8                 /* voices per part, and the budget shared by all parts (SynthMaven: -DNVOICE=12 / 16) */
 #endif
 #define NPOLY NVOICE
 #define NPART 3                  /* synth parts: tracks 1..3 */
 #define NTRK 4                   /* + the drum track */
 #define TRK_DRUM 3
-enum { V_POLY, V_MONO, V_LEGATO, V_UNISON, V_PUNI2, V_PUNI4 };   /* P_VOICE (Clipper 0.3: UNI2 / UNI4, poly unison) */
+enum { V_POLY, V_MONO, V_LEGATO, V_UNISON, V_PUNI2, V_PUNI4 };   /* P_VOICE (SynthMaven 0.3: UNI2 / UNI4, poly unison) */
 static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /* a note per key, its own voices */
 #define NSTEP 64
 #define HALF_FRAMES 256          /* I2S half buffer: 5.8 ms at 44.1 kHz */
@@ -33,21 +33,21 @@ static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /*
 /* SLOOP 2.4: FM6 (eng_fm6.c) is engine 9 in every build; SLICE, when built, comes last (10). Projects and user
  * presets store the engine index as a byte, and no shipped SLOOP was built with SLICE, so its number is stored
  * nowhere: FM6 may take 9 and SLICE moves up (engines.c ENGINES[], params.c N_ENGNAME follow this order) */
-#if CLIPPER_SYNTH                /* Clipper: its own engines after HYBRID (SLICE is the groovebox's) */
+#if SYNTHMAVEN_SYNTH                /* SynthMaven: its own engines after HYBRID (SLICE is the groovebox's) */
 #if FELUCCA_SLICE
-#error "SLICE is a groovebox engine (CLIPPER_SYNTH 0)"
+#error "SLICE is a groovebox engine (SYNTHMAVEN_SYNTH 0)"
 #endif
-#define CLIPPER_NENG 10          /* WAVE ACID STRINGS MACRO VPS TERRAIN FMX WSEQ JUNO VECTOR */
-#define NENGINES (13 + CLIPPER_NENG)
-#define ENGI_WAVE 13u            /* Clipper 0.2: wavetables (eng_wave.c) */
+#define SYNTHMAVEN_NENG 10          /* WAVE ACID STRINGS MACRO VPS TERRAIN FMX WSEQ JUNO VECTOR */
+#define NENGINES (13 + SYNTHMAVEN_NENG)
+#define ENGI_WAVE 13u            /* SynthMaven 0.2: wavetables (eng_wave.c) */
 #define ENGI_ACID 14u            /*   a 303-style bass line (eng_acid.c) */
 #define ENGI_STRINGS 15u         /*   a string machine (eng_strings.c) */
 #define ENGI_MACRO 16u           /*   macro oscillators after Plaits (eng_macro.c) */
-#define ENGI_VPS 17u             /* Clipper 0.5: vector phaseshaping (eng_vps.c, Felucca discussion #145) */
+#define ENGI_VPS 17u             /* SynthMaven 0.5: vector phaseshaping (eng_vps.c, Felucca discussion #145) */
 #define ENGI_TERRAIN 18u         /*   wave terrain, lite (eng_terrain.c, Felucca discussion #146) */
-#define ENGI_FMX 19u             /* Clipper 0.6: six operators, waves, PM / FM / RING, any routing (eng_fmx.c) */
+#define ENGI_FMX 19u             /* SynthMaven 0.6: six operators, waves, PM / FM / RING, any routing (eng_fmx.c) */
 #define ENGI_WSEQ 20u            /*   wave sequencing (eng_wseq.c, after the Wavestation) */
-#define ENGI_JUNO 21u            /* Clipper 0.8: the Juno poly and its chorus (eng_juno.c, fx.c juno_chorus) */
+#define ENGI_JUNO 21u            /* SynthMaven 0.8: the Juno poly and its chorus (eng_juno.c, fx.c juno_chorus) */
 #define ENGI_VECTOR 22u          /*   vector synthesis: four waves, a joystick (eng_vector.c, after the Prophet VS) */
 #else
 #define NENGINES (13 + FELUCCA_SLICE)
@@ -55,7 +55,7 @@ static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /*
 #define ENGI_GRAIN 8u            /* GRAIN, PHYS, NOISE (SLOOP 2.5, appended after FM6: the stores keep the numbers) */
 #define ENGI_PHYS 10u
 #define ENGI_NOISE 11u
-#define ENGI_HYBRID 12u          /* Clipper: the HYBRID voice (eng_hybrid.c), after NOISE */
+#define ENGI_HYBRID 12u          /* SynthMaven: the HYBRID voice (eng_hybrid.c), after NOISE */
 #define ENGI_SLICE 13u           /* with FELUCCA_SLICE: after HYBRID */
 #define ENGI_FM6 9u              /* the FM6 engine's index (eng_fm6.c, the stores: append-only) */
 #define UP_SLOTS 32u             /* user presets (upreset.c) */
@@ -67,8 +67,8 @@ enum {
     F_ONOFF, F_OCT, F_STEPS,
     F_SWING,                    /* 0..100: MPC swing, 50 % (straight) .. 75 % */
     F_FILT,                     /* -64..63: the DJ filter, LP <- OFF -> HP */
-    F_CDB,                      /* Clipper: dB around the middle of the range (the master EQ) */
-    F_SPLIT                     /* Clipper: the layer's split, a MIDI note stored + 4 (68 = C4) */
+    F_CDB,                      /* SynthMaven: dB around the middle of the range (the master EQ) */
+    F_SPLIT                     /* SynthMaven: the layer's split, a MIDI note stored + 4 (68 = C4) */
 };
 
 typedef struct {
@@ -99,7 +99,7 @@ enum {                          /* per-track parameters */
     P_TFLT,                                    /* SLOOP 2.4: the track's filter, < 0 low-pass, > 0 high-pass (fx.c) */
     P_STRUM,                                   /* SLOOP 2.4: a chord's notes one after the other, ms each (> 0 down, < 0 up) */
     P_VLEAD,                                   /* SLOOP 2.4: chord mode, each chord voiced nearest the last (seq.c) */
-#if CLIPPER_SYNTH                              /* Clipper 0.4: per sound, every engine (voice.c mod_matrix) */
+#if SYNTHMAVEN_SYNTH                              /* SynthMaven 0.4: per sound, every engine (voice.c mod_matrix) */
     P_L2RATE, P_L2WAVE, P_L2MODE,              /* LFO 2: rate, wave, FREE (one per part) / KEY (per note, restarted) */
     P_E2ATK, P_E2DEC, P_E2SUS, P_E2REL,        /* ENV 2: a second ADSR, a modulation source only */
     P_M1SRC, P_M1DST, P_M1AMT,                 /* the matrix: 6 slots of source -> destination x amount (MS_*, MT_*) */
@@ -108,15 +108,15 @@ enum {                          /* per-track parameters */
     P_M4SRC, P_M4DST, P_M4AMT,
     P_M5SRC, P_M5DST, P_M5AMT,
     P_M6SRC, P_M6DST, P_M6AMT,
-    P_ITYPE, P_IA, P_IB, P_IC, P_IMIX,         /* Clipper 0.6: the sound's INSERT (SLOOP 2.6's, fx.c): TYPE, A B C, MIX */
-    P_MSRATE, P_MSLEN, P_MSSMTH, P_MSKEY,      /* Clipper 0.8: the MOD SEQ (voice.c mseq_*): a step's length, steps, glide,
+    P_ITYPE, P_IA, P_IB, P_IC, P_IMIX,         /* SynthMaven 0.6: the sound's INSERT (SLOOP 2.6's, fx.c): TYPE, A B C, MIX */
+    P_MSRATE, P_MSLEN, P_MSSMTH, P_MSKEY,      /* SynthMaven 0.8: the MOD SEQ (voice.c mseq_*): a step's length, steps, glide,
                                                 * SYNC (the song's grid) / KEY (from each first key) */
     P_SPICE, P_DICE,                           /* .. SPICE / DICE (seq.c spice_*): how much the arp's and the sequencer's
                                                 * notes vary, and which variation */
-    P_VINT,                                    /* Clipper 0.9: VINTAGE, each voice a little its own (voice.c vintage) */
+    P_VINT,                                    /* SynthMaven 0.9: VINTAGE, each voice a little its own (voice.c vintage) */
     P_SLOOP,                                   /* .. LOOP: SPICE's variation comes round every LOOP notes; the arp's
                                                 * TURNG mode: its register's length (seq.c turing_step) */
-    P_SPREAD,                                  /* Clipper 1.0: the voices across the stereo field (voice.c vspread) */
+    P_SPREAD,                                  /* SynthMaven 1.0: the voices across the stereo field (voice.c vspread) */
     P_L3RATE, P_L3WAVE, P_L3MODE,              /* .. LFO 3 (as LFO 2), a matrix source */
     P_E2LOOP,                                  /* .. ENV 2: ONE (an ADSR) / LOOP (attack and decay over and over) */
     P_MAC1, P_MAC2, P_MAC3, P_MAC4,            /* .. the sound's four macros: BRITE TIMBR (+-) MOTN SPACE (0..127), each
@@ -131,18 +131,18 @@ enum {                          /* per-track parameters */
     P_E0, P_E1, P_E2, P_E3, P_E4, P_E5, P_E6, P_E7,
     P_COUNT
 };
-/* Clipper: the synth has no slicer, so its pattern's slot holds the filter MODEL of the engines with a low-pass of
+/* SynthMaven: the synth has no slicer, so its pattern's slot holds the filter MODEL of the engines with a low-pass of
  * their own (ANALOG): 1 SVF (12 dB, as before), 2 MOOG (the 24 dB ladder, dsp.c). The same slot: projects and user
  * presets keep it without a new format */
 #define P_FMODEL P_SLPAT
 enum { FM_SVF = 1, FM_MOOG = 2, FM_MS20, FM_DIODE, FM_SEM, FM_NOTCH, FM_BP, FM_HP, FM_LAST = FM_HP };   /* (0.9: dsp.c fmod_*) */
-/* Clipper: two globals of the groovebox are free in the synth (no kick to duck to, no note repeat): the reverb's
+/* SynthMaven: two globals of the groovebox are free in the synth (no kick to duck to, no note repeat): the reverb's
  * TYPE (ROOM, PLATE: fx.c) and the plate's PRE-delay (ms) */
 #define G_RTYPE G_DUCK
 #define G_RPRE G_ROLL
 enum { RT_ROOM, RT_PLATE, RT_HALL, RT_SHIMMER };   /* (1.0: HALL and SHIMMER: the plate's tank, fx.c) */
 enum { DM_MONO, DM_PING, DM_TAPE };   /* (1.0) G_DMODE */
-/* Clipper 0.3: the drum globals are the master bus (bus.c): EQ LOW / MID / HIGH, dB around their centre (so a SLOOP
+/* SynthMaven 0.3: the drum globals are the master bus (bus.c): EQ LOW / MID / HIGH, dB around their centre (so a SLOOP
  * project, its drum level 100, reverb 16, channel 10, loads flat), and COMP (the drums' delay send: 0 = off) */
 #define G_EQLOW G_DRLVL
 #define G_EQMID G_DRCH
@@ -151,28 +151,28 @@ enum { DM_MONO, DM_PING, DM_TAPE };   /* (1.0) G_DMODE */
 #define EQ_LOW_C 100
 #define EQ_MID_C 10
 #define EQ_HIGH_C 16
-/* Clipper 0.3: the per-sound modulation (voice.c track_render) in the slicer's slots (the synth has none):
+/* SynthMaven 0.3: the per-sound modulation (voice.c track_render) in the slicer's slots (the synth has none):
  * VEL>F velocity to the cutoff (bipolar), the mod wheel's and the aftertouch's destination (MD_*) */
 #define P_VELF P_SLCR
 #define P_MWDST P_SLRATE
 #define P_ATDST P_SLDEPTH
 enum { MD_OFF, MD_VIB, MD_CUT, MD_SHP, MD_WAH, MD_TREM };
-/* Clipper 0.3: the layer (track 2's sound under or beside track 1's: voice.c layer_*) keeps its settings in track 2's
+/* SynthMaven 0.3: the layer (track 2's sound under or beside track 1's: voice.c layer_*) keeps its settings in track 2's
  * pattern parameters (its sequencer never runs in the synth): MODE (OFF, LAYER, SPLIT), SPLIT (the lowest note of
  * the main sound, stored + 4: a SLOOP default of 64 is C4), OCT (-2..2, stored + 2); its level is track 2's LEVEL */
 #define P_LYMODE P_SSWING
 #define P_LYSPLIT P_SGATE
 #define P_LYOCT P_SDIV
-#define P_LYCH P_SLEN            /* Clipper 0.6, MULTI: the MIDI channel (1..16) the layer's sound answers on its own */
+#define P_LYCH P_SLEN            /* SynthMaven 0.6, MULTI: the MIDI channel (1..16) the layer's sound answers on its own */
 enum { LY_OFF, LY_LAYER, LY_SPLIT, LY_MULTI };   /* MULTI (0.6): two parts, the layer on its own channel (bi-timbral) */
-/* Clipper 0.4: the matrix's sources and destinations (P_MnSRC, P_MnDST; voice.c mod_matrix) */
+/* SynthMaven 0.4: the matrix's sources and destinations (P_MnSRC, P_MnDST; voice.c mod_matrix) */
 #define MX_SLOTS 12u             /* (1.0: 12; slots 1..6 at P_M1SRC, 7..12 at P_M7SRC: mx_pid) */
 #define MX_SLOTS6 6u
 enum { MS_OFF, MS_LFO1, MS_LFO2, MS_ENV1, MS_ENV2, MS_VEL, MS_KEY, MS_MW, MS_AT, MS_RAND, MS_SLIDE,
        MS_SEQ1, MS_SEQ2, MS_SEQ3, MS_SEQ4,      /* (0.8: the MOD SEQ's four lanes) */
        MS_LFO3, MS_MAC1, MS_MAC2, MS_MAC3, MS_MAC4, MS_NSRC };   /* (1.0: LFO 3, the macros; 5 bits: the user presets'
                                                 * record keeps 4 of slots 1..6's, the fifth in the bank's tail) */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
 /* a matrix slot's first parameter (its source; + 1 destination, + 2 amount) */
 #define mx_pid(k) ((uint32_t)((k) < MX_SLOTS6 ? P_M1SRC + 3u * (k) : P_M7SRC + 3u * ((k) - MX_SLOTS6)))
 /* the matrix slot (0..11) of a parameter, -1: none; *f its field (0 source, 1 destination, 2 amount) */
@@ -185,15 +185,15 @@ static inline int mx_slot_of(uint32_t i, uint32_t *f)
     return -1;
 }
 #endif
-#define MSEQ_LANES 4u            /* Clipper 0.8: the MOD SEQ, per sound: 4 lanes of 16 steps, -8..7 each */
+#define MSEQ_LANES 4u            /* SynthMaven 0.8: the MOD SEQ, per sound: 4 lanes of 16 steps, -8..7 each */
 #define MSEQ_STEPS 16u
 enum { MT_OFF, MT_PITCH, MT_CUT, MT_SHAPE, MT_AMP, MT_PAN, MT_L2RATE, MT_E1, MT_COUNT = MT_E1 + 8 };
 enum { L2_FREE, L2_KEY };
-#define CLIPPER_PROJ_MARK 0xC5u  /* project_t.rsv[0]: written by Clipper (project.c: + LFO 2, ENV 2, the matrix in track 3's
+#define SYNTHMAVEN_PROJ_MARK 0xC5u  /* project_t.rsv[0]: written by SynthMaven (project.c: + LFO 2, ENV 2, the matrix in track 3's
                                   * free lock slots, SLOOP sees nothing of them) */
-#define CLIPPER_PROJ_MARK_06 0xC6u   /* (0.6: the INSERT of both sounds after them, project.c proj_ext_put) */
-#define CLIPPER_PROJ_MARK_04 0xC4u   /* by Clipper 0.4's first build (the same, in tracks 3 and 4's p[]) */
-#define CLIPPER_PROJ_MARK_03 0xC3u   /* by Clipper 0.3 (else the bus, layer, mod reset) */
+#define SYNTHMAVEN_PROJ_MARK_06 0xC6u   /* (0.6: the INSERT of both sounds after them, project.c proj_ext_put) */
+#define SYNTHMAVEN_PROJ_MARK_04 0xC4u   /* by SynthMaven 0.4's first build (the same, in tracks 3 and 4's p[]) */
+#define SYNTHMAVEN_PROJ_MARK_03 0xC3u   /* by SynthMaven 0.3 (else the bus, layer, mod reset) */
 
 enum {                          /* global parameters */
     G_BPM, G_SWING, G_CLOCK, G_TUNE,
@@ -208,8 +208,8 @@ enum {                          /* global parameters */
     G_ROLL,                     /* note repeat rate (ARP + key, seq.c) */
     G_NEWPRJ,                   /* TOOLS > NEW: a new project (GO) */
     G_DRDLY,                    /* SLOOP 2.5: the drums' delay send (GLO > DRUMS; a project keeps it in its own byte) */
-#if CLIPPER_SYNTH
-    G_DMODE,                    /* Clipper 1.0: the delay MONO / PING (ping-pong) / TAPE (wow, flutter, saturation)
+#if SYNTHMAVEN_SYNTH
+    G_DMODE,                    /* SynthMaven 1.0: the delay MONO / PING (ping-pong) / TAPE (wow, flutter, saturation)
                                  * (a project keeps it with 1.0's values, project.c) */
 #endif
     G_COUNT
@@ -227,12 +227,12 @@ typedef struct {
     int32_t pitch16, pitch_cur;  /* 1/16 semitone, with glide */
     int32_t gstep;               /* glide: 1/4096 semitone per control tick, 0 = RATE (GLIDE: the time an octave takes) */
     int32_t fine;                /* unison detune: phase increment * (1 + fine / 4096) */
-    uint8_t pat;                 /* Clipper: polyphonic aftertouch of the note, 0..127 (MIDI An) */
-    uint8_t sus;                 /* Clipper: released while the sustain pedal is down: held until it comes up */
+    uint8_t pat;                 /* SynthMaven: polyphonic aftertouch of the note, 0..127 (MIDI An) */
+    uint8_t sus;                 /* SynthMaven: released while the sustain pedal is down: held until it comes up */
     uint32_t ph[3];
     int32_t s[8];                /* engine state (filters, envs) */
     uint32_t age;
-#if CLIPPER_SYNTH                /* Clipper 0.4: the voice's own modulation (voice.c) */
+#if SYNTHMAVEN_SYNTH                /* SynthMaven 0.4: the voice's own modulation (voice.c) */
     uint32_t l2ph;               /* LFO 2 in KEY mode: its phase, from the note's start */
     int32_t env2;                /* ENV 2, Q24 */
     int16_t rnd, l2rnd;          /* a random value per note; LFO 2's S&H value */
@@ -376,7 +376,7 @@ typedef struct track {
     uint32_t arp_off;            /* units to its note-off */
     uint16_t tm_reg;             /* (0.9) the arp's TURNG: its shift register */
     int16_t tm_seed;             /* .. the DICE it was seeded with (+ 1; 0: not yet) */
-#if CLIPPER_SYNTH                /* Clipper 0.8: the MOD SEQ (voice.c mseq_*), part of the sound */
+#if SYNTHMAVEN_SYNTH                /* SynthMaven 0.8: the MOD SEQ (voice.c mseq_*), part of the sound */
     int8_t ms[MSEQ_LANES][MSEQ_STEPS];   /* the steps, -8..7 */
     uint8_t ms_step, ms_held;    /* the step playing; keys held last block (KEY: the first one restarts it) */
     uint32_t ms_pos;             /* units into the step (free running: stopped, or KEY) */
@@ -438,7 +438,7 @@ typedef struct track {
     int32_t dist_hp, dist_lp1, dist_lp2;   /* DIST insert state (fx.c) */
     int32_t att;                 /* mute / solo fade: attenuation, Q15 (0 = heard; fx.c mix_part, drums_mix) */
     uint8_t dist_on;             /* DIST was on in the last block (its states restart when it comes on) */
-    int16_t dist_last;           /* (Clipper 0.9) DIST's amount while it fades out (turned to 0 under a sound) */
+    int16_t dist_last;           /* (SynthMaven 0.9) DIST's amount while it fades out (turned to 0 under a sound) */
     int32_t dist_w;              /* .. its wet share, Q15: DIST turned on or off under a sound fades (no click) */
     int32_t snd_c, snd_d, snd_r; /* .. the sends of the last block: a change glides as LEVEL's does */
     uint8_t tail;                /* blocks to mix after the last voice (the DIST tail) */
@@ -447,17 +447,17 @@ typedef struct track {
     uint8_t xf_on, xf;           /* fading; blocks of the fade still to render */
     int16_t pe_old[8];           /* P_E0..P_E7 of the sounding engine: the fade renders with these */
     uint8_t xp_n, xp_note[4], xp_vel[4];   /* note-ons during the fade, played on the new engine */
-#if CLIPPER_SYNTH
-    uint8_t xf_snd;              /* Clipper 0.3: the fade is a sound change (a preset, a SWAP...): the old sound */
+#if SYNTHMAVEN_SYNTH
+    uint8_t xf_snd;              /* SynthMaven 0.3: the fade is a sound change (a preset, a SWAP...): the old sound */
     int16_t p_old[P_E0];         /* fades with all its own values (voice.c sound_fade_begin, fx.c mix_part) */
-    uint32_t l2ph;               /* Clipper 0.4: LFO 2 in FREE mode (one for the part) */
+    uint32_t l2ph;               /* SynthMaven 0.4: LFO 2 in FREE mode (one for the part) */
     int16_t l2rnd;               /* its S&H value */
     int16_t panmod;              /* the matrix's PAN, from the part's sources (fx.c mix_part) */
     uint32_t l3ph;               /* (1.0) LFO 3 in FREE mode */
     int16_t l3rnd;
     int16_t spr;                 /* (1.0) SPREAD as the last block had it (a change glides through the block) */
     int32_t sd_g;                /* (1.0) the side's gain after DIST / the INSERT (Q15, 0: none yet) */
-    uint8_t ins_run;             /* Clipper 0.6: the INSERT ran (or faded out) in the last block (fx.c track_insert) */
+    uint8_t ins_run;             /* SynthMaven 0.6: the INSERT ran (or faded out) in the last block (fx.c track_insert) */
     uint8_t ins_xt;              /* .. blocks it ran on after the last voice (its tail: a flanger's feedback) */
     uint16_t ins_res;            /* .. |its last sample| (a tail still ringing) */
 #endif
@@ -478,8 +478,8 @@ typedef struct {
 
 static track_t trk[NTRK];        /* the instrument: three parts and the drum track */
 static song_t song;
-#if CLIPPER_SYNTH
-/* Clipper 0.6: the layer in MULTI (the two sounds two parts: the layer on its own MIDI channel, its own controls) */
+#if SYNTHMAVEN_SYNTH
+/* SynthMaven 0.6: the layer in MULTI (the two sounds two parts: the layer on its own MIDI channel, its own controls) */
 static inline int layer_multi(void) { return trk[1].p[P_LYMODE] == LY_MULTI; }
 /* the part whose performance controls (bend, mod wheel, pressure, pedal: part_ctl) a track follows: the instrument's,
  * the layer's own in MULTI */
@@ -526,7 +526,7 @@ static int is_drum(const track_t *t) { return t == TDRUM; }
 static int trk_silent(const track_t *t)
 {
     uint32_t i = (uint32_t)(t - trk);
-    if (CLIPPER_SYNTH && i)      /* Clipper: only the instrument (track 1) sounds, and its layer (track 2) when on */
+    if (SYNTHMAVEN_SYNTH && i)      /* SynthMaven: only the instrument (track 1) sounds, and its layer (track 2) when on */
         return i != 1u || (trk[1].p[P_LYMODE] != LY_LAYER && trk[1].p[P_LYMODE] != LY_SPLIT && trk[1].p[P_LYMODE] != LY_MULTI);
     return t->p[P_MUTE] || (song.solo && !((song.solo >> i) & 1u));
 }

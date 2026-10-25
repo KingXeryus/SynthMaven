@@ -14,7 +14,7 @@ typedef struct {
     uint32_t magic;
     uint16_t ver, nslot;                         /* 1, FM6_BANK_N */
     uint32_t used;                               /* bit k: slot k holds a patch */
-    uint32_t rsv;                                /* (Clipper 0.6: bit k, slot k's patch is FMX's: fm6_bank_fmx) */
+    uint32_t rsv;                                /* (SynthMaven 0.6: bit k, slot k's patch is FMX's: fm6_bank_fmx) */
     uint8_t v[FM6_BANK_N][FM6_PACKED];
 } fm6_bank_t;
 _Static_assert(sizeof(fm6_bank_t) == 3472u, "FM6 bank layout");
@@ -65,14 +65,14 @@ static void fm6_bank_scan(void)
     fm6_bank_read = fm6_bank_get;
 }
 
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
 static int fm6_bank_write(uint32_t k, const uint8_t *pk, int fmx);
 static int fmx_store(uint32_t k, const uint8_t *pk) { return fm6_bank_write(k, pk, 1); }   /* (eng_fmx.c STORE) */
 #endif
 static void fm6_bank_boot(void)                  /* persist_boot */
 {
     fm6_bank_scan();
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     fmx_bank_store = fmx_store;
 #endif
 }
@@ -126,7 +126,7 @@ static int fm6_bank_write(uint32_t k, const uint8_t *pk, int fmx)
     }
     fm6_bank_scan();
     fm6_bank_changed();
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     {
         uint32_t t;
         for (t = 0; t < NPART; t++)                  /* (FMX on a bank slot: reloaded too) */

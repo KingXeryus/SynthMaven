@@ -219,7 +219,7 @@ static void fm1_main(void)
     felucca_init();
     cpu1_boot();                                        /* (0.7) the second core: at power-on, before the audio and the
                                                          * timers (X0X: started later it never reaches its entry);
-                                                         * if it does not answer, Clipper runs on one core (cpu1.c) */
+                                                         * if it does not answer, SynthMaven runs on one core (cpu1.c) */
     audio_init();
 #if FELUCCA_CDC
     usb_cdc_on = usb_serial;                            /* menu USB SERIAL (persist_boot read it): before USB starts */
@@ -294,13 +294,13 @@ static void fm1_main(void)
                 fm1_enter_uboot();
             }
         }
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         wt_service();                                   /* WAVE: the selected wavetable's band-limited copies */
 #endif
 #if FELUCCA_OTA
         ed_service();                                   /* web editor SysEx */
         ota_service();                                  /* M-UPGRADE handshake */
-        if (usb.id_req) {                               /* (Clipper 1.0) MIDI identity reply: 7D (non-commercial),
+        if (usb.id_req) {                               /* (SynthMaven 1.0) MIDI identity reply: 7D (non-commercial),
                                                          * family "CL", model "F1", version 1.1 */
             static const uint8_t ID[15] = {0xF0, 0x7E, 0x7F, 0x06, 0x02, 0x7D, 0x43, 0x4C, 0x46, 0x31,
                                            1, 1, 0, 0, 0xF7};

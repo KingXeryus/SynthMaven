@@ -83,7 +83,7 @@ static int arp_user_on(const track_t *t)
     return t->p[P_AMODE] != 0 && t->p[P_AMODE] != arp_snd[trk_index(t) % NTRK];
 }
 
-/* Clipper 1.0 (GLO > MIDI): the instrument's MIDI channels, settings of the FM-1 (project.c side record). midi_in_ch 0
+/* SynthMaven 1.0 (GLO > MIDI): the instrument's MIDI channels, settings of the FM-1 (project.c side record). midi_in_ch 0
  * OMNI (every channel plays it, as before), 1..16 that channel only (a KeyStep Pro's other tracks for other gear);
  * midi_out_ch 0..15 the channel its keys, arp and sequencer go out on */
 static uint8_t midi_in_ch, midi_out_ch;
@@ -91,7 +91,8 @@ static uint8_t midi_in_ch, midi_out_ch;
  * CC OUT (the knobs send the CCs they would answer to), PROG OFF (program changes ignored). midi_pc_req: a program
  * change (with its bank, CC 0) for the UI to load: 1 + bank * 128 + program, 0 none. midi_rpn: the RPN selected
  * (CC 101, 100; 127 none) for the data entry (CC 6): RPN 0, the bend range (voice.c midi_bend) */
-static uint8_t midi_local_off, midi_cc_out, midi_pc_off, midi_bank, midi_rpn[2] = {127, 127};
+#include "synthmaven_midi.h"
+static uint8_t midi_local_off, midi_cc_out, midi_pc_off, midi_bank[3][16], midi_rpn[2] = {127, 127};
 /* 1.0 (a comment from an EWI player), GLO > MIDI 2 > EWI: CC 2 (a breath controller) is the volume (as CC 11; 0
  * silent), 2 V+AT: and the aftertouch too (the MOD page's AT destination, the matrix's AT: the cutoff follows the
  * breath); 0 OFF: CC 2 ignored */
@@ -99,7 +100,7 @@ static uint8_t midi_breath;
 static volatile uint16_t midi_pc_req;
 static uint32_t trk_midi_ch(uint32_t i)    /* MIDI channel 0..15 of track i (keys -> MIDI out) */
 {
-    if (CLIPPER_SYNTH && i == 0u)
+    if (SYNTHMAVEN_SYNTH && i == 0u)
         return midi_out_ch & 15u;
     if (i < NPART)
         return i;
@@ -161,10 +162,10 @@ static volatile uint8_t ly_lock = LY_PLAY;
 static uint32_t layer_buttons(void) { return fm1_in.buttons | (ly_lock != LY_PLAY ? ly_bit[ly_lock % LY_COUNT] : 0u); }
 /* the layer the keys are in: the held function button (FX, EDIT, ARP, SEQ, SEL, GLO in that order),
  * else the locked one */
-/* Clipper: the layers a synth keeps: SEQ (the steps), SEL (key and chords) and (1.0, the sequencer of SLOOP 2.7.2)
+/* SynthMaven: the layers a synth keeps: SEQ (the steps), SEL (key and chords) and (1.0, the sequencer of SLOOP 2.7.2)
  * EDIT (erase, SHIFT, LENGTH, TRANSPOSE, undo / redo), ARP (note repeat) and GLO (fill, fill bar, tap tempo, the level).
  * FX and SAVE only open their pages; held, the keys still play */
-static int ly_on(uint32_t l) { return !CLIPPER_SYNTH || (l != LY_FX && l != LY_SONG); }
+static int ly_on(uint32_t l) { return !SYNTHMAVEN_SYNTH || (l != LY_FX && l != LY_SONG); }
 static uint32_t layer_now(void)
 {
     uint32_t b = layer_buttons(), l;
@@ -1432,14 +1433,14 @@ static void arp_play(track_t *t, uint32_t n, uint32_t vel)
         rec_note(t, n, vel, 0, 0);
 }
 
-/* Clipper 0.8, SPICE / DICE (after the MicroFreak's): the arp's notes and the sequencer's steps vary, as much as
+/* SynthMaven 0.8, SPICE / DICE (after the MicroFreak's): the arp's notes and the sequencer's steps vary, as much as
  * SPICE says (0: as written), the same way each time round (the k-th note of 16, the pattern's step k) until DICE is
  * turned (another variation). A note may rest (up to 1 in 6), jump an octave (up to 1 in 4, mostly up), and its
  * velocity and gate move (up to +-63, x 0.05 .. 1.95). What is stored is never changed */
 typedef struct { uint8_t skip; int8_t oct; uint8_t vel, gate; } spice_t;   /* gate: x / 64 */
 static uint32_t spice_loop(const track_t *t)            /* (0.9) LOOP: the variation comes round every LOOP notes */
 {
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     return (uint32_t)clamp(t->p[P_SLOOP], 1, 16);
 #else
     (void)t;
@@ -1449,7 +1450,7 @@ static uint32_t spice_loop(const track_t *t)            /* (0.9) LOOP: the varia
 static uint32_t spice_gate = 64u;                    /* (the arp's last note: arp_tick's gate) */
 static int spice_of(const track_t *t, uint32_t k, uint32_t vel, spice_t *o)
 {
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     uint32_t sp = (uint32_t)clamp(t->p[P_SPICE], 0, 127), h;
     int32_t v;
     o->skip = 0, o->oct = 0, o->vel = (uint8_t)vel, o->gate = 64;
@@ -1472,8 +1473,8 @@ static int spice_of(const track_t *t, uint32_t k, uint32_t vel, spice_t *o)
 #endif
 }
 
-#if CLIPPER_SYNTH
-/* Clipper 0.8: the MOD SEQ's clock and glide, once a block for each part (voice.c reads ms_cur: the matrix's SEQ1..4) */
+#if SYNTHMAVEN_SYNTH
+/* SynthMaven 0.8: the MOD SEQ's clock and glide, once a block for each part (voice.c reads ms_cur: the matrix's SEQ1..4) */
 static const uint8_t MSEQ_DIV[9] = {3, 5, 2, 4, 1, 0, 6, 7, 8};   /* N_MSRATE -> div_units's order */
 static void mseq_tick(track_t *t, uint32_t adv)
 {
@@ -1512,7 +1513,7 @@ static void mseq_tick(track_t *t, uint32_t adv)
  * notes are always the held ones: in key whatever it plays */
 static uint32_t turing_step(track_t *t, uint32_t len, uint32_t *vel)
 {
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     uint32_t loop = (uint32_t)clamp(t->p[P_SLOOP], 1, 16), mut = (uint32_t)clamp(t->p[P_SPICE], 0, 127);
     int32_t seed = clamp(t->p[P_DICE], 0, 127) + 1;
 #else
@@ -2410,7 +2411,7 @@ static void seq_step(track_t *t, const step_t *s, uint32_t slen, uint32_t skip)
     uint32_t next_tie = nx->time == ST_TIE || (nx->time == ST_NOTE && (nx->flags & (SF_CONT_ALL | SF_LEG)));   /* (2.7: notes
                                                      * going on into the next step: held to it, it says which end;
                                                      * SLOOP 2.7.2: a legato note next: held to it) */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     step_t vs;                                      /* (0.8) SPICE: this step's variation, on a copy */
     if (t->p[P_SPICE] && s->time == ST_NOTE && s->n && !s->rat && !(s->flags & SF_CONT_ALL)) {
         spice_t sp;
@@ -2670,12 +2671,12 @@ static void seq_tick(track_t *t, uint32_t adv)
 /* MIDI in: the track a channel plays (0..15) */
 static track_t *midi_track(uint32_t ch)
 {
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     if (layer_multi() && ch + 1u == layer_ch())
         return &trk[1];                               /* 0.6, MULTI: the layer's own channel */
     if (midi_in_ch && !mpe_mode && ch + 1u != midi_in_ch)
         return 0;                                     /* (1.0, GLO > MIDI > IN CH: another channel; MPE uses them all) */
-    return &trk[0];                                   /* Clipper: the instrument, on every channel (OMNI) or its own */
+    return &trk[0];                                   /* SynthMaven: the instrument, on every channel (OMNI) or its own */
 #endif
     if (song.g[G_DRCH] && ch + 1u == (uint32_t)song.g[G_DRCH])
         return TDRUM;
@@ -2688,7 +2689,7 @@ static uint8_t midi_sel_on[16][128];                  /* per channel and note: t
 static track_t *midi_route(uint32_t ch, uint32_t note, int on)
 {
     track_t *t = midi_track(ch);
-    if (CLIPPER_SYNTH)
+    if (SYNTHMAVEN_SYNTH)
         return t;
     if (ch < NPART || (song.g[G_DRCH] && ch + 1u == (uint32_t)song.g[G_DRCH]))
         return t;                                     /* a part's own channel, or the drum channel */
@@ -2715,7 +2716,7 @@ static const uint8_t MIDI_CC_MAP[][2] = {
     {91, P_REV}, {93, P_CHOR}, {94, P_DLY}, {76, P_LRATE}, {77, P_LD_PIT}, {78, P_LFADE},   /* (1.0: 76..78 the LFO's
                                                                                      * rate, vibrato depth, delay) */
 };
-/* Clipper: the performance controllers of a part (eng_hybrid.c part_ctl: the matrix's MW, AT, BEND, EXPR):
+/* SynthMaven: the performance controllers of a part (eng_hybrid.c part_ctl: the matrix's MW, AT, BEND, EXPR):
  * pitch bend (En, every engine: voice.c), channel and polyphonic pressure (Dn, An), and the CCs 1 (mod
  * wheel), 11 (expression), 64 (sustain pedal), 16..19 (HYBRID: the macros M1..M4; 1.0, the others: MACROS) */
 static void part_ctl_event(track_t *t, uint32_t st, uint32_t d1, uint32_t d2)
@@ -2750,7 +2751,7 @@ static void part_ctl_reset(void)
             trk_sustain_up(&trk[p]);
         }
     }
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     mpe_reset();
 #endif
 }
@@ -2767,7 +2768,7 @@ static int part_ctl_cc(track_t *t, uint32_t cc, uint32_t value)   /* 1: taken */
         c->expr = (uint8_t)value;
         c->exoff = (uint8_t)(127u - value);
         return 1;
-    case 0: midi_bank = (uint8_t)value; return 1;
+    case 0: return 1; /* bank selection is channel-specific, captured by events_block */
     case 2:                                           /* (1.0) breath (GLO > MIDI 2 > EWI) */
         if (midi_breath)
             c->exoff = (uint8_t)(127u - value);
@@ -2801,13 +2802,13 @@ static int part_ctl_cc(track_t *t, uint32_t cc, uint32_t value)   /* 1: taken */
     case 16: case 17: case 18: case 19:
         if (t->eng_req == ENGI_HYBRID)
             t->p[P_E4 + cc - 16u] = (int16_t)value;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         else                                          /* (1.0) the other engines: the sound's MACROS (BRITE TIMBR: centred) */
             t->p[P_MAC1 + cc - 16u] = (int16_t)(cc < 18u ? (int32_t)value - 64 : (int32_t)value);
 #endif
         return 1;
-#if CLIPPER_SYNTH
-    case 20:                                          /* Clipper 0.3: MORPH (ui_synth.c, the UI applies it) */
+#if SYNTHMAVEN_SYNTH
+    case 20:                                          /* SynthMaven 0.3: MORPH (ui_synth.c, the UI applies it) */
         syn_morph_req = (int16_t)(value & 127u);
         return 1;
 #endif
@@ -2889,7 +2890,7 @@ static void midi_cc(track_t *t, uint32_t cc, uint32_t value)
     if (!part_ctl_cc(t, cc, value) && (d = cc_target(t, cc, &slot)) != 0)
         *slot = (int16_t)(d->min + ((int32_t)value * (d->max - d->min) + 63) / 127);
 }
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
 /* 1.0, GLO > MIDI 2 > SEND CC: a knob turned on the instrument's sound sends the CC that sets it (the map above, and
  * the MACROS' 16..19) on the channel out, when the value it stands for changes: a DAW records the moves and plays them
  * back. A sound loaded sends nothing; a CC received is not sent back */
@@ -3196,14 +3197,15 @@ static void events_block(uint32_t n)
     while (mi_r != mi_w) {                            /* USB-MIDI (and TRS) in */
         uint32_t pkt = midi_in_q[mi_r % MQ], st = (pkt >> 8) & 0xF0u, ch = (pkt >> 8) & 0x0Fu;
         uint32_t d1 = (pkt >> 16) & 0x7Fu, d2 = (pkt >> 24) & 0x7Fu;
+        uint32_t port = (pkt >> 4) & 15u;
         track_t *t;
         mi_r++;
         if ((pkt & 15u) == 0xFu) {                    /* clock / transport: cable 0 USB, 1 TRS */
             mclk_event((pkt >> 8) & 0xFFu, ((pkt >> 4) & 15u) ? 2u : 1u);
             continue;
         }
-#if CLIPPER_SYNTH
-        if (mpe_mode && ch && !song.g[G_ROUTE] &&     /* Clipper 0.4: MPE, a member channel's own controls */
+#if SYNTHMAVEN_SYNTH
+        if (mpe_mode && ch && !song.g[G_ROUTE] &&     /* SynthMaven 0.4: MPE, a member channel's own controls */
             !(layer_multi() && ch + 1u == layer_ch()) &&   /* (0.6: not the MULTI layer's channel) */
             (st == 0xE0u || st == 0xD0u || (st == 0xB0u && d1 == 74u))) {
             if (st == 0xE0u)
@@ -3218,12 +3220,15 @@ static void events_block(uint32_t n)
         if (st == 0xB0u) {                            /* a CC (IN = CLOCK: none) */
             if (!song.g[G_ROUTE]) {
                 track_t *mt = midi_track(ch);
-                if (mt)                               /* (1.0: none: a channel IN CH does not take) */
+                if (mt) {                             /* only accepted channels affect bank selection */
+                    if (d1 == 0u)
+                        midi_bank[port < 3u ? port : 0u][ch & 15u] = (uint8_t)d2;
                     midi_cc(mt, d1, d2);
+                }
             }
             continue;
         }
-        if (st == 0xE0u || st == 0xD0u || st == 0xA0u) {   /* Clipper: bend, pressure (IN = CLOCK: none) */
+        if (st == 0xE0u || st == 0xD0u || st == 0xA0u) {   /* SynthMaven: bend, pressure (IN = CLOCK: none) */
             if (!song.g[G_ROUTE]) {
                 track_t *mt = midi_track(ch);
                 if (mt)
@@ -3232,8 +3237,8 @@ static void events_block(uint32_t n)
             continue;
         }
         if (st == 0xC0u) {                            /* (1.0) program change: the UI loads the sound (ui.c pc_poll) */
-            if (!song.g[G_ROUTE] && !midi_pc_off && midi_track(ch) == &trk[0])
-                midi_pc_req = (uint16_t)(1u + ((uint32_t)midi_bank << 7 | d1));
+            if (!song.g[G_ROUTE] && !midi_pc_off && sm_patch_accept(port) && midi_track(ch) == &trk[0])
+                midi_pc_req = (uint16_t)(1u + ((uint32_t)midi_bank[port < 3u ? port : 0u][ch & 15u] << 7 | d1));
             continue;
         }
         if (st != 0x90u && st != 0x80u)
@@ -3241,13 +3246,15 @@ static void events_block(uint32_t n)
         if (song.g[G_ROUTE] && st == 0x90u && d2)
             continue;                                 /* GLO > SYSTEM > IN = CLOCK: no notes (the note-offs still
                                                        * end what was held when it was set) */
+        if (st == 0x90u && d2 && !sm_key_accept(port))
+            continue;
         t = midi_route(ch, d1, st == 0x90u && d2);
         if (!t)
-            continue;                                 /* (Clipper 1.0: a channel GLO > MIDI > IN CH does not take) */
+            continue;                                 /* (SynthMaven 1.0: a channel GLO > MIDI > IN CH does not take) */
         if (is_drum(t)) {
             if (st == 0x90u && d2)
                 drum_input(lane_of_note(d1), vel_lvl(d2), 0, 1);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         } else if (t == &trk[1]) {                    /* 0.6, MULTI: the layer's channel plays it, nothing else */
             if (st == 0x90u && d2)
                 trk_note_on1(t, d1, d2);
@@ -3262,7 +3269,7 @@ static void events_block(uint32_t n)
                 mi_pen[d1 >> 5] |= 1u << (d1 & 31u);
                 step_in_push(d1 | 0x80u);             /* (the NOTES page's entry) */
             }
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
             mpe_cur_ch = (uint8_t)(mpe_mode ? ch : 0u);  /* (voice.c voice_start: the voice's channel) */
             input_on(t, d1, d2);
             mpe_cur_ch = 0;
@@ -3277,13 +3284,13 @@ static void events_block(uint32_t n)
             input_off(t, d1);
         }
     }
-    for (i = 0; i < (CLIPPER_SYNTH ? 1u : NTRK); i++)  /* (Clipper: the instrument's sequencer only) */
+    for (i = 0; i < (SYNTHMAVEN_SYNTH ? 1u : NTRK); i++)  /* (SynthMaven: the instrument's sequencer only) */
         seq_tick(&trk[i], adv);
     click_tick();
     roll_block(adv);
-    for (i = 0; i < (CLIPPER_SYNTH ? 1u : NPART); i++)
+    for (i = 0; i < (SYNTHMAVEN_SYNTH ? 1u : NPART); i++)
         arp_tick(&trk[i], adv);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     for (i = 0; i < NPART; i++)
         mseq_tick(&trk[i], adv);                       /* (0.8) the MOD SEQ of both sounds */
 #endif

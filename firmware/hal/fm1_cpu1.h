@@ -27,7 +27,7 @@
 
 extern void fm1_c1_entry(void);
 extern uint32_t _c1_ustack[];
-#define FM1_C1_STACK_WORDS (4096u / 4u)             /* (Clipper 0.7: fm1_cpu1.S, 4 KB) */
+#define FM1_C1_STACK_WORDS (4096u / 4u)             /* (SynthMaven 0.7: fm1_cpu1.S, 4 KB) */
 #define FM1_C1_MARK 0x43314D4Bu                  /* "C1MK": how deep core 1's stack has gone */
 static volatile uint32_t fm1_c1_alive, fm1_c1_job, fm1_c1_done, fm1_c1_arg;
 volatile uint32_t fm1_c1_trace;                 /* breadcrumbs (fm1_cpu1.S, fm1_c1_main) */

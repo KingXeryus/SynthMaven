@@ -8,7 +8,7 @@
 /* ------------------------------------------------------------ menu --- */
 /* 0.7 (after SLOOP 2.7): SCREEN + KNOB ACCEL, AUDIO + USB RATE (four rows: the fourth takes the help's place), MIDI
  * (CLOCK OUT, MPE), SYS (2ND CORE, CALIBRATION, ABOUT) */
-#if CLIPPER_SYNTH                                  /* Clipper 0.4: MPE (MIDI: OFF or the member channels' bend range) */
+#if SYNTHMAVEN_SYNTH                                  /* SynthMaven 0.4: MPE (MIDI: OFF or the member channels' bend range) */
 enum { MI_COLOR, MI_ZOOM, MI_ACCEL, MI_LIGHTS, MI_KEYS, MI_NOTES, MI_LOWCUT, MI_USB, MI_SERIAL, MI_RATE, MI_ADV, MI_CLKOUT,
        MI_MPE, MI_CPU1, MI_PANEL, MI_ABOUT, MI_COUNT };
 static const char *const MI_NAME[MI_COUNT] = {"COLOR", "ZOOM", "KNOB ACCEL", "LIGHTS", "KEYS", "NOTES", "SPEAKER LOWCUT",
@@ -68,7 +68,7 @@ static const char *mi_value(uint32_t i, uint16_t *c)
     case MI_CPU1: return cpu1_off ? "OFF" : "ON";          /* (0.7) the second core renders half the voices */
     case MI_CLKOUT: return clk_out ? "ON" : "OFF";         /* (0.7) the MIDI clock out on USB while SYNC is INT */
     case MI_ADV: return step_adv_off ? "OFF" : "ON";       /* (1.0) the NOTES page's cursor moves on when the keys are let go */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     case MI_MPE: return MPE_NAME[mpe_mode % MPE_MODES];
 #endif
     default:
@@ -85,7 +85,7 @@ static void draw_menu(void)
                    lights_notes * 32452843u + usb_full * 49979687u + usb_serial * 86028121u +
                    knob_accel_off * 179424673u + usb_rate * 373587883u + cpu1_off * 674506111u + clk_out * 982451653u +
                    step_adv_off * 236887691u
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
                    + mpe_mode * 2654435761u
 #endif
         ;
@@ -111,7 +111,7 @@ static void draw_menu(void)
         cv_begin(240, pass ? 95u : 124u, C_BLACK);
         cv_oy = pass ? -124 : 0;
         if (ui.menu == 2) {
-            cv_text(4, 4, &FONT_L, "CLIPPER", C_WHITE);
+            cv_text(4, 4, &FONT_L, "SYNTHMAVEN", C_WHITE);
             cv_rect(128, 22, 6, 6, TE_COL[3]), cv_rect(136, 16, 6, 12, TE_COL[2]);   /* the sails */
             cv_rect(144, 10, 6, 18, TE_COL[1]), cv_rect(152, 4, 6, 24, TE_COL[0]);
             cv_text(4, 36, &FONT_S, "SYNTH, FROM SLOOP + FELUCCA", C_AMB);
@@ -124,9 +124,9 @@ static void draw_menu(void)
 #if FELUCCA_CPU1                                    /* (the host tests include this file without cpu1.c) */
             cv_text(236 - text_w(&FONT_S, cpu1_label()), 119, &FONT_S, cpu1_label(), C_AMB);   /* 2 CORES / 1 CORE */
 #endif
-            cv_text(4, 132, &FONT_S, "GITHUB.COM/ISOD89/CLIPPER-FM1", C_AMB);   /* (the source of this firmware) */
+            cv_text(4, 132, &FONT_S, "GITHUB.COM/ISOD89/SYNTHMAVEN-FM1", C_AMB);   /* (the source of this firmware) */
             cv_text(4, 146, &FONT_S, "FONT: TERMINUS (OFL)", C_DIM);
-#if CLIPPER_SYNTH                                            /* (no built-in samples: the DSP's sources) */
+#if SYNTHMAVEN_SYNTH                                            /* (no built-in samples: the DSP's sources) */
             cv_text(4, 159, &FONT_S, "LADDER: ZAVALISHIN", C_DIM);
             cv_text(4, 172, &FONT_S, "PLATE: DATTORRO", C_DIM);
 #else
@@ -246,7 +246,7 @@ static void mi_set(uint32_t i, int32_t s)
         if (!cpu1_off && !cpu1_on())                   /* (core 1 starts at power-on only) */
             ui_message("AT THE NEXT POWER-ON");
         break;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     case MI_MPE:                                       /* OFF, then the bend range; OCT+ steps round */
         if (s > 0 && mpe_mode + 1u < MPE_MODES)
             mpe_mode++;

@@ -1655,8 +1655,8 @@ int main(void)
     t_mute();
     t_chordplus();
     t_overdub();                                   /* (SLOOP 2.7, ported in 0.7) */
-    t_hold2();                                     /* (Clipper 1.0: SLOOP 2.7.1 / 2.7.2 recording) */
-    t_mclk_jitter();                               /* (Clipper 1.0: SLOOP 2.7.2 MIDI clock tempo) */
+    t_hold2();                                     /* (SynthMaven 1.0: SLOOP 2.7.1 / 2.7.2 recording) */
+    t_mclk_jitter();                               /* (SynthMaven 1.0: SLOOP 2.7.2 MIDI clock tempo) */
     printf("seq2: %s\n", fails ? "FAILED" : "all checks ok");
     return fails;
 }

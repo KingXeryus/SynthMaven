@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.9 (CLIPPER_SYNTH 1): the filter MODELs, VINTAGE, the TUNING, the arp's TURNG, LOOP; and the sound's
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.9 (SYNTHMAVEN_SYNTH 1): the filter MODELs, VINTAGE, the TUNING, the arp's TURNG, LOOP; and the sound's
  * cleanliness (no click, no blow-up) where 0.9 touches it.
  *   MODELS   every model bounded at full resonance on a loud chord (ANALOG, WAVE, VECTOR); each one its response:
  *            the low-passes keep the bass and lose the top, HP the other way round, BP a peak, NOTCH a dip; MS20 and
@@ -18,7 +18,7 @@
 #include "hostsim.c"
 #undef main
 #define PROJ_HOST 1
-static const uint8_t TRK_DEF[NPART][2] = {{ENGI_HYBRID, 0}, {1, 0}, {4, 5}};   /* (ui.c, Clipper) */
+static const uint8_t TRK_DEF[NPART][2] = {{ENGI_HYBRID, 0}, {1, 0}, {4, 5}};   /* (ui.c, SynthMaven) */
 static uint32_t trk_def_engine(uint32_t i) { return i < NPART ? TRK_DEF[i][0] : 0u; }
 #include "../firmware/src/project.c"
 #define UP_HOST 1
@@ -512,7 +512,7 @@ int main(void)
     host_tracks_init();
     for (i = 0; i < NPART; i++)
         host_preset(&trk[i], TRK_DEF[i][0], TRK_DEF[i][1]);
-    clipper_proj_neutral();
+    synthmaven_proj_neutral();
     trk[1].p[P_LYMODE] = LY_OFF;
     song.g[G_BPM] = 120;
     t_models();

@@ -56,7 +56,7 @@ static inline int32_t osc_tri(uint32_t ph)
     return s < 65536 ? s - 32768 : 98303 - s;
 }
 
-/* Clipper 0.2: a band-limited triangle. Its corners (the slope turning at phase 0 and 1/2) get the polyBLAMP
+/* SynthMaven 0.2: a band-limited triangle. Its corners (the slope turning at phase 0 and 1/2) get the polyBLAMP
  * residual (the integral of polyBLEP's: (1 - x)^3 / 6 on the two samples around a corner, x their distance from
  * it), scaled by the change of slope, 8 x 32768 x inc / 2^32 a sample. The naive one folds its partials back at
  * -12 dB an octave, audible from the 4th octave up; this one is as clean as the polyBLEP saw. */
@@ -134,7 +134,7 @@ static inline int32_t tsvf_lp(const tsvf_t *c, int32_t in, int32_t *ic1, int32_t
     return v2;
 }
 
-/* Clipper: a four-pole transistor ladder (the Moog type), after V. Zavalishin's TPT ladder ("The Art of VA
+/* SynthMaven: a four-pole transistor ladder (the Moog type), after V. Zavalishin's TPT ladder ("The Art of VA
  * Filter Design", ch. 5): four one-pole trapezoidal low-passes, the feedback solved in the same sample (zero-delay
  * feedback: the cutoff and the resonance stay right up to the top), and a tanh at the ladder's input (its
  * differential pair): a hot signal drives it warm, the resonance saturates softly, and from k = 4 it sings on its
@@ -190,7 +190,7 @@ static inline int32_t ladder_tick(const ladder_t *c, int32_t x, int32_t *s)
     return (uq + 2048) >> 12;
 }
 
-/* Clipper 0.9: the filter MODELs of FX > FILTER > MODL (P_FMODEL), for the engines with a low-pass of their own
+/* SynthMaven 0.9: the filter MODELs of FX > FILTER > MODL (P_FMODEL), for the engines with a low-pass of their own
  * (ANALOG, WAVE, VECTOR): their cutoff and resonance, another circuit. SVF and MOOG as before, bit for bit; then
  *   MS20   two one-pole low-passes (12 dB) with the feedback through a saturation, after the Korg MS-20's Sallen-Key
  *          (Zavalishin's Korg-35 idea, ZDF as the ladder): bright, a screaming resonance that bites back on loud notes

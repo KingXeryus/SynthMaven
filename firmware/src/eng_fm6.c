@@ -142,7 +142,7 @@ static void fm6_pack(const uint8_t *v, uint8_t *b)
 /* ---------------------------------------------------- the track's patch --- */
 /* the patch bank (fm6_bank.c sets it with FELUCCA_FLASH): slot k's packed record -> pk, 0 = got it */
 static int (*fm6_bank_read)(uint32_t k, uint8_t *pk);
-static uint32_t fm6_bank_fmx;                   /* Clipper 0.6 (fm6_bank.c): bit k, slot k holds an FMX patch (eng_fmx.c),
+static uint32_t fm6_bank_fmx;                   /* SynthMaven 0.6 (fm6_bank.c): bit k, slot k holds an FMX patch (eng_fmx.c),
                                                  * an empty slot to FM6 */
 
 /* part tr's patch = v (155 bytes, sanitized). Main loop: the ISR takes it at its next block */
@@ -165,7 +165,7 @@ static void fm6_slot_get(uint32_t s, uint8_t *pk)
         memcpy(pk, FM6_FACTORY[s], FM6_PACKED);
     else if (s >= FM6_NSLOT || !fm6_bank_read || ((fm6_bank_fmx >> (s - FM6_NFACTORY)) & 1u) ||
              fm6_bank_read(s - FM6_NFACTORY, pk))
-        memcpy(pk, FM6_INIT, FM6_PACKED);           /* (Clipper 0.6: an FMX patch there: empty to FM6) */
+        memcpy(pk, FM6_INIT, FM6_PACKED);           /* (SynthMaven 0.6: an FMX patch there: empty to FM6) */
 }
 
 static void fm6_load_slot(uint32_t tr, uint32_t s)
@@ -181,14 +181,14 @@ static void fm6_load_slot(uint32_t tr, uint32_t s)
 
 /* a sound load put a PTCH value in (a preset, a user preset, a project, an engine change): its patch */
 static uint8_t fm6_pend;                            /* (SLOOP 2.6) bit per part: a sound's patch waiting for the fade */
-#if CLIPPER_SYNTH
-static volatile uint8_t fmx_reload;             /* Clipper 0.6: bit p, part p's FMX patch from its PTCH again (a sound
+#if SYNTHMAVEN_SYNTH
+static volatile uint8_t fmx_reload;             /* SynthMaven 0.6: bit p, part p's FMX patch from its PTCH again (a sound
                                                  * loaded: the edits not stored go; eng_fmx.c fmx_block) */
 #endif
 static void fm6_track_loaded(const track_t *t)
 {
     uint32_t tr = (uint32_t)(t - trk);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     if (tr < NPART && t->eng_req == ENGI_FMX)
         fmx_reload |= (uint8_t)(1u << tr);
 #endif

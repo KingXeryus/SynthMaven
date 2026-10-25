@@ -1,0 +1,15 @@
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const html=readFileSync(new URL('./editor.html',import.meta.url),'utf8');
+const source=html.slice(html.indexOf('async function smRequest('),html.indexOf('async function smRefresh('));
+let sent;
+const context=vm.createContext({dev:{info:{proto:15,version:'FELUCCA SYNTHMAVEN 0.1 DEV'}},rq:async r=>(sent=r,[0,1,3,1,0,1,0,0])});
+vm.runInContext(source+';this.request=smRequest',context);
+assert.equal((await context.request(100)).key,1);assert.equal(sent[0],100);assert.equal(sent[1].length,0);
+await context.request(101,[0,0,1,0]);assert.equal(sent[1].join(), '0,0,1,0');
+context.rq=async()=>[4,1,3,1,0,1,0,0];await assert.rejects(()=>context.request(102),/unavailable/);
+context.rq=async()=>[0];await assert.rejects(()=>context.request(100),/Invalid/);
+context.dev.info.version='FELUCCA 1.0';await assert.rejects(()=>context.request(100),/required/);
+for(const id of ['sm-patch-enabled','sm-patch-port','sm-key-port','sm-bt','sm-pair','sm-patch-cards']) assert(html.includes('id="'+id+'"'));
+console.log('SynthMaven web: wire requests, capabilities, unavailable BLE, legacy refusal, controls PASS');

@@ -16,7 +16,7 @@ static uint32_t section_bars(uint32_t s)
     uint32_t k, bars = 1;
     if (!proj_ok(p))
         return 1;
-    for (k = 0; k < (CLIPPER_SYNTH ? 1u : NTRK); k++) {   /* (Clipper: track 1's sequencer only) */
+    for (k = 0; k < (SYNTHMAVEN_SYNTH ? 1u : NTRK); k++) {   /* (SynthMaven: track 1's sequencer only) */
         uint32_t len = (uint32_t)clamp(p->t[k].p[P_SLEN], 1, NSTEP), u = div_units((uint32_t)p->t[k].p[P_SDIV] % NDIV_STEP);
         uint32_t b = (len * u + 4u * BEAT_U - 1u) / (4u * BEAT_U);   /* (64 x 8 beats fits 32 bits) */
         if (b > bars)
@@ -67,7 +67,7 @@ static void song_restore(void)                 /* (audio ISR: seq_stop) */
         trk[i].arp_ch[0] = trk[i].arp_ch[1] = trk[i].arp_ch[2] = 0;
     }
     proj_apply(&song_keep, 1);
-    song.sel = (uint8_t)(song_keep.sel < NTRK && !CLIPPER_SYNTH ? song_keep.sel : 0u);
+    song.sel = (uint8_t)(song_keep.sel < NTRK && !SYNTHMAVEN_SYNTH ? song_keep.sel : 0u);
     sync_reload = 1;
     ui.force = 1;
 }

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.4.1 (CLIPPER_SYNTH 1): the fixes of SLOOP 2.6 that apply to Clipper.
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.4.1 (SYNTHMAVEN_SYNTH 1): the fixes of SLOOP 2.6 that apply to SynthMaven.
  *   LIMITER   it looks one block ahead: a loud attack from silence is already turned down when it comes (no sample
  *             above the threshold through the knee); a held loud bass keeps one gain (no ripple at its pitch); quiet
  *             signals pass bit for bit, one block late
@@ -181,7 +181,7 @@ int main(void)
     host_tracks_init();
     for (i = 0; i < NPART; i++)
         host_preset(&trk[i], i ? 1u : 0u, 0);
-    clipper_proj_neutral();
+    synthmaven_proj_neutral();
     trk[1].p[P_LYMODE] = LY_OFF;
     t_limiter();
     t_filter();

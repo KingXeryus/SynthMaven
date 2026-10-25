@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* ACID: a bass line synthesizer in the manner of the 1981 Roland TB-303 (Clipper 0.2). One voice (mono).
+ * Copyright (C) 2026 3dSam */
+/* ACID: a bass line synthesizer in the manner of the 1981 Roland TB-303 (SynthMaven 0.2). One voice (mono).
  * A saw or a square (polyBLEP; the square slightly narrow, as the original's shaper makes it) into a four-pole
  * ladder (dsp.c ladder_tick, its resonance held under self-oscillation and the bass kept at high resonance), then a
  * one-pole high-pass and the drive. What makes it acid is the envelope logic:
@@ -89,7 +89,7 @@ static const preset_t ACID_PRESETS[] = {
     {"ACID LEAD", {0, 50, 90, 60, 70, 70, 40, 60}, {0, 100, 110, 30}, 0, 1, FX(0, 10, 30, 30),
      XP(P_GLMODE + 1, 1, P_GLIDE + 1, 40)},
     {"BUBBLE", {1, 44, 112, 40, 30, 100, 0, 80}, {0, 70, 60, 10}, 0, 1, FX(0, 0, 32, 20), XP(P_GLMODE + 1, 1)},
-    /* Clipper 0.3 */
+    /* SynthMaven 0.3 */
     {"ACID HOUSE", {0, 36, 104, 64, 56, 100, 30, 70}, {0, 100, 110, 10}, 0, 1, FX(0, 0, 20, 8), XP(P_GLMODE + 1, 1, P_TRANS + 1, -12)},
     {"SQR SQUELCH", {1, 26, 118, 90, 46, 127, 40, 110}, {0, 100, 110, 10}, 0, 1, FX(10, 0, 24, 8), XP(P_GLMODE + 1, 1, P_TRANS + 1, -12)},
     {"SOFT 303", {0, 40, 60, 40, 80, 50, 0, 30}, {0, 100, 120, 20}, 0, 1, FX(0, 10, 10, 10), XP(P_GLMODE + 1, 1, P_TRANS + 1, -12)},

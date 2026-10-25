@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-# Copyright (C) 2026 3dSam (Clipper)
-"""Clipper's built-in sources for GRAIN and SAMPLE, synthesized here (no recording, no third party):
+# Copyright (C) 2026 3dSam
+"""SynthMaven's built-in sources for GRAIN and SAMPLE, synthesized here (no recording, no third party):
 
   VOX    a small choir, "oo" opening to "ah" (the vowel moves through the first third: GRAIN's POS scans it)
   GLASS  a glass harmonica: beating inharmonic partials, the top fading slowly (POS: bright to pure)
   PAD    a seven-saw ensemble, its low-pass opening through the first half (POS: dark to bright)
   AIR    breath through resonances on the note's harmonics: a flute / whistle of air
 
-  tools/gen_clipper_sets.py [OUT_DIR]   (default assets/clipper-sets): one mono 16-bit WAV a set and sets.json
+  tools/gen_synthmaven_sets.py [OUT_DIR]   (default assets/synthmaven-sets): one mono 16-bit WAV a set and sets.json
   (name, file, rate, root, loop start / end in samples, the last one played). tools/gen_samples.py reads them
-  into the Clipper build (IMA ADPCM, ~25 KB of flash). Needs numpy and scipy; the WAVs are in the tree, so the
+  into the SynthMaven build (IMA ADPCM, ~25 KB of flash). Needs numpy and scipy; the WAVs are in the tree, so the
   build does not run this. Deterministic (fixed seeds).
 
 Each sound sustains on a loop whose seam is cross-faded (equal power over 90 ms): SAMPLE holds a note on it.
@@ -231,4 +231,4 @@ def main(out_dir):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else ROOT / "assets" / "clipper-sets")
+    main(sys.argv[1] if len(sys.argv) > 1 else ROOT / "assets" / "synthmaven-sets")

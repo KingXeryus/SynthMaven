@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
+ * Copyright (C) 2026 3dSam */
 /* The HYBRID factory patches (eng_hybrid.c) and the presets that play them (one each: the part's amplitude
  * ADSR, voice mode, FX sends and the EDIT values; PTCH = the patch).
  * Scales: cutoff 0..127 = 30 Hz .. 16 kHz (38 ~ 200 Hz, 57 ~ 500 Hz, 71 ~ 1 kHz, 85 ~ 2 kHz, 99 ~ 4 kHz);
@@ -22,7 +22,7 @@ static const hy_patch_t HY_FACTORY[] = {
      .lfo = {HLFO(TRI, 30, 0, 0), HLFO(SINE, 87, HL_KEY, 70)},
      .mod = {HMOD(M1, NONE, CUT, 50), HMOD(M2, NONE, SH1, 50), HMOD(M2, NONE, SH2, 50), HMOD(LFO2, MW, PITCH, 7),
              HMOD(LFO2, NONE, CUT, 4), HMOD(VEL, NONE, CUT, 12), HMOD(AT, NONE, CUT, 20)},
-     .bend = 2, .level = 96, .name = "CLIPPER"},
+     .bend = 2, .level = 96, .name = "SYNTHMAVEN"},
     /* 1 a warm 80s poly pad: two saws a few cents apart, slow filter, LFO 2 on the width of a pulse */
     {.osc = {HOSC(SAW, 0, -6, 100, 0, 0), HOSC(PULSE, 0, 6, 90, 30, 0), HOSC(SAW, -12, 0, 50, 0, 0)},
      .drift = 50, .route = HR_SER,
@@ -210,7 +210,7 @@ static const hy_patch_t HY_FACTORY[] = {
      .lfo = {HLFO(SINE, 60, 0, 0), HLFO(SINE, 60, 0, 0)},
      .mod = {HMOD(NONE, NONE, NONE, 0)},
      .bend = 2, .level = 100, .name = "INIT"},
-    /* Clipper 0.2: the MOOG ladder (after INIT: the PTCH numbers of 0.1 keep their sounds) */
+    /* SynthMaven 0.2: the MOOG ladder (after INIT: the PTCH numbers of 0.1 keep their sounds) */
     /* 24 a classic mono bass: two saws an octave apart and a square under them into the ladder, a snappy
      * envelope on it; M1 the cutoff, M2 the resonance */
     {.osc = {HOSC(SAW, 0, 0, 110, 0, HOF_RESET), HOSC(SAW, -12, 4, 90, 0, HOF_RESET), HOSC(PULSE, -12, 0, 60, 0, HOF_RESET)},
@@ -240,7 +240,7 @@ static const hy_patch_t HY_FACTORY[] = {
 };
 #define HY_INIT 23u              /* the INIT patch (a start for your own) */
 #define HY_NFACTORY ((uint32_t)NELEM(HY_FACTORY))
-static const char *const N_HY_PATCH[] = {"CLIPPER", "POLY PAD", "STRINGS", "ACID", "SYNC LEAD", "FM BELL", "FM KEYS",
+static const char *const N_HY_PATCH[] = {"SYNTHMAVEN", "POLY PAD", "STRINGS", "ACID", "SYNC LEAD", "FM BELL", "FM KEYS",
                                          "WOBBLE", "REESE", "HOOVER", "BRASS", "VOX", "PLUCK", "RISER", "METAL",
                                          "FOLD BASS", "CHIP LEAD", "GLASS PAD", "DRONE", "808 SUB", "TRANCE",
                                          "SAW PLUCK", "SPACE BEL", "INIT", "MOOG BASS", "MOOG LEAD", "LADDER PAD"};
@@ -250,7 +250,7 @@ _Static_assert(NELEM(N_HY_PATCH) == NELEM(HY_FACTORY), "a name per factory patch
 #define HYP(name, i, m1, m2, a, d, s, r, mono, ...) \
     {name, {0, 0, 0, i, m1, m2, 0, 0}, {a, d, s, r}, 0, mono, __VA_ARGS__}
 static const preset_t HY_PRESETS[] = {
-    HYP("CLIPPER", 0, 70, 50, 2, 90, 110, 70, 0, FX(0, 20, 18, 30)),
+    HYP("SYNTHMAVEN", 0, 70, 50, 2, 90, 110, 70, 0, FX(0, 20, 18, 30)),
     HYP("POLY PAD", 1, 64, 0, 70, 100, 110, 92, 0, FX(0, 40, 10, 50)),
     HYP("STRINGS", 2, 64, 0, 80, 100, 120, 90, 0, FX(0, 60, 0, 55)),
     HYP("ACID", 3, 60, 30, 0, 70, 90, 30, 1, FX(10, 0, 24, 8), XP(P_GLIDE + 1, 30, P_GLMODE + 1, 1, P_TRANS + 1, -12)),
@@ -277,8 +277,8 @@ static const preset_t HY_PRESETS[] = {
     HYP("MOOG BASS", 24, 40, 30, 0, 72, 90, 34, 1, FX(0, 0, 0, 6), XP(P_GLIDE + 1, 24, P_GLMODE + 1, 1, P_TRANS + 1, -12)),
     HYP("MOOG LEAD", 25, 50, 40, 2, 80, 110, 50, 1, FX(0, 10, 28, 26), XP(P_GLIDE + 1, 36)),
     HYP("LADDER PAD", 26, 50, 30, 80, 100, 115, 95, 0, FX(0, 40, 10, 60)),
-#if CLIPPER_SYNTH
-    /* Clipper 0.3: the factory patches played another way (their macros, the filter, the voice) */
+#if SYNTHMAVEN_SYNTH
+    /* SynthMaven 0.3: the factory patches played another way (their macros, the filter, the voice) */
     HYP("CLIP WIDE", 0, 80, 127, 4, 90, 115, 80, 0, FX(0, 30, 20, 40), XP(P_VOICE + 1, V_PUNI2, P_DETUNE + 1, 40)),
     HYP("DARK PAD", 1, 20, 0, 90, 100, 115, 100, 0, FX(0, 40, 10, 60)),
     HYP("ACID HARD", 3, 100, 90, 0, 70, 90, 30, 1, FX(20, 0, 24, 8), XP(P_GLIDE + 1, 30, P_GLMODE + 1, 1, P_TRANS + 1, -12)),
@@ -286,4 +286,4 @@ static const preset_t HY_PRESETS[] = {
     HYP("SOFT SYNC", 4, 70, 0, 10, 80, 110, 60, 1, FX(0, 20, 26, 30), XP(P_GLIDE + 1, 40)),
 #endif
 };
-_Static_assert(NELEM(HY_PRESETS) >= NELEM(HY_FACTORY), "a preset per factory patch (Clipper: and more)");
+_Static_assert(NELEM(HY_PRESETS) >= NELEM(HY_FACTORY), "a preset per factory patch (SynthMaven: and more)");

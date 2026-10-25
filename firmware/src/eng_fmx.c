@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* FMX: six operators, each its own wave and its own way of being modulated, on any routing (Clipper 0.6, after a
+ * Copyright (C) 2026 3dSam */
+/* FMX: six operators, each its own wave and its own way of being modulated, on any routing (SynthMaven 0.6, after a
  * request for "the Korg opsix on the FM-1": the ideas, not any code). FM6 stays the DX7 (its patches, its exact
  * engine); FMX is the larger instrument:
  *   - WAVE per operator: SINE TRI SAW SQR HALF ABS QUART PULSE SIN8 NOISE (fmx_tables.h: SAW SQR PULSE band-limited

@@ -58,15 +58,15 @@ typedef struct {
 } smp_user_hdr_t;                                   /* 32 + 16 x 28 = 480 B, data at +512 */
 static smp_zone_t usr_zone[SMP_USER_SLOTS][16];     /* RAM copy, off rebased onto SMP_DATA */
 static uint8_t usr_nz[SMP_USER_SLOTS];
-/* SET (SAMPLE) / SRC (GRAIN) -> a built-in set or a user slot. The groovebox: the sets, then USR1..USR4. Clipper
- * (0.9: its own synthesized sets, tools/gen_clipper_sets.py): USR1..USR4 first (0..3: what 0.2 .. 0.9 stored, the
+/* SET (SAMPLE) / SRC (GRAIN) -> a built-in set or a user slot. The groovebox: the sets, then USR1..USR4. SynthMaven
+ * (0.9: its own synthesized sets, tools/gen_synthmaven_sets.py): USR1..USR4 first (0..3: what 0.2 .. 0.9 stored, the
  * user's slots only), then the sets */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
 #define SMP_IS_SET(si) ((si) >= SMP_USER_SLOTS)
 #define SMP_SET_OF(si) ((si) - SMP_USER_SLOTS)
 #define SMP_USR_OF(si) (si)
 static const char *const SMP_ALL_NAMES[SMP_NALL] = {"USR1", "USR2", "USR3", "USR4", SMP_SET_NAMES_INIT};
-#define SMP_SET_MIN SMP_USER_SLOTS                  /* (1.0: no user samples in Clipper: SET / SRC from the sets; a
+#define SMP_SET_MIN SMP_USER_SLOTS                  /* (1.0: no user samples in SynthMaven: SET / SRC from the sets; a
                                                      * 0..3 stored by 0.2 .. 0.9 is brought into range as any value) */
 #else
 #define SMP_SET_MIN 0
@@ -95,7 +95,7 @@ static int smp_zone_ok(const smp_zone_t *z, uint32_t data_len)
     return z->off <= data_len && z->n <= 2u * SMP_USER_SIZE && z->off + (z->n + 1u) / 2u <= data_len &&
            z->idx <= 88u && z->rate && z->rate <= 4u << 16 && z->ls <= z->le && z->le < z->n && z->lo <= z->hi;
 }
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
 static void wt_user_scan(uint32_t k);               /* eng_wave.c: a wavetable in the slot (WAVE's USR1..4) */
 #endif
 static void smp_user_scan(uint32_t k)
@@ -103,7 +103,7 @@ static void smp_user_scan(uint32_t k)
     const smp_user_hdr_t *h = (const smp_user_hdr_t *)smp_user_xip(k);
     static smp_zone_t zs[16];
     uint32_t i, base;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     wt_user_scan(k);
 #endif
     smp_user_gen++;

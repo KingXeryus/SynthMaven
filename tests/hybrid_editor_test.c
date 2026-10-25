@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper: the editor's HYBRID commands (editor_hybrid.c, protocol v11), through hostsim.c:
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven: the editor's HYBRID commands (editor_hybrid.c, protocol v11), through hostsim.c:
  *   HY_GET of a factory patch gives its 128 bytes; of a part, the patch it plays (or the one sent and not played
  *   yet); HY_PUT makes it the part's own from its next block, put into range (the bytes of a file or of another
  *   editor may be anything); bad requests answer rc 1 and change nothing. */
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
         n = cmd(ED_HY_GET, a, 2, 0, 0);
         check(n > 3u && ed_out[2] == 0 && ed_unpack7(ed_out + 3, n - 3u, (uint8_t *)&got, sizeof got) == sizeof got &&
                   !memcmp(&got, &HY_FACTORY[0], sizeof got),
-              "HY_GET part 1: the patch it plays (PTCH 0: CLIPPER)");
+              "HY_GET part 1: the patch it plays (PTCH 0: SYNTHMAVEN)");
     }
     {
         static const uint8_t a[2] = {ED_HY_TRACK, 0};

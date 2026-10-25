@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.2 WAVE engine (firmware/src/eng_wave.c, tools/gen_wavetables.py), CLIPPER_SYNTH 1:
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.2 WAVE engine (firmware/src/eng_wave.c, tools/gen_wavetables.py), SYNTHMAVEN_SYNTH 1:
  *   build/host/wave_test [DEMODIR]
  * 1. the band-limited copies: every factory table builds; a copy's harmonics are the spectrum's (level 0 against
  *    WT_SPEC, by a DFT), and above its limit there is nothing (each level)

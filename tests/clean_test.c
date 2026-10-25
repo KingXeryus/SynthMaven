@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.9: no click where the sound is changed while it plays. Each case holds a chord, changes something, and
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.9: no click where the sound is changed while it plays. Each case holds a chord, changes something, and
  * compares the largest second difference of the output (what a click leaves: a step or a corner) around the change
  * with the largest one of the steady sound before and after it (each the same sound: a click is a mark above both):
  *   a sound loaded (every engine's first presets, one into the next), VOICE steals (12 notes on 8 voices), MUTE on and
@@ -156,11 +156,11 @@ int main(void)
     host_tracks_init();
     for (i = 0; i < NPART; i++)
         host_preset(&trk[i], i ? 1u : ENGI_HYBRID, 0);
-    clipper_proj_neutral();
+    synthmaven_proj_neutral();
     trk[1].p[P_LYMODE] = LY_OFF;
     song.g[G_BPM] = 120;
     for (e = 0; e < NENGINES; e++) {                    /* a sound loaded under the chord, every engine */
-        char w[80];                                     /* (0.9: SAMPLE and GRAIN too, on Clipper's own sources) */
+        char w[80];                                     /* (0.9: SAMPLE and GRAIN too, on SynthMaven's own sources) */
         attacks_ok = 1;
         snprintf(w, sizeof w, "%s: sounds loaded under a held chord", ENGINES[e]->name);
         check(w, e, 0, ch_preset, ENGINES[e]->npresets < 6u ? ENGINES[e]->npresets - 1u : 5u, 40);

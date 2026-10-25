@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.2 plate reverb (firmware/src/fx.c plate_*: G_RTYPE = PLATE), through fx_buses (the reverb bus alone):
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.2 plate reverb (firmware/src/fx.c plate_*: G_RTYPE = PLATE), through fx_buses (the reverb bus alone):
  *   build/host/reverb_test [WAV]
  * 1. an impulse: the tail decays (RT60 measured), longer with SIZE, shorter with DAMP's highs gone first
  * 2. stable: 30 s of full-scale noise at SIZE 127, DAMP 0: bounded, and silent again after (no runaway)
@@ -8,7 +8,7 @@
  * 4. the level of ROOM's at the default settings (within 4 dB, the same send)
  * 5. PRE: the first output comes PRE ms after the input
  * 6. ROOM -> PLATE -> ROOM with a tail running: no burst (the other one starts from silence)
- * 7. the delay line (Clipper: at half rate): an echo at the delay time, the repeats decaying
+ * 7. the delay line (SynthMaven: at half rate): an echo at the delay time, the repeats decaying
  * WAV: the impulse response of ROOM and PLATE, one after the other (to listen). Exit status: failed checks. */
 #define main hostsim_main
 #include "hostsim.c"
@@ -186,7 +186,7 @@ int main(int argc, char **argv)
         snprintf(w, sizeof w, "ROOM -> PLATE -> ROOM under a tail: nothing louder after (%d) than before (%d)", after, before);
         check(w, after <= before);
     }
-    {   /* 7. the delay line at half rate (Clipper): the echo at the delay time, the repeats decaying */
+    {   /* 7. the delay line at half rate (SynthMaven): the echo at the delay time, the repeats decaying */
         static int32_t zero[CTL], din[CTL], wl[CTL], wr[CTL];
         static int32_t y[FS * 3];
         uint32_t i, k, dl, first = 0, second = 0;

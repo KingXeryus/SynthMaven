@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-# Copyright (C) 2026 3dSam (Clipper)
+# Copyright (C) 2026 3dSam
 """TERRAIN's surfaces (firmware/src/eng_terrain.c): 8 terrains of 32 x 32 int16, periodic in x and y (a torus: an
 orbit crossing an edge comes back on the other side without a step), every one of a few low spatial harmonics (the
 orbit's output stays band-limited), mean 0, peak 30000. Written to firmware/src/terrain_tables.h (committed: no build

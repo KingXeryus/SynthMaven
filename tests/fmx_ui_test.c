@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.6, FMX on the FM-1 (the harness of tests/ui_pages_test.c):
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.6, FMX on the FM-1 (the harness of tests/ui_pages_test.c):
  *   the FMX pages (OP, OP 2, OP ENV, ROUTE, FMX, STORE) come in the EDIT family on FMX only (another engine: EDIT
  *   walks past them; a sound leaving FMX on one of them: back to EDIT 1); each knob writes its operator's value into
  *   the part's patch (OP chooses which), the sound plays it from the next block; ROUTE writes mod[TO][FROM] and OUT,
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
     palette_set(4);
     host_tracks_init();
     for (i = 0; i < NPART; i++) { set_engine_of(&trk[i], i ? 1u : 0u); apply_preset_to(&trk[i], 0); trk[i].engine = trk[i].eng_req; }
-    clipper_proj_neutral();
+    synthmaven_proj_neutral();
     go_home(); ui.force = 1; frames(3);
 
     n_other = walk_edit(&saw);

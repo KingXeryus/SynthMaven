@@ -556,7 +556,7 @@ async function editorBackup() {
 }
 
 
-/* ------------------------------------------- Clipper 0.2: a wavetable for WAVE (editor.html WT) --- */
+/* ------------------------------------------- SynthMaven 0.2: a wavetable for WAVE (editor.html WT) --- */
 async function wavetables() {
   /* a Serum-style WAV: two frames of 2048 points, a sine then a saw (16-bit PCM) */
   const N = 2048, x = new Int16Array(2 * N);
@@ -582,7 +582,7 @@ async function wavetables() {
   ok(data.length === 8192 && hdr.length === E.SMP.HDR_LEN && hv.getUint32(0, true) === 0x42545746 && hdr[6] === 16 && hdr[7] === 128 &&
     hv.getUint32(16, true) === 8192 && hv.getUint32(20, true) === E.crc32(data), "WT: the FWTB header (16 x 128, 8192 bytes, CRC)");
   /* through the mock: BEGIN, WRITE x 32, END -> SMP_INFO says 127 zones (a wavetable) and its name */
-  const m = E.makeMockDevice({ clipper: true });
+  const m = E.makeMockDevice({ synthmaven: true });
   const inp = [...m.access.inputs.values()][0], out = [...m.access.outputs.values()][0];
   const link = new E.Link((d) => out.send(d), { timeout: 2000 });
   inp.onmidimessage = (e) => link.receive(e.data);
@@ -598,7 +598,7 @@ async function wavetables() {
   ok(e2.rc === 2, "WT: a wrong header refused (rc 2)");
 }
 
-/* ------------------------------------- Clipper: the HYBRID patch (v11), editor.html HY --- */
+/* ------------------------------------- SynthMaven: the HYBRID patch (v11), editor.html HY --- */
 function hybridPatch() {
   const H = E.HY;
   /* the factory patches as the firmware has them (tests/hybrid_editor_test.c writes them; skipped without it) */
@@ -608,9 +608,9 @@ function hybridPatch() {
   ok(fx.size === H.SIZE && fx.factory.length === H.NFACTORY, "HYBRID: 128 bytes a patch, as many factory patches as the firmware");
   ok(fx.factory.every((b) => eq(Array.from(H.pack(H.unpack(Uint8Array.from(b)))), b)), "HYBRID: every factory patch unpacks and packs back byte for byte");
   const c = H.unpack(Uint8Array.from(fx.factory[0]));
-  ok(c.name === "CLIPPER" && H.OSC[c.osc[0].type] === "SUPER" && c.osc[2].coarse === -12 && c.osc[2].reset && H.FLT[c.flt[0].type] === "LP24"
+  ok(c.name === "SYNTHMAVEN" && H.OSC[c.osc[0].type] === "SUPER" && c.osc[2].coarse === -12 && c.osc[2].reset && H.FLT[c.flt[0].type] === "LP24"
     && H.SRC[c.mod[0].src] === "M1" && H.DST[c.mod[0].dst] === "CUT" && c.mod[0].amt === 50 && H.SRC[c.mod[3].via] === "MW",
-    "HYBRID: CLIPPER reads as hybrid_patches.h writes it (signed values, flags, the matrix)");
+    "HYBRID: SYNTHMAVEN reads as hybrid_patches.h writes it (signed values, flags, the matrix)");
   ok(fx.names.every((n, i) => H.unpack(Uint8Array.from(fx.factory[i])).name === n), "HYBRID: every name");
   ok(H.MOCK_FACTORY.length === fx.factory.length && H.MOCK_FACTORY.every((b, i) => eq(Array.from(b), fx.factory[i])) && eq(H.MOCK_NAMES, fx.names),
     "HYBRID: the mock's factory patches are the firmware's");
@@ -628,7 +628,7 @@ function hybridPatch() {
     "HYBRID: readable values (cutoff, times, a synced rate)");
 }
 
-/* ------------------------------------- Clipper 0.6: the FMX patch (v12), editor.html FX --- */
+/* ------------------------------------- SynthMaven 0.6: the FMX patch (v12), editor.html FX --- */
 async function fmxPatch() {
   const X = E.FX;
   const fp = join(HERE, "../build/host/fmx_factory.json");
@@ -649,8 +649,8 @@ async function fmxPatch() {
   const r = E.req.fmxStore(4, X.pack(ep));
   ok(r[0] === E.CMD.FMX_STORE && r[1][0] === 4 && r[1].every((x) => x < 128) && eq(Array.from(E.unpack7(Uint8Array.from(r[1].slice(1)))).slice(0, 128), fx.factory[0]),
     "FMX: FMX_STORE is the slot then pack7 of the 128 bytes, 7-bit clean");
-  /* through the mock (Clipper 0.6: protocol 12): put, get back, store, read the slot */
-  const m = E.makeMockDevice({ clipper: true });
+  /* through the mock (SynthMaven 0.6: protocol 12): put, get back, store, read the slot */
+  const m = E.makeMockDevice({ synthmaven: true });
   const inp = [...m.access.inputs.values()][0], out = [...m.access.outputs.values()][0];
   const link = new E.Link((d) => out.send(d), { timeout: 2000 });
   inp.onmidimessage = (e) => link.receive(e.data);
@@ -663,7 +663,7 @@ async function fmxPatch() {
   const back = E.parse[E.CMD.FMX_GET](await rq(E.req.fmxGet(2, 6)));
   ok(info.proto === 14 && info.engines.includes("FMX") && !put.rc && eq(Array.from(got.bytes), fx.factory[0]) && empty.rc === 2 && !st.rc
     && eq(Array.from(back.bytes), fx.factory[10]), "FMX: through the mock: PUT, GET back, an empty slot (rc 2), STORE, the slot read");
-  /* Clipper 0.8 (protocol 13): JUNO and VECTOR, the MOD SEQ's steps (editor_fmx.c ed_mseq_handle) */
+  /* SynthMaven 0.8 (protocol 13): JUNO and VECTOR, the MOD SEQ's steps (editor_fmx.c ed_mseq_handle) */
   const q = E.req.mseqPut(1, Array.from({ length: 64 }, (_, i) => (i % 16) - 8));
   ok(q[0] === E.CMD.MSEQ_PUT && q[0] === 94 && q[1].length === 65 && q[1][0] === 1 && q[1][1] === 0 && q[1][16] === 15 && q[1].every((x) => x < 128),
     "MOD SEQ: MSEQ_PUT is the part, then 64 steps + 8 (0..15)");
@@ -674,7 +674,7 @@ async function fmxPatch() {
   ok(info.engines.includes("JUNO") && info.engines.includes("VECTOR") && !g0.rc && g0.steps.length === 64 && g0.steps[0] === -8 && g0.steps[15] === 7
     && !p1.rc && !g1.rc && g1.steps[16] === -8 && g1.steps[31] === 7 && bad.rc === 1,
     "MOD SEQ through the mock: JUNO, VECTOR listed; the shapes to start from; PUT, GET back; a part out of range (rc 1)");
-  /* Clipper 0.9 (protocol 14): the TUNING (editor_fmx.c ED_TUNE_GET / ED_TUNE_PUT) and Scala .scl files */
+  /* SynthMaven 0.9 (protocol 14): the TUNING (editor_fmx.c ED_TUNE_GET / ED_TUNE_PUT) and Scala .scl files */
   const scl = E.parseScl("! test.scl\n!\nQuarter-tone test\n 5\n!\n 150.0\n 6/5\n 500.\n 3/2 comment\n 2/1\n");
   ok(scl && scl.desc === "Quarter-tone test" && scl.deg.length === 5 && scl.deg[0] === 0 && scl.deg[1] === 2400
     && scl.deg[2] === 5050 && scl.deg[3] === 8000 && scl.deg[4] === 11231 && scl.period === 19200,
@@ -690,7 +690,7 @@ async function fmxPatch() {
   ok(!t0.rc && t0.sys === 0 && t0.deg.length === 12 && t0.deg[11] === 17600 && t0.period === 19200 && !tp.rc && !t1.rc && t1.sys === 13 && t1.root === 2
     && t1.deg.join() === scl.deg.join() && t1.period === 19200 && tb.rc === 1,
     "TUNING through the mock: 12-EDO to start; PUT a .scl, GET it back; degrees not rising refused (rc 1)");
-  {   /* Clipper 1.0: A4 in Hz (one more byte both ways; without it, A4 as it is) */
+  {   /* SynthMaven 1.0: A4 in Hz (one more byte both ways; without it, A4 as it is) */
     const p432 = E.parse[E.CMD.TUNE_PUT](await rq(E.req.tunePut(0, 0, [0, 1600, 3200, 4800, 6400, 8000, 9600, 11200, 12800, 14400, 16000, 17600], 19200, 432)));
     const g1 = E.parse[E.CMD.TUNE_GET](await rq(E.req.tuneGet()));
     const p2 = E.parse[E.CMD.TUNE_PUT](await rq(E.req.tunePut(1, 0, [0, 1600, 3200, 4800, 6400, 8000, 9600, 11200, 12800, 14400, 16000, 17600], 19200)));
@@ -719,7 +719,7 @@ async function editorV5() {
     && names.indexOf("ED_MICRO_GET") + 1 === C.MICRO_GET && names.indexOf("ED_MICRO_SET") + 1 === C.MICRO_SET
     && names.indexOf("ED_FILL_GET") + 1 === C.FILL_GET && names.indexOf("ED_FILL_SET") + 1 === C.FILL_SET
     && /ED_FM6_GET = 68, ED_FM6_PUT, ED_FM6_LIST, ED_FM6_ERASE/.test(ec) && C.FM6_GET === 68 && C.FM6_ERASE === 71
-    && /#define ED_PROTO \(CLIPPER_SYNTH \? 14u : 11u\)/.test(ec) && /ed_b\(ED_PROTO\);/.test(ec)
+    && /#define ED_PROTO \(SYNTHMAVEN_SYNTH \? 15u : 11u\)/.test(ec) && /ed_b\(ED_PROTO\);/.test(ec)
     && /enum \{ ED_FMX_GET = 90, ED_FMX_PUT, ED_FMX_STORE \};/.test(readFileSync(join(HERE, "../firmware/src/editor_fmx.c"), "utf8"))
     && C.FMX_GET === 90 && C.FMX_STORE === 92
     && /enum \{ ED_MSEQ_GET = 93, ED_MSEQ_PUT, ED_TUNE_GET, ED_TUNE_PUT \};/.test(readFileSync(join(HERE, "../firmware/src/editor_fmx.c"), "utf8"))
@@ -795,11 +795,11 @@ async function editorV7() {
   const { m, rq, ev, done } = attachMock({ watchMs: 1000 });
   const info = E.parse[C.INFO](await rq(E.req.info()));
   ok(info.proto === 10, "v7: INFO ends with 10 (v10 includes v7)");
-  /* the lockable set == seq.c p_lockable (the ids as core.h names them, the groovebox's: Clipper 0.4's LFO 2, ENV 2 and
-     matrix, #if CLIPPER_SYNTH, move P_E0 to 78: lockable(id, 78)) */
+  /* the lockable set == seq.c p_lockable (the ids as core.h names them, the groovebox's: SynthMaven 0.4's LFO 2, ENV 2 and
+     matrix, #if SYNTHMAVEN_SYNTH, move P_E0 to 78: lockable(id, 78)) */
   const sc = readFileSync(join(HERE, "../firmware/src/seq.c"), "utf8"), ch = readFileSync(join(HERE, "../firmware/src/core.h"), "utf8");
   const ids = {}; let n = 0;
-  for (const nm of (/enum \{\s*\/\* per-track parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/#if CLIPPER_SYNTH[\s\S]*?#endif/g, "").replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) ids[nm] = n++;
+  for (const nm of (/enum \{\s*\/\* per-track parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/#if SYNTHMAVEN_SYNTH[\s\S]*?#endif/g, "").replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) ids[nm] = n++;
   const lockableC = (id) => id <= ids.P_LD_AMP || id === ids.P_SGATE || (id >= ids.P_DIST && id <= ids.P_REV) || id === ids.P_GLIDE || id === ids.P_PAN
     || id === ids.P_DETUNE || (id >= ids.P_SLCR && id <= ids.P_SLDEPTH) || (id >= ids.P_E0 && id <= ids.P_E7) || id === ids.P_TFLT;
   let same = ids.P_COUNT === 61;
@@ -807,7 +807,7 @@ async function editorV7() {
   ok(same && /id <= P_LD_AMP \|\| id == P_SGATE \|\| \(id >= P_DIST && id <= P_REV\) \|\| id == P_GLIDE \|\| id == P_PAN/.test(sc)
     && !E.lockable(ids.P_SLEN) && !E.lockable(ids.P_AMODE) && !E.lockable(ids.P_VOICE) && !E.lockable(ids.P_CHORD) && E.lockable(ids.P_E7),
     "v7: the lockable parameters (editor == seq.c p_lockable; LEN, ARP, VOICE, CHORD are not)");
-  {   /* Clipper 0.4 (core.h with CLIPPER_SYNTH): LFO 2 at 53, ENV 2 at 56, the matrix at 60, P_E0 78, P_COUNT 86 (editor
+  {   /* SynthMaven 0.4 (core.h with SYNTHMAVEN_SYNTH): LFO 2 at 53, ENV 2 at 56, the matrix at 60, P_E0 78, P_COUNT 86 (editor
          EXPECT_04, LAYOUT, MX_PAGES); its EDIT values lockable, the 25 new ones not (seq.c p_lockable) */
     const sy = {}; let k = 0;
     for (const nm of (/enum \{\s*\/\* per-track parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/#(if|endif)[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) sy[nm] = k++;
@@ -818,7 +818,7 @@ async function editorV7() {
       && E.lockable(sy.P_E0, 118) && E.lockable(sy.P_E7, 118) && !E.lockable(sy.P_L2RATE, 118) && !E.lockable(sy.P_M6AMT, 118)
       && !E.lockable(sy.P_ITYPE, 118) && !E.lockable(sy.P_IMIX, 118) && !E.lockable(sy.P_MSRATE, 118) && !E.lockable(sy.P_DICE, 118)
       && !E.lockable(sy.P_SLOOP, 118) && !E.lockable(sy.P_SPREAD, 118) && !E.lockable(sy.P_MAC1, 118) && !E.lockable(sy.P_M12AMT, 118),
-      "v7: Clipper's layout (LFO 2 53, ENV 2 56, MATRIX 60, INSERT 78, 0.8's MOD SEQ 83, SPICE 87, 0.9's VINTAGE 89 LOOP 90, 1.0's SPREAD 91, LFO 3 92, ENV 2 LOOP 95, MACROS 96, slots 7..12 100, P_E0 118): its EDIT values lockable, the rest not");
+      "v7: SynthMaven's layout (LFO 2 53, ENV 2 56, MATRIX 60, INSERT 78, 0.8's MOD SEQ 83, SPICE 87, 0.9's VINTAGE 89 LOOP 90, 1.0's SPREAD 91, LFO 3 92, ENV 2 LOOP 95, MACROS 96, slots 7..12 100, P_E0 118): its EDIT values lockable, the rest not");
   }
   {   /* (after SLOOP 2.6) SetGate: a value set again is sent once the last request is answered */
     const g = new E.SetGate();
@@ -829,24 +829,24 @@ async function editorV7() {
     ok(a && b && !c && d && e && g.get("0:30") === undefined,
       "SetGate: the same value skipped only while its request is pending; answered, sent again; clear() forgets");
   }
-  {   /* patchByCount: SLOOP 2.6 (71, pE0 63) / 2.5 (61, 53) / Clipper 0.4 (86, 78) */
+  {   /* patchByCount: SLOOP 2.6 (71, pE0 63) / 2.5 (61, 53) / SynthMaven 0.4 (86, 78) */
     const s26 = Array.from({ length: 71 }, (_, i) => i), c04 = Array.from({ length: 86 }, (_, i) => 1000 + i);
     const a = E.patchByCount(s26, 63, 86, 78), b = E.patchByCount(c04, 78, 71, 63), c = E.patchByCount(c04, 78, 86, 78);
     const d = E.patchByCount(s26.slice(0, 61), undefined, 86, 78);
     ok(a[52] === 52 && a[53] === null && a[77] === null && a[78] === 63 && a[85] === 70
       && b[52] === 1052 && b[53] === null && b[63] === 1078 && b[70] === 1085 && c[60] === 1060 && d[78] === 53 && d[77] === null,
-      "patchByCount: the 53 shared values by place, the engine's 8 by theirs; SLOOP 2.6's and Clipper's own left out");
+      "patchByCount: the 53 shared values by place, the engine's 8 by theirs; SLOOP 2.6's and SynthMaven's own left out");
     const e = E.patchByCount(c04, 78, 91, 83), f = E.patchByCount(Array.from({ length: 91 }, (_, i) => 2000 + i), 83, 86, 78);
     ok(e[77] === 1077 && e[78] === null && e[82] === null && e[83] === 1078 && e[90] === 1085
       && f[77] === 2077 && f[78] === 2083 && f[85] === 2090,
-      "patchByCount: Clipper 0.4 / 0.5 <-> 0.6: LFO 2, ENV 2, the matrix by place, 0.6's INSERT left as the device has it");
+      "patchByCount: SynthMaven 0.4 / 0.5 <-> 0.6: LFO 2, ENV 2, the matrix by place, 0.6's INSERT left as the device has it");
   }
-  {   /* the backup check: a SLOOP 2.6 project (FUN6) into Clipper 0.4 stops before writing; 0.4.1 reads it */
+  {   /* the backup check: a SLOOP 2.6 project (FUN6) into SynthMaven 0.4 stops before writing; 0.4.1 reads it */
     const f6 = Uint8Array.of(0x36, 0x4E, 0x55, 0x46), f5 = Uint8Array.of(0x35, 0x4E, 0x55, 0x46);
     ok(E.bkProjFormat(f6) === 6 && E.bkProjFormat(f5) === 5 && E.bkProjFormat(Uint8Array.of(1, 2, 3, 4)) === 0
-      && E.bkDevFormat({ version: "CLIPPER 0.4", pcount: 86 }) === 5 && E.bkDevFormat({ version: "CLIPPER 0.4.1", pcount: 86 }) === 6
+      && E.bkDevFormat({ version: "SYNTHMAVEN 0.4", pcount: 86 }) === 5 && E.bkDevFormat({ version: "SYNTHMAVEN 0.4.1", pcount: 86 }) === 6
       && E.bkDevFormat({ version: "SLOOP 2.6", pcount: 71 }) === 6 && E.bkDevFormat({ version: "FELUCCA SLOOP 2.5", pcount: 61 }) === 5,
-      "backup: the project format each firmware reads (Clipper 0.4.1 reads SLOOP 2.6's FUN6)");
+      "backup: the project format each firmware reads (SynthMaven 0.4.1 reads SLOOP 2.6's FUN6)");
   }
   /* MICRO: 64 bytes offset by 64; a set clamps to -32..31 */
   const mg = E.parse[C.MICRO_GET](await rq(E.req.microGet(0)));
@@ -1263,7 +1263,7 @@ async function editorCart() {
   old.done();
 }
 
-/* ------------------------------------------ Clipper 1.0: the pattern tools (editor.html PAT) --- */
+/* ------------------------------------------ SynthMaven 1.0: the pattern tools (editor.html PAT) --- */
 async function patternTools() {
   const { PAT } = E;
   const shape = (P, n = P.len) => P.steps.slice(0, n).map((x) => (x.time === 0 && x.n ? x.notes.slice(0, x.n).join("+") + (x.flags & 1 ? ">" : "") + (x.flags & 2 ? "~" : "") : x.time === 1 ? "-" : ".")).join(" ");
@@ -1365,13 +1365,13 @@ async function patternTools() {
     P.steps[3].rat = 0x55; P.steps[3].lvl = 0xFF;
     const f = JSON.parse(JSON.stringify(PAT.toFile(P, "My bass")));
     const Q = PAT.fromFile(f, 64);
-    ok(f.format === "clipper-pattern" && f.steps.length === 4 && f.locks.length === 1 && Q.len === 4 && shape(Q) === shape(P) && Q.micro[3] === -7 && Q.fill[0] === 2
+    ok(f.format === "synthmaven-pattern" && f.steps.length === 4 && f.locks.length === 1 && Q.len === 4 && shape(Q) === shape(P) && Q.micro[3] === -7 && Q.fill[0] === 2
       && Q.steps[3].rat === 0x55 && Q.steps[3].lvl === 0xFF && Q.locks.length === 1 && Q.locks[0].value === -200 && Q.steps[4].time === 2,
-      "pattern: a .clipper-pattern.json file there and back");
+      "pattern: a .synthmaven-pattern.json file there and back");
     let bad = 0;
-    for (const o of [null, {}, { format: "clipper-pattern", steps: [] }, { format: "x", steps: [[1, [60], 0, 0, 96]] }, { format: "clipper-pattern", steps: [[1, [60], 0, 0, "q"]] }, { format: "clipper-pattern", steps: [5] }])
+    for (const o of [null, {}, { format: "synthmaven-pattern", steps: [] }, { format: "x", steps: [[1, [60], 0, 0, 96]] }, { format: "synthmaven-pattern", steps: [[1, [60], 0, 0, "q"]] }, { format: "synthmaven-pattern", steps: [5] }])
       try { PAT.fromFile(o); } catch (e) { bad++; }
-    const big = PAT.fromFile({ format: "clipper-pattern", len: 999, steps: [[9, [300, -4, 0, 0], 7, 9, 999]], micro: [99] }, 64);
+    const big = PAT.fromFile({ format: "synthmaven-pattern", len: 999, steps: [[9, [300, -4, 0, 0], 7, 9, 999]], micro: [99] }, 64);
     ok(bad === 6 && big.len === 64 && big.steps[0].n === 4 && big.steps[0].notes[0] === 127 && big.steps[0].notes[1] === 0 && big.steps[0].time === 2 && big.micro[0] === 31,
       "pattern: a bad file is refused, odd values are clamped");
     const old = PAT.fitTo(Q, { micro: null, fill: null, locks: null });
@@ -1452,24 +1452,24 @@ function editorTabs() {
   }
 }
 
-/* ------------------------------- editor: Clipper's pages == the device's (params.c PAGES, CLIPPER_SYNTH) --- */
-function editorClipperPages() {
+/* ------------------------------- editor: SynthMaven's pages == the device's (params.c PAGES, SYNTHMAVEN_SYNTH) --- */
+function editorSynthMavenPages() {
   const lay = html.slice(html.indexOf("const EXPECT = {"), html.indexOf("/* globals that are actions"));
   const syn = html.slice(html.indexOf("const INS_BITS"), html.indexOf("/* the INSERT's TYPE or the arp's MODE changed"));
   const X = vm.runInNewContext(lay + syn + ";({ LAYOUT, layoutKnown, synDesc, INS_DESC, INS_RATE, INS_NTYPE, AM_TURING })", { F: E.F, dev: null });
   const ch = readFileSync(join(HERE, "../firmware/src/core.h"), "utf8"), pc = readFileSync(join(HERE, "../firmware/src/params.c"), "utf8");
-  /* the synth build's ids (core.h, CLIPPER_SYNTH 1) and its aliases */
+  /* the synth build's ids (core.h, SYNTHMAVEN_SYNTH 1) and its aliases */
   const P = {}; let k = 0;
   for (const nm of (/enum \{\s*\/\* per-track parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/#(if|endif)[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) P[nm] = k++;
   const G = {}; k = 0;
   for (const nm of (/enum \{\s*\/\* global parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/#(if|endif)[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) G[nm] = k++;
   for (const [, a, b] of ch.matchAll(/#define ([PG]_\w+) ([PG]_\w+)/g)) (a[0] === "P" ? P : G)[a] = (b[0] === "P" ? P : G)[b];
-  /* PAGES as the synth build has it: #if CLIPPER_SYNTH kept, its #else and #if !CLIPPER_SYNTH dropped */
+  /* PAGES as the synth build has it: #if SYNTHMAVEN_SYNTH kept, its #else and #if !SYNTHMAVEN_SYNTH dropped */
   const src = pc.slice(pc.indexOf("static const page_t PAGES[]"), pc.indexOf("#define NPAGES"));
   let keep = [true]; const lines = [];
   for (const l of src.split("\n")) {
-    if (/^#if !CLIPPER_SYNTH/.test(l)) keep.push(false);
-    else if (/^#if CLIPPER_SYNTH/.test(l)) keep.push(true);
+    if (/^#if !SYNTHMAVEN_SYNTH/.test(l)) keep.push(false);
+    else if (/^#if SYNTHMAVEN_SYNTH/.test(l)) keep.push(true);
     else if (/^#else/.test(l)) keep[keep.length - 1] = !keep[keep.length - 1];
     else if (/^#endif/.test(l)) keep.pop();
     else if (keep.every(Boolean)) lines.push(l);
@@ -1485,7 +1485,7 @@ function editorClipperPages() {
   ok(pages.length > 20 && P.P_E0 === 118 && P.P_COUNT === 126 && G.G_COUNT === 34 && G.G_DMODE === 33
     && X.layoutKnown({ pcount: 126, pe0: 118, gcount: G.G_COUNT }) && X.layoutKnown({ pcount: 99, pe0: 91, gcount: 33 })
     && !missP.length && !missG.length && js(notOn) === js([P.P_MUTE]) && all0.length === new Set(all0).size,
-    `editor: Clipper 1.0's pages hold every value of the device's (params.c PAGES; not on one: MUTE${missP.length || missG.length ? `; missing P ${missP} G ${missG}` : ""}${notOn.length !== 1 ? `; off the pages ${notOn}` : ""})`);
+    `editor: SynthMaven 1.0's pages hold every value of the device's (params.c PAGES; not on one: MUTE${missP.length || missG.length ? `; missing P ${missP} G ${missG}` : ""}${notOn.length !== 1 ? `; off the pages ${notOn}` : ""})`);
   const title = (id, s) => (L.flatMap((g) => g.pages).find((x) => x[1] === s && x[2].includes(id)) || [])[0];
   ok(title(P.P_FMODEL, 0) === "FILTER" && title(P.P_VELF, 0) === "MOD" && title(P.P_VINT, 0) === "VOICE 2" && title(P.P_SLOOP, 0) === "SPICE"
     && title(G.G_RTYPE, 1) === "REVERB" && title(G.G_RPRE, 1) === "REVERB" && title(G.G_EQLOW, 1) === "EQ+COMP" && title(G.G_SYNC, 1) === "SYSTEM"
@@ -1518,15 +1518,15 @@ function editorClipperPages() {
     && mu.label === "MUTAT" && sd.label === "SEED" && ch14 === spice && X.synDesc(87, spice, { pe0: 53 }, p, pd) === spice
     && X.synDesc(101, dst, info, p, pd) === dst && (() => { const q1 = []; q1[118] = { label: "CUT" };
       return X.synDesc(101, dst, { pe0: 118 }, new Array(126).fill(0), q1).names[7] === "CUT" && X.synDesc(116, dst, { pe0: 118 }, new Array(126).fill(0), q1).names[7] === "CUT"; })(),
-    "editor: Clipper's labels: a matrix DST as the engine's values, the INSERT's A B C by TYPE (CRUSH BITS 1..16), TURNG's MUTAT SEED");
-  /* a Clipper 0.8 sound (97 values, P_E0 89) into 0.9 (99, 91): VINTAGE and LOOP left as the device has them */
+    "editor: SynthMaven's labels: a matrix DST as the engine's values, the INSERT's A B C by TYPE (CRUSH BITS 1..16), TURNG's MUTAT SEED");
+  /* a SynthMaven 0.8 sound (97 values, P_E0 89) into 0.9 (99, 91): VINTAGE and LOOP left as the device has them */
   const v8 = Array.from({ length: 97 }, (_, i) => 3000 + i), q = E.patchByCount(v8, 89, 99, 91), r = E.patchByCount(q.map((x) => x ?? 0), 91, 97, 89);
   ok(q[88] === 3088 && q[89] === null && q[90] === null && q[91] === 3089 && q[98] === 3096 && r[88] === 3088 && r[89] === 3089 && r[96] === 3096,
-    "patchByCount: Clipper 0.8 <-> 0.9: up to DICE by place, the engine's 8 by theirs, VINTAGE and LOOP left out");
-  /* a Clipper 0.9 sound (99 values, P_E0 91) into 1.0 (126, 118): SPREAD .. slot 12 left as the device has them */
+    "patchByCount: SynthMaven 0.8 <-> 0.9: up to DICE by place, the engine's 8 by theirs, VINTAGE and LOOP left out");
+  /* a SynthMaven 0.9 sound (99 values, P_E0 91) into 1.0 (126, 118): SPREAD .. slot 12 left as the device has them */
   const v9 = Array.from({ length: 99 }, (_, i) => 4000 + i), q9 = E.patchByCount(v9, 91, 126, 118), r9 = E.patchByCount(q9.map((x) => x ?? 0), 118, 99, 91);
   ok(q9[90] === 4090 && q9[91] === null && q9[117] === null && q9[118] === 4091 && q9[125] === 4098 && r9[90] === 4090 && r9[91] === 4091 && r9[98] === 4098,
-    "patchByCount: Clipper 0.9 <-> 1.0: up to LOOP by place, the engine's 8 by theirs, 1.0's 27 left out");
+    "patchByCount: SynthMaven 0.9 <-> 1.0: up to LOOP by place, the engine's 8 by theirs, 1.0's 27 left out");
 }
 
 /* ------------------------------------------------- editor icons (Fukiai) --- */
@@ -1740,9 +1740,9 @@ async function editorPorts() {
   });
   const pn = (a) => E.fm1Ports(a).map((x) => x.input.name + "/" + x.output.name).join(",");
   ok(pn(acc(["X0X FM-1"])) === "X0X FM-1/X0X FM-1", "editor: a port named after another firmware (X0X FM-1) is found");
-  ok(pn(acc(["Arturia KeyStep Pro", "USB-MIDI", "X0X FM-1", "Clipper"], ["SLOOP"])) ===
-     "Clipper/Clipper,X0X FM-1/X0X FM-1,USB-MIDI/USB-MIDI",
-     "editor: Clipper first, then FM-1, then generic names; other gear and unplugged ports left out");
+  ok(pn(acc(["Arturia KeyStep Pro", "USB-MIDI", "X0X FM-1", "SynthMaven"], ["SLOOP"])) ===
+     "SynthMaven/SynthMaven,X0X FM-1/X0X FM-1,USB-MIDI/USB-MIDI",
+     "editor: SynthMaven first, then FM-1, then generic names; other gear and unplugged ports left out");
   ok(pn(acc(["Arturia KeyStep Pro", "loopMIDI Port"])) === "", "editor: no FM-1 name: nothing to try");
 }
 
@@ -1832,7 +1832,7 @@ await editorDsyn();
 await editorCart();
 await patternTools();
 editorTabs();
-editorClipperPages();
+editorSynthMavenPages();
 editorIcons();
 samplesMatch();
 chopTests();

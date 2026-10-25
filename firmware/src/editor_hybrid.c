@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* v11 (Clipper): the HYBRID engine's patches (eng_hybrid.c), EDITOR_PROTOCOL.md "HYBRID patches".
+ * Copyright (C) 2026 3dSam */
+/* v11 (SynthMaven): the HYBRID engine's patches (eng_hybrid.c), EDITOR_PROTOCOL.md "HYBRID patches".
  *   HY_GET  target, index        -> target, index, rc, [pack7 of the 128-byte patch]
  *           target 0: the part `index` plays now (0..2), 1: factory patch `index`
  *   HY_PUT  0, part, pack7 (128) -> 0, part, rc     the part's own patch from its next block (eng_hybrid.c

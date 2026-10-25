@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.2 engines ACID, STRINGS and MACRO (firmware/src/eng_acid.c, eng_strings.c, eng_macro.c), CLIPPER_SYNTH 1:
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.2 engines ACID, STRINGS and MACRO (firmware/src/eng_acid.c, eng_strings.c, eng_macro.c), SYNTHMAVEN_SYNTH 1:
  *   build/host/engines2_test [DEMODIR]
  * ACID     one voice; the pitch of its key; the filter envelope decays (bright -> dark); an accent (velocity 127) is
  *          louder and brighter; successive accents push the cutoff (SWP); a slide glides and does not restart the

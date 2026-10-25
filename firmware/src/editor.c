@@ -29,8 +29,8 @@ enum { ED_INFO = 1, ED_GET, ED_SET, ED_DUMP, ED_DESC, ED_STEP_GET, ED_STEP_SET, 
        ED_FILL_GET, ED_FILL_SET,                                                /* v8: fill conditions */
        ED_FM6_GET = 68, ED_FM6_PUT, ED_FM6_LIST, ED_FM6_ERASE };                /* v9: FM6 patches (Felucca's numbers) */
 /* v10 (SLOOP 2.5): DSYN_LIST .. DSYN_PLAY = 72..76, editor_dsyn.c; backup object 9 = the SYN kits */
-/* v11 (Clipper): HY_GET, HY_PUT = 77, 78, editor_hybrid.c */
-#define ED_PROTO (CLIPPER_SYNTH ? 14u : 11u)           /* the protocol version INFO ends with (12: Clipper's FMX, 13: its
+/* v11 (SynthMaven): HY_GET, HY_PUT = 77, 78, editor_hybrid.c */
+#define ED_PROTO (SYNTHMAVEN_SYNTH ? 15u : 11u)           /* the protocol version INFO ends with (12: SynthMaven's FMX, 13: its
                                                         * MOD SEQ, JUNO, VECTOR, 14: the TUNING) */
 
 static uint8_t ed_out[600];
@@ -114,7 +114,7 @@ static int ed_smp_erase(uint32_t k, uint32_t all)  /* header sector, or the whol
     usr_nz[k] = 0;
     for (i = 0; i < 16u; i++)
         usr_zone[k][i].n = 0;                     /* a sounding voice ends instead of reading 0xFF */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     wt_user_ok[k] = 0;                            /* (a wavetable there: WAVE stops reading it, its copies go) */
     if (wt_have == (int16_t)(WT_NFACTORY + k))
         wt_have = -1;
@@ -134,8 +134,8 @@ static int ed_smp_end(uint32_t k, const uint8_t *a, uint32_t na)
         return 6;                                  /* no BEGIN first (a header over a header: flash ANDs them) */
     if (ed_unpack7(a, na, ed_smp_buf, sizeof(smp_user_hdr_t)) != sizeof(smp_user_hdr_t))
         return 1;
-#if CLIPPER_SYNTH
-    if (h->magic == WT_USER_MAGIC) {               /* Clipper: a wavetable for WAVE (eng_wave.c), its spectra at +512 */
+#if SYNTHMAVEN_SYNTH
+    if (h->magic == WT_USER_MAGIC) {               /* SynthMaven: a wavetable for WAVE (eng_wave.c), its spectra at +512 */
         const wt_user_hdr_t *w = (const wt_user_hdr_t *)ed_smp_buf;
         if (!wt_user_hdr_ok(w))
             return 2;
@@ -488,9 +488,9 @@ static uint32_t ed_bk_commit(void)
         const up_bank_t *b = (const up_bank_t *)raw;
         if (ed_flash_busy())
             return 3;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         if (n == 8u + UP_PER_BANK * UP_RSIZE_04 && b->magic == UP_BANK_MAGIC && b->rsize == UP_RSIZE_04 &&
-            b->nslot == UP_PER_BANK) {                    /* a Clipper 0.4 backup's bank: made today's, then stored */
+            b->nslot == UP_PER_BANK) {                    /* a SynthMaven 0.4 backup's bank: made today's, then stored */
             up_bank_import(id - 6u, raw, (int)n);
             up_gen++;
             return !flash_ok || st_save(OBJ_UPRESET0 + id - 6u, &up_bank[id - 6u], sizeof up_bank[0]) ? 4u : 0u;
@@ -635,9 +635,9 @@ static int ed_backup(uint32_t cmd, const uint8_t *a, uint32_t na)   /* no flash:
 
 #include "editor_fm6.c"                               /* v9: the FM6 patches (68..71) */
 #include "editor_dsyn.c"                              /* v10: the SYN drum kits (72..76) */
-#include "editor_hybrid.c"                            /* v11 (Clipper): the HYBRID patches (77, 78) */
-#if CLIPPER_SYNTH
-#include "editor_fmx.c"                               /* v12 (Clipper 0.6): the FMX patches (90..92) */
+#include "editor_hybrid.c"                            /* v11 (SynthMaven): the HYBRID patches (77, 78) */
+#if SYNTHMAVEN_SYNTH
+#include "editor_fmx.c"                               /* v12 (SynthMaven 0.6): the FMX patches (90..92) */
 #endif
 
 static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0 and F7 */
@@ -664,12 +664,28 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         ed_send();
         return;
     }
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     if (ed_fmx_handle(cmd, a, na) || ed_mseq_handle(cmd, a, na)) {   /* v12: the FMX patches; v13: the MOD SEQ */
         ed_send();
         return;
     }
 #endif
+    if (cmd >= 100u && cmd <= 102u) {
+        uint32_t rc = 0;
+        if (cmd == 100u && na) rc = 1;
+        if (cmd == 101u) {
+            if (na != 4u || a[0] > 1u) rc = 1;
+            else {
+                rc = sm_set(a[1], a[2], a[3]);
+                if (!rc) { midi_pc_off = !a[0]; settings_later = 1; ui.force = 1; }
+            }
+        }
+        if (cmd == 102u) rc = 4; /* no BLE central driver: never fake a connection */
+        ed_begin(cmd); ed_b(rc); ed_b(1); ed_b(SM_CAPS);
+        ed_b(!midi_pc_off); ed_b(sm_patch_port); ed_b(sm_key_port); ed_b(sm_bluetooth);
+        ed_b(0); /* BLE state: unavailable, no peer */
+        ed_send(); return;
+    }
     switch (cmd) {
     case ED_INFO:
         ed_str("FELUCCA " FELUCCA_VERSION, 24);
@@ -824,9 +840,9 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
             const smp_user_hdr_t *h = (const smp_user_hdr_t *)smp_user_xip(i);
             char nm[9] = {0};
             uint32_t j;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
             uint32_t used = usr_nz[i] || wt_user_ok[i];
-            ed_b(wt_user_ok[i] ? 127u : usr_nz[i]);        /* (Clipper: 127 zones = a wavetable for WAVE) */
+            ed_b(wt_user_ok[i] ? 127u : usr_nz[i]);        /* (SynthMaven: 127 zones = a wavetable for WAVE) */
 #else
             uint32_t used = usr_nz[i];
             ed_b(usr_nz[i]);
@@ -895,7 +911,7 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         if (!rc) {
             int16_t v[P_COUNT];
             up_values(&r, v);                              /* each value inside its range */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
             up_rec_set(&r, v);                             /* (0.8: the record's own layout; P_COUNT > its p[]) */
 #else
             for (i = 0; i < P_COUNT; i++)

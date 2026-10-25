@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.5 engines VPS and TERRAIN (firmware/src/eng_vps.c, eng_terrain.c; Felucca discussions #145, #146),
- * CLIPPER_SYNTH 1:   build/host/engines3_test [DEMODIR]
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.5 engines VPS and TERRAIN (firmware/src/eng_vps.c, eng_terrain.c; Felucca discussions #145, #146),
+ * SYNTHMAVEN_SYNTH 1:   build/host/engines3_test [DEMODIR]
  * VPS      the pitch of its key; V up: brighter, a formant around V x f0, the same pitch; D moves the timbre; no DC; V at
  *          its top on C7 stays in the harmonics (no aliasing); V swept through whole cycles by VENV: no step
  * TERRAIN  every surface pitched at its key; RAD 0 silent, a wider orbit brighter; DRIFT moves the timbre, the pitch

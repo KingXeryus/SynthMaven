@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.8 (CLIPPER_SYNTH 1): JUNO and its chorus, VECTOR, the MOD SEQ, SPICE / DICE.
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.8 (SYNTHMAVEN_SYNTH 1): JUNO and its chorus, VECTOR, the MOD SEQ, SPICE / DICE.
  *   JUNO     every preset bounded, audible, its voices free after the release; in tune; PW (a square: no even
  *            harmonics, narrow: they come); HPF 3 thins the bass; the chorus: OFF mono (left = right),
  *            I II I+II stereo and each its own; a mode changed under a held chord: no click; the INSERT's JUNO1 JUNO2
@@ -18,7 +18,7 @@
 #include "hostsim.c"
 #undef main
 #define PROJ_HOST 1
-static const uint8_t TRK_DEF[NPART][2] = {{ENGI_HYBRID, 0}, {1, 0}, {4, 5}};   /* (ui.c, Clipper) */
+static const uint8_t TRK_DEF[NPART][2] = {{ENGI_HYBRID, 0}, {1, 0}, {4, 5}};   /* (ui.c, SynthMaven) */
 static uint32_t trk_def_engine(uint32_t i) { return i < NPART ? TRK_DEF[i][0] : 0u; }
 #include "../firmware/src/project.c"
 #define UP_HOST 1
@@ -578,7 +578,7 @@ int main(void)
     host_tracks_init();
     for (i = 0; i < NPART; i++)
         host_preset(&trk[i], TRK_DEF[i][0], TRK_DEF[i][1]);
-    clipper_proj_neutral();
+    synthmaven_proj_neutral();
     trk[1].p[P_LYMODE] = LY_OFF;
     t_juno();
     t_vector();

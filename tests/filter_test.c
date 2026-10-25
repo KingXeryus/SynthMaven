@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.2 filters (firmware/src/dsp.c ladder_*, eng_hybrid.c hsvf_sat, HF_MOOG, ANALOG's P_FMODEL):
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.2 filters (firmware/src/dsp.c ladder_*, eng_hybrid.c hsvf_sat, HF_MOOG, ANALOG's P_FMODEL):
  *   build/host/filter_test
  * 1. the ladder's response, resonance 0: flat well below the cutoff, about -12 dB at it (four poles of -3 dB),
  *    24 dB an octave above it (-40 dB or less two octaves up), at cutoffs from 100 Hz to 8 kHz

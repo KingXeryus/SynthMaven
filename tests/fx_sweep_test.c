@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 1.0 (comments: a crackle on the left with PLATE, HALL, SHIMMER: a left output tap read outside its line).
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 1.0 (comments: a crackle on the left with PLATE, HALL, SHIMMER: a left output tap read outside its line).
  * A sine (440 Hz, 3 kHz, faded in) through every effect at its extremes, each from a clean line: every reverb type
  * (SIZE, PRE, DAMP), the delay (each MODE, each TIME, FDBK 0 and 120), the chorus (RATE, DEPTH), the INSERT's swept
  * types (A, B, C), the JUNO chorus, the master (EQ, COMP, FILT). A linear effect on a sine leaves no corner: its
@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     char w[96];
     host_tracks_init();
     for (i = 0; i < NPART; i++) host_preset(&trk[i], i ? 1u : ENGI_HYBRID, 0);
-    clipper_proj_neutral(); trk[1].p[P_LYMODE] = LY_OFF; song.g[G_BPM] = 120;
+    synthmaven_proj_neutral(); trk[1].p[P_LYMODE] = LY_OFF; song.g[G_BPM] = 120;
     for (k = 0; k < 2; k++, fq = 3000.0) {
         int rt, sz, pre, dmp, dt, md, fb, cr, cd;
         /* reverbs */

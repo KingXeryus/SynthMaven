@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.4 (CLIPPER_SYNTH 1): the modulation matrix on every engine, LFO 2, ENV 2, MPE, and where they are kept.
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.4 (SYNTHMAVEN_SYNTH 1): the modulation matrix on every engine, LFO 2, ENV 2, MPE, and where they are kept.
  *   MATRIX    LFO 2 > CUT sweeps the brightness; ENV 2 > PITCH starts high and settles; KEY > AMP: low notes louder
  *             than high ones; RAND > PITCH: each note its own pitch; VEL > an EDIT value (ANALOG CUT): a hard note
  *             brighter, the stored value untouched; MW > PAN: to the right; MW > LFO 2 RATE: faster; LFO 2 KEY:
@@ -10,15 +10,15 @@
  *             pressure (AT > CUT) and its CC 74 (SLIDE, to the cutoff) its own note; MPE OFF: as before (omni)
  *   PROJECT   LFO 2, ENV 2 and the matrix of tracks 1 and 2 kept in track 3's free lock slots (the size unchanged, SLOOP
  *             sees tracks 3 and 4 as they are), the EDIT values and locks where they were; 0.4's first build's projects
- *             and Clipper 0.3's read; a SLOOP 2.6 project (FUN6) read
- *   PRESETS   one bank for SLOOP and Clipper: 192-byte records, LFO 2 / ENV 2 / matrix packed in the spare values; a
- *             SLOOP 2.6 record read; Clipper 0.4's first bank (232-byte records) converted */
+ *             and SynthMaven 0.3's read; a SLOOP 2.6 project (FUN6) read
+ *   PRESETS   one bank for SLOOP and SynthMaven: 192-byte records, LFO 2 / ENV 2 / matrix packed in the spare values; a
+ *             SLOOP 2.6 record read; SynthMaven 0.4's first bank (232-byte records) converted */
 #define main hostsim_main
 #include <stddef.h>
 #include "hostsim.c"
 #undef main
 #define PROJ_HOST 1
-static const uint8_t TRK_DEF[NPART][2] = {{ENGI_HYBRID, 0}, {1, 0}, {4, 5}};   /* (ui.c, Clipper) */
+static const uint8_t TRK_DEF[NPART][2] = {{ENGI_HYBRID, 0}, {1, 0}, {4, 5}};   /* (ui.c, SynthMaven) */
 static uint32_t trk_def_engine(uint32_t i) { return i < NPART ? TRK_DEF[i][0] : 0u; }
 #include "../firmware/src/project.c"
 #define UP_HOST 1
@@ -394,7 +394,7 @@ static void t_project(void)
         free3 &= pj.t[2].lock[k].step == LOCK_FREE;
     for (k = 0; k < PROJ_E0; k++)
         same &= pj.t[2].p[k] == t3[k];
-    ok(sizeof pj == 3840u && pj.rsv[0] == CLIPPER_PROJ_MARK && free3 && same && pj.t[0].p[PROJ_E0 + 4u] == a->p[P_E4] &&
+    ok(sizeof pj == 3840u && pj.rsv[0] == SYNTHMAVEN_PROJ_MARK && free3 && same && pj.t[0].p[PROJ_E0 + 4u] == a->p[P_E4] &&
        pj.t[0].lock[0].param == PROJ_E0 + 4u,
        "project: LFO 2 / ENV 2 / matrix in track 3's free lock slots (SLOOP passes them over), its sound as it is");
     for (k = 0; k < PROJ_NX; k++)
@@ -419,7 +419,7 @@ static void t_project(void)
     }
     {   /* the first 0.4 build's projects (0xC4: in tracks 3 and 4's p[]) */
         proj_capture(&pj);
-        pj.rsv[0] = CLIPPER_PROJ_MARK_04;
+        pj.rsv[0] = SYNTHMAVEN_PROJ_MARK_04;
         for (k = 0; k < P_ITYPE - PROJ_E0; k++)          /* (0.4's 25: LFO 2, ENV 2, the matrix) */
             pj.t[2].p[k] = xval(1, k), pj.t[3].p[k] = xval(0, k);   /* (swapped: tell them apart) */
         proj_apply(&pj, 1);
@@ -429,7 +429,7 @@ static void t_project(void)
         ok(same && trk[2].p[0] == TP[0].def, "a project of 0.4's first build (tracks 3 and 4's p[]): read as it was");
     }
     proj_capture(&pj);
-    pj.rsv[0] = 0xC3;                                  /* as Clipper 0.3 wrote it: tracks 3 and 4 its own values */
+    pj.rsv[0] = 0xC3;                                  /* as SynthMaven 0.3 wrote it: tracks 3 and 4 its own values */
     for (k = 0; k < NELEM(pj.t[2].p); k++)              /* (1.0: PROJ_NX passed the record's 61) */
         pj.t[2].p[k] = TP[k].max, pj.t[3].p[k] = TP[k].min;
     proj_apply(&pj, 1);
@@ -438,7 +438,7 @@ static void t_project(void)
     for (k = 0, e_ok = 1; k < 8u; k++)
         e_ok &= a->p[P_E0 + k] == ea[k];
     ok(same && e_ok && trk[2].p[0] == TP[0].max,
-       "a Clipper 0.3 project: no LFO 2 / ENV 2 / matrix (defaults), its EDIT values and tracks 3, 4 as they were");
+       "a SynthMaven 0.3 project: no LFO 2 / ENV 2 / matrix (defaults), its EDIT values and tracks 3, 4 as they were");
 }
 
 /* a SLOOP 2.6 project (format 6, 3816 bytes) as SLOOP 2.6 writes it */
@@ -460,7 +460,7 @@ static void t_fun6(void)
         for (k = 0; k < 8u; k++)
             t->e[k] = (int16_t)(i * 10u + k);
         for (k = 0; k < PROJ_NX_V6; k++)
-            t->x[k] = 99;                                /* (2.6's INSERT and the like: not Clipper's) */
+            t->x[k] = 99;                                /* (2.6's INSERT and the like: not SynthMaven's) */
         t->engine = (uint8_t)i, t->preset = 1;
         t->step[3].time = ST_NOTE, t->step[3].n = 1, t->step[3].note[0] = (uint8_t)(60 + i);
         t->mf[3] = (uint8_t)((uint32_t)(-5 & 63) | 2u << 6);   /* a nudge of -5, the condition 2 */
@@ -484,7 +484,7 @@ static void t_fun6(void)
     ok(!proj_import(q, &p6, (int)sizeof p6), "a damaged FUN6: refused");
 }
 
-/* user presets: one bank SLOOP and Clipper both read */
+/* user presets: one bank SLOOP and SynthMaven both read */
 static void t_userbank(void)
 {
     static uint8_t raw[8u + UP_PER_BANK * UP_RSIZE_04];
@@ -529,7 +529,7 @@ static void t_userbank(void)
             good &= out[P_E0 + i] == (int16_t)(263 + i);
         ok(good, "user presets: a SLOOP 2.6 record: its sound and its INSERT, 2.6's others left out, the matrix at defaults");
     }
-    /* Clipper 0.4's first bank (232-byte records, np 86) */
+    /* SynthMaven 0.4's first bank (232-byte records, np 86) */
     memset(raw, 0, sizeof raw);
     {
         uint32_t m = UP_BANK_MAGIC;
@@ -565,7 +565,7 @@ static void t_userbank(void)
             good &= !strncmp(r->name, nm, 12);
         }
     }
-    ok(good, "user presets: Clipper 0.4's first bank (232-byte records) made the shared one, every record as it was");
+    ok(good, "user presets: SynthMaven 0.4's first bank (232-byte records) made the shared one, every record as it was");
     memset(raw, 0, sizeof raw);
     memcpy(raw, bk, sizeof *bk);
     ok(!up_bank_import(1, raw, (int)sizeof *bk) && !memcmp(&up_bank[1], bk, sizeof *bk), "user presets: a shared bank read as it is");
@@ -577,7 +577,7 @@ int main(void)
     host_tracks_init();
     for (i = 0; i < NPART; i++)
         host_preset(&trk[i], TRK_DEF[i][0], TRK_DEF[i][1]);
-    clipper_proj_neutral();
+    synthmaven_proj_neutral();
     trk[1].p[P_LYMODE] = LY_OFF;
     t_matrix();
     t_mpe();

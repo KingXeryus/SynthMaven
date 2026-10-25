@@ -42,7 +42,7 @@ static void digital_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, con
     me = v->s[4] >> 9;                                         /* Q15 */
     idx = (p[P_E4] * me) >> 15;                                 /* 0..127 */
     idx = clamp(idx + ((m->cutoff + m->shape - (64 << 8)) >> 8) + (v->vel - 96) / 4, 0, 127);
-    {   /* (Clipper 0.9) anti-aliasing: the index held where the sidebands (Carson: (index + 1) x the modulator)
+    {   /* (SynthMaven 0.9) anti-aliasing: the index held where the sidebands (Carson: (index + 1) x the modulator)
          * would pass ~16 kHz, from the fastest operator that modulates in this algorithm; a high note gets a
          * little less bright instead of folding back as noise */
         static const uint8_t MODS[8] = {14, 14, 14, 14, 10, 8, 8, 0};   /* bit 1: op 2, 2: op 3, 3: op 4 */
@@ -168,8 +168,8 @@ static const preset_t DIGITAL_PRESETS[] = {
     {"TUBE BELL", {4, 6, 1, 13, 50, 90, 0, 0}, {0, 100, 0, 90}, 0, 0, FX(0, 10, 25, 50)},
     {"FM PLUCK", {4, 2, 1, 3, 70, 15, 0, 0}, {0, 78, 0, 54}, 0, 0, FX(0, 10, 28, 30)},
     {"FM GRAND", {4, 1, 2, 12, 60, 40, 10, 0}, {0, 90, 20, 60}, 0, 0, FX(0, 20, 14, 30)},
-#if CLIPPER_SYNTH
-    /* Clipper 0.3 */
+#if SYNTHMAVEN_SYNTH
+    /* SynthMaven 0.3 */
     {"DX BASS", {0, 1, 1, 1, 46, 26, 10, 0}, {0, 60, 80, 20}, 0, 1, FX(0, 0, 0, 5), XP(P_TRANS + 1, -12, P_VELF + 1, 30)},
     {"SUITCASE", {4, 1, 1, 14, 30, 38, 0, 0}, {0, 85, 35, 60}, 0, 0, FX(0, 30, 10, 28), XP(P_LRATE + 1, 66, P_LD_AMP + 1, 14)},
     {"CHURCH BEL", {4, 6, 1, 9, 44, 95, 0, 0}, {0, 104, 0, 96}, 0, 0, FX(0, 10, 20, 60)},

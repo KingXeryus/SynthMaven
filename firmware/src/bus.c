@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.3: the master bus, before the volume knob and the peak limiter (fx.c mix_block). Synth only.
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.3: the master bus, before the volume knob and the peak limiter (fx.c mix_block). Synth only.
  *   EQ    three bands in parallel on the signal: a low shelf (a TPT one pole at 150 Hz), a peak at 1 kHz (a TPT SVF
  *         band-pass, Q 0.7) and a high shelf (one pole at 5 kHz); each -12 .. +12 dB in 1 dB steps (MID: 10 dB).
  *         The gains glide (~6 ms), so turning a band never clicks.

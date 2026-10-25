@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-# Copyright (C) 2026 3dSam (Clipper)
+# Copyright (C) 2026 3dSam
 """FMX's tables (firmware/src/eng_fmx.c): the operators' waves and the algorithms. Written to
 firmware/src/fmx_tables.h (committed: no build step). Usage: python3 tools/gen_fmx.py [out.h]
 

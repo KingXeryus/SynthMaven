@@ -142,7 +142,7 @@ int main(void)
                      !memcmp(back, ff, sizeof ff));
         bad += check("0.7 side record: none bigger than its room", st_side_load(OBJ_SETTINGS, got, ST_SIDE_MAX + 1u) < 0);
     }
-    {   /* Clipper 1.0: a tail after the payload (user presets: 3080 B + 472), the payload's length and CRC as before;
+    {   /* SynthMaven 1.0: a tail after the payload (user presets: 3080 B + 472), the payload's length and CRC as before;
          * an older save (none) leaves it erased; no tail past the sector */
         static uint8_t big[3080], tail[472], back[472], ff[472], gb[3600];
         uint32_t i;

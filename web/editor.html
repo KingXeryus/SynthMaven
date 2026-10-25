@@ -7,7 +7,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Clipper Editor</title>
+<title>SynthMaven Editor</title>
 <style>
   /* SLOOP 2.4 editor: the FM-1's screen on a big display. Black, the four track colours, the device's own
      Terminus pixel font (tools/gen_webfont.py, inlined: the editor also runs from file://), 16 px and 32 px only
@@ -224,7 +224,7 @@
   .seqtools .sq { min-width: 34px; padding: 0 8px; }
   .seqtools > * { margin-right: 6px; }
   .rollbox { overflow-x: auto; margin: 8px 0; border: 1px solid var(--line); }
-  /* ---- Clipper 1.0: the pattern tools, the lanes ---- */
+  /* ---- SynthMaven 1.0: the pattern tools, the lanes ---- */
   .seqpro { border: 1px solid var(--line); padding: 8px 12px; margin: 8px 0; }
   .seqpro .bar { margin: 6px 0; flex-wrap: wrap; }
   .seqpro input[type=number] { width: 60px; }
@@ -419,7 +419,7 @@
   .fm6ops td, .fm6ops th { padding: 1px 3px; }
   input.fm6n { width: 3.6em; padding: 2px 3px; }
   #fm6panel h3 { margin: 16px 0 6px; color: var(--dim); text-transform: uppercase; }
-  /* Clipper: the HYBRID panel */
+  /* SynthMaven: the HYBRID panel */
   #hypanel h3 { margin: 16px 0 6px; color: var(--dim); text-transform: uppercase; }
   #fxpanel h3 { margin: 16px 0 6px; color: var(--dim); text-transform: uppercase; }
   #fxpanel .fxn { width: 3.4em; }
@@ -477,33 +477,7 @@
 <body>
 <div class="app">
   <aside class="side">
-    <a class="brand" href="#sound" aria-label="Clipper">
-      <svg viewBox="20 20 731 220" role="img" aria-hidden="true">
-        <path d="M59.29 200.71 A100.00 100.00 0 1 1 200.71 200.71" fill="none" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
-        <line x1="101.32" y1="181.00" x2="104.76" y2="81.24" stroke="#F2F2F2" stroke-width="7" stroke-linecap="round"/>
-        <line x1="135.72" y1="181.00" x2="139.16" y2="62.32" stroke="#F2F2F2" stroke-width="7" stroke-linecap="round"/>
-        <line x1="168.40" y1="181.00" x2="171.84" y2="86.40" stroke="#F2F2F2" stroke-width="7" stroke-linecap="round"/>
-        <polygon points="109.92,88.12 110.75,96.96 111.91,105.71 113.40,114.36 115.23,122.93 117.38,131.40 119.87,139.78 122.69,148.08 125.84,156.27 129.33,164.38 133.14,172.40 107.34,172.40" fill="#FFC618"/>
-        <polygon points="144.32,69.20 145.49,79.91 146.99,90.53 148.82,101.06 150.99,111.51 153.49,121.88 156.32,132.15 159.48,142.34 162.98,152.45 166.82,162.47 170.98,172.40 141.74,172.40" fill="#1ECC70"/>
-        <polygon points="177.00,93.28 177.66,101.60 178.64,109.83 179.96,117.96 181.62,126.01 183.60,133.97 185.92,141.83 188.56,149.61 191.54,157.30 194.86,164.89 198.50,172.40 174.42,172.40" fill="#287CFF"/>
-        <polygon points="98.74,91.56 98.74,172.40 56.60,168.96 61.63,161.66 66.48,154.27 71.15,146.78 75.63,139.18 79.94,131.49 84.06,123.70 88.00,115.82 91.76,107.83 95.34,99.74" fill="#FF621A"/>
-        <line x1="73.80" y1="175.84" x2="51.44" y2="167.24" stroke="#F2F2F2" stroke-width="5" stroke-linecap="round"/>
-        <polygon points="58.32,172.40 72.56,173.79 86.81,175.05 101.07,176.16 115.33,177.14 129.61,177.99 143.89,178.69 158.17,179.26 172.47,179.69 186.77,179.98 201.08,180.14 195.92,192.18 184.76,193.14 173.59,193.97 162.42,194.66 151.25,195.21 140.07,195.62 128.89,195.89 117.70,196.03 106.51,196.03 95.32,195.89 84.12,195.62" fill="#F2F2F2"/>
-        <path d="M328.98 149.28 A30.00 30.00 0 1 1 328.98 110.72" fill="none" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
-        <line x1="364.00" y1="68.00" x2="364.00" y2="160.00" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
-        <line x1="392.00" y1="100.00" x2="392.00" y2="160.00" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
-        <circle cx="392.00" cy="72.00" r="6.60" fill="#F2F2F2"/>
-        <circle cx="450.00" cy="130.00" r="30.00" fill="none" stroke="#F2F2F2" stroke-width="12"/>
-        <line x1="420.00" y1="130.00" x2="420.00" y2="196.00" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
-        <circle cx="538.00" cy="130.00" r="30.00" fill="none" stroke="#F2F2F2" stroke-width="12"/>
-        <line x1="508.00" y1="130.00" x2="508.00" y2="196.00" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
-        <path d="M648.98 149.28 A30.00 30.00 0 1 1 656.00 130.00" fill="none" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
-        <line x1="596.00" y1="130.00" x2="656.00" y2="130.00" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
-        <line x1="684.00" y1="100.00" x2="684.00" y2="160.00" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
-        <path d="M684.00 130.00 A30.00 30.00 0 0 1 724.26 101.81" fill="none" stroke="#F2F2F2" stroke-width="12" stroke-linecap="round"/>
-      </svg>
-      <span>editor</span>
-    </a>
+    <a class="brand" href="#sound" aria-label="SynthMaven"><img src="synthmaven-logo.svg" alt="SynthMaven" style="width:160px;height:130px;object-fit:contain;background:white"></a>
     <nav class="tabs" id="tabs" role="tablist" aria-orientation="vertical">
       <div class="navh" id="navtrack" data-t="navTrack"></div>
       <button role="tab" data-tab="sound" data-t="sound" data-ic="symbol_audio"></button>
@@ -552,7 +526,7 @@
         </div>
         <p class="dim" id="drumnote" data-t="drumNote" hidden></p>
       </div>
-      <!-- Clipper 0.7: sound tools: undo / redo, compare with the sound as loaded, A / B, a scoped randomizer, what changed -->
+      <!-- SynthMaven 0.7: sound tools: undo / redo, compare with the sound as loaded, A / B, a scoped randomizer, what changed -->
       <div class="card" id="sndtools">
         <h2 data-t="stTitle" data-ic="control_arrow_loop"></h2>
         <p class="bar">
@@ -574,6 +548,7 @@
       </div>
       <div class="groups" id="groups"></div>
       <!-- the FM6 engine's patch (firmware protocol v9): only while the selected track plays FM6 -->
+      <div class="card" id="sm-patches"><h2>SynthMaven · four-patch browser</h2><div id="sm-patch-cards" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px"></div><p class="bar"><button id="sm-prev">Previous four</button><span id="sm-page"></span><button id="sm-next">Next four</button></p></div>
       <div class="card" id="fm6panel" hidden>
         <h2 data-t="fm6Title" data-ic="ui_knob"></h2>
         <p class="dim" data-t="fm6Help"></p>
@@ -593,7 +568,7 @@
         <h3 data-t="fm6Ops"></h3>
         <div id="fm6ops"></div>
       </div>
-      <!-- Clipper 0.6: the FMX engine's patch (firmware protocol v12): only while the selected track plays FMX -->
+      <!-- SynthMaven 0.6: the FMX engine's patch (firmware protocol v12): only while the selected track plays FMX -->
       <div class="card" id="fxpanel" hidden>
         <h2 data-t="fxTitle" data-ic="ui_knob"></h2>
         <p class="dim" data-t="fxHelp"></p>
@@ -608,14 +583,14 @@
           <label><span data-t="fxStoreTo"></span> <select id="fxslot"></select></label> <button id="fxstore" data-t="fxStore"></button></p>
         <div id="fxbody"></div>
       </div>
-      <!-- Clipper 0.3: the LAYER (track 2's sound with the instrument's; EDIT > LAYER): its settings by TRACK_PARAM (v4) -->
+      <!-- SynthMaven 0.3: the LAYER (track 2's sound with the instrument's; EDIT > LAYER): its settings by TRACK_PARAM (v4) -->
       <div class="card" id="lypanel" hidden>
         <h2 data-t="lyTitle" data-ic="symbol_keyboard"></h2>
         <p class="dim" data-t="lyHelp"></p>
         <p class="dim" id="lysound"></p>
         <div class="knobs" id="lybody"></div>
       </div>
-      <!-- Clipper 0.9: the TUNING (firmware protocol v14): kept with the FM-1's settings -->
+      <!-- SynthMaven 0.9: the TUNING (firmware protocol v14): kept with the FM-1's settings -->
       <div class="card" id="tupanel" hidden>
         <h2 data-t="tuTitle" data-ic="ui_knob"></h2>
         <p class="dim" data-t="tuHelp"></p>
@@ -627,7 +602,7 @@
           <button id="tusend" class="pri" data-t="tuSendBtn"></button></p>
         <p class="dim" id="tuinfo"></p>
       </div>
-      <!-- Clipper 0.8: the MOD SEQ's steps (firmware protocol v13): every engine -->
+      <!-- SynthMaven 0.8: the MOD SEQ's steps (firmware protocol v13): every engine -->
       <div class="card" id="mspanel" hidden>
         <h2 data-t="msTitle" data-ic="ui_knob"></h2>
         <p class="dim" data-t="msHelp"></p>
@@ -636,7 +611,7 @@
           <label><span data-t="msShape"></span> <select id="msshape"></select></label> <button id="msapply" data-t="msApply"></button></p>
         <div id="msbody"></div>
       </div>
-      <!-- Clipper: the HYBRID engine's patch (firmware protocol v11): only while the selected track plays HYBRID -->
+      <!-- SynthMaven: the HYBRID engine's patch (firmware protocol v11): only while the selected track plays HYBRID -->
       <div class="card" id="hypanel" hidden>
         <h2 data-t="hyTitle" data-ic="ui_knob"></h2>
         <p class="dim" data-t="hyHelp"></p>
@@ -861,14 +836,23 @@
     </section>
 
     <section class="panel" id="p-settings" data-tab="settings" data-dev hidden>
-      <div class="groups" id="setgroups"></div>
+      <div class="card" id="sm-midi">
+<h2>SynthMaven MIDI connections</h2>
+<p id="sm-status" role="status">Connect SynthMaven firmware to read MIDI settings.</p>
+<p><label><input type="checkbox" id="sm-patch-enabled" disabled> Enable patch switching</label></p>
+<div id="sm-patch-options" hidden><label>Pedal connection <select id="sm-patch-port"><option value="0">USB</option><option value="1">Bluetooth</option><option value="2">Any input (legacy)</option></select></label></div>
+<p><label>Keyboard connection <select id="sm-key-port" disabled><option value="0">USB (external host required in this build)</option><option value="1">TRS MIDI</option><option value="2">USB + TRS (legacy)</option></select></label></p>
+<p><label><input type="checkbox" id="sm-bt" disabled> Enable Bluetooth MIDI</label> <button id="sm-pair" disabled>Find / connect pedal</button></p>
+<p id="sm-limit" class="dim">Native Bluetooth pedal pairing and USB keyboard host mode require drivers not included in this development build. A power bank supplies power only.</p>
+<p class="bar"><button id="sm-read">Read settings</button><button id="sm-save" disabled>Apply settings</button></p>
+</div><div class="groups" id="setgroups"></div>
       <div class="card">
         <h2 data-t="system" data-ic="symbol_cog"></h2>
         <table id="sysinfo"></table>
       </div>
     </section>
 
-    <footer>Clipper, from SLOOP, based on Felucca by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener">Hügelton Instruments</a>. GPL-3.0.<br>
+    <footer>SynthMaven, from SLOOP, based on Felucca by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener">Hügelton Instruments</a>. GPL-3.0.<br>
       <span data-t="foot"></span> M-VAVE and FM-1 are trademarks of their respective owners.<br>
       <a href="FUKIAI-LICENSE.txt" data-t="iconsCredit"></a> · <span data-t="fontCredit"></span></footer>
   </main>
@@ -890,13 +874,13 @@ const CMD = { INFO: 1, GET: 2, SET: 3, DUMP: 4, DESC: 5, STEP_GET: 6, STEP_SET: 
   FILL_GET: 41, FILL_SET: 42,                         /* v8 (SLOOP 2.4): the steps' fill conditions */
   FM6_GET: 68, FM6_PUT: 69, FM6_LIST: 70, FM6_ERASE: 71,    /* v9 (SLOOP 2.4): the FM6 engine's patches (Felucca 1.0's numbers) */
   DSYN_LIST: 72, DSYN_GET: 73, DSYN_PUT: 74, DSYN_STORE: 75, DSYN_PLAY: 76,   /* v10 (SLOOP 2.5): the SYN drum kits */
-  HY_GET: 77, HY_PUT: 78,                            /* v11 (Clipper): the HYBRID engine's patches */
-  FMX_GET: 90, FMX_PUT: 91, FMX_STORE: 92,           /* v12 (Clipper 0.6): the FMX engine's patches */
-  MSEQ_GET: 93, MSEQ_PUT: 94,                        /* v13 (Clipper 0.8): the MOD SEQ's steps of a part */
-  TUNE_GET: 95, TUNE_PUT: 96 };                      /* v14 (Clipper 0.9): the TUNING (a Scala scale) */
+  HY_GET: 77, HY_PUT: 78,                            /* v11 (SynthMaven): the HYBRID engine's patches */
+  FMX_GET: 90, FMX_PUT: 91, FMX_STORE: 92,           /* v12 (SynthMaven 0.6): the FMX engine's patches */
+  MSEQ_GET: 93, MSEQ_PUT: 94,                        /* v13 (SynthMaven 0.8): the MOD SEQ's steps of a part */
+  TUNE_GET: 95, TUNE_PUT: 96 };                      /* v14 (SynthMaven 0.9): the TUNING (a Scala scale) */
 /* v7: the parameters a step can lock (firmware seq.c p_lockable: the sound, not the sequencer / arp / key / voice
    mode); ids as core.h: LEVEL .. LFO dests, GATE, the sends, GLIDE, PAN, DETUNE, the SLICER, the engine's 8 (from pe0:
-   53, or 78 on Clipper 0.4, whose LFO 2, ENV 2 and matrix at 53..77 are not lockable) */
+   53, or 78 on SynthMaven 0.4, whose LFO 2, ENV 2 and matrix at 53..77 are not lockable) */
 const lockable = (id, pe0 = 53) => id <= 16 || id === 32 || (id >= 33 && id <= 36) || id === 38 || id === 39 || id === 44 || (id >= 45 && id <= 48) || id === 50 || (id >= pe0 && id <= pe0 + 7);
 const MICRO = { MIN: -32, MAX: 31 };                 /* a step's nudge in 1/64 of a step (- early, + late), sent + 64 */
 /* v8: a step's fill condition (firmware core.h FC_*): 0 normal, 1 plays only during a fill, 2 silent during one; 2 bits a
@@ -909,7 +893,7 @@ const PUSH = new Set([CMD.CHANGED, CMD.RELOAD, CMD.STEP_CHANGED, CMD.TRACK_CHANG
 /* user preset bank: name 1..12 printable ASCII, a 16-step pattern of (note, flags 1 acc 2 slide 4 tie) */
 const UP = { NAME_MAX: 12, PAT: 16, LIST_MAX: 16 };
 const F = { INT: 0, PCT: 1, BIPCT: 2, TIME: 3, LFOHZ: 4, CUTOFF: 5, DB: 6, SEMI: 7, ENUM: 8, BPM: 9, NOTE: 10, ONOFF: 11, OCT: 12, STEPS: 13,
-  SWING: 14, FILT: 15, CDB: 16, SPLIT: 17 };   /* (Clipper 0.3: the master EQ's dB around the centre; the layer's split) */
+  SWING: 14, FILT: 15, CDB: 16, SPLIT: 17 };   /* (SynthMaven 0.3: the master EQ's dB around the centre; the layer's split) */
 /* v5 (SLOOP 2.0): the drum track's 16 sounds (firmware drums.c LANE_NOTE / LANE_NAME), one per white key
    F3..G5; a hit has a level (NORM, GHOST, SOFT, HARD: OCT- / OCT+ held on the device) and a ratchet x1..x4 */
 const DRUM_LANES = [[36, "KICK"], [35, "KICK 2"], [38, "SNARE"], [39, "CLAP"], [42, "HAT"], [46, "OPEN HAT"], [44, "PEDAL"], [37, "RIM"],
@@ -1090,16 +1074,16 @@ const parse = {
   /* v9 FM6 patches: target 0 a track (0..2), 1 a bank slot, 2 a factory patch; packed: the 128-byte record */
   [CMD.FM6_GET](a) { return { target: a[0], index: a[1], rc: a[2], packed: a[2] ? null : a.slice(3, 3 + 128) }; },
   [CMD.FM6_PUT](a) { return { target: a[0], index: a[1], rc: a[2] }; },
-  /* v11 (Clipper): a HYBRID patch, pack7 of its 128 bytes (HY.unpack) */
+  /* v11 (SynthMaven): a HYBRID patch, pack7 of its 128 bytes (HY.unpack) */
   [CMD.HY_GET](a) { return { target: a[0], index: a[1], rc: a[2], bytes: a[2] ? null : unpack7(a.slice(3)).slice(0, 128) }; },
   [CMD.HY_PUT](a) { return { target: a[0], index: a[1], rc: a[2] }; },
-  /* v12 (Clipper 0.6): an FMX patch, pack7 of its 128 bytes (FX.unpack) */
+  /* v12 (SynthMaven 0.6): an FMX patch, pack7 of its 128 bytes (FX.unpack) */
   [CMD.FMX_GET](a) { return { target: a[0], index: a[1], rc: a[2], bytes: a[2] ? null : unpack7(a.slice(3)).slice(0, 128) }; },
   [CMD.FMX_PUT](a) { return { target: a[0], index: a[1], rc: a[2] }; },
   /* v13: part, rc, 64 values (lane 1's 16 steps, lane 2's ..: -8..7) */
   [CMD.MSEQ_GET](a) { return { part: a[0], rc: a[1], steps: a[1] ? null : Array.from(a.slice(2, 66), (x) => x - 8) }; },
   [CMD.MSEQ_PUT](a) { return { part: a[0], rc: a[1] }; },
-  /* v14: rc, system, root, n, period (21 bits), n - 1 degrees (21 bits each; 1/16 cent); Clipper 1.0: + A4 - 400 Hz */
+  /* v14: rc, system, root, n, period (21 bits), n - 1 degrees (21 bits each; 1/16 cent); SynthMaven 1.0: + A4 - 400 Hz */
   [CMD.TUNE_GET](a) {
     const u21 = (k) => a[k] | a[k + 1] << 7 | a[k + 2] << 14, n = a[3] || 0, at = 7 + 3 * Math.max(0, n - 1);
     return { rc: a[0], sys: a[1], root: a[2], n, period: u21(4), deg: [0, ...Array.from({ length: Math.max(0, n - 1) }, (_, i) => u21(7 + 3 * i))],
@@ -1211,7 +1195,7 @@ const req = {
   fmxPut: (part, bytes) => [CMD.FMX_PUT, [0, part & 0x7F, ...pack7(bytes)]],
   mseqGet: (part) => [CMD.MSEQ_GET, [part & 0x7F]],
   tuneGet: () => [CMD.TUNE_GET, []],
-  /* sys, root, deg: [0, d1 .. d(n-1)] and period, in 1/16 cent; a4 (Hz, 400..480; Clipper 1.0) only when the device
+  /* sys, root, deg: [0, d1 .. d(n-1)] and period, in 1/16 cent; a4 (Hz, 400..480; SynthMaven 1.0) only when the device
      gave one (0.9 refuses the extra byte) */
   tunePut: (sys, root, deg, period, a4 = null) => {
     const u21 = (v) => [v & 127, (v >> 7) & 127, (v >> 14) & 127];
@@ -1529,7 +1513,7 @@ function parseWav(buf) {
   return { sr, x, loop };
 }
 
-/* Clipper 0.2: a wavetable for WAVE (firmware eng_wave.c): a WAV of single cycles one after the other (Serum's 2048
+/* SynthMaven 0.2: a wavetable for WAVE (firmware eng_wave.c): a WAV of single cycles one after the other (Serum's 2048
    points a frame, its "clm " chunk says so; else 2048, 1024 or 256 by the length; a short file is one cycle), 16 frames
    picked evenly, each one's harmonics 1..128 (a DFT: the cosine and sine terms, Q15), normalised to a peak of 0.9 over
    the band-limited copies the firmware builds (as tools/gen_wavetables.py). Sent to a user slot as a sample is
@@ -2067,7 +2051,7 @@ async function backupCapture(rq, info, progress = () => {}) {
 }
 /* a backup file -> {id: Uint8Array}; every object checked against its length and CRC */
 function backupObjects(file) {
-  if (!file || file.format !== BK.FORMAT || !(file.version >= 1) || !Array.isArray(file.objects)) throw new BackupError("bkBad", "not a Clipper / SLOOP backup");
+  if (!file || file.format !== BK.FORMAT || !(file.version >= 1) || !Array.isArray(file.objects)) throw new BackupError("bkBad", "not a SynthMaven / SLOOP backup");
   const m = new Map();
   for (const o of file.objects) {
     const d = b64dec(o.data || "");
@@ -2232,7 +2216,7 @@ const mixer = {
       const d = parse[CMD.TRACK_DUMP](await rq(req.trackDump(i)), info);
       tr.tracks[i].pan = ids.pan == null ? null : d.p[ids.pan];
       tr.tracks[i].e0 = d.p[info.pe0];               /* the drum track: its kit */
-      tr.tracks[i].p = d.p;                          /* (Clipper: track 2's values are the LAYER's settings) */
+      tr.tracks[i].p = d.p;                          /* (SynthMaven: track 2's values are the LAYER's settings) */
     }
     return tr;
   },
@@ -2615,14 +2599,14 @@ function makeMockDevice(opt = {}) {
         P("BITCRUSH", [0, 40, 90, 40, 64, 0, 0, 100], [0, 70, 110, 40], 0),
         P("RADIO", [2, 20, 70, 90, 64, 0, 60, 48], [10, 70, 120, 50], 0)] },
   ];
-  if (opt.clipper) {                                /* Clipper: the HYBRID engine (eng_hybrid.c), INFO says protocol 11 */
+  if (opt.synthmaven) {                                /* SynthMaven: the HYBRID engine (eng_hybrid.c), INFO says protocol 11 */
     ENG.push({ name: "HYBRID", titles: ["FILT", "MACRO"], edit: [D("CUT", F.BIPCT, -64, 63, 0), D("RES", F.BIPCT, -64, 63, 0),
       D("FENV", F.BIPCT, -64, 63, 0), E("PTCH", HY.MOCK_NAMES, 0), D("M1", F.PCT, 0, 127, 0), D("M2", F.PCT, 0, 127, 0),
       D("M3", F.PCT, 0, 127, 0), D("M4", F.PCT, 0, 127, 0)],
       presets: HY.MOCK_NAMES.map((n, i) => P(n, [0, 0, 0, i, 64, 0, 0, 0], [2, 90, 110, 70], 0)) });
     const ge = GP.find((d) => d.label === "ENG");
     ge.names = [...ge.names, "HYBRID"];
-    if (opt.clipper !== "0.1") {                     /* Clipper 0.2: WAVE (eng_wave.c), the tables and USR1..USR4 */
+    if (opt.synthmaven !== "0.1") {                     /* SynthMaven 0.2: WAVE (eng_wave.c), the tables and USR1..USR4 */
       const TB = ["BASIC", "PWM", "HARMON", "ODD", "VOCAL", "RESO", "SYNC", "FM", "FM 2:3", "FOLD", "PD", "DIGITL", "BELL",
         "ORGAN", "CHIP", "COMB", "USR1", "USR2", "USR3", "USR4"];
       ENG.push({ name: "WAVE", titles: ["WAVE", "FLT"], edit: [E("TABL", TB, 0), D("POS", F.PCT, 0, 127, 0),
@@ -2650,14 +2634,14 @@ function makeMockDevice(opt = {}) {
         D("VENV", F.BIPCT, -64, 63, 0), D("OSC2", F.PCT, 0, 127, 0), D("CUT", F.CUTOFF, 0, 127, 110), D("RES", F.PCT, 0, 127, 10),
         D("DTN", F.PCT, 0, 127, 20), D("SUB", F.PCT, 0, 127, 0)],
         presets: ["VPS LEAD", "FORMANT PAD", "VPS BASS", "SYNC SWEEP", "VOX PLUCK", "HOLLOW KEYS", "DIGI BRASS", "VPS BELL",
-          "WOBBLE VPS", "VPS CHOIR"].map((n) => P(n, [40, 40, 0, 0, 112, 10, 0, 0], [0, 80, 110, 40], 0)) });   /* (Clipper 0.5) */
+          "WOBBLE VPS", "VPS CHOIR"].map((n) => P(n, [40, 40, 0, 0, 112, 10, 0, 0], [0, 80, 110, 40], 0)) });   /* (SynthMaven 0.5) */
       ENG.push({ name: "TERRAIN", titles: ["ORBIT", "MOTION"], edit: [E("TERR", ["WAVES", "RIPPL", "CRYST", "BUMPS", "SADDL",
         "FOLDS", "TWIST", "CHAOS"], 0), D("RAD", F.PCT, 0, 127, 50), D("X", F.PCT, 0, 127, 0), D("Y", F.PCT, 0, 127, 0),
         D("ORB", F.PCT, 0, 127, 64), D("DRIFT", F.PCT, 0, 127, 20), D("CUT", F.CUTOFF, 0, 127, 110), D("RES", F.PCT, 0, 127, 0)],
         presets: ["TERRAIN", "RIPPLE PAD", "CRYSTAL", "BUMPY BASS", "SADDLE LEAD", "FOLD DRONE", "TWISTER", "CHAOS FX",
           "ORBIT KEYS", "TERRA PLUCK"].map((n, i) => P(n, [[0, 1, 2, 3, 4, 5, 6, 7, 2, 1][i], 50, 0, 0, 64, 20, 110, 0], [60, 100, 120, 90], 0)) });
       ge.names = [...ge.names, "ACID", "STRINGS", "MACRO", "VPS", "TERRAIN"];
-      if (opt.clipper !== "0.5") {                   /* Clipper 0.6: FMX (eng_fmx.c), protocol 12 */
+      if (opt.synthmaven !== "0.5") {                   /* SynthMaven 0.6: FMX (eng_fmx.c), protocol 12 */
         const PT = [...Array.from({ length: 16 }, (_, i) => `F${i + 1}`), ...Array.from({ length: 27 }, (_, i) => `B${i + 1}`)];
         ENG.push({ name: "FMX", titles: ["FMX", "SHAPE"], edit: [E("PTCH", PT, 0), E("ALG", ["PAT", ...Array.from({ length: 40 }, (_, i) => String(i + 1))], 0),
           D("MOD", F.PCT, 0, 127, 64), D("FB", F.BIPCT, -64, 63, 0), D("TIME", F.BIPCT, -64, 63, 0), D("DTN", F.PCT, 0, 127, 0),
@@ -2669,7 +2653,7 @@ function makeMockDevice(opt = {}) {
           D("PITCH", F.PCT, 0, 127, 64), D("CUT", F.CUTOFF, 0, 127, 110), D("RES", F.PCT, 0, 127, 10)],
           presets: ["WAVE STEPS", "RHYTHM SEQ", "SWEEP PAD", "FIFTH STAB"].map((n, i) => P(n, [i, 40, 20, 0, 0, 64, 110, 10], [0, 90, 110, 50], 0)) });
         ge.names = [...ge.names, "FMX", "WSEQ"];
-        if (opt.clipper !== "0.6" && opt.clipper !== "0.7") {   /* Clipper 0.8: JUNO, VECTOR, protocol 13 (the MOD SEQ); 0.9:
+        if (opt.synthmaven !== "0.6" && opt.synthmaven !== "0.7") {   /* SynthMaven 0.8: JUNO, VECTOR, protocol 13 (the MOD SEQ); 0.9:
                                                      protocol 14 (the TUNING) */
           ENG.push({ name: "JUNO", titles: ["DCO", "VCF"], edit: [E("WAVE", ["SAW", "PLS", "S+P"], 2), D("PW", F.PCT, 0, 127, 30),
             D("SUB", F.PCT, 0, 127, 40), D("NOIS", F.PCT, 0, 127, 0), E("HPF", ["0", "1", "2", "3"], 1), D("CUT", F.CUTOFF, 0, 127, 90),
@@ -2688,7 +2672,7 @@ function makeMockDevice(opt = {}) {
   }
   const HY_E = ENG.findIndex((e) => e.name === "HYBRID");
   const FX_E = ENG.findIndex((e) => e.name === "FMX");
-  const JU_E = ENG.findIndex((e) => e.name === "JUNO");   /* (Clipper 0.8: protocol 13, the MOD SEQ) */
+  const JU_E = ENG.findIndex((e) => e.name === "JUNO");   /* (SynthMaven 0.8: protocol 13, the MOD SEQ) */
   const FM6_E = ENG.findIndex((e) => e.name === "FM6"), FM6_BANK = 27, FM6_NPART = 3;
   const v9 = !opt.legacy && !opt.v3 && !opt.noBackup && !opt.v7 && !opt.v8;   /* SLOOP 2.4: FM6 patches */
   const v10 = v9 && !opt.v9;                         /* SLOOP 2.5: the SYN drum kits */
@@ -2891,11 +2875,24 @@ function makeMockDevice(opt = {}) {
       case CMD.PING:
         b(0);
         break;
+      case 100: case 101: case 102: {
+        if (!opt.synthmaven) return null;
+        const sm = st.sm || (st.sm = [1, 2, 2, 0]);
+        let rc = 0;
+        if (cmd === 101) {
+          if (a.length !== 4 || a[0] > 1 || a[1] > 2 || a[2] > 2 || a[3] > 1) rc = 1;
+          else if (a[1] === 1 || a[3]) rc = 4;
+          else sm.splice(0, 4, ...a);
+        }
+        if (cmd === 102) rc = 4;
+        [rc,1,3,...sm,0].forEach(b);
+        break;
+      }
       case CMD.INFO:
-        s(opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : (opt.clipper ? "FELUCCA CLIPPER 0.2 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)")); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
+        s(opt.synthmaven ? "FELUCCA SYNTHMAVEN 0.1 DEV (MOCK)" : opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : (opt.synthmaven ? "FELUCCA SYNTHMAVEN 0.2 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)")); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
         ENG.forEach((e) => s(e.name));
         if (!opt.legacy) b(NTRK);
-        if (v5) b(opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : opt.clipper ? (JU_E >= 0 ? (opt.clipper === "0.8" ? 13 : 14) : FX_E >= 0 ? 12 : 11) : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
+        if (v5) b(opt.synthmaven ? 15 : opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : opt.synthmaven ? (JU_E >= 0 ? (opt.synthmaven === "0.8" ? 13 : 14) : FX_E >= 0 ? 12 : 11) : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
         break;
       case CMD.GET: case CMD.SET: {
         if (a.length < 2) return null;
@@ -3087,7 +3084,7 @@ function makeMockDevice(opt = {}) {
         if (a.length < 2 || a[0] >= st.smp.length) return null;
         const u = st.smp[a[0]], hd = unpack7(a.slice(1)), dv = new DataView(hd.buffer);
         let rc = 0;
-        if (hd.length >= SMP.HDR_LEN && dv.getUint32(0, true) === WT.MAGIC) {      /* Clipper: a wavetable (eng_wave.c) */
+        if (hd.length >= SMP.HDR_LEN && dv.getUint32(0, true) === WT.MAGIC) {      /* SynthMaven: a wavetable (eng_wave.c) */
           const len = dv.getUint32(16, true);
           if (dv.getUint16(4, true) !== 1 || hd[6] !== WT.NF || hd[7] !== WT.NH || len !== WT.LEN) rc = 2;
           else if (crc32(u.flash.subarray(SMP.DATA_OFF, SMP.DATA_OFF + len)) !== dv.getUint32(20, true)) rc = 3;
@@ -3179,7 +3176,7 @@ function makeMockDevice(opt = {}) {
         b(op); b(id); b(rc);
         break;
       }
-      case CMD.FMX_GET: case CMD.FMX_PUT: case CMD.FMX_STORE: {   /* Clipper 0.6: editor_fmx.c */
+      case CMD.FMX_GET: case CMD.FMX_PUT: case CMD.FMX_STORE: {   /* SynthMaven 0.6: editor_fmx.c */
         if (FX_E < 0) return null;
         st.fxbank = st.fxbank || [];
         const fact = (i) => FX.pack({ ...FX.init(), name: `F${i + 1}` });
@@ -3205,15 +3202,15 @@ function makeMockDevice(opt = {}) {
         }
         break;
       }
-      case CMD.TUNE_GET: case CMD.TUNE_PUT: {       /* Clipper 0.9: editor_fmx.c (TU_N 14 systems, 48 degrees) */
-        if (JU_E < 0 || opt.clipper === "0.8") return null;
+      case CMD.TUNE_GET: case CMD.TUNE_PUT: {       /* SynthMaven 0.9: editor_fmx.c (TU_N 14 systems, 48 degrees) */
+        if (JU_E < 0 || opt.synthmaven === "0.8") return null;
         const u21 = (v) => [v & 127, (v >> 7) & 127, (v >> 14) & 127];
         st.tune = st.tune || { sys: 0, root: 0, period: 19200, deg: Array.from({ length: 12 }, (_, i) => i * 1600), a4: 440 };
         if (cmd === CMD.TUNE_GET) {
           b(0); b(st.tune.sys); b(st.tune.root); b(st.tune.deg.length);
           u21(st.tune.period).forEach(b);
           st.tune.deg.slice(1).forEach((d) => u21(d).forEach(b));
-          b(st.tune.a4 - 400);                        /* (Clipper 1.0) */
+          b(st.tune.a4 - 400);                        /* (SynthMaven 1.0) */
         } else {
           const nd = a[2] | 0, g = (k) => a[k] | a[k + 1] << 7 | a[k + 2] << 14, base = 6 + 3 * (nd - 1);
           let rc = a.length < 6 || a[0] >= 14 || a[1] > 11 || nd < 1 || nd > 48 || (a.length !== base && (a.length !== base + 1 || a[base] > 80)) ? 1 : 0;
@@ -3224,7 +3221,7 @@ function makeMockDevice(opt = {}) {
         }
         break;
       }
-      case CMD.MSEQ_GET: case CMD.MSEQ_PUT: {       /* Clipper 0.8: editor_fmx.c ed_mseq_handle */
+      case CMD.MSEQ_GET: case CMD.MSEQ_PUT: {       /* SynthMaven 0.8: editor_fmx.c ed_mseq_handle */
         if (JU_E < 0) return null;
         const tr = a.length && a[0] < 2 ? st.tracks[a[0]] : null;
         const INIT = [[-8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7], [0, 2, 4, 6, 7, 5, 3, 1, -1, -3, -5, -7, -8, -6, -4, -2],
@@ -3241,8 +3238,8 @@ function makeMockDevice(opt = {}) {
         }
         break;
       }
-      case CMD.HY_GET: case CMD.HY_PUT: {           /* Clipper: editor_hybrid.c */
-        if (!opt.clipper) return null;
+      case CMD.HY_GET: case CMD.HY_PUT: {           /* SynthMaven: editor_hybrid.c */
+        if (!opt.synthmaven) return null;
         const pa = a[1], tr = pa < 3 ? st.tracks[pa] : null;
         if (tr && (tr.hySlot !== tr.p[P_E0 + 3] || !tr.hy)) {   /* PTCH turned (or never read): the factory patch */
           tr.hySlot = tr.p[P_E0 + 3];
@@ -3336,11 +3333,11 @@ function makeMockDevice(opt = {}) {
     return frame(cmd, out);
   }
 
-  /* a WebMIDI-like access object: one input and one output named "Clipper" */
-  const input = { id: "mock-in", name: "Clipper", type: "input", state: "connected", onmidimessage: null };
+  /* a WebMIDI-like access object: one input and one output named "SynthMaven" */
+  const input = { id: "mock-in", name: "SynthMaven", type: "input", state: "connected", onmidimessage: null };
   let busy = false;
   const output = {
-    id: "mock-out", name: "Clipper", type: "output", state: "connected",
+    id: "mock-out", name: "SynthMaven", type: "output", state: "connected",
     send(data) {
       const f = unframe(data);
       if (!f) { console.error("mock: refused a frame that is not F0 7D 46 4C ... F7", data); return; }
@@ -3633,14 +3630,14 @@ const ROLL = {
   },
 };
 
-/* ------------------------------------------------ Clipper 1.0: pattern tools --- */
+/* ------------------------------------------------ SynthMaven 1.0: pattern tools --- */
 /* The sequencer's pattern as one value: P = {len, steps[nstep], micro[nstep] | null, fill[nstep] (0..2) | null,
    locks[{step, param, value}] | null} (micro, fill and locks need firmware v7 / v8). Every tool returns a new P and
    never changes its input; PAT.diff says what to send the device to go from one P to another (undo is that too).
    A range is [a, b): steps a..b-1 of the pattern's length. Generators that roll dice take a seed (PAT.rng). */
 const PAT = {
   LOCK_MAX: 24,
-  FILE: "clipper-pattern",
+  FILE: "synthmaven-pattern",
   HIST: 64,                                            /* undo steps kept */
   rest: () => ({ n: 0, notes: [0, 0, 0, 0], time: 2, flags: 0, vel: 0, lvl: 0, rat: 0 }),
   tie: () => ({ n: 0, notes: [0, 0, 0, 0], time: 1, flags: 0, vel: 0, lvl: 0, rat: 0 }),
@@ -4015,7 +4012,7 @@ const PAT = {
     return d;
   },
 
-  /* ---- files (.clipper-pattern.json) and the browser's pattern bank ---- */
+  /* ---- files (.synthmaven-pattern.json) and the browser's pattern bank ---- */
   toFile(P, name = "") {
     const len = P.len, o = { format: PAT.FILE, version: 1, name: String(name).slice(0, 40), len,
       steps: P.steps.slice(0, len).map((s) => { const c = PAT.cstep(s); return [c.n, c.notes, c.time, c.flags, c.vel, c.lvl, c.rat]; }) };
@@ -4026,7 +4023,7 @@ const PAT = {
   },
   /* a file -> a P of N steps (the steps after its length rest); throws on what is not a pattern */
   fromFile(o, N = 64) {
-    if (!o || o.format !== PAT.FILE || !Array.isArray(o.steps) || !o.steps.length) throw new Error("not a Clipper pattern");
+    if (!o || o.format !== PAT.FILE || !Array.isArray(o.steps) || !o.steps.length) throw new Error("not a SynthMaven pattern");
     const int = (v, lo, hi) => { if (!Number.isFinite(+v)) throw new Error("bad value"); return Math.max(lo, Math.min(hi, Math.round(+v))); };
     const len = int(o.len ?? o.steps.length, 1, N);
     const steps = Array.from({ length: N }, (_, i) => {
@@ -4256,7 +4253,7 @@ const ARR = {
    The tone (a wave with a falling pitch, a second partial), the click, the noise (white, the 808's six metallic
    squares, both, a chip LFSR; the clap's bursts), a resonant filter, drive and level. A kit: 16 of them and its
    crush (bits dropped in the low nibble, sample-and-hold - 1 in the high one). */
-/* Clipper 0.6: the FMX engine's patch (firmware v12, eng_fmx.c fmx_patch_t: 128 bytes, every one 0..127):
+/* SynthMaven 0.6: the FMX engine's patch (firmware v12, eng_fmx.c fmx_patch_t: 128 bytes, every one 0..127):
    six operators of 12 bytes (wave, mode bits 0-1 PM / FM / RING and bit 2 FIX, coarse 0..31, fine 0..99, level, A D S R,
    velocity, key scaling, detune 0..14 with 7 in tune), the routing mod[to][from] 72..107 (0..127, its own operator:
    feedback), the outputs 108..113, the template 114 (1..40, 0 none), the pitch envelope 115 (64 none) and its time 116,
@@ -4333,11 +4330,11 @@ const FX = (() => {
   }
   return { WAVE, MODE, RATIO, FIXC, ALG, SIZE, NOP, NFACTORY, NBANK, init, unpack, pack, sanitize, applyAlg };
 })();
-/* Clipper: the HYBRID engine's patch (firmware v11, eng_hybrid.c hy_patch_t: 128 bytes, the signed ones as two's
+/* SynthMaven: the HYBRID engine's patch (firmware v11, eng_hybrid.c hy_patch_t: 128 bytes, the signed ones as two's
    complement). unpack: bytes -> an object to edit; pack: back, every value into its range (as hy_sanitize). */
 const HY = (() => {
   const OSC = ["OFF", "SAW", "PULSE", "TRI", "SINE", "MORPH", "SUPER", "FM", "SYNC", "FOLD", "NOISE"];
-  const FLT = ["OFF", "LP12", "LP24", "BP", "HP", "NOTCH", "PEAK", "MOOG"];   /* (MOOG: Clipper 0.2) */
+  const FLT = ["OFF", "LP12", "LP24", "BP", "HP", "NOTCH", "PEAK", "MOOG"];   /* (MOOG: SynthMaven 0.2) */
   const ROUTE = ["SER", "PAR", "SPLIT"];
   const LFOW = ["SINE", "TRI", "SAW", "SQR", "S&H", "SMTH"];
   const SRC = ["--", "ENV2", "ENV3", "AENV", "LFO1", "LFO2", "LFO3", "VEL", "KEY", "MW", "AT", "BEND", "EXPR", "RAND",
@@ -4439,7 +4436,7 @@ const HY = (() => {
   /* the factory patches as the firmware has them (hybrid_patches.h; web/test_web.mjs checks them), for the mock */
   const MOCK_FACTORY = (() => { const b = b64dec("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");
     return Array.from({ length: b.length / SIZE }, (_, i) => b.slice(i * SIZE, (i + 1) * SIZE)); })();
-  const MOCK_NAMES = ["CLIPPER", "POLY PAD", "STRINGS", "ACID", "SYNC LEAD", "FM BELL", "FM KEYS", "WOBBLE", "REESE", "HOOVER", "BRASS", "VOX", "PLUCK", "RISER", "METAL", "FOLD BASS", "CHIP LEAD", "GLASS PAD", "DRONE", "808 SUB", "TRANCE", "SAW PLUCK", "SPACE BEL", "INIT", "MOOG BASS", "MOOG LEAD", "LADDER PAD"];
+  const MOCK_NAMES = ["SYNTHMAVEN", "POLY PAD", "STRINGS", "ACID", "SYNC LEAD", "FM BELL", "FM KEYS", "WOBBLE", "REESE", "HOOVER", "BRASS", "VOX", "PLUCK", "RISER", "METAL", "FOLD BASS", "CHIP LEAD", "GLASS PAD", "DRONE", "808 SUB", "TRANCE", "SAW PLUCK", "SPACE BEL", "INIT", "MOOG BASS", "MOOG LEAD", "LADDER PAD"];
   return { OSC, FLT, ROUTE, LFOW, SRC, DST, SHAPE, SYNC, SIZE, NSLOT, NFACTORY, unpack, pack, sanitize, init, MOCK_FACTORY, MOCK_NAMES,
     cutText: (v) => fmtHz(hz(v)), timeText: (v) => fmtMs(ms(v)), rateText };
 })();
@@ -4515,15 +4512,15 @@ const DSYN = {
 const DSYN_MOCK_NAMES = ["808", "909", "606", "80S", "VINTAGE", "TRAP", "DRILL", "BOOMBAP", "LO-FI", "PHONK", "HOUSE", "D.HOUSE", "TECHNO", "MINIMAL", "ELECTRO", "DISCO", "GARAGE", "JUNGLE", "DUBSTEP", "DEMBOW", "AMAPIANO", "AFRO", "LATIN", "TRIBAL", "SYNTHWV", "CHIP", "ARCADE", "GLITCH", "INDUSTR", "HYPER", "AMBIENT", "JAZZ"];
 const DSYN_MOCK_KITS = "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";
 
-/* (Clipper 0.7, after SLOOP 2.7) the FM-1's MIDI ports. Every FM-1 firmware has the same USB IDs, so Windows and macOS
+/* (SynthMaven 0.7, after SLOOP 2.7) the FM-1's MIDI ports. Every FM-1 firmware has the same USB IDs, so Windows and macOS
  * often keep the port name of the first firmware they saw ("X0X FM-1", "USB-MIDI"...): the names the installer accepts
- * (fm1ota.js FM1_PORT, the same list), as in/out pairs of one name, "Clipper" / "Felucca" first, then FM-1, then the
+ * (fm1ota.js FM1_PORT, the same list), as in/out pairs of one name, "SynthMaven" / "Felucca" first, then FM-1, then the
  * generic names. connect() keeps the first pair that answers INFO, so a generic name of other gear is tried and left */
-const FM1_PORT = /fm-1|felucca|sloop|clipper|ota|composite|sinco|usb-midi/i;
+const FM1_PORT = /synthmaven|fm-1|felucca|sloop|synthmaven|ota|composite|sinco|usb-midi/i;
 function fm1Ports(access) {
   const live = (p) => p.state !== "disconnected" && FM1_PORT.test(p.name || "");
   const ins = [...access.inputs.values()].filter(live), outs = [...access.outputs.values()].filter(live);
-  const rank = (n) => (/clipper|felucca|sloop/i.test(n) ? 0 : /fm-1/i.test(n) ? 1 : 2);
+  const rank = (n) => (/synthmaven|felucca|sloop/i.test(n) ? 0 : /fm-1/i.test(n) ? 1 : 2);
   const pairs = [];
   for (const input of ins) {
     const output = outs.find((o) => o.name === input.name) || (outs.length === 1 ? outs[0] : null);
@@ -4548,12 +4545,12 @@ class SetGate {
 }
 /* (after SLOOP 2.6) a sound's values p (common parameters, then the engine's 8 from pe0) in a layout of n values with the
    engine's 8 from ne0: the same layout as it is; else the engine's 8 by their place, and the common ones by position up
-   to the layout both share (SLOOP 2.4 / 2.5: P_E0 53; what SLOOP 2.6 or Clipper added before P_E0 differs; two Clipper
+   to the layout both share (SLOOP 2.4 / 2.5: P_E0 53; what SLOOP 2.6 or SynthMaven added before P_E0 differs; two SynthMaven
    layouts: up to the older one's P_E0): null for the rest (left as the device has them) */
 function patchByCount(p, pe0, n, ne0 = n - 8) {
   const src = Number.isInteger(pe0) && pe0 >= 0 && pe0 + 8 <= p.length ? pe0 : p.length - 8;
   if (!(n > 8) || src < 0 || (p.length === n && src === ne0)) return p.slice(0, n);
-  /* (Clipper 0.4 on only appends before P_E0: two Clipper layouts share what the older one has by place) */
+  /* (SynthMaven 0.4 on only appends before P_E0: two SynthMaven layouts share what the older one has by place) */
   const out = new Array(n).fill(null), nc = src >= 78 && ne0 >= 78 ? Math.min(src, ne0) : Math.min(src, ne0, 53);
   for (let i = 0; i < nc; i++) out[i] = p[i] ?? null;
   for (let k = 0; k < 8; k++) out[ne0 + k] = p[src + k] ?? null;
@@ -4561,7 +4558,7 @@ function patchByCount(p, pe0, n, ne0 = n - 8) {
 }
 /* (after SLOOP 2.6) a backup's projects in a format the device cannot read stop the restore before anything is written:
    the format of a stored project ("FUN6" low byte first: 6), and the newest a device reads (SLOOP 2.6: 6, 2.4 .. 2.5: 5,
-   older 4; Clipper from 0.4.1: 6, before 5) */
+   older 4; SynthMaven from 0.4.1: 6, before 5) */
 const bkProjFormat = (d) => (d && d.length >= 4 && d[1] === 0x4E && d[2] === 0x55 && d[3] === 0x46 ? d[0] - 0x30 : 0);
 const bkFwAtLeast = (v, want) => {
   const m = /(\d+)\.(\d+)(?:\.(\d+))?/.exec(String(v || ""));
@@ -4570,7 +4567,7 @@ const bkFwAtLeast = (v, want) => {
   for (let i = 0; i < 3; i++) if (a[i] !== want[i]) return a[i] > want[i];
   return true;
 };
-const bkDevFormat = (info) => (/clipper/i.test(info.version || "") ? (bkFwAtLeast(info.version, [0, 4, 1]) ? 6 : 5)
+const bkDevFormat = (info) => (/synthmaven/i.test(info.version || "") ? (bkFwAtLeast(info.version, [0, 4, 1]) ? 6 : 5)
   : info.pcount >= 71 ? 6 : info.pcount >= 61 ? 5 : 4);
 /*PROTO-END*/
 
@@ -4647,7 +4644,7 @@ const TEXT = {
     foot: "Chrome か Edge で使えます。", iconsCredit: "アイコン: Fukiai（MIT）Hügelton Instruments",
     nomidi: "このブラウザでは使えません。Chrome か Edge で開いてください。",
     denied: "MIDI（SysEx）の使用が許可されませんでした。",
-    nodevice: "Clipper が見つかりません。USB で接続して、もう一度押してください。",
+    nodevice: "SynthMaven が見つかりません。USB で接続して、もう一度押してください。",
     connecting: "接続中", reading: "読み込み中 ", steploading: "ステップを読み込み中 ",
     ready: "接続しました", disconnected: "切断されました", lost: "FM-1 が外されました",
     noreply: "応答がありません", error: "エラー: ", busy: "処理中",
@@ -4695,7 +4692,7 @@ const TEXT = {
     putDone: "本体に書き込みました: スロット ", storedSlot: "本体に保存しました: スロット ", erasedSlot: "消去しました: スロット ",
     loadedUser: "読み込みました: ", reloaded: "本体で音色が変わったので読み直しました", readingBank: "スロットを読み込み中",
     badEngine: "このファームウェアにないエンジンです: ", flashFail: "書き込みに失敗しました（rc {rc}）",
-    installer: "Clipper インストーラー",
+    installer: "SynthMaven インストーラー",
     tabSeq: "シーケンサー", tabTracks: "トラック", tabSettings: "設定",
     navTrack: "トラック", navSynth: "シンセ", navSounds: "サウンド", navDevice: "本体", tabKits: "ドラムキット", fm1: "FM-1",
     stepList: "ステップ一覧（音名を入力）", stepsOf: "{n} ステップ", fontCredit: "フォント: Terminus（SIL OFL 1.1）",
@@ -4727,12 +4724,12 @@ const TEXT = {
     bkTitle: "バックアップ", bkHelp: "FM-1 の中身をすべて 1 つのファイルに保存します: 今の曲、プロジェクト 1〜4（ソングのセクション A〜D）、ユーザープリセット、FM6／FMX の音色バンク、サンプル USR1〜4、設定（色、キャリブレーション、チューニング、ソング、ライト）。復元すると、本体はファイルの状態に戻ります（今の内容は上書きされます）。",
     bkSave: "バックアップを保存", bkLoad: "ファイルから復元", bkSaving: "バックアップ中 ", bkSaved: "バックアップを保存しました",
     bkRestoring: "復元中 ", bkRestored: "復元しました", bkConfirm: "FM-1 の今の内容をすべてこのバックアップで置き換えます。続けますか？",
-    bkBad: "Clipper のバックアップファイルではないか、壊れています: ", bkStop: "FM-1 の再生を止めてから、もう一度復元してください。",
+    bkBad: "SynthMaven のバックアップファイルではないか、壊れています: ", bkStop: "FM-1 の再生を止めてから、もう一度復元してください。",
     bkStale: "本体の内容が途中で変わりました。もう一度バックアップしてください: ", bkRead: "読み取りエラー: ", bkWrite: "書き込みエラー: ", bkRc4: "フラッシュがありません", bkNewer: "この FM-1 のファームウェアより新しい形式のプロジェクトを含むバックアップです。先にアップデートしてから復元してください（何も変更していません）: ",
     system: "システム", firmware: "ファームウェア", sync: "同期", tracksN: "トラック", stepsN: "ステップ数", enginesL: "エンジン",
     smpSlots: "サンプルスロット", userBank: "ユーザープリセット", none: "なし",
     fm6Title: "FM6 の音色（6 オペレーター）", fm6Help: "FM6 エンジンの音色をまるごと編集します。本体のノブ（EDIT の 8 つ）はこの音色の上にかかるマクロです。トラックへ送るとすぐ鳴り、PTCH を回すか別の音を読み込むまでそのトラックの音色になります（プロジェクトは PTCH だけを保存します）。バンク（B1〜B27）に保存すると PTCH で呼び出せます（本体を停止してから）。",
-    hyTitle: "HYBRID の音色（Clipper）", hyHelp: "HYBRID エンジンの音色をまるごと編集します。ボイスごとに 3 オシレーター、2 フィルター、専用のエンベロープ 2 つと LFO 2 つ、16 スロットのモジュレーション・マトリクス。本体のノブはこの上の 8 つの値です（CUT、RES、FENV、PTCH、マクロ M1〜M4 はマトリクスのソース）。LIVE ではすぐに音が変わります。PTCH を回すか別の音を読み込むまでトラックの音色です（プロジェクトは PTCH だけ保存：残したい音色は書き出してください）。",
+    hyTitle: "HYBRID の音色（SynthMaven）", hyHelp: "HYBRID エンジンの音色をまるごと編集します。ボイスごとに 3 オシレーター、2 フィルター、専用のエンベロープ 2 つと LFO 2 つ、16 スロットのモジュレーション・マトリクス。本体のノブはこの上の 8 つの値です（CUT、RES、FENV、PTCH、マクロ M1〜M4 はマトリクスのソース）。LIVE ではすぐに音が変わります。PTCH を回すか別の音を読み込むまでトラックの音色です（プロジェクトは PTCH だけ保存：残したい音色は書き出してください）。",
     msTitle: "MOD SEQ（16ステップ×4レーン）", msHelp: "サウンドのモジュレーション・シーケンサー：16ステップ（-8..7）の4レーン。RATEで進み（サウンドの MOD SEQ カード：RATE・LEN・SMTH・START）、マトリックスのソースSEQ1..SEQ4になります。バーを上下にドラッグ、レーン名のクリックでSHAPEの対象を選択。ライブで変更ごとに送信。サウンドと一緒に保存（ユーザープリセット・プロジェクト）。",
     msShape: "シェイプ", msApply: "レーンに適用",
     lyTitle: "レイヤー（2つ目の音色）", lyHelp: "トラック2の音色をメインの音色と一緒に鳴らします。LAYER：すべての音を両方で。SPLIT：SPLIT より下の鍵盤をレイヤーで。MULTI：レイヤーを専用の MIDI チャンネル（CH）で鳴らす2パート。OCT はレイヤーのオクターブ、LEVEL・PAN・FILT はレイヤー自身の値。レイヤーの音色の選択と SWAP は本体の EDIT > LAYER で。",
@@ -4748,7 +4745,7 @@ const TEXT = {
     hyEnvs: "エンベロープと LFO", hyLfo1: "音量はトラックの ADSR（ENV ページ）、LFO1 はトラックの LFO。どちらもマトリクスのソースです（AENV、LFO1）。",
     hyMatrix: "モジュレーション・マトリクス", hyMatrixHelp: "各スロット：SOURCE × VIA（任意、例：モジュレーション・ホイール）× AMOUNT → DEST。ピッチ系は 0 付近が細かく（ビブラート）、端で広く（±23 半音）。M1〜M4 は 4 つのマクロノブ（CC 16〜19）。",
     hyGlobal: "ピッチベンドと音量", hyRead: "HYBRID の音色を読みました：トラック", hySent: "HYBRID の音色を送りました：トラック",
-    hyLoaded: "読み込みました", hyImported: "読み込みました", hyBadFile: "Clipper の HYBRID 音色ではありません：",
+    hyLoaded: "読み込みました", hyImported: "読み込みました", hyBadFile: "SynthMaven の HYBRID 音色ではありません：",
     fm6ReadBtn: "トラックから読む", fm6SendBtn: "トラックへ送る", fm6Live: "編集しながら送る", fm6Slot: "スロット",
     fm6StoreBtn: "バンクに保存", fm6Import: "SysEx を読み込む", fm6Export: "SysEx に書き出し", fm6BankExport: "バンクを SysEx に書き出し",
     fm6Init: "初期音色", fm6Voice: "ボイス", fm6Ops: "オペレーター", fm6Carriers: "キャリア", fm6Feedback: "フィードバック",
@@ -4795,7 +4792,7 @@ const TEXT = {
     smpModeFiles: "ファイルから（1 ファイル = 1 音）",
     smpModeChop: "録音を切り分ける（CHOP）",
     bkHelpSyn: "FM-1 のすべてを 1 つのファイルに：作業中の音色、ユーザー・プリセット、FM6 / FMX パッチ・バンク、ウェーブテーブル USR1〜USR4、設定（色、キャリブレーション、チューニング、ライト）。復元すると FM-1 はファイルの状態に戻ります（今の内容は置き換えられます）。",
-    wtTab: "ウェーブテーブル", wtIntroSyn: "WAVE エンジン用の自分のウェーブテーブル：スロット 4 つ、USR1〜USR4（FM-1 の TABL）。Clipper はサンプルを鳴らしません。古いバージョンのサンプルが残っているスロットは鳴りません。ウェーブテーブルを上書きするか消してください。",
+    wtTab: "ウェーブテーブル", wtIntroSyn: "WAVE エンジン用の自分のウェーブテーブル：スロット 4 つ、USR1〜USR4（FM-1 の TABL）。SynthMaven はサンプルを鳴らしません。古いバージョンのサンプルが残っているスロットは鳴りません。ウェーブテーブルを上書きするか消してください。",
     wtWhere: "FM-1 では: エンジン WAVE、TABL = USR{n}（EDIT ページの KNOB 1）。上のボタンで自動設定。", wtOldSmp: "サンプル（鳴りません）",
     smpModeWave: "ウェーブテーブル", wtDrop: "ウェーブテーブルの WAV を開くかドロップ", wtDropHint: "Serum 形式（2048 点 × フレーム）、または 1 周期",
     wtHelp: "WAVE エンジン用のウェーブテーブル。16 フレームを均等に選び、各フレームの倍音 1〜128 にして送ります（本体で帯域制限されるので折り返しません）。\n下の 3 で送信し、「トラック 1」で WAVE の TABL = USR に。",
@@ -4829,7 +4826,7 @@ const TEXT = {
     dsNotStored: "まだ保存していません", dsStored: "保存済み",
     dsBad: "FM-1 が受け付けませんでした", dsCopyAsk: "{k} を {x} のコピーにします。よろしいですか？", dsCopied: "コピーしました:",
     dsStop: "ソングを止めてから保存してください", dsFlash: "フラッシュに書けませんでした", dsSaved: "FM-1 に保存しました",
-    dsFileBad: "Clipper のドラムシンセキットではありません", dsOpenAsk: "{x} を {k} に読み込みます。よろしいですか？", dsOpened: "読み込みました:",
+    dsFileBad: "SynthMaven のドラムシンセキットではありません", dsOpenAsk: "{x} を {k} に読み込みます。よろしいですか？", dsOpened: "読み込みました:",
     /* SLOOP 2.5: length, piano roll, MIDI files, song */
     lenLabel: "長さ（ステップ）", viewGrid: "グリッド", viewRoll: "ピアノロール",
     midiExport: "MIDI 書き出し", midiImportBtn: "MIDI 読み込み",
@@ -4857,7 +4854,7 @@ const TEXT = {
     songOld: "この FM-1 のファームウェアではソングを読めません（新しいファームウェアが必要です）。",
     songBad: "このソングは送れません（16 項目、1〜64 小節まで）", songRefused: "ソングを止めてから送ってください",
     songSent: "ソングを FM-1 に送りました",
-    /* Clipper 1.0: パターンツール */
+    /* SynthMaven 1.0: パターンツール */
     patUndo: "元に戻す", patRedo: "やり直す", patRange: "範囲", patAll: "全体", patCopy: "コピー", patPaste: "貼り付け", patClear: "消去",
     patTranspose: "移調", patShift: "ずらす", patReverse: "逆順", patDouble: "倍の長さ", patChord: "和音にする",
     patAccOn: "アクセント +", patAccOff: "アクセント −", patSlideOn: "スライド +", patSlideOff: "スライド −",
@@ -4869,12 +4866,12 @@ const TEXT = {
     patTextHelp: "1 ステップに 1 語: キーの度数（1 = ルート、8 = 1 オクターブ上のルート）、' で 1 オクターブ上、, で 1 オクターブ下、+ で和音（1+3+5）、> アクセント、~ スライド。- は伸ばす（タイ）、. は休符。範囲の中で繰り返します。",
     patHumanize: "ヒューマナイズ", patApply: "適用",
     patLib: "パターンライブラリ", patSave: "バンクに保存", patLoad: "読み込む", patExport: "ファイルに書き出す", patBankExport: "バンクを書き出す", patImport: "ファイルを読み込む",
-    patLibHelp: "バンクはこのブラウザに保存されます（名前をダブルクリックで読み込み）。ファイル（.clipper-pattern.json）には音、タイ、アクセント、スライド、ベロシティ、ラチェット、レベル、ナッジ、フィル、ロック、長さが入ります。",
+    patLibHelp: "バンクはこのブラウザに保存されます（名前をダブルクリックで読み込み）。ファイル（.synthmaven-pattern.json）には音、タイ、アクセント、スライド、ベロシティ、ラチェット、レベル、ナッジ、フィル、ロック、長さが入ります。",
     patRangeSet: "範囲をこの値に", laneHelp: "音の上をマウス（または指）でなぞる: ベロシティ、ナッジ（前後、1/64 ステップ）、ラチェット（x1〜x4）、レベル（GHOST、SOFT、NORM、HARD）。",
     chSingle: "単音", chKey3: "キーの三和音", chKey4: "キーの七の和音", pk_bass: "ベース", pk_arp: "アルペジオ", pk_chords: "和音", pk_lead: "リード",
     patName: "パターン名", patStepsShort: "ステップ", patBankEmpty: "保存したパターンはまだありません", patDefName: "パターン",
     patOverwrite: "バンクのパターン {name} を置き換えますか？", patSaved: "バンクに保存しました: ", patLoaded: "パターンを読み込みました",
-    patExported: "パターンファイルを保存しました: ", patImported: "読み込んだパターン: ", patFileBad: "Clipper のパターンファイルではありません",
+    patExported: "パターンファイルを保存しました: ", patImported: "読み込んだパターン: ", patFileBad: "SynthMaven のパターンファイルではありません",
     patBankFail: "このブラウザにバンクを保存できませんでした", patBankFull: "バンクがいっぱいです（128 パターン）",
     patDone: "完了", patSame: "変更はありません", patLocksDropped: "完了。FM-1 の 24 個を超えたロックは入りません: ",
     patUndone: "元に戻しました", patRedone: "やり直しました", patCopied: "コピーしたステップ: ", patPasted: "貼り付けました", patCleared: "範囲を消去しました", patMade: "パターンを生成しました",
@@ -4898,7 +4895,7 @@ const TEXT = {
     foot: "Works in Chrome or Edge.", iconsCredit: "Icons: Fukiai (MIT), Hügelton Instruments",
     nomidi: "This browser cannot do it. Open the page in Chrome or Edge.",
     denied: "MIDI (SysEx) access was not allowed.",
-    nodevice: "Clipper not found. Connect the FM-1 by USB and press Connect again.",
+    nodevice: "SynthMaven not found. Connect the FM-1 by USB and press Connect again.",
     connecting: "Connecting", reading: "Reading ", steploading: "Reading steps ",
     ready: "Connected", disconnected: "Disconnected", lost: "The FM-1 was unplugged",
     noreply: "No reply from the device", error: "Error: ", busy: "Busy",
@@ -4946,7 +4943,7 @@ const TEXT = {
     putDone: "Written to the device: slot ", storedSlot: "Stored on the device: slot ", erasedSlot: "Erased slot ",
     loadedUser: "Loaded ", reloaded: "The sound changed on the device: read again", readingBank: "Reading the slots",
     badEngine: "This firmware has no such engine: ", flashFail: "Write failed (rc {rc})",
-    installer: "Clipper installer",
+    installer: "SynthMaven installer",
     tabSeq: "Sequencer", tabTracks: "Tracks", tabSettings: "Settings",
     navTrack: "Track", navSynth: "Synth", navSounds: "Sounds", navDevice: "Device", tabKits: "Drum kit", fm1: "FM-1",
     stepList: "Step list (type note names)", stepsOf: "{n} steps", fontCredit: "Font: Terminus (SIL OFL 1.1)",
@@ -4978,12 +4975,12 @@ const TEXT = {
     bkTitle: "Backup", bkHelp: "Everything on the FM-1 in one file: the music you are working on, the projects 1–4 (the song sections A–D), the user presets, the FM6 / FMX patch bank, the samples USR1–USR4 and the settings (colours, calibration, the tuning, the song, the lights). Restoring puts the FM-1 back as it was in the file (what is on it now is replaced).",
     bkSave: "Save a backup", bkLoad: "Restore from a file", bkSaving: "Backing up ", bkSaved: "Backup saved",
     bkRestoring: "Restoring ", bkRestored: "Restored", bkConfirm: "Replace everything on the FM-1 with this backup?",
-    bkBad: "Not a Clipper backup, or damaged: ", bkStop: "Stop the FM-1 (PLAY), then restore again.",
+    bkBad: "Not a SynthMaven backup, or damaged: ", bkStop: "Stop the FM-1 (PLAY), then restore again.",
     bkStale: "The FM-1 changed during the backup; back up again: ", bkRead: "Read error: ", bkWrite: "Write error: ", bkRc4: "No flash", bkNewer: "This backup holds projects in a newer format than this firmware reads: update the FM-1 first, then restore. Nothing was changed: ",
     system: "System", firmware: "Firmware", sync: "Sync", tracksN: "Tracks", stepsN: "Steps", enginesL: "Engines",
     smpSlots: "Sample slots", userBank: "User presets", none: "none",
     fm6Title: "FM6 patch (six operators)", fm6Help: "Edit the whole patch of the FM6 engine. The device's knobs (the eight EDIT values) are macros on top of it. Sent to a track it plays at once and stays that track's patch until PTCH turns or another sound loads (a project keeps PTCH only); stored in the bank (B1..B27) it is a PTCH value (stop the device first).",
-    hyTitle: "HYBRID patch (Clipper)", hyHelp: "The whole patch of the HYBRID engine: three oscillators, two filters, two envelopes and two LFOs of its own per voice, and a 16-slot modulation matrix. The device's knobs play eight values on top of it (CUT, RES, FENV, PTCH and the macros M1..M4: matrix sources). With LIVE each change is heard at once; the patch stays the track's until PTCH turns or another sound loads (a project keeps PTCH: export the patch to keep it).",
+    hyTitle: "HYBRID patch (SynthMaven)", hyHelp: "The whole patch of the HYBRID engine: three oscillators, two filters, two envelopes and two LFOs of its own per voice, and a 16-slot modulation matrix. The device's knobs play eight values on top of it (CUT, RES, FENV, PTCH and the macros M1..M4: matrix sources). With LIVE each change is heard at once; the patch stays the track's until PTCH turns or another sound loads (a project keeps PTCH: export the patch to keep it).",
     msTitle: "MOD SEQ (four lanes of 16 steps)", msHelp: "The sound's modulation sequencer: four lanes of 16 steps (-8..7), stepping at RATE (the sound's MOD SEQ card: RATE, LEN, SMTH, START), read by the matrix as SEQ1..SEQ4. Drag a bar up or down; click a lane's name to pick it for SHAPE. LIVE sends each change. Kept with the sound (user presets, projects).",
     msShape: "shape", msApply: "Apply to the lane",
     lyTitle: "Layer (a second sound)", lyHelp: "Track 2's sound played with the instrument's. LAYER: every note on both. SPLIT: the keys below SPLIT on the layer. MULTI: the layer on its own MIDI channel (CH), two parts. OCT shifts the layer's notes; LEVEL, PAN and FILT are its own. The layer's sound and SWAP: on the FM-1, EDIT > LAYER.",
@@ -4999,7 +4996,7 @@ const TEXT = {
     hyEnvs: "Envelopes and LFOs", hyLfo1: "The amplitude is the track's ADSR (ENV page) and LFO1 the track's LFO; both are matrix sources too (AENV, LFO1).",
     hyMatrix: "Modulation matrix", hyMatrixHelp: "Each slot: SOURCE × VIA (optional, e.g. the mod wheel) × AMOUNT → DEST. Pitch rows are fine near 0 (vibrato) and wide at the ends (±23 semitones). M1..M4: the four macro knobs, also CC 16..19.",
     hyGlobal: "Pitch bend and level", hyRead: "Read the HYBRID patch of track", hySent: "HYBRID patch sent to track",
-    hyLoaded: "Loaded", hyImported: "Imported", hyBadFile: "Not a Clipper HYBRID patch:",
+    hyLoaded: "Loaded", hyImported: "Imported", hyBadFile: "Not a SynthMaven HYBRID patch:",
     fm6ReadBtn: "Read from track", fm6SendBtn: "Send to track", fm6Live: "Send while editing", fm6Slot: "Slot",
     fm6StoreBtn: "Store in bank", fm6Import: "Import SysEx", fm6Export: "Export SysEx", fm6BankExport: "Export bank as SysEx",
     fm6Init: "Init voice", fm6Voice: "Voice", fm6Ops: "Operators", fm6Carriers: "carriers", fm6Feedback: "feedback",
@@ -5046,7 +5043,7 @@ const TEXT = {
     smpModeFiles: "From files (one note per file)",
     smpModeChop: "Chop a recording",
     bkHelpSyn: "Everything on the FM-1 in one file: the sound you are working on, the user presets, the FM6 / FMX patch bank, the wavetables USR1–USR4 and the settings (colours, calibration, the tuning, the lights). Restoring puts the FM-1 back as it was in the file (what is on it now is replaced).",
-    wtTab: "Wavetables", wtIntroSyn: "Your own wavetables for the WAVE engine: four slots, USR1–USR4 (TABL on the FM-1). Clipper plays no samples: a slot that still holds one from an older version is not played; send a wavetable over it or erase it.",
+    wtTab: "Wavetables", wtIntroSyn: "Your own wavetables for the WAVE engine: four slots, USR1–USR4 (TABL on the FM-1). SynthMaven plays no samples: a slot that still holds one from an older version is not played; send a wavetable over it or erase it.",
     wtWhere: "On the FM-1: engine WAVE, TABL = USR{n} (KNOB 1 on the EDIT page). The button above sets it for you.", wtOldSmp: "a sample (not played)",
     smpModeWave: "Wavetable", wtDrop: "Open or drop a wavetable WAV", wtDropHint: "Serum-style (frames of 2048 points), or one cycle",
     wtHelp: "A wavetable for the WAVE engine. 16 frames are picked evenly and sent as their harmonics 1..128 (the FM-1 band-limits them: no aliasing).\nSend it in step 3, then Track 1: WAVE with TABL = this slot.",
@@ -5080,7 +5077,7 @@ const TEXT = {
     dsNotStored: "not stored yet", dsStored: "stored",
     dsBad: "The FM-1 refused it", dsCopyAsk: "Make {k} a copy of {x}?", dsCopied: "Copied:",
     dsStop: "Stop the song first, then store", dsFlash: "Could not write the flash", dsSaved: "Stored on the FM-1",
-    dsFileBad: "Not a Clipper drum synth kit", dsOpenAsk: "Load {x} into {k}?", dsOpened: "Loaded:",
+    dsFileBad: "Not a SynthMaven drum synth kit", dsOpenAsk: "Load {x} into {k}?", dsOpened: "Loaded:",
     /* SLOOP 2.5: length, piano roll, MIDI files, song */
     lenLabel: "Length (steps)", viewGrid: "Grid", viewRoll: "Piano roll",
     midiExport: "Export MIDI", midiImportBtn: "Import MIDI",
@@ -5108,7 +5105,7 @@ const TEXT = {
     songOld: "This FM-1's firmware cannot share its song (a newer firmware).",
     songBad: "This song cannot be sent (16 entries, 1–64 bars each)", songRefused: "Stop the song first, then send",
     songSent: "Song sent to the FM-1",
-    /* Clipper 1.0: the pattern tools */
+    /* SynthMaven 1.0: the pattern tools */
     patUndo: "Undo", patRedo: "Redo", patRange: "Range", patAll: "All", patCopy: "Copy", patPaste: "Paste", patClear: "Clear",
     patTranspose: "Transpose", patShift: "Shift", patReverse: "Reverse", patDouble: "Double", patChord: "Make chords",
     patAccOn: "Accent +", patAccOff: "Accent −", patSlideOn: "Slide +", patSlideOff: "Slide −",
@@ -5120,12 +5117,12 @@ const TEXT = {
     patTextHelp: "One token a step: a degree of the key (1 = the root, 8 = the root an octave up), ' an octave up, , an octave down, + joins the notes of a chord (1+3+5), > accent, ~ slide; - holds the note (tie), . rests. The text repeats over the range.",
     patHumanize: "Humanize", patApply: "Apply",
     patLib: "Pattern library", patSave: "Save to the bank", patLoad: "Load", patExport: "Export file", patBankExport: "Export the bank", patImport: "Import files",
-    patLibHelp: "The bank lives in this browser (double-click a name to load it). Files (.clipper-pattern.json) keep the notes, ties, accents, slides, velocities, ratchets, levels, nudges, fills, locks and the length.",
+    patLibHelp: "The bank lives in this browser (double-click a name to load it). Files (.synthmaven-pattern.json) keep the notes, ties, accents, slides, velocities, ratchets, levels, nudges, fills, locks and the length.",
     patRangeSet: "Set the range to", laneHelp: "Draw with the mouse (or a finger) over the notes: velocity, nudge (early / late, 1/64 step), ratchet (x1 to x4 hits) or level (GHOST, SOFT, NORM, HARD).",
     chSingle: "single note", chKey3: "triad in key", chKey4: "7th in key", pk_bass: "Bass", pk_arp: "Arpeggio", pk_chords: "Chords", pk_lead: "Lead",
     patName: "Pattern name", patStepsShort: "steps", patBankEmpty: "No pattern saved yet", patDefName: "Pattern",
     patOverwrite: "Replace the pattern {name} in the bank?", patSaved: "Saved in the bank: ", patLoaded: "Pattern loaded",
-    patExported: "Pattern file saved: ", patImported: "Patterns imported: ", patFileBad: "Not a Clipper pattern file",
+    patExported: "Pattern file saved: ", patImported: "Patterns imported: ", patFileBad: "Not a SynthMaven pattern file",
     patBankFail: "This browser could not store the bank", patBankFull: "The bank is full (128 patterns)",
     patDone: "Done", patSame: "Nothing to change", patLocksDropped: "Done; locks over the 24 the FM-1 keeps, left out: ",
     patUndone: "Undone", patRedone: "Redone", patCopied: "Steps copied: ", patPasted: "Pasted", patCleared: "Range cleared", patMade: "Pattern generated",
@@ -5169,8 +5166,8 @@ let tab = (() => {
   return "sound";
 })();
 const hasTracks = () => !!dev && !!dev.info && !!dev.info.ntrk;
-/* Clipper (CLIPPER_SYNTH=1): one instrument like the original FM-1: no track bar, no Tracks / Song / drum pages */
-const synthOnly = () => !!dev && !!dev.info && /CLIPPER/.test(dev.info.version || "");
+/* SynthMaven (SYNTHMAVEN_SYNTH=1): one instrument like the original FM-1: no track bar, no Tracks / Song / drum pages */
+const synthOnly = () => !!dev && !!dev.info && /SYNTHMAVEN|SYNTHMAVEN/.test(dev.info.version || "");
 const SYNTH_HIDE = new Set(["tracks", "song", "kits", "drumsynth"]);
 function showTab(name) {
   if (!TABS.includes(name)) name = "sound";
@@ -5192,7 +5189,7 @@ function renderPanels() {
     b.tabIndex = on ? 0 : -1;
     if (b.dataset.tab === "tracks") b.hidden = !tracksOk;
     if (SYNTH_HIDE.has(b.dataset.tab)) b.hidden = syn || (b.dataset.tab === "tracks" && !tracksOk);
-    /* (Clipper 1.0: no samples, no projects on the FM-1: the tabs are the wavetables and the backup) */
+    /* (SynthMaven 1.0: no samples, no projects on the FM-1: the tabs are the wavetables and the backup) */
     const lab = b.dataset.tab === "samples" ? (syn ? "wtTab" : "samples") : b.dataset.tab === "projects" ? (syn ? "bkTitle" : "projects") : null;
     if (lab && b.dataset.t !== lab) { b.dataset.t = lab; setLabel(b, t(lab)); }
   }
@@ -5212,7 +5209,7 @@ function renderPanels() {
   if (hint) $("hint").textContent = t(hint);
   $("trackbar").hidden = !(ready && hasTracks() && !syn && TRACK_TABS.has(want));
   $("navtrack").textContent = t(syn ? "navSynth" : "navTrack");
-  $("projhelp").dataset.t = syn ? "projHelpSyn" : "projHelp";    /* (Clipper: one instrument and its layer) */
+  $("projhelp").dataset.t = syn ? "projHelpSyn" : "projHelp";    /* (SynthMaven: one instrument and its layer) */
   $("projhelp").textContent = t($("projhelp").dataset.t);
   const nb = $("tabs").querySelector(`button[data-tab="${want}"]`);   /* the page's title: its name in the side bar */
   $("pagetitle").textContent = nb ? t(nb.dataset.t) : "";
@@ -5265,17 +5262,17 @@ function selfLoad() {
 const stepEdit = new Map(); /* index -> time of the last edit */
 
 /* parameter ids (firmware/src/core.h); used only when P_COUNT / G_COUNT match */
-const EXPECT = { pcount: 61, gcount: [32, 33, 34], pe0: 53 };   /* gcount 33: 2.5's drum DLY (G_DRDLY); 34: Clipper 1.0's
+const EXPECT = { pcount: 61, gcount: [32, 33, 34], pe0: 53 };   /* gcount 33: 2.5's drum DLY (G_DRDLY); 34: SynthMaven 1.0's
                                                                   delay MODE (G_DMODE) */
-/* Clipper 0.4: 25 parameters more just before P_E0 (core.h): LFO 2 (53..55), ENV 2 (56..59), the matrix (60..77) */
+/* SynthMaven 0.4: 25 parameters more just before P_E0 (core.h): LFO 2 (53..55), ENV 2 (56..59), the matrix (60..77) */
 const EXPECT_04 = { pcount: 86, pe0: 78 };
-/* Clipper 0.6: 5 more just before P_E0: the sound's INSERT (78..82: TYPE, A, B, C, MIX) */
+/* SynthMaven 0.6: 5 more just before P_E0: the sound's INSERT (78..82: TYPE, A, B, C, MIX) */
 const EXPECT_06 = { pcount: 91, pe0: 83 };
-/* Clipper 0.8: 6 more just before P_E0: the MOD SEQ's RATE LEN SMTH START (83..86), SPICE, DICE (87, 88) */
+/* SynthMaven 0.8: 6 more just before P_E0: the MOD SEQ's RATE LEN SMTH START (83..86), SPICE, DICE (87, 88) */
 const EXPECT_08 = { pcount: 97, pe0: 89 };
-/* Clipper 0.9: 2 more: VINTAGE (89), LOOP (90) */
+/* SynthMaven 0.9: 2 more: VINTAGE (89), LOOP (90) */
 const EXPECT_09 = { pcount: 99, pe0: 91 };
-/* Clipper 1.0: 27 more: SPREAD (91), LFO 3 (92..94), ENV 2 LOOP (95), the MACROS (96..99), the matrix's slots 7..12
+/* SynthMaven 1.0: 27 more: SPREAD (91), LFO 3 (92..94), ENV 2 LOOP (95), the MACROS (96..99), the matrix's slots 7..12
    (100..117) */
 const EXPECT_10 = { pcount: 126, pe0: 118 };
 const layoutKnown = (info) => EXPECT.gcount.includes(info.gcount) &&
@@ -5284,7 +5281,7 @@ const layoutKnown = (info) => EXPECT.gcount.includes(info.gcount) &&
 const mxId = (k) => (k <= 6 ? 57 + 3 * k : 79 + 3 * k);
 const MX_PAGES = (pe0) => Array.from({ length: pe0 >= 118 ? 12 : 6 }, (_, i) => ["MATRIX " + (i + 1), 0, [mxId(i + 1), mxId(i + 1) + 1, mxId(i + 1) + 2]]);
 const P = { LEVEL: 0, SLEN: 29, CHORD: 49 };
-/* Clipper (pe0 >= 78) as its device pages (params.c PAGES, CLIPPER_SYNTH): the slicer's slots are LFO > MOD (VEL>F MW>
+/* SynthMaven (pe0 >= 78) as its device pages (params.c PAGES, SYNTHMAVEN_SYNTH): the slicer's slots are LFO > MOD (VEL>F MW>
    AT>) and FX > FILTER's MODL; the drum globals the master EQ+COMP, DUCK / ROLL the reverb's TYPE / PRE; no MUTE (one
    instrument). SYSTEM: MIDI OUT, SYNC, MIDI IN (kept with the FM-1's settings) */
 const LAYOUT = (pe0) => pe0 >= 78 ? [
@@ -5323,7 +5320,7 @@ const LAYOUT = (pe0) => pe0 >= 78 ? [
 ];
 /* globals that are actions or placeholders on the device: buttons instead, or hidden */
 const G_SKIP = new Set(["SLOT", "NAME", "LOAD", "SAVE", "ENG", "SET", "CLRSQ", "INIT", "MIDI", "SYNC", "ROUT", "IN", "CPU", "NEW"]);
-/* Clipper: what the device shows and DESC does not (params.c track_desc; ed_tdesc gives the static ones): a matrix DST's
+/* SynthMaven: what the device shows and DESC does not (params.c track_desc; ed_tdesc gives the static ones): a matrix DST's
    E1..E8 named as the engine's EDIT values; the INSERT's A B C as its TYPE means them (ins_desc: SOFT..FUZZ, CRUSH, the
    swept ones, the JUNO chorus); 0.9: SPICE / DICE as MUTAT / SEED while the arp's MODE is TURNG (15) */
 const INS_BITS = Array.from({ length: 16 }, (_, i) => String(i + 1));
@@ -5382,7 +5379,7 @@ async function connect() {
   sayK("connecting");
   try {
     if (!access) {
-      if (MOCK) { mock = makeMockDevice({ legacy: QS.get("legacy") === "1", clipper: QS.get("clipper") !== "0" }); access = mock.access; }
+      if (MOCK) { mock = makeMockDevice({ legacy: QS.get("legacy") === "1", synthmaven: QS.get("synthmaven") !== "0", synthmaven: true }); access = mock.access; }
       else {
         try { access = await navigator.requestMIDIAccess({ sysex: true }); }
         catch (e) { sayK("denied"); return; }
@@ -5418,6 +5415,7 @@ async function connect() {
     setLabel($("connect"), t("disconnect"));
     renderLive();
     await load(dev);
+    await smRefresh();
   } catch (e) {
     console.error(e);
     if (dev) {                                       /* not unplugged meanwhile (that says "lost") */
@@ -5480,7 +5478,7 @@ async function load(d) {
   try {
     /* the first frame after opening the port can be lost: a few tries */
     d.info = parse[CMD.INFO](await d.link.request(req.info(), { timeout: 500, retries: 3 }));
-    $("version").textContent = d.info.version.replace(/^FELUCCA (?=CLIPPER)/, "");   /* (INFO keeps "FELUCCA " for the tools) */
+    $("version").textContent = d.info.version.replace(/^FELUCCA (?=SYNTHMAVEN|SYNTHMAVEN)/, "");   /* (INFO keeps "FELUCCA " for the tools) */
     const total = d.info.pcount + d.info.gcount;
     for (let i = 0; i < d.info.pcount; i++) { sayK("reading", `${i + 1}/${total}`); d.pdesc[i] = await getDescOrNull(0, i); }
     for (let i = 0; i < d.info.gcount; i++) { sayK("reading", `${d.info.pcount + i + 1}/${total}`); d.gdesc[i] = await getDescOrNull(1, i); }
@@ -5779,7 +5777,7 @@ function showValue(k, v, force) {
     c.input.style.setProperty("--a", Math.min(p, z).toFixed(1) + "%");
     c.input.style.setProperty("--p", Math.max(p, z).toFixed(1) + "%");
   }
-  if (!c.scope && (c.id === 78 || c.id === 17) && dev && dev.info.pe0 >= 78) synRelabel();   /* (Clipper: INSERT TYPE, ARP MODE) */
+  if (!c.scope && (c.id === 78 || c.id === 17) && dev && dev.info.pe0 >= 78) synRelabel();   /* (SynthMaven: INSERT TYPE, ARP MODE) */
 }
 /* the user is working on this control: polling and pushes must not move it */
 function touched(k) {
@@ -5851,9 +5849,9 @@ async function afterSoundChange(msg = "ready") {
   await loadSteps();                                /* a preset can bring a pattern */
   if (hasTracks()) await readMixer();               /* the sound names and the selected strip */
   await fm6Follow();                                /* FM6: the track's patch (a PTCH value may have loaded one) */
-  await hyFollow();                                 /* Clipper: the HYBRID patch, the same */
-  await fxFollow();                                 /* Clipper 0.6: the FMX patch, the same */
-  await msFollow();                                 /* Clipper 0.8: the MOD SEQ's steps, the same */
+  await hyFollow();                                 /* SynthMaven: the HYBRID patch, the same */
+  await fxFollow();                                 /* SynthMaven 0.6: the FMX patch, the same */
+  await msFollow();                                 /* SynthMaven 0.8: the MOD SEQ's steps, the same */
   stLoaded();                                       /* (0.7: the sound as loaded: COMPARE's, the diff's) */
   sayK(msg);
 }
@@ -5864,7 +5862,7 @@ $("init").addEventListener("click", async () => {
   catch (err) { report(err); } finally { busy--; }
 });
 
-/* ---- Clipper 0.7: sound tools. What synth users ask an editor for most (after a librarian): undo, compare with the
+/* ---- SynthMaven 0.7: sound tools. What synth users ask an editor for most (after a librarian): undo, compare with the
    sound as loaded, A / B, a randomizer by section, what changed. A step: the sound's values before a change, once the
    last change rests (900 ms) or another control moves; a sound loaded: a step. The device keeps its own history too
    (the UNDO page): these SETs reach it as edits. */
@@ -6060,7 +6058,7 @@ window.addEventListener("keydown", (e) => {
   e.preventDefault();
   if (e.shiftKey) stRedo(); else stUndo();
 });
-/* the envelope as a picture (ENV: ATK DEC SUS REL; Clipper's ENV 2 dashed), under the ENV card's first page */
+/* the envelope as a picture (ENV: ATK DEC SUS REL; SynthMaven's ENV 2 dashed), under the ENV card's first page */
 function envShape(a, d, s, r) {                       /* 0..127 each: the path's points in a 300 x 64 box */
   const w = (v) => 6 + (v / 127) ** 1.6 * 84, top = 6, bot = 62;
   const x1 = w(a), x2 = x1 + w(d), x3 = x2 + 60, x4 = x3 + w(r), ys = bot - (s / 127) * (bot - top);
@@ -6133,7 +6131,7 @@ function renderSteps() {
   $("drumbar").hidden = $("drumgrid").hidden = !dg;
   $("stepgrid").hidden = $("steptables").hidden = dg;
   renderSeqTools();
-  renderPatBar();                                     /* (Clipper 1.0: the pattern tools, the lanes) */
+  renderPatBar();                                     /* (SynthMaven 1.0: the pattern tools, the lanes) */
   const rollOn = !dg && !isDrum() && RV.view === "roll";   /* (2.5) the piano roll instead of the tiles */
   $("roll").hidden = !rollOn;
   if (rollOn) $("stepgrid").hidden = true;
@@ -6430,7 +6428,7 @@ function midiExport() {
   const len = stepLen(), div = curDiv(), tr = dev.sel || 0, drum = isDrum();
   const notes = drum && drumGrid() && dev.dstepsOk ? SMF.fromDrums(dev.dsteps, len, div) : SMF.fromSteps(dev.steps, len, div);
   if (!notes.length) { sayK("midiEmpty"); return; }
-  downloadBytes(`clipper-track${tr + 1}.mid`, SMF.write(notes, { bpm: gBpm(), ch: drum ? 9 : tr, name: `Clipper track ${tr + 1}` }));
+  downloadBytes(`synthmaven-track${tr + 1}.mid`, SMF.write(notes, { bpm: gBpm(), ch: drum ? 9 : tr, name: `SynthMaven track ${tr + 1}` }));
   sayK("midiSaved", String(notes.length));
 }
 let MI = null;                                           /* the file being imported: {name, smf, src} */
@@ -6957,11 +6955,11 @@ async function refreshLocks() {                          /* a STEP_CHANGED push:
   } catch (err) { report(err); }
 }
 
-/* ---- Clipper 1.0: the pattern tools (PAT) on the selected track: a range, undo / redo, transformations,
+/* ---- SynthMaven 1.0: the pattern tools (PAT) on the selected track: a range, undo / redo, transformations,
    generators, the lanes (velocity, nudge, ratchet, level), the pattern bank and files. A tool computes the new
    pattern at once and sends only what changed (STEP_SET, MICRO_SET, FILL_SET, LOCK_SET, LEN). */
 const PT = { undo: [], redo: [], clip: null, a: 0, b: null, lane: "vel", busy: false, dev: null, keyDev: null, draw: null };
-try { const l = localStorage.getItem("clipper-seq-lane"); if (l in PAT.LANES) PT.lane = l; } catch (e) { /* no storage */ }
+try { const l = localStorage.getItem("synthmaven-seq-lane"); if (l in PAT.LANES) PT.lane = l; } catch (e) { /* no storage */ }
 const patOn = () => !!dev && !!dev.dump && dev.steps.length >= dev.info.nstep && !(drumGrid() && dev.dstepsOk);
 function patSync() { if (PT.dev !== dev) { PT.dev = dev; PT.undo = []; PT.redo = []; PT.a = 0; PT.b = null; } }
 const patNow = () => PAT.make(dev.steps.slice(0, dev.info.nstep), dev.micro, dev.fill, dev.locks, stepLen());
@@ -7236,15 +7234,15 @@ $("lanecv").addEventListener("pointerup", laneDrop);
 $("lanecv").addEventListener("pointercancel", () => { PT.draw = null; renderLanes(); });
 for (const btn of $("laneseg").children) btn.addEventListener("click", () => {
   PT.lane = btn.dataset.l;
-  try { localStorage.setItem("clipper-seq-lane", PT.lane); } catch (e) { /* no storage */ }
+  try { localStorage.setItem("synthmaven-seq-lane", PT.lane); } catch (e) { /* no storage */ }
   $("lval").value = "";
   renderPatBar();
 });
 $("lgo").addEventListener("click", () => patApply((P, [a, b]) => PAT.setLane(P, PT.lane, +$("lval").value, a, b)));
 window.addEventListener("resize", () => renderLanes());
 
-/* the pattern bank (this browser) and .clipper-pattern.json files */
-const BANK_KEY = "clipper-pattern-bank";
+/* the pattern bank (this browser) and .synthmaven-pattern.json files */
+const BANK_KEY = "synthmaven-pattern-bank";
 function bankRead() {
   try { const v = JSON.parse(localStorage.getItem(BANK_KEY) || "[]"); return Array.isArray(v) ? v.filter((x) => x && typeof x.name === "string" && x.pat) : []; }
   catch (e) { return []; }
@@ -7287,10 +7285,10 @@ $("pdel").addEventListener("click", () => {
 $("pexp").addEventListener("click", () => {
   if (!patOn()) return;
   const name = $("pname").value.trim() || "pattern";
-  download(`${fileSlug(name)}.clipper-pattern.json`, PAT.toFile(patNow(), name));
+  download(`${fileSlug(name)}.synthmaven-pattern.json`, PAT.toFile(patNow(), name));
   sayK("patExported", name);
 });
-$("pbexp").addEventListener("click", () => download("clipper-patterns.json", { format: "clipper-pattern-bank", version: 1, patterns: bankRead().map((x) => x.pat) }));
+$("pbexp").addEventListener("click", () => download("synthmaven-patterns.json", { format: "synthmaven-pattern-bank", version: 1, patterns: bankRead().map((x) => x.pat) }));
 $("pimp").addEventListener("click", () => $("pfile").click());
 $("pfile").addEventListener("change", async (e) => {
   const files = [...e.target.files];
@@ -7299,10 +7297,10 @@ $("pfile").addEventListener("change", async (e) => {
   for (const f of files) {
     try {
       const j = JSON.parse(await f.text());
-      const pats = j && j.format === "clipper-pattern-bank" && Array.isArray(j.patterns) ? j.patterns : [j];
+      const pats = j && j.format === "synthmaven-pattern-bank" && Array.isArray(j.patterns) ? j.patterns : [j];
       for (const p of pats) {
         PAT.fromFile(p, 64);                             /* (refused here when it is not a pattern) */
-        const name = String(p.name || f.name.replace(/\.clipper-pattern\.json$|\.json$/i, "")).trim() || patName();
+        const name = String(p.name || f.name.replace(/\.synthmaven-pattern\.json$|\.json$/i, "")).trim() || patName();
         list = PAT.bankPut(list, name, p);
         got.push([name, p]);
       }
@@ -7517,8 +7515,8 @@ function renderSamples() {
   if (!dev || !dev.smp) { box.replaceChildren(); return; }
   const P = smpPage, n = dev.smp.nslots;
   if (P.slot >= n) P.slot = 0;
-  const hasWave = !!dev.info && dev.info.engines.includes("WAVE");   /* (Clipper 0.2: wavetables into the slots) */
-  const wtOnly = synthOnly();                       /* (Clipper 1.0: no samples: the slots hold wavetables only) */
+  const hasWave = !!dev.info && dev.info.engines.includes("WAVE");   /* (SynthMaven 0.2: wavetables into the slots) */
+  const wtOnly = synthOnly();                       /* (SynthMaven 1.0: no samples: the slots hold wavetables only) */
   if (!hasWave && P.mode === "wave") P.mode = "files";
   if (wtOnly && hasWave) P.mode = "wave";
   if (!P.ui || P.ui.lang !== lang || P.ui.n !== n || P.ui.hasWave !== hasWave || P.ui.wtOnly !== wtOnly) {
@@ -7557,7 +7555,7 @@ function renderSamples() {
       el("div", { class: "kithead" }, el("div", { class: "bar", style: "margin:0" }, el("span", { class: "dim", text: t("smpKeymap") })), u.meterBox),
       u.keymap, u.list, el("p", { class: "bar" }, u.clear));
     u.chopPane = el("div", { class: "pane" });
-    /* Clipper: a wavetable (WT) */
+    /* SynthMaven: a wavetable (WT) */
     u.wtFile = el("input", { type: "file", accept: ".wav,audio/wav,audio/x-wav", hidden: true });
     u.wtFile.addEventListener("change", () => { if (u.wtFile.files[0]) wtOpen(u.wtFile.files[0]); u.wtFile.value = ""; });
     u.wtDrop = el("div", { class: "dropzone", tabindex: "0", role: "button", onclick: () => u.wtFile.click(),
@@ -7697,7 +7695,7 @@ function smpButtons() {
   u.send.disabled = smpBusy || !ready;
   for (const b of u.play.children) {
     b.disabled = smpBusy || !x.zones || !hasTracks() || (P.mode === "wave") !== (x.zones === WT.ZONES);
-    b.hidden = synthOnly() && +b.dataset.i > 0;     /* (Clipper: one instrument) */
+    b.hidden = synthOnly() && +b.dataset.i > 0;     /* (SynthMaven: one instrument) */
   }
   u.where.textContent = t(P.mode === "wave" ? "wtWhere" : "smpWhere").replace(/\{n\}/g, k + 1);
 }
@@ -7709,7 +7707,7 @@ async function smpSendPage() {
   P.ui.prog.hidden = true;
   renderSamples();
 }
-/* Clipper: a WAV of wavetable frames -> smpPage.wt (WT.fromWave), its name, the picture */
+/* SynthMaven: a WAV of wavetable frames -> smpPage.wt (WT.fromWave), its name, the picture */
 async function wtOpen(file) {
   const P = smpPage;
   try {
@@ -7772,7 +7770,7 @@ async function wtUpload(k, prog) {
   }
   return done;
 }
-/* Clipper: the instrument plays the wavetable in slot k: WAVE, its USER WT preset, TABL = USRk */
+/* SynthMaven: the instrument plays the wavetable in slot k: WAVE, its USER WT preset, TABL = USRk */
 function wtUseOn(i, k) {
   if (!dev || !hasTracks()) return;
   op(async () => {
@@ -8611,7 +8609,7 @@ function mixToSound(i) {
 }
 
 function renderMixer() {
-  lyRender();                                       /* (Clipper: the LAYER card reads the same TRACK_DUMPs) */
+  lyRender();                                       /* (SynthMaven: the LAYER card reads the same TRACK_DUMPs) */
   const box = $("mixer");
   if (!dev || !dev.mix) { box.replaceChildren(); mixCtl.length = 0; return; }
   const m = dev.mix;
@@ -9114,6 +9112,7 @@ function renderLib() {
 ["libq", "libeng", "libtag", "libsort"].forEach((id) => $(id).addEventListener(id === "libq" ? "input" : "change", renderLib));
 
 function renderBank() {
+  renderSmCards();
   const pane = $("bankpane");
   $("bankhint").hidden = !!(dev && dev.bank);
   $("bankhint").textContent = t(!dev || !dev.dump ? "bankConnect" : "bankNone");
@@ -9543,11 +9542,11 @@ $("fm6bankexp").addEventListener("click", () => op(async () => {
     const r = parse[CMD.FM6_GET](await rq(req.fm6Get(FM6.TARGET.BANK, k)));
     out.push(r.rc ? null : FM6.unpack(r.packed));
   }
-  downloadBytes(`clipper-fm6-bank-${today()}.syx`, FM6.bankSysex(out));
+  downloadBytes(`synthmaven-fm6-bank-${today()}.syx`, FM6.bankSysex(out));
   sayK("fm6Exported");
 }));
 /* ---------------------------------------------------------------- HYBRID --- */
-/* Clipper: the HYBRID engine's whole patch (firmware v11, EDITOR_PROTOCOL.md "HYBRID patches"), in the Sound tab while
+/* SynthMaven: the HYBRID engine's whole patch (firmware v11, EDITOR_PROTOCOL.md "HYBRID patches"), in the Sound tab while
    the selected track plays HYBRID. The device shows eight values of it (CUT, RES, FENV offsets, PTCH, the macros M1..M4);
    here every oscillator, filter, envelope, LFO and matrix slot. LIVE sends each change (the track plays it from its
    next block); it stays the track's patch until PTCH turns or another sound loads. Files: the patch as JSON. */
@@ -9678,8 +9677,8 @@ $("hyload").addEventListener("click", () => op(async () => {
 }));
 $("hyinit").addEventListener("click", () => { hyv = HY.init(); renderHy(); hyChanged(); });
 $("hyname").addEventListener("change", (e) => { hyv.name = HY.sanitize({ ...hyv, name: e.target.value }).name; e.target.value = hyv.name; hyChanged(); });
-$("hyexport").addEventListener("click", () => download(`${fileSlug(hyv.name || "hybrid")}.clipper.json`,
-  { format: "clipper-hybrid", version: 1, patch: HY.sanitize(hyv) }));
+$("hyexport").addEventListener("click", () => download(`${fileSlug(hyv.name || "hybrid")}.synthmaven.json`,
+  { format: "synthmaven-hybrid", version: 1, patch: HY.sanitize(hyv) }));
 $("hyimport").addEventListener("click", () => $("hyfile").click());
 $("hyfile").addEventListener("change", async (e) => {
   const f = e.target.files[0];
@@ -9687,7 +9686,7 @@ $("hyfile").addEventListener("change", async (e) => {
   if (!f) return;
   try {
     const j = JSON.parse(await f.text());
-    if (!j || j.format !== "clipper-hybrid" || !j.patch) throw new Error("format");
+    if (!j || j.format !== "synthmaven-hybrid" || !j.patch) throw new Error("format");
     hyv = HY.sanitize(j.patch);
     renderHy();
     hyChanged();
@@ -9695,7 +9694,7 @@ $("hyfile").addEventListener("change", async (e) => {
   } catch (err) { sayK("hyBadFile", ` ${f.name}`); }
 });
 /* ----------------------------------------------------------------- LAYER --- */
-/* Clipper 0.3: the LAYER (voice.c layer_*, ui_synth.c X_LY*): track 2's sound under or beside track 1's. Its settings
+/* SynthMaven 0.3: the LAYER (voice.c layer_*, ui_synth.c X_LY*): track 2's sound under or beside track 1's. Its settings
    are track 2's values (core.h P_LYMODE = P_SSWING, P_LYSPLIT = P_SGATE, P_LYOCT = P_SDIV, P_LYCH = P_SLEN; LEVEL,
    PAN, TFLT its own), read with the mixer's TRACK_DUMP, written with TRACK_PARAM (v4: the selection stays). Its sound
    and SWAP: on the FM-1 (no protocol for another track's sound) */
@@ -9762,7 +9761,7 @@ async function lySet(id, v) {
   } catch (e) { if (e.message !== "closed") console.warn(e); }
 }
 /* ---------------------------------------------------------------- TUNING --- */
-/* Clipper 0.9: the FM-1's tuning (firmware v14): a system and its root, or a USER scale from a Scala .scl file */
+/* SynthMaven 0.9: the FM-1's tuning (firmware v14): a system and its root, or a USER scale from a Scala .scl file */
 const TU_NAMES = ["EQUAL", "JUST", "PYTHAG", "MEANTONE", "WERCK III", "KIRNB III", "RAST", "BAYATI", "SLENDRO", "PELOG",
   "19-EDO", "24-EDO", "31-EDO", "USER"];
 let tuv = null;
@@ -9781,7 +9780,7 @@ function tuRender() {
   if (!tuv) return;
   $("tusys").value = String(tuv.sys);
   $("turoot").value = String(tuv.root);
-  $("tua4box").hidden = tuv.a4 == null;                /* (Clipper 1.0: the reference pitch) */
+  $("tua4box").hidden = tuv.a4 == null;                /* (SynthMaven 1.0: the reference pitch) */
   if (tuv.a4 != null && document.activeElement !== $("tua4")) $("tua4").value = String(tuv.a4);
   $("tuinfo").textContent = `${t("tuUser")} ${tuv.desc || ""} ${tuv.deg.length} / ${(tuv.period / 16).toFixed(2)} ct: ` +
     tuv.deg.map((d) => (d / 16).toFixed(1)).join(" ");
@@ -9818,7 +9817,7 @@ $("tufile").addEventListener("change", async (e) => {
   op(tuSend);
 });
 /* --------------------------------------------------------------- MOD SEQ --- */
-/* Clipper 0.8: the MOD SEQ's steps of the selected part (firmware v13, EDITOR_PROTOCOL.md "MOD SEQ"), on every engine:
+/* SynthMaven 0.8: the MOD SEQ's steps of the selected part (firmware v13, EDITOR_PROTOCOL.md "MOD SEQ"), on every engine:
    four lanes of 16 bars, dragged up and down (-8..7); a SHAPE fills the selected lane over the 16 steps. Its RATE, LEN,
    SMTH, START are the sound's parameters (the LFO group's MOD SEQ 2). LIVE sends each change */
 const MS_SHAPES = ["RAMP+", "RAMP-", "TRI", "SINE", "SQR", "RND", "FLAT", "INVRT", "SHIFT"];
@@ -9894,7 +9893,7 @@ $("msread").addEventListener("click", () => op(() => msReadTrack(false)));
 $("mssend").addEventListener("click", () => op(() => msSend(false)));
 $("msapply").addEventListener("click", () => { msShape(msLane, +$("msshape").value); renderMs(); msChanged(); });
 /* ------------------------------------------------------------------- FMX --- */
-/* Clipper 0.6: the FMX engine's whole patch (firmware v12, EDITOR_PROTOCOL.md "FMX patches"), in the Sound tab while the
+/* SynthMaven 0.6: the FMX engine's whole patch (firmware v12, EDITOR_PROTOCOL.md "FMX patches"), in the Sound tab while the
    selected track plays FMX: the six operators (wave, PM / FM / RING, ratio or a fixed frequency, level, envelope,
    velocity, key scaling, detune), the routing (any operator into any other, each its amount; its own: feedback), the
    outputs, a template to start from (the DX7's 32 and 8 more), the pitch envelope. LIVE sends each change; STORE
@@ -10047,8 +10046,8 @@ $("fxstore").addEventListener("click", () => op(async () => {
 }));
 $("fxinit").addEventListener("click", () => { fxv = FX.init(); renderFx(); fxChanged(); });
 $("fxname").addEventListener("change", (e) => { fxv.name = FX.sanitize({ ...fxv, name: e.target.value }).name; e.target.value = fxv.name; fxChanged(); });
-$("fxexport").addEventListener("click", () => download(`${fileSlug(fxv.name || "fmx")}.clipper-fmx.json`,
-  { format: "clipper-fmx", version: 1, patch: FX.sanitize(fxv) }));
+$("fxexport").addEventListener("click", () => download(`${fileSlug(fxv.name || "fmx")}.synthmaven-fmx.json`,
+  { format: "synthmaven-fmx", version: 1, patch: FX.sanitize(fxv) }));
 $("fximport").addEventListener("click", () => $("fxfile").click());
 $("fxfile").addEventListener("change", async (e) => {
   const f = e.target.files[0];
@@ -10056,7 +10055,7 @@ $("fxfile").addEventListener("change", async (e) => {
   if (!f) return;
   try {
     const j = JSON.parse(await f.text());
-    if (!j || j.format !== "clipper-fmx" || !j.patch) throw new Error("format");
+    if (!j || j.format !== "synthmaven-fmx" || !j.patch) throw new Error("format");
     fxv = FX.sanitize(j.patch);
     renderFx();
     fxChanged();
@@ -10077,7 +10076,7 @@ function bkReport(e) {
 $("bk-save").addEventListener("click", () => op(async () => {
   try {
     const arc = await backupCapture(rq, dev.info, bkProgress("bkSaving"));
-    download(`Clipper-backup-${today()}.json`, arc);
+    download(`SynthMaven-backup-${today()}.json`, arc);
     sayK("bkSaved");
   } catch (e) { bkReport(e); } finally { $("bk-prog").hidden = true; }
 }));
@@ -10194,6 +10193,71 @@ $("bkexport").addEventListener("click", () => libOp(async () => {
   sayK("ready");
 }));
 
+// SynthMaven v15 settings: never show a browser Bluetooth connection as a hardware pairing.
+let smState = null;
+function smCascade() {
+  $("sm-patch-options").hidden = !$("sm-patch-enabled").checked;
+}
+async function smRequest(cmd, values = []) {
+  if (!dev || !dev.info || dev.info.proto < 15 || !/SYNTHMAVEN/i.test(dev.info.version)) throw new Error("SynthMaven v15 protocol required; installed firmware is unchanged.");
+  const a = await rq([cmd, values]);
+  if (!a || a.length !== 8 || a[1] !== 1) throw new Error("Invalid SynthMaven settings reply");
+  if (a[0]) throw new Error(a[0] === 4 ? "Connection unavailable: this firmware has no Bluetooth central driver." : "Invalid MIDI settings");
+  return {caps:a[2], enabled:a[3], patch:a[4], key:a[5], bt:a[6], state:a[7]};
+}
+async function smRefresh() {
+  try {
+    smState = await smRequest(100);
+    $("sm-patch-enabled").checked = !!smState.enabled;
+    $("sm-patch-port").value = String(smState.patch);
+    $("sm-key-port").value = String(smState.key);
+    $("sm-bt").checked = !!smState.bt;
+    $("sm-patch-enabled").disabled = $("sm-key-port").disabled = $("sm-save").disabled = false;
+    $("sm-patch-port").querySelector('option[value="1"]').disabled = !(smState.caps & 4);
+    $("sm-bt").disabled = !(smState.caps & 4);
+    $("sm-pair").disabled = !(smState.caps & 4) || !smState.bt;
+    $("sm-status").textContent = "Read from SynthMaven. Bluetooth: " + ((smState.caps & 4) ? "available" : "driver unavailable");
+    smCascade();
+  } catch(e) { $("sm-status").textContent = e.message; for (const id of ["sm-patch-enabled","sm-key-port","sm-save","sm-bt","sm-pair"]) $(id).disabled = true; }
+}
+$("sm-read").addEventListener("click", smRefresh);
+$("sm-patch-enabled").addEventListener("change", smCascade);
+$("sm-save").addEventListener("click", async () => {
+ try { await smRequest(101, [+$("sm-patch-enabled").checked, +$("sm-patch-port").value, +$("sm-key-port").value, +$("sm-bt").checked]); await smRefresh(); }
+ catch(e) { $("sm-status").textContent = e.message; }
+});
+$("sm-pair").addEventListener("click", async () => {
+ try { await smRequest(102); await smRefresh(); } catch(e) { $("sm-status").textContent = e.message; }
+});
+
+var smPage = 0;
+function renderSmCards() {
+ const box = $("sm-patch-cards");
+ if (!box) return;
+ box.replaceChildren();
+ const slots = dev && dev.bank ? dev.bank.slots.filter(x => x.used) : [];
+ smPage = Math.max(0, Math.min(smPage || 0, Math.max(0, Math.ceil(slots.length/4)-1)));
+ $("sm-page").textContent = slots.length ? `${smPage+1} / ${Math.ceil(slots.length/4)}` : "No saved user patches";
+ $("sm-prev").disabled = !smPage;
+ $("sm-next").disabled = (smPage+1)*4 >= slots.length;
+ for (const patch of slots.slice(smPage*4, smPage*4+4)) {
+  const load = el("button", {text:"Load"}), edit = el("button", {text:"Edit"});
+  load.disabled = edit.disabled = !!libBusy;
+  const card = el("div", {class:"card"}, el("h3", {text:`${slotName(patch.slot)} · ${patch.name}`}), el("p", {text:dev.info.engines[patch.engine] || ""}), load, edit);
+  load.addEventListener("click", () => bankLoad(patch.slot));
+  edit.addEventListener("click", async () => {
+   if (libBusy) return;
+   await libOp(async () => {
+    selfLoad(); checkRc(await bank.load(rqf, patch.slot)); await afterSoundChange();
+    location.hash = "sound";
+   });
+  });
+  box.append(card);
+ }
+}
+$("sm-prev").addEventListener("click", () => {smPage--; renderSmCards();});
+$("sm-next").addEventListener("click", () => {smPage++; renderSmCards();});
+
 $("connect").addEventListener("click", () => {
   if (dev) { wantConnected = false; disconnect(); } else connect();
 });
@@ -10202,6 +10266,7 @@ showTab(tab);
 libInit();
 if (!MOCK && !navigator.requestMIDIAccess) sayK("nomidi");
 })();
+
 </script>
 </body>
 </html>

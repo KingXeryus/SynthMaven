@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.6 FMX (CLIPPER_SYNTH 1): six operators, waves, PM / FM / RING, any routing.
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.6 FMX (SYNTHMAVEN_SYNTH 1): six operators, waves, PM / FM / RING, any routing.
  *   PRESETS   the tonal ones in tune (A3 = 220 Hz); every one bounded and finite with an 8-note chord; every voice
  *             ends after its release (the carriers' envelopes: engine_t.done)
  *   WAVES     each wave on one carrier: in tune (but NOISE), each its own spectrum; SAW at C7 (the 8-harmonic copy):
@@ -477,7 +477,7 @@ int main(int argc, char **argv)
     host_tracks_init();
     for (i = 0; i < NPART; i++)
         host_preset(&trk[i], i ? 1u : ENGI_FMX, 0);
-    clipper_proj_neutral();
+    synthmaven_proj_neutral();
     trk[1].p[P_LYMODE] = LY_OFF;
     memset(nor, 0xFF, sizeof nor);
     fm6_bank_boot();

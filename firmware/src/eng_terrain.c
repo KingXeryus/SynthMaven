@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* TERRAIN: wave terrain synthesis, "lite" (Clipper 0.5; Felucca discussion #146). Instead of a waveform read along
+ * Copyright (C) 2026 3dSam */
+/* TERRAIN: wave terrain synthesis, "lite" (SynthMaven 0.5; Felucca discussion #146). Instead of a waveform read along
  * one axis, an orbit circles over a surface: the surface's height under it is the sound. One turn of the orbit is
  * one period of the note, so it is pitched; where the orbit lies on the surface and how wide it is choose the
  * harmonics, and moving it (X, Y, DRIFT, the matrix) makes the timbre evolve as no single wave can.

@@ -22,7 +22,7 @@ static void analog_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
     uint32_t wave = (uint32_t)p[P_E0], i;
     int32_t det = p[P_E1], mix = p[P_E2], noise = p[P_E3];
     int32_t cut = (p[P_E4] << 8) + m->cutoff + (p[P_E7] * (v->pitch16 - 60 * 16) >> 4);
-    fmod_t fm;                                                   /* Clipper: the filter MODEL (P_FMODEL, dsp.c) */
+    fmod_t fm;                                                   /* SynthMaven: the filter MODEL (P_FMODEL, dsp.c) */
     int32_t model = fm_model(t);
     int32_t drive = 32768 + p[P_E6] * 768;                       /* 1x .. 4x */
     int32_t dw = p[P_E6] * 258;                                  /* DRV: dry -> driven (a clean range low) */
@@ -48,7 +48,7 @@ static void analog_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
             if (m2)
                 b = osc_pulse(ph1, inc2, 0x80000000u);
             break;
-        case 2:                                       /* (Clipper 0.2: band-limited, dsp.c osc_tri_bl) */
+        case 2:                                       /* (SynthMaven 0.2: band-limited, dsp.c osc_tri_bl) */
             a = osc_tri_bl(ph0, inc1);
             if (m2)
                 b = osc_tri_bl(ph1, inc2);
@@ -129,14 +129,14 @@ static const preset_t ANALOG_PRESETS[] = {
      XP(P_LD_PIT + 1, 1, P_LRATE + 1, 80, P_LFADE + 1, 60, P_GLIDE + 1, 30)},
     {"SAW BASS", {0, 6, 64, 0, 52, 30, 40, 64}, {0, 60, 60, 20}, 30, 1, FX(8, 0, 0, 4), XP(P_TRANS + 1, -24)},
     {"SINE PAD", {3, 10, 64, 4, 90, 0, 0, 32}, {80, 90, 118, 90}, 0, 0, FX(0, 60, 20, 65)},
-    /* Clipper 0.2: the 24 dB ladder (FX > FILTER > MODL = MOOG; in the groovebox that slot is the slicer's pattern,
+    /* SynthMaven 0.2: the 24 dB ladder (FX > FILTER > MODL = MOOG; in the groovebox that slot is the slicer's pattern,
      * its slicer off): a fat mono bass and a 70s lead */
     {"MINI BASS", {0, 6, 64, 0, 42, 60, 40, 64}, {0, 64, 70, 24}, 46, 1, FX(0, 0, 0, 4),
      XP(P_FMODEL + 1, FM_MOOG, P_GLIDE + 1, 26, P_TRANS + 1, -24)},
     {"MINI LEAD", {0, 9, 64, 0, 62, 80, 30, 64}, {2, 70, 110, 40}, 26, 1, FX(0, 0, 26, 24),
      XP(P_FMODEL + 1, FM_MOOG, P_GLIDE + 1, 36, P_LD_PIT + 1, 1, P_LRATE + 1, 82)},
-#if CLIPPER_SYNTH
-    /* Clipper 0.3 */
+#if SYNTHMAVEN_SYNTH
+    /* SynthMaven 0.3 */
     {"JUNO PAD", {4, 14, 64, 4, 62, 10, 0, 40}, {60, 100, 118, 88}, 8, 0, FX(0, 60, 20, 60), XP(P_LRATE + 1, 30, P_LD_SHP + 1, 30)},
     {"OBX BRASS", {0, 16, 64, 0, 50, 20, 10, 64}, {14, 74, 100, 40}, 34, 0, FX(0, 20, 10, 30), XP(P_VOICE + 1, V_PUNI2, P_DETUNE + 1, 50)},
     {"TAURUS", {0, 6, 64, 0, 40, 40, 50, 64}, {0, 80, 100, 30}, 30, 1, FX(0, 0, 0, 4),

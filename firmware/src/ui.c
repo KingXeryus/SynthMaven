@@ -3,7 +3,7 @@
 /* Felucca user interface. Four columns map to KNOB 1..4. Rendering is lazy:
  * every element remembers what it last drew and is redrawn only on change. */
 #ifndef FELUCCA_VERSION
-#define FELUCCA_VERSION "CLIPPER 1.1 EXP"  /* (experimental) the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
+#define FELUCCA_VERSION "SYNTHMAVEN 0.1 DEV"  /* (experimental) the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
 #endif
 static void project_save(uint32_t slot);
 static void arrangement_save(void);
@@ -24,6 +24,8 @@ static uint32_t user_of(const track_t *t)    /* user preset slot its sound came 
     return t->user && up_used(t->user - 1u) ? t->user - 1u : UP_SLOTS;
 }
 static uint32_t up_gen;                      /* bumped on every user bank change (redraws) */
+static uint32_t br_cursor;
+static uint8_t br_valid;
 static uint8_t sync_reload;                  /* engine / preset / project / user preset loaded: editor RELOAD push */
 
 #define ACC C_HI                   /* amber everywhere; white is the only accent */
@@ -122,6 +124,7 @@ static void page_entered(void)
 {
     const page_t *pg = cur_page();
     song.seq_mode = !ui.home && pg->fam == FAM_SEQ;
+    br_valid = 0;
     ui.entry_open = 0;
     ui.hot_t = 0;                                /* the white value / focus box was the old page's */
     ui.force = 1;
@@ -434,7 +437,7 @@ static int page_walk(int32_t s)
 
 static void go_home(void)
 {
-#if FELUCCA_ARRANGER && !CLIPPER_SYNTH
+#if FELUCCA_ARRANGER && !SYNTHMAVEN_SYNTH
     ui.home = 0;
     ui.page = (uint8_t)page_first(FAM_TRK);
 #else
@@ -451,7 +454,7 @@ static void go_home(void)
  * writes the sequencer: every pattern is the one the player records or enters. */
 
 /* the parts' sounds at power-on (engine, preset): bass, pad, lead */
-#if CLIPPER_SYNTH                  /* Clipper: the instrument plays CLIPPER (HYBRID's first patch) */
+#if SYNTHMAVEN_SYNTH                  /* SynthMaven: the instrument plays SYNTHMAVEN (HYBRID's first patch) */
 static const uint8_t TRK_DEF[NPART][2] = {{ENGI_HYBRID, 0}, {1, 0}, {4, 5}};
 #else
 static const uint8_t TRK_DEF[NPART][2] = {{0, 0}, {1, 0}, {4, 5}};   /* ANALOG 808 BOOM, DIGITAL RHODES, SAMPLE LOFI FLUTE */
@@ -477,7 +480,7 @@ static int param_kept(uint32_t i)
  * it holds (seq.c arp_keep_req: the panic of this track leaves them). KBD HOLD (HOLD with the arp OFF) stays on. With
  * the arp OFF, a preset brings its own arp, as before */
 static int arp_param(uint32_t i) { return i >= P_AMODE && i <= P_AORDER; }
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
 static void hist_before_load(void);                  /* (0.7, ui_synth.c: the edits a step of their own, first) */
 #endif
 static void apply_preset_to(track_t *t, uint32_t pi)
@@ -489,11 +492,11 @@ static void apply_preset_to(track_t *t, uint32_t pi)
         return;
     if (keep_arp)
         arp_keep_req |= (uint8_t)(1u << trk_index(t));   /* (before the panic below) */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     if (t == &trk[0])
         hist_before_load();
 #endif
-    sound_fade_begin(t);                              /* Clipper: what sounds fades out with its own values */
+    sound_fade_begin(t);                              /* SynthMaven: what sounds fades out with its own values */
     panic_req |= (uint8_t)(1u << trk_index(t));       /* MONO/POLY may change: release what sounds */
     t->user = 0;
     if (t == TSEL)
@@ -522,7 +525,7 @@ static void apply_preset_to(track_t *t, uint32_t pi)
             ka[i] = t->p[P_AMODE + i];
         for (i = 0; i < 4u; i++) {
             t->p[P_DIST + i] = (int16_t)(pr->fx[i] ? pr->fx[i] - 1 : FX_DEF[i]);
-            if (CLIPPER_SYNTH && (P_DIST + i == P_DLY || P_DIST + i == P_REV))
+            if (SYNTHMAVEN_SYNTH && (P_DIST + i == P_DLY || P_DIST + i == P_REV))
                 t->p[P_DIST + i] = 0;                /* (1.0, asked by users: the factory sounds dry, no delay and no
                                                       * reverb until FX > DLY / REV or the SPACE macro adds them) */
             t->p[P_AMODE + i] = (int16_t)(pr->arp[i] ? pr->arp[i] - 1 : TP[P_AMODE + i].def);
@@ -535,7 +538,7 @@ static void apply_preset_to(track_t *t, uint32_t pi)
             t->p[P_AHOLD] = 1;                       /* (0.7) KBD HOLD stays on */
         arp_snd[trk_index(t) % NTRK] = (uint8_t)(keep_arp ? 0 : t->p[P_AMODE]);   /* (1.0) whose arp it is now */
     }
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     mseq_init(t);                                    /* (0.8) the MOD SEQ: the shapes to start from */
 #endif
     fm6_track_loaded(t);                             /* FM6: the preset's patch (its PTCH) */
@@ -549,7 +552,7 @@ static void set_engine_of(track_t *t, uint32_t ei)
     uint32_t i;
     if (is_drum(t))
         return;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     if (t == &trk[0])
         hist_before_load();
 #endif
@@ -589,8 +592,8 @@ static void select_engine(uint32_t e)
  * engine's preset table may change order; tests/ui_pages_test.c checks every preset is here once */
 enum { BK_BASS, BK_KEYS, BK_ORGAN, BK_PAD, BK_LEAD, BK_PLUCK, BK_STAB, BK_FX };
 static const char *const BANK_KIND[] = {"BASS", "KEYS", "ORGN", "PAD", "LEAD", "PLCK", "STAB", "FX"};
-/* the sample-based factory sounds (SAMPLE 4, GRAIN 8): not in the Clipper synth, which has no built-in samples */
-#if CLIPPER_SYNTH
+/* the sample-based factory sounds (SAMPLE 4, GRAIN 8): not in the SynthMaven synth, which has no built-in samples */
+#if SYNTHMAVEN_SYNTH
 #define BK_SMP(k, e, n)
 #else
 #define BK_SMP(k, e, n) {k, e, n},
@@ -610,7 +613,7 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     {BK_ORGAN, 7, "SOUL ORGAN"}, {BK_ORGAN, 7, "GOSPEL"}, {BK_ORGAN, 7, "JAZZ ORGAN"},
     {BK_ORGAN, 7, "DIRTY B3"}, {BK_ORGAN, 7, "HOUSE ORGN"}, {BK_ORGAN, ENGI_FM6, "DRAWBARS"},
     {BK_ORGAN, 6, "ACCORDION"}, {BK_ORGAN, 7, "ROCK ORGAN"}, {BK_ORGAN, 7, "CHAPEL"},
-    {BK_ORGAN, 7, "REGGAE ORG"}, {BK_PAD, ENGI_HYBRID, "CLIPPER"},
+    {BK_ORGAN, 7, "REGGAE ORG"}, {BK_PAD, ENGI_HYBRID, "SYNTHMAVEN"},
     {BK_PAD, ENGI_HYBRID, "POLY PAD"}, {BK_PAD, ENGI_HYBRID, "STRINGS"}, {BK_PAD, ENGI_HYBRID, "VOX"}, {BK_PAD, ENGI_HYBRID, "GLASS PAD"},
     {BK_PAD, ENGI_HYBRID, "DRONE"}, {BK_PAD, 0, "WARM PAD"}, {BK_PAD, 6, "SAW PAD"}, {BK_PAD, 1, "GLASS PAD"},
     {BK_PAD, 0, "DARK STR"}, {BK_PAD, 2, "CZ STRING"}, {BK_PAD, 0, "ATMOS PAD"}, BK_SMP(BK_PAD, 8, "LOFI CLOUD")
@@ -649,14 +652,14 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     {BK_FX, ENGI_NOISE, "VINYL"}, {BK_FX, ENGI_NOISE, "HISS"}, {BK_FX, ENGI_NOISE, "RISER"},
     {BK_FX, ENGI_NOISE, "NZ SNARE"}, {BK_FX, ENGI_NOISE, "BITCRUSH"}, {BK_FX, ENGI_NOISE, "RADIO"},
     {BK_FX, 3, "CHIP NOISE"}, {BK_FX, ENGI_HYBRID, "RISER"}, {BK_FX, ENGI_HYBRID, "INIT"},
-#if CLIPPER_SYNTH                                    /* Clipper 0.2: WAVE, the wavetables */
+#if SYNTHMAVEN_SYNTH                                    /* SynthMaven 0.2: WAVE, the wavetables */
     {BK_PAD, ENGI_WAVE, "PPG PAD"}, {BK_PAD, ENGI_WAVE, "WT SWEEP"}, {BK_PAD, ENGI_WAVE, "VOCAL WT"},
     {BK_PAD, ENGI_WAVE, "HARMONICS"}, {BK_PAD, ENGI_WAVE, "COMB PAD"}, {BK_PAD, ENGI_WAVE, "PWM STR"},
     {BK_BASS, ENGI_WAVE, "SYNC BASS"}, {BK_BASS, ENGI_WAVE, "FM GROWL"}, {BK_LEAD, ENGI_WAVE, "WT BASIC"},
     {BK_LEAD, ENGI_WAVE, "RESO SWP"}, {BK_LEAD, ENGI_WAVE, "FOLD LEAD"}, {BK_LEAD, ENGI_WAVE, "CHIP WT"},
     {BK_PLUCK, ENGI_WAVE, "DIGI BELL"}, {BK_KEYS, ENGI_WAVE, "CZ WAVE"}, {BK_ORGAN, ENGI_WAVE, "ORGAN WT"},
     {BK_FX, ENGI_WAVE, "USER WT"},
-    /* Clipper 0.2: ACID, STRINGS, MACRO */
+    /* SynthMaven 0.2: ACID, STRINGS, MACRO */
     {BK_BASS, ENGI_ACID, "ACID LINE"}, {BK_BASS, ENGI_ACID, "SQUELCH"}, {BK_BASS, ENGI_ACID, "SQR ACID"},
     {BK_BASS, ENGI_ACID, "DEEP 303"}, {BK_BASS, ENGI_ACID, "RUBBER"}, {BK_BASS, ENGI_ACID, "DIST ACID"},
     {BK_LEAD, ENGI_ACID, "ACID LEAD"}, {BK_BASS, ENGI_ACID, "BUBBLE"},
@@ -667,7 +670,7 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     {BK_PAD, ENGI_MACRO, "SWARM"}, {BK_BASS, ENGI_MACRO, "SWARM SUB"}, {BK_KEYS, ENGI_MACRO, "ADDITIVE"},
     {BK_ORGAN, ENGI_MACRO, "HARMONIUM"}, {BK_PLUCK, ENGI_MACRO, "BELL TONE"}, {BK_PLUCK, ENGI_MACRO, "PING"},
     {BK_LEAD, ENGI_MACRO, "YEAH"}, {BK_BASS, ENGI_MACRO, "WOW BASS"}, {BK_FX, ENGI_MACRO, "VOWELS"},
-    /* Clipper 0.3: a hundred more */
+    /* SynthMaven 0.3: a hundred more */
     {BK_PAD, 0, "JUNO PAD"}, {BK_STAB, 0, "OBX BRASS"}, {BK_BASS, 0, "TAURUS"}, {BK_LEAD, 0, "PROPH LEAD"},
     {BK_STAB, 0, "UNI STAB"}, {BK_PLUCK, 0, "SQR PLUCK"}, {BK_BASS, 0, "DYN BASS"}, {BK_LEAD, 0, "WAH LEAD"},
     {BK_BASS, 1, "DX BASS"}, {BK_KEYS, 1, "SUITCASE"}, {BK_PLUCK, 1, "CHURCH BEL"}, {BK_STAB, 1, "FM BRASS"},
@@ -700,7 +703,7 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     {BK_STAB, ENGI_MACRO, "POWER CHRD"}, {BK_PAD, ENGI_MACRO, "M11 PAD"}, {BK_PAD, ENGI_MACRO, "SWARM PAD"},
     {BK_LEAD, ENGI_MACRO, "SWARM LEAD"}, {BK_ORGAN, ENGI_MACRO, "ORGAN ADD"}, {BK_PLUCK, ENGI_MACRO, "ADD BELL"},
     {BK_BASS, ENGI_MACRO, "TALK BASS"}, {BK_FX, ENGI_MACRO, "MAMA"}, {BK_LEAD, ENGI_MACRO, "OI LEAD"},
-    /* Clipper 0.5: VPS and TERRAIN (Felucca discussions #145, #146) */
+    /* SynthMaven 0.5: VPS and TERRAIN (Felucca discussions #145, #146) */
     {BK_LEAD, ENGI_VPS, "VPS LEAD"}, {BK_PAD, ENGI_VPS, "FORMANT PAD"}, {BK_BASS, ENGI_VPS, "VPS BASS"},
     {BK_LEAD, ENGI_VPS, "SYNC SWEEP"}, {BK_PLUCK, ENGI_VPS, "VOX PLUCK"}, {BK_KEYS, ENGI_VPS, "HOLLOW KEYS"},
     {BK_STAB, ENGI_VPS, "DIGI BRASS"}, {BK_PLUCK, ENGI_VPS, "VPS BELL"}, {BK_BASS, ENGI_VPS, "WOBBLE VPS"},
@@ -722,15 +725,15 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     {BK_LEAD, ENGI_TERRAIN, "TWISTER"}, {BK_FX, ENGI_TERRAIN, "CHAOS FX"}, {BK_KEYS, ENGI_TERRAIN, "ORBIT KEYS"},
     {BK_PLUCK, ENGI_TERRAIN, "TERRA PLUCK"},
 #endif
-    /* Clipper 0.2: the MOOG ladder */
+    /* SynthMaven 0.2: the MOOG ladder */
     {BK_BASS, ENGI_HYBRID, "MOOG BASS"}, {BK_BASS, 0, "MINI BASS"}, {BK_LEAD, ENGI_HYBRID, "MOOG LEAD"},
     {BK_LEAD, 0, "MINI LEAD"}, {BK_PAD, ENGI_HYBRID, "LADDER PAD"},
 #if FELUCCA_SLICE
     {BK_FX, ENGI_SLICE, "BREAK 16"}, {BK_FX, ENGI_SLICE, "CHOP 8"}, {BK_FX, ENGI_SLICE, "REVERSE"},
     {BK_FX, ENGI_SLICE, "USR SLICE"},
 #endif
-#if CLIPPER_SYNTH                                    /* (appended: the favourites keep their entries' places) */
-    /* Clipper 0.8: JUNO, VECTOR */
+#if SYNTHMAVEN_SYNTH                                    /* (appended: the favourites keep their entries' places) */
+    /* SynthMaven 0.8: JUNO, VECTOR */
     {BK_PAD, ENGI_JUNO, "JUNO 106 PAD"}, {BK_STAB, ENGI_JUNO, "JUNO BRASS"}, {BK_BASS, ENGI_JUNO, "JUNO BASS"},
     {BK_PAD, ENGI_JUNO, "JUNO STRINGS"}, {BK_KEYS, ENGI_JUNO, "POLY KEYS"}, {BK_LEAD, ENGI_JUNO, "SYNTHWAVE LD"},
     {BK_STAB, ENGI_JUNO, "80S HITS"}, {BK_KEYS, ENGI_JUNO, "JUNO PIANO"}, {BK_PAD, ENGI_JUNO, "DREAM PAD"},
@@ -743,9 +746,9 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     {BK_PAD, ENGI_VECTOR, "STRING VS"}, {BK_FX, ENGI_VECTOR, "METAL HIT"}, {BK_KEYS, ENGI_VECTOR, "HOLLOW KEYS"},
     {BK_LEAD, ENGI_VECTOR, "RESO VECTOR"}, {BK_FX, ENGI_VECTOR, "SPACE DRONE"}, {BK_LEAD, ENGI_VECTOR, "VS LEAD"},
     {BK_PAD, ENGI_VECTOR, "CHOIR VS"},
-    /* Clipper 0.9 (appended: the favourites keep their places) */
+    /* SynthMaven 0.9 (appended: the favourites keep their places) */
     {BK_PLUCK, ENGI_JUNO, "TURING JUNO"}, {BK_LEAD, ENGI_VECTOR, "MS20 VECTOR"}, {BK_BASS, ENGI_VECTOR, "DIODE VS BASS"},
-    /* Clipper 0.9: GRAIN and SAMPLE on Clipper's own synthesized sources (tools/gen_clipper_sets.py) */
+    /* SynthMaven 0.9: GRAIN and SAMPLE on SynthMaven's own synthesized sources (tools/gen_synthmaven_sets.py) */
     {BK_PAD, ENGI_GRAIN, "VOX CLOUD"}, {BK_PAD, ENGI_GRAIN, "VOWEL DRIFT"}, {BK_PAD, ENGI_GRAIN, "ANGEL HALO"},
     {BK_FX, ENGI_GRAIN, "GLASS RAIN"}, {BK_PAD, ENGI_GRAIN, "CRYSTAL SWELL"}, {BK_PAD, ENGI_GRAIN, "FROZEN PAD"},
     {BK_PAD, ENGI_GRAIN, "DARK DRONE"}, {BK_PAD, ENGI_GRAIN, "SCAN PAD"}, {BK_PAD, ENGI_GRAIN, "WIND CHOIR"},
@@ -925,10 +928,28 @@ static int br_match(uint32_t n, uint32_t nf)         /* entry n of the list (nf 
         return 1;
     return n >= nf && preset_at(n, &k) == br_eng;
 }
+/* Browsing in synth mode is silent: only LOAD / EDIT changes the instrument. */
+static uint32_t br_current(void)
+{
+    uint32_t total, cur = preset_pos(&total), b[FAV_N], nf = fav_list(b), n;
+#if SYNTHMAVEN_SYNTH
+    if (br_valid && br_cursor < total && br_match(br_cursor, nf))
+        return br_cursor;
+    if (!br_match(cur, nf))
+        for (n = 0; n < total; n++)
+            if (br_match(n, nf)) { cur = n; break; }
+    br_cursor = cur;
+    br_valid = 1;
+#else
+    (void)b; (void)nf; (void)n;
+#endif
+    return cur;
+}
 /* the filtered list: how many, and where the sound now is in it (*pos; when it is not in it: 0) */
 static uint32_t br_count(uint32_t *pos)
 {
-    uint32_t total, cur = preset_pos(&total), b[FAV_N], nf = fav_list(b), n, c = 0;
+    uint32_t total, cur = br_current(), b[FAV_N], nf = fav_list(b), n, c = 0;
+    preset_pos(&total);
     *pos = 0;
     for (n = 0; n < total; n++)
         if (br_match(n, nf)) {
@@ -956,12 +977,18 @@ static uint32_t br_walk(uint32_t n, int32_t s)
 }
 static void br_step(int32_t s)                        /* KNOB 1 / PRESETS on the PRESETS page */
 {
-    uint32_t total, cur = preset_pos(&total), b[FAV_N];
+    uint32_t total, cur = br_current(), b[FAV_N];
+    preset_pos(&total);
     if (is_drum(TSEL) || !total)
         return;
     if (!br_match(cur, fav_list(b)))                  /* (the sound now is not in the filter: its first one) */
         cur = br_walk(total - 1u, 1), s = s > 0 ? s - 1 : s;
+#if SYNTHMAVEN_SYNTH
+    br_cursor = br_walk(cur, s);
+    ui.force = 1;
+#else
     preset_go(br_walk(cur, s));
+#endif
 }
 static int br_engine_has(uint32_t e)                  /* the list holds sounds of engine e (NENGINES: user presets) */
 {
@@ -981,8 +1008,13 @@ static void br_filter_step(int32_t s)                 /* KNOB 2: ALL, the engine
         e = s > 0 ? (e + 1u) % (NENGINES + 2u) : (e + NENGINES + 1u) % (NENGINES + 2u);
     while (--guard && e <= NENGINES && !br_engine_has(e));
     br_eng = (uint8_t)(e > NENGINES ? BR_ALL : e);
+#if SYNTHMAVEN_SYNTH
+    br_valid = 0;
+    br_current();
+#else
     if (!br_match(cur, fav_list(b)))
-        preset_go(br_walk(total - 1u, 1));            /* (the filter's first sound) */
+        preset_go(br_walk(total - 1u, 1));
+#endif
     {
         uint32_t pos, c = br_count(&pos);
         char m[24];
@@ -995,7 +1027,7 @@ static void br_filter_step(int32_t s)                 /* KNOB 2: ALL, the engine
     ui.force = 1;
 }
 
-/* Clipper: ALGORITHM, the kind of sound: the first sound of the next kind (BASS, KEYS, ORGN, PAD, LEAD, PLCK,
+/* SynthMaven: ALGORITHM, the kind of sound: the first sound of the next kind (BASS, KEYS, ORGN, PAD, LEAD, PLCK,
  * STAB, FX, then the user presets), or of the previous one; round */
 static uint32_t kind_at(uint32_t n)                  /* (0.7: the favourites first, a kind of their own) */
 {
@@ -1048,7 +1080,7 @@ static const param_desc_t *home_param(uint32_t k, int16_t **vp)
 /* select track i (KNOB 1 on TRACKS, the editor): its sound, pages and pattern from now on */
 static void track_select(uint32_t i)
 {
-    if (i >= NTRK || i == song.sel || CLIPPER_SYNTH)   /* (Clipper: one instrument) */
+    if (i >= NTRK || i == song.sel || SYNTHMAVEN_SYNTH)   /* (SynthMaven: one instrument) */
         return;
     song.sel = (uint8_t)i;
     rec_follow(i);                                   /* LIVE: recording follows the selected track */

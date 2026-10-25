@@ -41,8 +41,8 @@ static int32_t lfo_wave(track_t *t, uint32_t ph)
 
 static uint8_t midi_bend;                               /* (1.0) GLO > MIDI > BEND, or RPN 0 (seq.c): the pitch bend's
                                                          * range in semitones, 0 AUTO (the HYBRID patch's, else 2) */
-#if CLIPPER_SYNTH
-/* Clipper 0.4: MPE (menu SYSTEM > MPE; seq.c MIDI in). Channel 1 is the master channel (the part's bend, pressure,
+#if SYNTHMAVEN_SYNTH
+/* SynthMaven 0.4: MPE (menu SYSTEM > MPE; seq.c MIDI in). Channel 1 is the master channel (the part's bend, pressure,
  * CCs, as ever); a note on a member channel (2..16) is that channel's own: its pitch bend (over the range chosen
  * here, 48 semitones by the MPE standard), its pressure (as a polyphonic aftertouch: AT) and its CC 74 (SLIDE, a
  * matrix source; with no slot taking it, the cutoff) follow it alone (voice.c track_render, v->ch) */
@@ -311,8 +311,8 @@ static void voice_start(track_t *t, voice_t *v, uint32_t note, uint32_t vel, int
         v->env = 0;
         v->env_out = 0;
     }                                                   /* sounding: the attack starts from the current level */
-#if CLIPPER_SYNTH
-    {   /* Clipper 0.4: ENV 2 starts over (from its level when sounding), LFO 2 (KEY) from 0, a new random value */
+#if SYNTHMAVEN_SYNTH
+    {   /* SynthMaven 0.4: ENV 2 starts over (from its level when sounding), LFO 2 (KEY) from 0, a new random value */
         static uint32_t seed = 0x5EED1234u;             /* (its own: rng()'s other users unchanged) */
         if (!sounding)
             v->env2 = 0;
@@ -385,7 +385,7 @@ static void mono_play(track_t *t, uint32_t note, uint32_t vel, int retrig, int g
             }
         } else {                                            /* legato: new pitch, same envelope */
             v->note = (uint8_t)note;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
             v->ch = mpe_cur_ch;                             /* (MPE: the new note's channel) */
 #endif
             v->pitch16 = (int32_t)note * 16;
@@ -422,8 +422,8 @@ static void mono_remove(track_t *t, uint32_t note)
     t->nmono = (uint8_t)k;
 }
 
-#if CLIPPER_SYNTH
-/* Clipper 0.3: poly unison (VOICE UNI2 / UNI4): each note on 2 or 4 voices spread by DETUNE as UNISON's (the
+#if SYNTHMAVEN_SYNTH
+/* SynthMaven 0.3: poly unison (VOICE UNI2 / UNI4): each note on 2 or 4 voices spread by DETUNE as UNISON's (the
  * outer ones as wide), random start phases. The voice for one more: a free one while the budget has room, else
  * this part's oldest released, else a released or extra voice of another part, else this part's oldest held that is
  * not its lowest note (the bass). The same note again restarts its own voices in place */
@@ -529,8 +529,8 @@ static void trk_note_on1(track_t *t, uint32_t note, uint32_t vel)
         voice_t *v;
         t->nmono = 0;                                   /* no stale mono stack after a mode change */
         t->mono_note = 0;
-#if CLIPPER_SYNTH
-        if (mode >= V_PUNI2) {                          /* Clipper 0.3: poly unison */
+#if SYNTHMAVEN_SYNTH
+        if (mode >= V_PUNI2) {                          /* SynthMaven 0.3: poly unison */
             puni_on(t, note, vel);
             return;
         }
@@ -601,8 +601,8 @@ static void trk_note_off1(track_t *t, uint32_t note)
     for (i = 0; i < NVOICE; i++)                        /* POLY voices (also ones left from another mode: */
         if (t->v[i].note == note && t->v[i].gate &&     /* VOICE changed while they were held) */
             (voice_poly((int)mode) || i >= (mode == V_UNISON ? trk_nvoice(t) : 1u) || t->mono_note != note)) {
-            if (voice_poly((int)mode) && part_ctl[CLIPPER_SYNTH ? ctl_part(t) : (uint32_t)(t - trk) % NPART].sus) {
-                t->v[i].sus = 1;                        /* Clipper: the sustain pedal holds it */
+            if (voice_poly((int)mode) && part_ctl[SYNTHMAVEN_SYNTH ? ctl_part(t) : (uint32_t)(t - trk) % NPART].sus) {
+                t->v[i].sus = 1;                        /* SynthMaven: the sustain pedal holds it */
                 continue;
             }
             t->v[i].gate = 0;
@@ -610,7 +610,7 @@ static void trk_note_off1(track_t *t, uint32_t note)
         }
 }
 
-/* Clipper: the sustain pedal comes up: the notes it held are released (a key still down keeps its note:
+/* SynthMaven: the sustain pedal comes up: the notes it held are released (a key still down keeps its note:
  * pressed again, its voice started over and lost the mark) */
 static void trk_sustain_up1(track_t *t)
 {
@@ -639,11 +639,11 @@ static void trk_all_off1(track_t *t)
     t->xp_n = 0;
 }
 
-/* Clipper 0.3: the layer. Track 2's sound with track 1's (LAYER: every note on both; SPLIT: below SPLIT on track
+/* SynthMaven 0.3: the layer. Track 2's sound with track 1's (LAYER: every note on both; SPLIT: below SPLIT on track
  * 2, from it up on track 1), its octave OCT; what a note-on did is kept per note, so its note-off goes where it
  * went whatever changed meanwhile (the mode, the split, the octave). Track 2 has no other way in: its sequencer and
  * arpeggiator never run, the keys, MIDI and track 1's sequencer and arpeggiator all come through here */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
 static volatile int16_t syn_morph_req = -1;      /* MIDI CC 20 (seq.c): MORPH, applied by the UI (ui_synth.c) */
 static uint8_t ly_route[128], ly_note[128];           /* per note: bit 0 track 1, bit 1 track 2; track 2's note */
 static uint32_t layer_mode(void)
@@ -759,8 +759,8 @@ static void strum_block(uint32_t n)
  * parameters (pe_old: an engine never reads another engine's values, which index its tables); only
  * then the engine switches and the notes that came during the fade start on it. A part with nothing
  * sounding switches at once. */
-#if CLIPPER_SYNTH
-#define XF_BLOCKS 8u                                    /* Clipper: 8 x 32 samples, 5.8 ms (a bass fades without a thump) */
+#if SYNTHMAVEN_SYNTH
+#define XF_BLOCKS 8u                                    /* SynthMaven: 8 x 32 samples, 5.8 ms (a bass fades without a thump) */
 #else
 #define XF_BLOCKS 4u                                    /* 4 x 32 samples: 2.9 ms */
 #endif
@@ -790,7 +790,7 @@ static void engine_block(track_t *t)
                                                          * (eng_fm6.c fm6_poll, main loop): not a note of the old one */
         t->engine = t->eng_req % NENGINES;
         t->xf_on = 0;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         t->xf_snd = 0;
 #endif
         t->nmono = 0;
@@ -806,8 +806,8 @@ static void engine_block(track_t *t)
         t->pe_old[i] = t->p[P_E0 + i];
 }
 
-#if CLIPPER_SYNTH
-/* Clipper 0.3: before a sound changes under sounding voices (a preset, an engine, a user preset, SWAP, BACK...):
+#if SYNTHMAVEN_SYNTH
+/* SynthMaven 0.3: before a sound changes under sounding voices (a preset, an engine, a user preset, SWAP, BACK...):
  * they fade out over XF_BLOCKS with all their own values (p_old: fx.c mix_part renders the part with them; pe_old the
  * engine's), then go; notes played meanwhile wait for the new sound (engine_block). Without it the voices ringing
  * on took the new values at once (a new trim, filter, envelope, table) and clicked. The main loop / UI calls it */
@@ -872,8 +872,8 @@ static int32_t env_tick(track_t *t, voice_t *v)
     return v->env >> 9;
 }
 
-#if CLIPPER_SYNTH
-/* Clipper 0.4: ENV 2, a second ADSR (P_E2ATK..P_E2REL) for the matrix; it releases with the voice. Q15 */
+#if SYNTHMAVEN_SYNTH
+/* SynthMaven 0.4: ENV 2, a second ADSR (P_E2ATK..P_E2REL) for the matrix; it releases with the voice. Q15 */
 static int32_t env2_tick(const int16_t *p, voice_t *v)
 {
     if (v->stage >= 3u && v->e2st && v->e2st < 3u)
@@ -906,7 +906,7 @@ static int32_t env2_tick(const int16_t *p, voice_t *v)
     return v->env2 >> 9;
 }
 
-/* Clipper 0.4: the modulation matrix, on every engine. Six slots (P_M1SRC..P_M6AMT) of a source (MS_*: LFO 1 / 2,
+/* SynthMaven 0.4: the modulation matrix, on every engine. Six slots (P_M1SRC..P_M6AMT) of a source (MS_*: LFO 1 / 2,
  * ENV 1 / 2, velocity, key, mod wheel, aftertouch, a random value per note, MPE slide), all Q15, times AMT
  * (-64..63), to a destination (MT_*): the pitch (+-24 semitones, finer near 0), the cutoff (+-4 octaves), the shape,
  * the level, the pan (the part's, from its newest note), LFO 2's rate, or any of the engine's eight EDIT values
@@ -935,7 +935,7 @@ static void mx_load(const int16_t *p, mx_t *x)
         x->n++;
     }
 }
-/* Clipper 0.8: the MOD SEQ. Four lanes of 16 steps (-8..7) per sound, stepping at RATE (the song's grid while it
+/* SynthMaven 0.8: the MOD SEQ. Four lanes of 16 steps (-8..7) per sound, stepping at RATE (the song's grid while it
  * plays and START is SYNC; from each first key with KEY, and while stopped), LEN steps, each lane's value gliding
  * (SMTH) to its step's: the matrix's sources SEQ1..SEQ4 (seq.c mseq_tick moves them, once a block). A sound loaded
  * (a factory one) brings four shapes to start from: a ramp, a triangle, a rhythm, a random line */
@@ -950,7 +950,7 @@ static void mseq_init(track_t *t)
     memcpy(t->ms, MSEQ_INIT, sizeof t->ms);
 }
 static int32_t mseq_q15(int32_t v) { return clamp(v * 4369, -32767, 32767); }   /* a step: -8 full scale, 7 just under */
-/* Clipper 0.9, the TUNING (GLO > TUNING; the editor sends a Scala scale): every note's pitch off equal temperament by
+/* SynthMaven 0.9, the TUNING (GLO > TUNING; the editor sends a Scala scale): every note's pitch off equal temperament by
  * tun_tab (1/4096 semitone), between notes interpolated (a glide goes through the scale). Two kinds of systems:
  *   12-note tables, each pitch class's deviation from equal temperament around ROOT (JUST, PYTHAG, MEANTONE, WERCK3,
  *   KIRNB3, the maqams RAST and BAYATI with their neutral thirds);
@@ -1037,7 +1037,7 @@ static inline int32_t tun_at(int32_t p16)               /* the offset at a pitch
     return tun_tab[n] + (((tun_tab[n + 1] - tun_tab[n]) * f) >> 4);
 }
 
-/* Clipper 0.9, VINTAGE (VOICE 2 > VINTG): the voices of an analog polysynth are never quite alike (the Prophet-5's
+/* SynthMaven 0.9, VINTAGE (VOICE 2 > VINTG): the voices of an analog polysynth are never quite alike (the Prophet-5's
  * "slop"): each voice here has its own small tuning error and filter offset (its "card", fixed), a slow drift of its
  * pitch (a random walk, a new target every second or so) and each note a little of its own. At 127: the card +-6 cents,
  * the drift +-5, the note +-2, the filter +-1.5 steps; 0: nothing, bit for bit */
@@ -1068,7 +1068,7 @@ static uint32_t mx_l2rate(const int16_t *p, const mx_t *x, const int32_t *sv)
 #endif
 
 /* render one block of a part into out (cleared here); returns the voices rendered */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
 /* 0.7, the voices on both cores. The second core of the FM-1 (cpu1.c, after SLOOP 2.7 and X0X) takes some of a part's
  * voices: track_render works out every voice's modulation here as before, keeps the render calls of an engine that
  * may split (vs_ok: its render touches its voice, its output and what it only reads), hands the second half to core
@@ -1177,14 +1177,14 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
     const int16_t *p = t->p;
     uint32_t i;
     int32_t lfo = mulq15(t->lfo_val, t->lfo_fade);
-    /* Clipper: the pitch bend (MIDI En), in 1/4096 semitone: the HYBRID patch's range, else +-2 semitones */
-    uint32_t pc = CLIPPER_SYNTH ? ctl_part(t) : (uint32_t)(t - trk) % NPART;   /* (Clipper: the layer plays part 1's
+    /* SynthMaven: the pitch bend (MIDI En), in 1/4096 semitone: the HYBRID patch's range, else +-2 semitones */
+    uint32_t pc = SYNTHMAVEN_SYNTH ? ctl_part(t) : (uint32_t)(t - trk) % NPART;   /* (SynthMaven: the layer plays part 1's
                                                          * controls; in MULTI its own) */
     int32_t bend = (uint32_t)(t - trk) < NPART ?
                    (part_ctl[pc].bend * (midi_bend ? (int32_t)midi_bend :
                                          e == &ENG_HYBRID ? (int32_t)hy_cur[t - trk].bend : 2)) >> 3 : 0;
-#if CLIPPER_SYNTH
-    /* Clipper 0.3: the mod wheel's and the aftertouch's destinations (P_MWDST, P_ATDST), velocity to the cutoff
+#if SYNTHMAVEN_SYNTH
+    /* SynthMaven 0.3: the mod wheel's and the aftertouch's destinations (P_MWDST, P_ATDST), velocity to the cutoff
      * (P_VELF); VIB and TREM ride a vibrato LFO of their own (~5.5 Hz sine), WAH the sound's LFO */
     static uint32_t vib_ph[NPART];
     int32_t vib, mw = part_ctl[pc].mw, cat = part_ctl[pc].at;
@@ -1192,7 +1192,7 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
         mw = cat = 0;
     vib_ph[(uint32_t)(t - trk) % NPART] += 535642u * n;
     vib = osc_sine(vib_ph[(uint32_t)(t - trk) % NPART]);
-    /* Clipper 0.4: the matrix (mx_load); sv: its sources (the part's here, the voice's in the loop) */
+    /* SynthMaven 0.4: the matrix (mx_load); sv: its sources (the part's here, the voice's in the loop) */
     mx_t mx;
     int32_t sv[MS_NSRC], l2free, l3free, pan_new = 0, vint = clamp(t->p[P_VINT], 0, 127);
     uint32_t pan_age = 0, catr = part_ctl[pc].at;
@@ -1208,7 +1208,7 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
     int32_t tune_fine = (song.g[G_TUNE] * 16 - tune * 100) * 2367 / 16000;   /* rest, in 1/4096 (1 ct = 2.367) */
     uint32_t nr = 0, fade = t->xf_on && t->xf;
     int16_t pe_new[8];
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     int split = vs_ok(e) && cpu1_units != 0 && cpu1_on();   /* (0.7) the voices on both cores */
     vs_n = vsl_n = 0;
     part_side_on = (uint8_t)sided;
@@ -1225,7 +1225,7 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
             t->p[P_E0 + i] = t->pe_old[i];
         }
     track_lfo_tick(t);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     mx_load(p, &mx);
     for (i = 0; i < MS_NSRC; i++)
         sv[i] = 0;
@@ -1258,14 +1258,14 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
         voice_t *v = &t->v[i];
         vmod_t m;
         int32_t env, pitch;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         int32_t mpit = 0, mcut = 0, mshp = 0, mamp = 0, med[8];
         uint32_t medm = 0;                              /* bit per EDIT value the matrix moves */
         int mpe;
 #endif
         if (!v->active)
             continue;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         mpe = mpe_mode && v->ch;                        /* MPE: the note's own channel */
         if (mpe)
             v->pat = mpe_press[v->ch & 15u];            /* (its pressure: the voice's aftertouch) */
@@ -1286,7 +1286,7 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
                     env = 32767;
                 }
             }
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
             if (mx.n) {                                 /* the matrix: the voice's sources, then every slot */
                 uint32_t k;
                 int32_t pan = 0;
@@ -1350,7 +1350,7 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
             m.amp1 = e->ownenv ? env : mulq15(env, v->vel * 258);
             if (p[P_LD_AMP])
                 m.amp1 = mulq15(m.amp1, 32767 - mulq15((lfo + 32768) >> 1, p[P_LD_AMP] * 258));
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
             {   /* TREM: up to 60 % of the level away, at the vibrato's rate */
                 int32_t tr = (p[P_MWDST] == MD_TREM ? mw : 0) + (p[P_ATDST] == MD_TREM ? (e == &ENG_HYBRID ? 0 : v->pat > cat ? v->pat : cat) : 0);
                 if (tr)
@@ -1380,7 +1380,7 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
         {   /* the pitch in 1/4096 semitone: glide, LFO, the pitch envelope; the fraction goes into the increment */
             int32_t q = (v->pitch_cur << 8) + v->pitch_frac + ((lfo * p[P_LD_PIT] * 3) >> 7) +
                         ((v->penv * p[P_ED_PIT] * 3) >> 7) + bend;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
             {   /* VIB: up to +-half a semitone */
                 int32_t vd = (p[P_MWDST] == MD_VIB ? mw : 0) + (p[P_ATDST] == MD_VIB ? (e == &ENG_HYBRID ? 0 : v->pat > cat ? v->pat : cat) : 0);
                 if (vd)
@@ -1408,7 +1408,7 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
         if (v->vel > 110)                               /* accent opens the filter with the env */
             m.cutoff += (m.envq15 * 24) >> 7;
         m.shape = (64 << 8) + ((lfo * p[P_LD_SHP]) >> 7) + ((m.envq15 * p[P_ED_SHP]) >> 7);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         {   /* VEL>F: around velocity 96, up to ~2 octaves up (127) and ~4.5 down (32); CUT: up to ~4 octaves,
              * WAH: the sound's LFO on the cutoff, up to ~+-2 octaves; SHP: the shape up to its top */
             int32_t a = e == &ENG_HYBRID ? 0 : v->pat > cat ? v->pat : cat;
@@ -1487,11 +1487,11 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
         e->render(t, v, out, n, &m);
         nr++;
     }
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     if (split)
         vs_finish(t, e, out, n);
 #endif
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     {   /* the matrix's PAN (fx.c mix_part): to the newest note's, 4 steps a block at most (no click) */
         int32_t tgt = (mx.dsts & (1u << MT_PAN)) ? clamp(pan_new >> 9, -64, 64) : 0;
         if (pan_age || !(mx.dsts & (1u << MT_PAN)))

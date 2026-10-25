@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.6 (CLIPPER_SYNTH 1): an INSERT effect per sound, and MULTI (bi-timbral: the layer on its own channel).
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.6 (SYNTHMAVEN_SYNTH 1): an INSERT effect per sound, and MULTI (bi-timbral: the layer on its own channel).
  *   INSERT   TYPE OFF, or MIX 0: the sound bit for bit as without; every type changes the sound, bounded and finite;
  *            a TYPE changed under a held note fades (no step); a flanger's tail rings after the note, then stops;
  *            the layer's INSERT its own; kept with the sound: projects (0.5's read: INSERT off), user presets (0.5's
@@ -12,7 +12,7 @@
 #include "hostsim.c"
 #undef main
 #define PROJ_HOST 1
-static const uint8_t TRK_DEF[NPART][2] = {{ENGI_HYBRID, 0}, {1, 0}, {4, 5}};   /* (ui.c, Clipper) */
+static const uint8_t TRK_DEF[NPART][2] = {{ENGI_HYBRID, 0}, {1, 0}, {4, 5}};   /* (ui.c, SynthMaven) */
 static uint32_t trk_def_engine(uint32_t i) { return i < NPART ? TRK_DEF[i][0] : 0u; }
 #include "../firmware/src/project.c"
 #define UP_HOST 1
@@ -306,7 +306,7 @@ static void t_storage(void)
     }
     for (k = P_ITYPE; k <= P_IMIX; k++)
         a->p[k] = b->p[k] = TP[k].def;
-    clipper_proj_neutral();
+    synthmaven_proj_neutral();
     trk[1].p[P_LYMODE] = LY_OFF;
 }
 
@@ -363,7 +363,7 @@ int main(void)
     host_tracks_init();
     for (i = 0; i < NPART; i++)
         host_preset(&trk[i], TRK_DEF[i][0], TRK_DEF[i][1]);
-    clipper_proj_neutral();
+    synthmaven_proj_neutral();
     trk[1].p[P_LYMODE] = LY_OFF;
     t_insert();
     t_storage();

@@ -31,42 +31,42 @@
 #define PROJ_NG 32u                            /* the globals of formats 4 and 5 (G_COUNT until 2.4). SLOOP 2.5's
                                                 * G_DRDLY rides in the byte after sel (0 in older projects: off),
                                                 * so the format and its size do not change */
-_Static_assert(G_DRDLY == PROJ_NG && G_COUNT == PROJ_NG + 1u + (CLIPPER_SYNTH ? 1u : 0u),
-               "the globals a project holds, then G_DRDLY (Clipper 1.0: then G_DMODE, with the 1.0 values)");
-/* the parameters a track holds: P_COUNT of SLOOP 2.4 / 2.5 (P_E0 was 53). Clipper 0.4 added PROJ_NX before P_E0
+_Static_assert(G_DRDLY == PROJ_NG && G_COUNT == PROJ_NG + 1u + (SYNTHMAVEN_SYNTH ? 1u : 0u),
+               "the globals a project holds, then G_DRDLY (SynthMaven 1.0: then G_DMODE, with the 1.0 values)");
+/* the parameters a track holds: P_COUNT of SLOOP 2.4 / 2.5 (P_E0 was 53). SynthMaven 0.4 added PROJ_NX before P_E0
  * (LFO 2, ENV 2, the matrix: core.h); the synth never uses tracks 3 and 4, so tracks 1 and 2's are kept in track 3's
  * lock slots: free ones (step LOCK_FREE), which SLOOP (and any firmware) passes over, a byte a value in their param
- * and val bytes (marked CLIPPER_PROJ_MARK: proj_capture, proj_apply). The format and its size do not change: SLOOP
- * reads a Clipper project as before, tracks 3 and 4 as they are. (Clipper 0.4's first build, CLIPPER_PROJ_MARK_04,
+ * and val bytes (marked SYNTHMAVEN_PROJ_MARK: proj_capture, proj_apply). The format and its size do not change: SLOOP
+ * reads a SynthMaven project as before, tracks 3 and 4 as they are. (SynthMaven 0.4's first build, SYNTHMAVEN_PROJ_MARK_04,
  * put them in tracks 3 and 4's p[], where SLOOP took them for their sounds: read too) */
 #define PROJ_NP 61u
 #define PROJ_E0 53u
 #define PROJ_NX (P_E0 - PROJ_E0)
-_Static_assert(P_COUNT == PROJ_NP || (CLIPPER_SYNTH && P_COUNT == PROJ_NP + PROJ_NX && P_COUNT < 128 && NTRK == 4),
-               "a track's parameters as stored (Clipper: track 3's lock slots hold the rest: PROJ_XM3 below)");
-#if CLIPPER_SYNTH
+_Static_assert(P_COUNT == PROJ_NP || (SYNTHMAVEN_SYNTH && P_COUNT == PROJ_NP + PROJ_NX && P_COUNT < 128 && NTRK == 4),
+               "a track's parameters as stored (SynthMaven: track 3's lock slots hold the rest: PROJ_XM3 below)");
+#if SYNTHMAVEN_SYNTH
 /* tracks 1 and 2's LFO 2, ENV 2 and matrix (0.4: PROJ_XA values each) and INSERT (0.6: PROJ_XI each) <-> bytes in the
  * free lock slots of track 3 (lk): 3 bytes a slot (param, val low, val high), value - its minimum (every range fits a
- * byte). The 0.4 part first, as 0.4 / 0.5 wrote it (2 x PROJ_XA bytes, then CLIPPER_PROJ_MARK), then 0.6's (2 x PROJ_XI
- * bytes, then CLIPPER_PROJ_MARK_06): a project of 0.4 / 0.5 loads its matrix, its INSERT off */
+ * byte). The 0.4 part first, as 0.4 / 0.5 wrote it (2 x PROJ_XA bytes, then SYNTHMAVEN_PROJ_MARK), then 0.6's (2 x PROJ_XI
+ * bytes, then SYNTHMAVEN_PROJ_MARK_06): a project of 0.4 / 0.5 loads its matrix, its INSERT off */
 #define PROJ_XA ((uint32_t)(P_ITYPE - PROJ_E0))       /* P_L2RATE .. P_M6AMT */
 #define PROJ_XI ((uint32_t)(P_IMIX + 1 - P_ITYPE))     /* P_ITYPE .. P_IMIX */
-#define PROJ_XM1 (2u * PROJ_XA)                       /* the byte of CLIPPER_PROJ_MARK */
-#define PROJ_XM2 (PROJ_XM1 + 1u + 2u * PROJ_XI)       /* the byte of CLIPPER_PROJ_MARK_06 */
+#define PROJ_XM1 (2u * PROJ_XA)                       /* the byte of SYNTHMAVEN_PROJ_MARK */
+#define PROJ_XM2 (PROJ_XM1 + 1u + 2u * PROJ_XI)       /* the byte of SYNTHMAVEN_PROJ_MARK_06 */
 /* 0.8: the MOD SEQ's RATE LEN SMTH START, SPICE, DICE (PROJ_XS) of both, 4 bytes each (proj_xs_word), after 0.6's,
- * then CLIPPER_PROJ_MARK_08; their steps in track 4's free lock slots (two a byte, + 8; then the mark) */
+ * then SYNTHMAVEN_PROJ_MARK_08; their steps in track 4's free lock slots (two a byte, + 8; then the mark) */
 #define PROJ_XS ((uint32_t)(P_VINT - P_MSRATE))
 /* 0.9: VINTAGE and LOOP of both (PROJ_X9 each, value - its minimum) in track 4, after the steps' mark, then
- * CLIPPER_PROJ_MARK_09 */
+ * SYNTHMAVEN_PROJ_MARK_09 */
 #define PROJ_X9 ((uint32_t)(P_SPREAD - P_VINT))
 #define PROJ_X9_AT (PROJ_MS_MARK + 1u)
 #define PROJ_X9_MARK (PROJ_X9_AT + 2u * PROJ_X9)
-#define CLIPPER_PROJ_MARK_09 0xC9u
-#define PROJ_XM3 (PROJ_XM2 + 1u + 8u)                 /* the byte of CLIPPER_PROJ_MARK_08 */
-#define CLIPPER_PROJ_MARK_08 0xC8u
+#define SYNTHMAVEN_PROJ_MARK_09 0xC9u
+#define PROJ_XM3 (PROJ_XM2 + 1u + 8u)                 /* the byte of SYNTHMAVEN_PROJ_MARK_08 */
+#define SYNTHMAVEN_PROJ_MARK_08 0xC8u
 #define PROJ_MS_MARK 64u                              /* track 4: the byte after the steps */
 _Static_assert(PROJ_XA == 25u && PROJ_XI == 5u && PROJ_XS == 6u && PROJ_X9 == 2u && P_MSRATE == P_IMIX + 1 &&
-               PROJ_XM3 < 3u * NLOCK && PROJ_X9_MARK < 3u * NLOCK, "the project's Clipper bytes in tracks 3 and 4's lock slots");
+               PROJ_XM3 < 3u * NLOCK && PROJ_X9_MARK < 3u * NLOCK, "the project's SynthMaven bytes in tracks 3 and 4's lock slots");
 static uint32_t proj_xs_word(const int16_t *p)        /* RATE (4 bits) START (1) LEN - 1 (4) SMTH (7) SPICE (7) DICE (7) */
 {
     return (uint32_t)clamp(p[P_MSRATE], 0, 15) | (uint32_t)clamp(p[P_MSKEY], 0, 1) << 4 |
@@ -106,11 +106,11 @@ static void proj_ms_put(plock_t *lk)                  /* track 4's lock slots: b
             b[32u * j + n] = (uint8_t)((uint32_t)clamp(trk[j].ms[a / MSEQ_STEPS][a % MSEQ_STEPS] + 8, 0, 15) |
                                        (uint32_t)clamp(trk[j].ms[c / MSEQ_STEPS][c % MSEQ_STEPS] + 8, 0, 15) << 4);
         }
-    b[PROJ_MS_MARK] = CLIPPER_PROJ_MARK_08;
+    b[PROJ_MS_MARK] = SYNTHMAVEN_PROJ_MARK_08;
     for (j = 0; j < 2u; j++)                          /* (0.9) VINTAGE, LOOP */
         for (n = 0; n < PROJ_X9; n++)
             b[PROJ_X9_AT + PROJ_X9 * j + n] = (uint8_t)clamp(trk[j].p[P_VINT + n] - TP[P_VINT + n].min, 0, 255);
-    b[PROJ_X9_MARK] = CLIPPER_PROJ_MARK_09;
+    b[PROJ_X9_MARK] = SYNTHMAVEN_PROJ_MARK_09;
     proj_bytes_put(lk, b);
 }
 static uint32_t proj_ext_at(uint32_t j, uint32_t k)   /* the byte of track j's value k (P_E0 - PROJ_E0 of them) */
@@ -129,9 +129,9 @@ static void proj_ext_put(plock_t *lk)
         for (k = 0; k < 4u; k++)
             b[PROJ_XM2 + 1u + 4u * j + k] = (uint8_t)(w >> (8u * k));
     }
-    b[PROJ_XM1] = CLIPPER_PROJ_MARK;
-    b[PROJ_XM2] = CLIPPER_PROJ_MARK_06;
-    b[PROJ_XM3] = CLIPPER_PROJ_MARK_08;
+    b[PROJ_XM1] = SYNTHMAVEN_PROJ_MARK;
+    b[PROJ_XM2] = SYNTHMAVEN_PROJ_MARK_06;
+    b[PROJ_XM3] = SYNTHMAVEN_PROJ_MARK_08;
     proj_bytes_put(lk, b);
 }
 static uint32_t proj_ext_byte(const plock_t *lk, uint32_t n)
@@ -144,13 +144,13 @@ static int proj_ext_get(const plock_t *lk, uint32_t j, uint32_t k)   /* track j'
     for (i = 0; i < NLOCK; i++)
         if (lk[i].step != LOCK_FREE)
             return -1;
-    if (proj_ext_byte(lk, PROJ_XM1) != CLIPPER_PROJ_MARK)
+    if (proj_ext_byte(lk, PROJ_XM1) != SYNTHMAVEN_PROJ_MARK)
         return -1;
-    if (k >= PROJ_XA && proj_ext_byte(lk, PROJ_XM2) != CLIPPER_PROJ_MARK_06)
+    if (k >= PROJ_XA && proj_ext_byte(lk, PROJ_XM2) != SYNTHMAVEN_PROJ_MARK_06)
         return -1;                                     /* (0.4 / 0.5: no INSERT) */
     if (k >= PROJ_XA + PROJ_XI) {                      /* (0.8) the MOD SEQ's, SPICE's: none before 0.8 */
         uint32_t w = 0, i;
-        if (proj_ext_byte(lk, PROJ_XM3) != CLIPPER_PROJ_MARK_08)
+        if (proj_ext_byte(lk, PROJ_XM3) != SYNTHMAVEN_PROJ_MARK_08)
             return -1;
         for (i = 0; i < 4u; i++)
             w |= proj_ext_byte(lk, PROJ_XM2 + 1u + 4u * j + i) << (8u * i);
@@ -164,7 +164,7 @@ static int proj_x9_get(const plock_t *lk, uint32_t j, uint32_t k)   /* (0.9) tra
     for (i = 0; i < NLOCK; i++)
         if (lk[i].step != LOCK_FREE)
             return -1;
-    if (proj_ext_byte(lk, PROJ_X9_MARK) != CLIPPER_PROJ_MARK_09)
+    if (proj_ext_byte(lk, PROJ_X9_MARK) != SYNTHMAVEN_PROJ_MARK_09)
         return -1;
     return (int)proj_ext_byte(lk, PROJ_X9_AT + PROJ_X9 * j + k);
 }
@@ -174,7 +174,7 @@ static int proj_ms_get(const plock_t *lk, uint32_t j, track_t *t)   /* track j's
     for (i = 0; i < NLOCK; i++)
         if (lk[i].step != LOCK_FREE)
             return -1;
-    if (proj_ext_byte(lk, PROJ_MS_MARK) != CLIPPER_PROJ_MARK_08)
+    if (proj_ext_byte(lk, PROJ_MS_MARK) != SYNTHMAVEN_PROJ_MARK_08)
         return -1;
     for (n = 0; n < 32u; n++) {
         uint32_t b = proj_ext_byte(lk, 32u * j + n), a = 2u * n, c = a + 1u;
@@ -195,14 +195,14 @@ typedef struct {                               /* one track; the drum track igno
     plock_t lock[NLOCK];                       /* and its parameter locks (step LOCK_FREE = none) */
     uint8_t fill[NSTEP / 4];                   /* and its fill condition, 2 bits a step (FC_*) */
 } proj_trk_t;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
 /* 1.0: SPREAD .. the matrix's slot 12 of both (PROJ_X10 each, value - its minimum) and G_DMODE, in track 3's nudges
- * (micro: SLOOP plays them on track 3's steps; Clipper writes them only while track 3 has none, so they nudge nothing
- * there): byte 0 CLIPPER_PROJ_MARK_10, then track 1's, track 2's, G_DMODE, a check byte */
+ * (micro: SLOOP plays them on track 3's steps; SynthMaven writes them only while track 3 has none, so they nudge nothing
+ * there): byte 0 SYNTHMAVEN_PROJ_MARK_10, then track 1's, track 2's, G_DMODE, a check byte */
 #define PROJ_X10 ((uint32_t)(P_E0 - P_SPREAD))
 #define PROJ_X10_DM (1u + 2u * PROJ_X10)
 #define PROJ_X10_CK (PROJ_X10_DM + 1u)
-#define CLIPPER_PROJ_MARK_10 0xCAu
+#define SYNTHMAVEN_PROJ_MARK_10 0xCAu
 _Static_assert(PROJ_X10 == 27u && PROJ_X10_CK < NSTEP, "1.0's values in track 3's nudges");
 static uint32_t proj_x10_ck(const int8_t *m)
 {
@@ -219,7 +219,7 @@ static void proj_x10_put(proj_trk_t *d, const step_t *st)   /* (track 3's own st
         if (st[n].n)
             return;
     memset(m, 0, NSTEP);
-    m[0] = (int8_t)CLIPPER_PROJ_MARK_10;
+    m[0] = (int8_t)SYNTHMAVEN_PROJ_MARK_10;
     for (j = 0; j < 2u; j++)
         for (n = 0; n < PROJ_X10; n++)
             m[1u + PROJ_X10 * j + n] = (int8_t)(uint8_t)clamp(trk[j].p[P_SPREAD + n] - TP[P_SPREAD + n].min, 0, 255);
@@ -228,7 +228,7 @@ static void proj_x10_put(proj_trk_t *d, const step_t *st)   /* (track 3's own st
 }
 static int proj_x10_ok(const int8_t *m)
 {
-    return (uint8_t)m[0] == CLIPPER_PROJ_MARK_10 && (uint8_t)m[PROJ_X10_CK] == proj_x10_ck(m);
+    return (uint8_t)m[0] == SYNTHMAVEN_PROJ_MARK_10 && (uint8_t)m[PROJ_X10_CK] == proj_x10_ck(m);
 }
 #endif
 typedef struct {
@@ -285,7 +285,7 @@ typedef struct {                               /* format 1 (until 0.5 beta), rea
     uint32_t sum;
 } project_v1_t;
 /* format 6 ("FUN6", SLOOP 2.6), read only: format 5 with SLOOP 2.6's ten parameters (P_ITYPE .. P_LPOL, its INSERT,
- * ANALOG filter TYPE, ENV SYNC, LFO 2 SYNC / TRIG / POL: none of them Clipper's) in a byte each before P_E0, and each
+ * ANALOG filter TYPE, ENV SYNC, LFO 2 SYNC / TRIG / POL: none of them SynthMaven's) in a byte each before P_E0, and each
  * step's nudge and fill condition in one byte. Read so a project of SLOOP 2.6 on this FM-1 loads here (and is not shown
  * as an empty slot to be saved over): its own ten values are left out */
 #define PROJ_MAGIC_V6 0x46554E36u
@@ -432,9 +432,9 @@ static int proj_from_v4(project_t *q, const project_v4_t *v4, int n)
     return 1;
 }
 
-/* a format 6 project (SLOOP 2.6; n bytes in *v6) -> slot q as format 5 (no Clipper mark: proj_apply sets what it held
+/* a format 6 project (SLOOP 2.6; n bytes in *v6) -> slot q as format 5 (no SynthMaven mark: proj_apply sets what it held
  * as neutral); a lock on one of 2.6's own ten parameters is dropped, one on P_E0.. moves with it */
-/* Clipper 0.6: a SLOOP 2.6 project read (proj_from_v6): its track 1's INSERT, kept beside the project_t it became (that
+/* SynthMaven 0.6: a SLOOP 2.6 project read (proj_from_v6): its track 1's INSERT, kept beside the project_t it became (that
  * has no room for it: SLOOP's tracks 3 and 4 are its own), per slot (0..3: proj_slot, 4: any other), for proj_apply */
 static int16_t proj_v6_ins[5][5];
 static uint8_t proj_v6_ins_ok[5];
@@ -586,7 +586,7 @@ static void proj_capture(project_t *p)        /* what is playing now, as a proje
         p->g[i] = song.g[i];
     p->sel = song.sel;
     p->drdly = (uint8_t)song.g[G_DRDLY];
-    p->rsv[0] = CLIPPER_SYNTH ? CLIPPER_PROJ_MARK : 0u;   /* (Clipper 0.3: its bus, layer and modulation are set) */
+    p->rsv[0] = SYNTHMAVEN_SYNTH ? SYNTHMAVEN_PROJ_MARK : 0u;   /* (SynthMaven 0.3: its bus, layer and modulation are set) */
     for (i = 0; i < NTRK; i++) {
         uint32_t k;
         for (k = 0; k < PROJ_E0; k++)
@@ -594,11 +594,11 @@ static void proj_capture(project_t *p)        /* what is playing now, as a proje
         for (k = 0; k < 8u; k++)
             p->t[i].p[PROJ_E0 + k] = trk[i].p[P_E0 + k];
         memcpy(p->t[i].lock, trk[i].lock, sizeof trk[i].lock);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         for (k = 0; k < NLOCK; k++)                    /* (the locks' EDIT ids as stored) */
             if (trk[i].lock[k].param >= P_E0)
                 p->t[i].lock[k].param = (uint8_t)(trk[i].lock[k].param - PROJ_NX);
-        if (i == 2u)                                   /* (Clipper 0.4: tracks 1 and 2's LFO 2, ENV 2, matrix) */
+        if (i == 2u)                                   /* (SynthMaven 0.4: tracks 1 and 2's LFO 2, ENV 2, matrix) */
             proj_ext_put(p->t[2].lock);
         if (i == 3u)                                   /* (0.8: their MOD SEQ's steps) */
             proj_ms_put(p->t[3].lock);
@@ -608,7 +608,7 @@ static void proj_capture(project_t *p)        /* what is playing now, as a proje
         memcpy(p->t[i].step, trk[i].step, sizeof trk[i].step);
         memcpy(p->t[i].micro, trk[i].micro, sizeof trk[i].micro);
         memcpy(p->t[i].fill, trk[i].fill, sizeof trk[i].fill);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         if (i == 2u)                                   /* (1.0: tracks 1 and 2's SPREAD .. slot 12, G_DMODE) */
             proj_x10_put(&p->t[2], trk[2].step);
 #endif
@@ -624,9 +624,9 @@ static void proj_apply(const project_t *p, int all)
     uint32_t i, k;
     for (i = 0; i < PROJ_NG; i++)
         if (all ? i != G_SLOT && i != G_LOAD && i != G_SAVE && i != G_SYNC && i != G_MIDI && i != G_ROUTE :
-                  !CLIPPER_SYNTH && (i == G_DRLVL || i == G_DRREV))   /* (Clipper: the master EQ, not a section's) */
+                  !SYNTHMAVEN_SYNTH && (i == G_DRLVL || i == G_DRREV))   /* (SynthMaven: the master EQ, not a section's) */
             song.g[i] = (int16_t)clamp(p->g[i], GP[i].min, GP[i].max);
-    if (all || !CLIPPER_SYNTH)
+    if (all || !SYNTHMAVEN_SYNTH)
         song.g[G_DRDLY] = (int16_t)clamp(p->drdly, GP[G_DRDLY].min, GP[G_DRDLY].max);   /* (a load and a section, as REV) */
     for (k = 0; k < NTRK; k++) {
         track_t *t = &trk[k];
@@ -639,21 +639,21 @@ static void proj_apply(const project_t *p, int all)
             const param_desc_t *d = k == TRK_DRUM && i == P_E0 ? &DRUM_KIT_DESC :   /* the drum kit */
                                     i >= P_E0 && i <= P_E7 ? &ENGINES[e]->edit[i - P_E0] : &TP[i];
             int32_t v = i < PROJ_E0 ? s->p[i] : i >= P_E0 ? s->p[PROJ_E0 + i - P_E0] : d->def;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
             if (i >= P_SPREAD && i < P_E0 && k < 2u) {    /* (1.0: in track 3's nudges) */
-                v = p->rsv[0] == CLIPPER_PROJ_MARK && proj_x10_ok(p->t[2].micro) ?
+                v = p->rsv[0] == SYNTHMAVEN_PROJ_MARK && proj_x10_ok(p->t[2].micro) ?
                     (uint8_t)p->t[2].micro[1u + PROJ_X10 * k + (i - P_SPREAD)] + d->min : d->def;
-            } else if (i >= P_VINT && i < P_E0 && k < 2u && p->rsv[0] == CLIPPER_PROJ_MARK) {
+            } else if (i >= P_VINT && i < P_E0 && k < 2u && p->rsv[0] == SYNTHMAVEN_PROJ_MARK) {
                 int x = proj_x9_get(p->t[3].lock, k, i - P_VINT);   /* (0.9: in track 4) */
                 v = x < 0 ? d->def : x + d->min;
-            } else if (i >= PROJ_E0 && i < P_E0 && k < 2u && p->rsv[0] == CLIPPER_PROJ_MARK) {
-                int x = proj_ext_get(p->t[2].lock, k, i - PROJ_E0);   /* Clipper: tracks 1 and 2's, in track 3 */
+            } else if (i >= PROJ_E0 && i < P_E0 && k < 2u && p->rsv[0] == SYNTHMAVEN_PROJ_MARK) {
+                int x = proj_ext_get(p->t[2].lock, k, i - PROJ_E0);   /* SynthMaven: tracks 1 and 2's, in track 3 */
                 v = x < 0 ? d->def : x + d->min;
-            } else if (i >= PROJ_E0 && i < P_ITYPE && k < 2u && p->rsv[0] == CLIPPER_PROJ_MARK_04) {
+            } else if (i >= PROJ_E0 && i < P_ITYPE && k < 2u && p->rsv[0] == SYNTHMAVEN_PROJ_MARK_04) {
                 v = p->t[k + 2u].p[i - PROJ_E0];        /* (0.4's first build: in tracks 3 and 4's p[]) */
-            } else if (i >= P_ITYPE && i <= P_IMIX && k == 0u && p->rsv[0] != CLIPPER_PROJ_MARK && proj_v6_ins_ok[proj_v6_at(p)]) {
+            } else if (i >= P_ITYPE && i <= P_IMIX && k == 0u && p->rsv[0] != SYNTHMAVEN_PROJ_MARK && proj_v6_ins_ok[proj_v6_at(p)]) {
                 v = proj_v6_ins[proj_v6_at(p)][i - P_ITYPE];   /* (a SLOOP 2.6 project: its track 1's INSERT) */
-            } else if (i < PROJ_XA + PROJ_XI && k >= 2u && p->rsv[0] == CLIPPER_PROJ_MARK_04) {
+            } else if (i < PROJ_XA + PROJ_XI && k >= 2u && p->rsv[0] == SYNTHMAVEN_PROJ_MARK_04) {
                 v = d->def;                             /* (there, theirs were not stored) */
             }
 #endif
@@ -665,8 +665,8 @@ static void proj_apply(const project_t *p, int all)
         memcpy(t->step, s->step, sizeof t->step);
         for (i = 0; i < NSTEP; i++)                     /* the nudges and locks, each inside its range */
             t->micro[i] = (int8_t)clamp(s->micro[i], MICRO_MIN, MICRO_MAX);
-#if CLIPPER_SYNTH
-        if (k == 2u && p->rsv[0] == CLIPPER_PROJ_MARK && proj_x10_ok(s->micro)) {
+#if SYNTHMAVEN_SYNTH
+        if (k == 2u && p->rsv[0] == SYNTHMAVEN_PROJ_MARK && proj_x10_ok(s->micro)) {
             memset(t->micro, 0, sizeof t->micro);       /* (1.0's values, not nudges) */
             if (all)
                 song.g[G_DMODE] = (int16_t)clamp((uint8_t)s->micro[PROJ_X10_DM], GP[G_DMODE].min, GP[G_DMODE].max);
@@ -707,15 +707,15 @@ static void proj_apply(const project_t *p, int all)
                 for (j = 0; j < 4u; j++)
                     st->note[j] &= 127u;
             }
-#if CLIPPER_SYNTH
-        if (k < 2u && (p->rsv[0] != CLIPPER_PROJ_MARK || proj_ms_get(p->t[3].lock, k, t)))
+#if SYNTHMAVEN_SYNTH
+        if (k < 2u && (p->rsv[0] != SYNTHMAVEN_PROJ_MARK || proj_ms_get(p->t[3].lock, k, t)))
             mseq_init(t);                               /* (0.8) its MOD SEQ, or the shapes to start from */
 #endif
         fm6_track_loaded(t);                            /* FM6: the project keeps PTCH, not the patch: its slot's */
     }
-#if CLIPPER_SYNTH
-    if (all && p->rsv[0] != CLIPPER_PROJ_MARK && p->rsv[0] != CLIPPER_PROJ_MARK_04 && p->rsv[0] != CLIPPER_PROJ_MARK_03)   /* a SLOOP or Clipper 0.1 / 0.2 project: what its drum */
-        clipper_proj_neutral();                         /* globals and slicer slots held means nothing here */
+#if SYNTHMAVEN_SYNTH
+    if (all && p->rsv[0] != SYNTHMAVEN_PROJ_MARK && p->rsv[0] != SYNTHMAVEN_PROJ_MARK_04 && p->rsv[0] != SYNTHMAVEN_PROJ_MARK_03)   /* a SLOOP or SynthMaven 0.1 / 0.2 project: what its drum */
+        synthmaven_proj_neutral();                         /* globals and slicer slots held means nothing here */
 #endif
 }
 
@@ -769,7 +769,7 @@ static void project_apply(const project_t *p)
     fm1_irq_off();                                      /* the audio ISR must not see half a project */
     proj_apply(p, 1);
     part_ctl_reset();                                   /* (the wheels back to the middle, the pedal up) */
-    song.sel = (uint8_t)(p->sel < NTRK && !CLIPPER_SYNTH ? p->sel : 0u);
+    song.sel = (uint8_t)(p->sel < NTRK && !SYNTHMAVEN_SYNTH ? p->sel : 0u);
     fm1_irq_on();
     for (k = 0; k < NPART; k++)                         /* a format 1 project: the default sounds of tracks 2, 3 */
         if (p->t[k].preset == 0xFFu) {
@@ -849,16 +849,17 @@ static void autosave_resume(void)              /* power-on: the project as it wa
         return;
     autosave_hash = q->sum;
     proj_apply(q, 1);
-    song.sel = (uint8_t)(q->sel < NTRK && !CLIPPER_SYNTH ? q->sel : 0u);
+    song.sel = (uint8_t)(q->sel < NTRK && !SYNTHMAVEN_SYNTH ? q->sel : 0u);
     for (n = 0; n < NPART; n++)
         trk[n].engine = trk[n].eng_req;        /* (nothing sounds yet: no fade) */
 #endif
 }
 
-/* 0.7: Clipper's side record of the settings (storage.c st_side): what has no place in the settings word (whose free
+/* 0.7: SynthMaven's side record of the settings (storage.c st_side): what has no place in the settings word (whose free
  * bits SLOOP uses) nor in the payload (whose length older versions check): the favourites (ui.c fav), USB RATE and
  * CLOCK OUT (seq.c clk_out),
  * with a magic and a CRC. SLOOP 2.7 writes its own (its theme first): each firmware takes only its own back */
+#include "synthmaven_store.h"
 #define CLIP_SIDE_MAGIC 0x37504C43u                  /* "CLP7" */
 typedef struct {
     uint32_t magic;
@@ -869,7 +870,7 @@ typedef struct {
 } clip_side_t;
 /* 0.9: then the TUNING (voice.c tune_cfg), its own magic and CRC (0.7 / 0.8 read their part and pass over it; their
  * saves leave it erased: EQUAL) */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
 #define TUNE_SIDE_MAGIC 0x394E5554u                  /* "TUN9" */
 typedef struct {
     uint32_t magic;
@@ -879,8 +880,9 @@ typedef struct {
 #endif
 typedef struct {
     clip_side_t a;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     tune_side_t tu;
+    sm_record_t sm;
 #endif
 } side2_t;
 _Static_assert(sizeof(clip_side_t) == 44u && sizeof(side2_t) <= ST_SIDE_MAX, "the side record");
@@ -898,7 +900,8 @@ static void side_fill(side2_t *s)                    /* what the side record hol
     r->mch = (uint8_t)(midi_in_ch % 17u);
     memcpy(r->fav, fav, sizeof fav);
     r->crc = st_crc32(r, sizeof *r - 4u);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
+    sm_record_fill(&s->sm);
     s->tu.magic = TUNE_SIDE_MAGIC;
     s->tu.t = tune_cfg;
     s->tu.crc = st_crc32(&s->tu, sizeof s->tu - 4u);
@@ -920,7 +923,8 @@ static void side_take(const side2_t *s)              /* a side record read back:
         midi_in_ch = (uint8_t)(r->mch <= 16u ? r->mch : 0u);
         memcpy(fav, r->fav, sizeof fav);
     }
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
+    sm_record_take(&s->sm);
     if (s->tu.magic == TUNE_SIDE_MAGIC && s->tu.crc == st_crc32(&s->tu, sizeof s->tu - 4u)) {
         tune_cfg = s->tu.t;
         tune_build();

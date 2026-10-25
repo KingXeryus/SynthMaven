@@ -282,7 +282,7 @@ static void t_fuzz(uint32_t nframes)
     }
     scheck(peak < (1 << 24), "fuzz: output bounded");
     if (nframes >= 30000u)                            /* (a short run may not reach them all) */
-        scheck(CLIPPER_SYNTH || __builtin_popcount(vis_seen) == (int)VIS_N, "fuzz: every visualiser style drawn");   /* (Clipper: none) */
+        scheck(SYNTHMAVEN_SYNTH || __builtin_popcount(vis_seen) == (int)VIS_N, "fuzz: every visualiser style drawn");   /* (SynthMaven: none) */
 }
 
 /* ---- bench ---- */

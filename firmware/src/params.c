@@ -14,7 +14,7 @@ static const char *const N_SCALE[] = {"CHR", "MAJ", "MIN", "DOR", "MIX", "PEN", 
                                     "PHRY", "LYD", "LOC", "MEL", "BLUES", "WHOLE", "DIMHW", "DIMWH"};
 static const char *const N_ONOFF[] = {"OFF", "ON"};
 static const char *const N_QUANT[] = {"OFF", "SNAP", "WHITE"};   /* seq.c kb_map; 1 = SNAP as the old ON */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
 static const char *const N_VOICE[] = {"POLY", "MONO", "LEG", "UNI", "UNI2", "UNI4"};   /* V_POLY .. V_PUNI4 */
 #else
 static const char *const N_VOICE[] = {"POLY", "MONO", "LEG", "UNI"};   /* V_POLY .. V_UNISON */
@@ -36,8 +36,8 @@ static const char *const N_RTYPE[] = {"ROOM", "PLATE", "HALL", "SHIMR"};   /* (1
 static const char *const N_DMODE[] = {"MONO", "PING", "TAPE"};          /* (1.0) G_DMODE */
 static const char *const N_E2LOOP[] = {"ONE", "LOOP"};
 static const char *const N_MODDST[] = {"OFF", "VIB", "CUT", "SHP", "WAH", "TREM"};   /* MD_OFF .. MD_TREM */
-#if CLIPPER_SYNTH
-/* Clipper 0.6: the INSERT's types (fx.c IT_*; SLOOP 2.6's, same order: a SLOOP 2.6 sound keeps its INSERT). Its three
+#if SYNTHMAVEN_SYNTH
+/* SynthMaven 0.6: the INSERT's types (fx.c IT_*; SLOOP 2.6's, same order: a SLOOP 2.6 sound keeps its INSERT). Its three
  * values A B C mean what the type says (ins_desc) */
 static const char *const N_ITYPE[] = {"OFF", "SOFT", "HARD", "FOLD", "FUZZ", "CRUSH", "PHASR", "FLANG", "CHOR",
                                      "JUNO1", "JUNO2", "JUN12"};   /* (0.8: the JUNO chorus, I II I+II, on any sound) */
@@ -62,7 +62,7 @@ static const char *const N_ENGNAME[] = {"ANALOG", "DIGITAL", "PHASE", "LOFI", "S
 #if FELUCCA_SLICE
                                              "SLICE",
 #endif
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
                                         "WAVE", "ACID", "STRINGS", "MACRO", "VPS", "TERRAIN", "FMX", "WSEQ",
                                         "JUNO", "VECTOR",
 #endif
@@ -117,7 +117,7 @@ static const param_desc_t TP[P_COUNT] = {
     [P_DETUNE] = PD("DTUNE", F_INT, 0, 127, 40),
     [P_PAN] = PD("PAN", F_BIPCT, -64, 63, 0),
     [P_MUTE] = PE("MUTE", N_ONOFF, 0),
-#if CLIPPER_SYNTH                                  /* the sound's modulation (core.h P_VELF ..: voice.c) */
+#if SYNTHMAVEN_SYNTH                                  /* the sound's modulation (core.h P_VELF ..: voice.c) */
     [P_SLCR] = PD("VEL>F", F_BIPCT, -64, 63, 0),
     [P_SLPAT] = {"MODL", F_ENUM, FM_SVF, FM_LAST, FM_SVF, N_FMODEL, 0},   /* P_FMODEL (core.h; 0.9: + MS20 DIODE SEM NOTCH BP HP) */
     [P_SLRATE] = PE("MW>", N_MODDST, MD_VIB),
@@ -132,7 +132,7 @@ static const param_desc_t TP[P_COUNT] = {
     [P_TFLT] = PD("FILT", F_FILT, -64, 63, 0),
     [P_STRUM] = PD("STRUM", F_INT, -60, 60, 0),   /* ms a note: > 0 low to high (down), < 0 high to low */
     [P_VLEAD] = PE("VLEAD", N_ONOFF, 0),
-#if CLIPPER_SYNTH                                  /* Clipper 0.4: LFO 2, ENV 2, the matrix (voice.c) */
+#if SYNTHMAVEN_SYNTH                                  /* SynthMaven 0.4: LFO 2, ENV 2, the matrix (voice.c) */
     [P_L2RATE] = PD("RATE", F_LFOHZ, 0, 127, 60),
     [P_L2WAVE] = PE("WAVE", N_LWAVE, 0),
     [P_L2MODE] = PE("MODE", N_L2MODE, L2_FREE),
@@ -145,14 +145,14 @@ static const param_desc_t TP[P_COUNT] = {
     MXP(1), MXP(2), MXP(3), MXP(4), MXP(5), MXP(6),
     MXP(7), MXP(8), MXP(9), MXP(10), MXP(11), MXP(12),   /* 1.0 */
 #undef MXP
-    /* Clipper 0.6: the sound's INSERT (fx.c track_insert, SLOOP 2.6's): TYPE OFF = as before. A B C as the editor
+    /* SynthMaven 0.6: the sound's INSERT (fx.c track_insert, SLOOP 2.6's): TYPE OFF = as before. A B C as the editor
      * protocol names them; the device shows the type's own labels (ins_desc) */
     [P_ITYPE] = PE("INSRT", N_ITYPE, 0),
     [P_IA] = PD("INS A", F_PCT, 0, 127, 64),
     [P_IB] = PD("INS B", F_PCT, 0, 127, 96),
     [P_IC] = PD("INS C", F_PCT, 0, 127, 96),
     [P_IMIX] = PD("MIX", F_PCT, 0, 127, 127),
-    /* Clipper 0.8: the MOD SEQ (seq.c mseq_tick: the steps; the matrix's SEQ1..SEQ4 read them) and SPICE / DICE */
+    /* SynthMaven 0.8: the MOD SEQ (seq.c mseq_tick: the steps; the matrix's SEQ1..SEQ4 read them) and SPICE / DICE */
     [P_MSRATE] = PE("RATE", N_MSRATE, 2),
     [P_MSLEN] = PD("LEN", F_INT, 1, 16, 16),
     [P_MSSMTH] = PD("SMTH", F_PCT, 0, 127, 0),
@@ -161,7 +161,7 @@ static const param_desc_t TP[P_COUNT] = {
     [P_DICE] = PD("DICE", F_INT, 0, 127, 0),
     [P_VINT] = PD("VINTG", F_PCT, 0, 127, 0),       /* 0.9 */
     [P_SLOOP] = PD("LOOP", F_INT, 1, 16, 16),
-    /* Clipper 1.0 */
+    /* SynthMaven 1.0 */
     [P_SPREAD] = PD("SPRED", F_PCT, 0, 127, 0),
     [P_L3RATE] = PD("RATE", F_LFOHZ, 0, 127, 40),
     [P_L3WAVE] = PE("WAVE", N_LWAVE, 0),
@@ -173,9 +173,9 @@ static const param_desc_t TP[P_COUNT] = {
     [P_MAC4] = PD("SPACE", F_PCT, 0, 127, 0),
 #endif
 };
-#if CLIPPER_SYNTH
-/* a project that Clipper 0.3 did not write: its drum globals and slicer slots meant something else */
-static void clipper_proj_neutral(void)
+#if SYNTHMAVEN_SYNTH
+/* a project that SynthMaven 0.3 did not write: its drum globals and slicer slots meant something else */
+static void synthmaven_proj_neutral(void)
 {
     uint32_t k;
     song.g[G_EQLOW] = EQ_LOW_C;
@@ -198,18 +198,18 @@ static void clipper_proj_neutral(void)
 static void preset_extras(int16_t *p, const preset_t *pr)
 {
     uint32_t i;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     int own = 0;
 #endif
     for (i = 0; i + 1u < 8u; i += 2u) {
         int32_t id = pr->x[i] - 1;
         if (id >= 0 && id < P_E0)
             p[id] = (int16_t)clamp(pr->x[i + 1u], TP[id].min, TP[id].max);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         own |= id == P_SPREAD;
 #endif
     }
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     /* (1.0) the pads (a slow attack, a long release) and the unison sounds spread their voices a little, unless the
      * preset sets SPREAD itself */
     if (!own)
@@ -243,7 +243,7 @@ static const param_desc_t GP[G_COUNT] = {
     [G_ENGGO] = PE("SET", N_GO, 0),
     [G_CLRSEQ] = PE("CLRSQ", N_GO, 0),
     [G_INITSND] = PE("INIT", N_GO, 0),
-#if CLIPPER_SYNTH                                         /* the master bus (core.h G_EQLOW .., bus.c) */
+#if SYNTHMAVEN_SYNTH                                         /* the master bus (core.h G_EQLOW .., bus.c) */
     [G_DRCH] = PD("MID", F_CDB, EQ_MID_C - 10, EQ_MID_C + 10, EQ_MID_C),
     [G_DRLVL] = PD("LOW", F_CDB, EQ_LOW_C - 12, EQ_LOW_C + 12, EQ_LOW_C),
     [G_DRREV] = PD("HIGH", F_CDB, EQ_HIGH_C - 12, EQ_HIGH_C + 12, EQ_HIGH_C),
@@ -253,7 +253,7 @@ static const param_desc_t GP[G_COUNT] = {
     [G_DRREV] = PD("REV", F_INT, 0, 127, 16),
 #endif
     [G_DUST] = PD("DUST", F_PCT, 0, 127, 0),
-#if CLIPPER_SYNTH                                         /* G_RTYPE, G_RPRE (core.h): the reverb, fx.c */
+#if SYNTHMAVEN_SYNTH                                         /* G_RTYPE, G_RPRE (core.h): the reverb, fx.c */
     [G_DUCK] = PE("TYPE", N_RTYPE, RT_ROOM),
     [G_FILT] = PD("FILT", F_FILT, -64, 63, 0),
     [G_ROLL] = {"PRE", F_INT, 0, 100, 0, 0, "ms"},
@@ -263,7 +263,7 @@ static const param_desc_t GP[G_COUNT] = {
     [G_ROLL] = PE("ROLL", N_ROLL, 1),
 #endif
     [G_NEWPRJ] = PE("NEW", N_GO, 0),
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     [G_DRDLY] = PD("COMP", F_PCT, 0, 127, 0),         /* G_COMP */
     [G_DMODE] = PE("MODE", N_DMODE, 0),                /* 1.0 */
 #else
@@ -272,7 +272,7 @@ static const param_desc_t GP[G_COUNT] = {
 };
 
 static const param_desc_t DRUM_KIT_DESC = PE("KIT", DRUM_KIT_NAMES, 0);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
 /* the INSERT's A B C as its TYPE means them (TP's ranges and defaults): the drives DRIVE TONE LEVEL, CRUSH BITS RATE
  * LPF, the swept ones RATE DEPTH FDBK; OFF TP's own (as SLOOP 2.6) */
 #define PU(l, f, df, n, u) {l, f, 0, 127, df, n, u}
@@ -294,7 +294,7 @@ static const param_desc_t *ins_desc(int32_t type, uint32_t k)
 static const param_desc_t *track_desc(const track_t *t, uint32_t id)
 {
     if(is_drum(t) && id==P_E0) return &DRUM_KIT_DESC;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     if ((id == P_SPICE || id == P_DICE) && t->p[P_AMODE] == 15) {   /* (0.9) the arp's TURNG (seq.c AM_TURING) */
         static param_desc_t d;
         d = TP[id];
@@ -498,13 +498,13 @@ typedef struct {
 static const page_t PAGES[] = {
     {"ENV", FAM_ENV, SC_TRACK, GR_ADSR, {P_ATK, P_DEC, P_SUS, P_REL}},
     {"ENV DEST", FAM_ENV, SC_TRACK, GR_NONE, {P_ED_FLT, P_ED_PIT, P_ED_SHP, 0xFF}},   /* (P_ED_FX: the level trim, no page) */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     {"ENV 2", FAM_ENV, SC_TRACK, GR_NONE, {P_E2ATK, P_E2DEC, P_E2SUS, P_E2REL}},   /* (a modulation source: MATRIX) */
     {"ENV 2 LOOP", FAM_ENV, SC_TRACK, GR_NONE, {P_E2LOOP, 0xFF, 0xFF, 0xFF}},       /* (1.0) */
 #endif
     {"LFO", FAM_LFO, SC_TRACK, GR_LFO, {P_LRATE, P_LWAVE, P_LPHASE, P_LFADE}},
     {"LFO DEST", FAM_LFO, SC_TRACK, GR_NONE, {P_LD_PIT, P_LD_FLT, P_LD_SHP, P_LD_AMP}},
-#if CLIPPER_SYNTH                                                        /* (velocity, mod wheel, aftertouch) */
+#if SYNTHMAVEN_SYNTH                                                        /* (velocity, mod wheel, aftertouch) */
     {"MOD", FAM_LFO, SC_TRACK, GR_NONE, {P_VELF, P_MWDST, P_ATDST, 0xFF}},
     {"LFO 2", FAM_LFO, SC_TRACK, GR_NONE, {P_L2RATE, P_L2WAVE, P_L2MODE, 0xFF}},
     {"LFO 3", FAM_LFO, SC_TRACK, GR_NONE, {P_L3RATE, P_L3WAVE, P_L3MODE, 0xFF}},   /* (1.0) */
@@ -513,21 +513,21 @@ static const page_t PAGES[] = {
     {"MOD SEQ 2", FAM_LFO, SC_TRACK, GR_MSEQ, {P_MSRATE, P_MSLEN, P_MSSMTH, P_MSKEY}},
 #endif
     {"FX", FAM_FX, SC_TRACK, GR_FX, {P_DIST, P_CHOR, P_DLY, P_REV}},
-#if CLIPPER_SYNTH                                                        /* (the sound's filter model too) */
+#if SYNTHMAVEN_SYNTH                                                        /* (the sound's filter model too) */
     {"FILTER", FAM_FX, SC_TRACK, GR_NONE, {P_TFLT, P_FMODEL, 0xFF, 0xFF}},
     {"INSERT", FAM_FX, SC_TRACK, GR_NONE, {P_ITYPE, P_IA, P_IB, P_IC}},   /* 0.6: the sound's INSERT (fx.c), */
     {"INSERT 2", FAM_FX, SC_TRACK, GR_NONE, {P_IMIX, 0xFF, 0xFF, 0xFF}},  /* .. its dry / wet */
 #else
     {"FILTER", FAM_FX, SC_TRACK, GR_NONE, {P_TFLT, 0xFF, 0xFF, 0xFF}},   /* the track's filter (drum track too) */
 #endif
-#if !CLIPPER_SYNTH                                                       /* (Clipper: no groovebox slicer) */
+#if !SYNTHMAVEN_SYNTH                                                       /* (SynthMaven: no groovebox slicer) */
     {"SLICER", FAM_FX, SC_TRACK, GR_SLCR, {P_SLCR, P_SLPAT, P_SLRATE, P_SLDEPTH}},   /* drum track too */
 #endif
     {"DLY", FAM_FX, SC_GLOBAL, GR_NONE, {G_DTIME, G_DFDBK, G_DCOLOR, G_DMIX}},
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     {"DLY 2", FAM_FX, SC_GLOBAL, GR_NONE, {G_DMODE, 0xFF, 0xFF, 0xFF}},          /* (1.0: MONO PING TAPE) */
 #endif
-#if CLIPPER_SYNTH                                                        /* (the plate: TYPE and PRE-delay) */
+#if SYNTHMAVEN_SYNTH                                                        /* (the plate: TYPE and PRE-delay) */
     {"REVERB", FAM_FX, SC_GLOBAL, GR_NONE, {G_RTYPE, G_RSIZE, G_RDAMP, G_RPRE}},
     {"CHORUS", FAM_FX, SC_GLOBAL, GR_NONE, {G_CRATE, G_CDEPTH, 0xFF, 0xFF}},
     {"EQ+COMP", FAM_FX, SC_GLOBAL, GR_NONE, {G_EQLOW, G_EQMID, G_EQHIGH, G_COMP}},   /* (the master bus: bus.c) */
@@ -538,7 +538,7 @@ static const page_t PAGES[] = {
     {"SEL 2", FAM_SCL, SC_TRACK, GR_SCALE, {P_TRANS, P_STRUM, P_VLEAD, 0xFF}},   /* (2.4: the chords played) */
     {"EDIT 1", FAM_EDIT, SC_ENGINE, GR_NONE, {P_E0, P_E1, P_E2, P_E3}},
     {"EDIT 2", FAM_EDIT, SC_ENGINE, GR_NONE, {P_E4, P_E5, P_E6, P_E7}},
-#if CLIPPER_SYNTH                                          /* 0.6: FMX's own pages (ui_synth.c X_F*), on FMX only */
+#if SYNTHMAVEN_SYNTH                                          /* 0.6: FMX's own pages (ui_synth.c X_F*), on FMX only */
     {"OP", FAM_EDIT, SC_SYN, GR_FMX, {19, 20, 21, 22}},          /* X_FOP X_FWAVE X_FMODE X_FRATIO */
     {"OP 2", FAM_EDIT, SC_SYN, GR_FMX, {23, 24, 25, 26}},        /* X_FFINE X_FLEVEL X_FVEL X_FKSC */
     {"OP ENV", FAM_EDIT, SC_SYN, GR_FMX, {27, 28, 29, 30}},      /* X_FATK X_FDEC X_FSUS X_FREL */
@@ -547,7 +547,7 @@ static const page_t PAGES[] = {
     {"STORE", FAM_EDIT, SC_SYN, GR_FMX, {39, 40, 0xFF, 0xFF}},   /* X_FSLOT X_FSTORE */
 #endif
     {"VOICE", FAM_EDIT, SC_TRACK, GR_NONE, {P_VOICE, P_GLIDE, P_GLMODE, P_PRIO}},
-#if CLIPPER_SYNTH                                                        /* (one instrument: nothing to mute) */
+#if SYNTHMAVEN_SYNTH                                                        /* (one instrument: nothing to mute) */
     {"VOICE 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_ALLOC, P_DETUNE, P_PAN, P_VINT}},   /* (0.9: VINTAGE) */
     {"VOICE 3", FAM_EDIT, SC_TRACK, GR_NONE, {P_SPREAD, 0xFF, 0xFF, 0xFF}},      /* (1.0: SPREAD) */
     {"MACROS", FAM_EDIT, SC_TRACK, GR_NONE, {P_MAC1, P_MAC2, P_MAC3, P_MAC4}},   /* (1.0) */
@@ -560,12 +560,15 @@ static const page_t PAGES[] = {
     {"VOICE 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_ALLOC, P_DETUNE, P_PAN, P_MUTE}},
 #endif
     {"GLOBAL", FAM_GLO, SC_GLOBAL, GR_NONE, {G_BPM, G_SWING, G_CLOCK, G_TUNE}},
-#if CLIPPER_SYNTH                                                        /* (no kick to duck to, no note repeat) */
+#if SYNTHMAVEN_SYNTH                                                        /* (no kick to duck to, no note repeat) */
     {"MASTER", FAM_GLO, SC_GLOBAL, GR_NONE, {G_DUST, G_FILT, 0xFF, 0xFF}},
     {"TUNING", FAM_GLO, SC_SYN, GR_NONE, {47, 48, 49, 0xFF}},   /* (0.9) X_TSYS X_TROOT (1.0: X_TA4): voice.c tune_cfg */
     {"SYSTEM", FAM_GLO, SC_GLOBAL, GR_NONE, {G_MIDI, G_SYNC, G_ROUTE, G_INFO}},
     {"MIDI", FAM_GLO, SC_SYN, GR_NONE, {50, 51, 52, 53}},   /* (1.0) X_MIN X_MOUT X_MBEND X_MLOCAL (seq.c midi_in_ch) */
-    {"MIDI 2", FAM_GLO, SC_SYN, GR_NONE, {54, 55, 56, 0xFF}},    /* (1.0) X_MPROG X_MCCO X_MBRTH */
+    {"MIDI 2", FAM_GLO, SC_SYN, GR_NONE, {54, 55, 56, 0xFF}},
+    {"PATCH MIDI", FAM_GLO, SC_SYN, GR_NONE, {54, 57, 0xFF, 0xFF}},
+    {"KEY MIDI", FAM_GLO, SC_SYN, GR_NONE, {58, 50, 0xFF, 0xFF}},
+    {"BLUETOOTH", FAM_GLO, SC_SYN, GR_NONE, {59, 60, 0xFF, 0xFF}},    /* (1.0) X_MPROG X_MCCO X_MBRTH */
 #else
     {"MASTER", FAM_GLO, SC_GLOBAL, GR_NONE, {G_DUST, G_DUCK, G_FILT, G_ROLL}},
     {"SYSTEM", FAM_GLO, SC_GLOBAL, GR_NONE, {G_MIDI, G_SYNC, G_ROUTE, G_INFO}},
@@ -573,20 +576,20 @@ static const page_t PAGES[] = {
 #endif
     {"PRESETS", FAM_SAVE, SC_GLOBAL, GR_BROWSE, {0xFF, 0xFF, 0xFF, 0xFF}},   /* browser: PRESETS knob / KNOB 1 */
     {"USER", FAM_SAVE, SC_GLOBAL, GR_USER, {0xFF, 0xFF, 0xFF, 0xFF}},       /* user presets: SLOT LOAD ERASE SAVE */
-#if !CLIPPER_SYNTH                                   /* (Clipper 1.0: no projects on the FM-1: one instrument, kept by
+#if !SYNTHMAVEN_SYNTH                                   /* (SynthMaven 1.0: no projects on the FM-1: one instrument, kept by
                                                      * the autosave; the sounds by the user presets) */
     {"PROJECT", FAM_SAVE, SC_GLOBAL, GR_SLOTS, {G_SLOT, 0xFF, G_LOAD, G_SAVE}},
 #endif
     {"TOOLS", FAM_SAVE, SC_GLOBAL, GR_NONE, {G_CLRSEQ, G_INITSND, 0xFF, G_NEWPRJ}},
     {"ARP", FAM_ARP, SC_TRACK, GR_ARP, {P_AMODE, P_ARATE, P_AOCT, P_AGATE}},
     {"ARP 2", FAM_ARP, SC_TRACK, GR_NONE, {P_ASWING, P_APROB, P_AHOLD, P_AORDER}},
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     {"SPICE", FAM_ARP, SC_TRACK, GR_NONE, {P_SPICE, P_DICE, P_SLOOP, 0xFF}},   /* (0.8) the arp's and the steps' notes
                                                                                 * vary; (0.9) TURNG: MUTAT SEED LOOP */
 #endif
     {"NOTES", FAM_SEQ, SC_STEP, GR_ROLL, {0, 1, 2, 3}},   /* (1.0, after SLOOP 2.7.2: the NOTES editor; "STEP" before) */
     {"PATTERN", FAM_SEQ, SC_TRACK, GR_STEPS, {P_SLEN, P_SDIV, P_SSWING, P_SGATE}},
-    {"SONG", CLIPPER_SYNTH ? FAM_TRK : FAM_SEQ, SC_SONG, GR_NONE, {0xFF, 0xFF, 0xFF, 0xFF}},   /* (Clipper: out of reach) */
+    {"SONG", SYNTHMAVEN_SYNTH ? FAM_TRK : FAM_SEQ, SC_SONG, GR_NONE, {0xFF, 0xFF, 0xFF, 0xFF}},   /* (SynthMaven: out of reach) */
     {"TRACKS", FAM_TRK, SC_TRK, GR_TRK, {0, 1, 2, 3}},   /* REC button; TRACK LEVEL LEN PAN */
     {"DRUMS", FAM_TRK, SC_DRUM, GR_NONE, {0xFF,0xFF,0xFF,0xFF}},
 };
@@ -594,7 +597,7 @@ static const page_t PAGES[] = {
 /* a page not there for the sound selected (0.6: FMX's own pages on another engine): the page walks pass it */
 static int page_hidden(uint32_t i)
 {
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     return i < NPAGES && PAGES[i].graph == GR_FMX && TSEL->eng_req != ENGI_FMX;
 #else
     (void)i;
@@ -614,7 +617,7 @@ static int page_for_drum(const page_t *pg)
     return pg->scope != SC_ENGINE && (pg->scope != SC_TRACK || pg->fam == FAM_SEQ || pg->graph == GR_SLCR);
 }
 
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
 static const param_desc_t *syn_desc(uint32_t id, int16_t **valp);   /* ui_synth.c */
 #endif
 static const param_desc_t *page_desc(const page_t *pg, uint32_t slot, int16_t **valp)
@@ -632,7 +635,7 @@ static const param_desc_t *page_desc(const page_t *pg, uint32_t slot, int16_t **
         *valp = &song.g[id];
         return &GP[id];
     }
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     if (pg->scope == SC_SYN)
         return syn_desc(id, valp);
 #endif

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.3 (CLIPPER_SYNTH 1), on the harness of tests/ui_pages_test.c:
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.3 (SYNTHMAVEN_SYNTH 1), on the harness of tests/ui_pages_test.c:
  *   EQ        LOW / MID / HIGH boost and cut their band (+-1.5 dB of the setting), leave the others (+-1.5 dB);
  *             flat: the signal untouched (bit for bit); a band turned: no click (the gain glides)
  *   COMP      a loud and a quiet tone 20 dB apart come out closer (COMP 127: under 13 dB); COMP 0 untouched
@@ -510,7 +510,7 @@ static void t_pages(void)
     frames(2);
 }
 
-/* Clipper 0.4: the pages LFO 2, ENV 2, MATRIX (its knobs: SLOT, SRC, DST, AMT on the slot turned to), MPE kept */
+/* SynthMaven 0.4: the pages LFO 2, ENV 2, MATRIX (its knobs: SLOT, SRC, DST, AMT on the slot turned to), MPE kept */
 static void t_pages4(void)
 {
     track_t *t = &trk[0];
@@ -562,7 +562,7 @@ int main(int argc, char **argv)
     palette_set(4);
     host_tracks_init();
     for (i = 0; i < NPART; i++) { set_engine_of(&trk[i], TRK_DEF[i][0]); apply_preset_to(&trk[i], TRK_DEF[i][1]); trk[i].engine = trk[i].eng_req; }
-    clipper_proj_neutral();
+    synthmaven_proj_neutral();
     song.g[G_BPM] = 120;
     go_home(); ui.force = 1; frames(3);
     t_eq();

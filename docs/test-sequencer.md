@@ -1,6 +1,6 @@
-# Clipper 1.1: testing the sequencer on an FM-1
+# SynthMaven 1.1: testing the sequencer on an FM-1
 
-The sequencer of SLOOP 2.7.2, brought to Clipper's single instrument. Everything below passes the host tests; this list is for checking it on a real FM-1. If a step fails, note its number and what the screen shows (a photo helps).
+The sequencer of SLOOP 2.7.2, brought to SynthMaven's single instrument. Everything below passes the host tests; this list is for checking it on a real FM-1. If a step fails, note its number and what the screen shows (a photo helps).
 
 ## 1. The NOTES page (SEQ tapped)
 

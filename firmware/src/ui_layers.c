@@ -419,8 +419,8 @@ static void layer_key(uint32_t layer, uint32_t k, uint32_t down)
         return;
     }
     case LY_MIX:
-        if (CLIPPER_SYNTH && w >= 0 && w < 8)
-            return;                                         /* (Clipper: one instrument, no mute / solo) */
+        if (SYNTHMAVEN_SYNTH && w >= 0 && w < 8)
+            return;                                         /* (SynthMaven: one instrument, no mute / solo) */
         if (w >= 0 && w < 4) {
             trk[w].p[P_MUTE] = (int16_t)!trk[w].p[P_MUTE];
         } else if (w >= 4 && w < 8) {
@@ -554,8 +554,8 @@ static void layer_knobs(uint32_t layer)
             break;
         case LY_MIX: {
             int16_t *lv = k == TRK_DRUM ? &song.g[G_DRLVL] : &trk[k].p[P_LEVEL];
-            if (CLIPPER_SYNTH && k)
-                break;                                      /* (Clipper: KNOB 1 the sound's LEVEL, the others nothing) */
+            if (SYNTHMAVEN_SYNTH && k)
+                break;                                      /* (SynthMaven: KNOB 1 the sound's LEVEL, the others nothing) */
             *lv = (int16_t)clamp(*lv + accel(EN_K1 + k, s, 127), 0, 127);
             break;
         }
@@ -667,7 +667,7 @@ static void layer_screen_draw(void)
     str_cpy(sub, "track ", sizeof sub);
     sub[6] = (char)('1' + sel);
     sub[7] = 0;
-    if (CLIPPER_SYNTH)                                  /* Clipper: the sound, not a track */
+    if (SYNTHMAVEN_SYNTH)                                  /* SynthMaven: the sound, not a track */
         trk_short_name(0, sub);
     switch (layer) {
     case LY_FX:                                         /* the 16 punch-in effects */
@@ -885,8 +885,8 @@ static void layer_screen_draw(void)
     }
     case LY_MIX: {                                      /* mute 1..4, solo 1..4, fill / fill bar, tap */
         col = C_WHITE;
-        str_cpy(sub, CLIPPER_SYNTH ? "fill  bar  tap" : "mute  solo  fill  tap", sizeof sub);
-        for (i = 0; i < 4u && !CLIPPER_SYNTH; i++) {   /* (Clipper: one instrument, no mute / solo) */
+        str_cpy(sub, SYNTHMAVEN_SYNTH ? "fill  bar  tap" : "mute  solo  fill  tap", sizeof sub);
+        for (i = 0; i < 4u && !SYNTHMAVEN_SYNTH; i++) {   /* (SynthMaven: one instrument, no mute / solo) */
             int m = trk[i].p[P_MUTE] != 0, so = (song.solo >> i) & 1u;
             str_cpy(tl[i].lab, "mute 1", 8);
             tl[i].lab[5] = (char)('1' + i);
@@ -910,9 +910,9 @@ static void layer_screen_draw(void)
         tl[15].fg = tl[15].bg == C_WHITE ? C_BLACK : C_WHITE;
         str_cpy(tl[14].lab, "tap>", 8);
         tl[14].bg = C_BLACK;
-        for (i = 0; i < (CLIPPER_SYNTH ? 1u : 4u); i++) {
+        for (i = 0; i < (SYNTHMAVEN_SYNTH ? 1u : 4u); i++) {
             uint32_t lv = trk_level(i);
-            static const char *const L[4] = {CLIPPER_SYNTH ? "level" : "1", "2", "3", "4"};
+            static const char *const L[4] = {SYNTHMAVEN_SYNTH ? "level" : "1", "2", "3", "4"};
             lab[i] = L[i];
             fmt_int(v[i], (int32_t)lv * 100 / 127);
             ratio[i] = (int32_t)lv * 1000 / 127;
@@ -1008,8 +1008,8 @@ static void hold_screen_draw(void)
     cv_blit(0, 20);
     cv_begin(240, 60, C_BLACK);
     if (ui.hold_kind == 1u) {
-        str_cpy(b, CLIPPER_SYNTH ? "the pattern" : "track 1", sizeof b);
-        if (!CLIPPER_SYNTH)
+        str_cpy(b, SYNTHMAVEN_SYNTH ? "the pattern" : "track 1", sizeof b);
+        if (!SYNTHMAVEN_SYNTH)
             b[6] = (char)('1' + ui.hold_trk);
     } else {
         str_cpy(b, "project in slot 1", sizeof b);

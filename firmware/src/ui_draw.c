@@ -77,7 +77,7 @@ static void draw_head(void)
         cv_text(x + 12, 1, &FONT_S, "OCT", C_GRAY);
         cv_text(x + 40, 1, &FONT_S, b, C_HI);
     }
-    if (CLIPPER_SYNTH) {                              /* Clipper: no tracks; the arpeggiator when it runs */
+    if (SYNTHMAVEN_SYNTH) {                              /* SynthMaven: no tracks; the arpeggiator when it runs */
         if (TSEL->p[P_AMODE])
             cv_text(150, 1, &FONT_S, TSEL->p[P_AHOLD] ? "ARP H" : "ARP", C_HI);
         else if (TSEL->p[P_AHOLD])                    /* (0.7) KBD HOLD: the notes held */
@@ -437,7 +437,7 @@ static uint32_t graph_signature(void)
     for (i = 0; i < P_COUNT; i++)
         h = (h ^ (uint32_t)t->p[i]) * 16777619u;
     h ^= (uint32_t)TSEL->preset * 7u + (uint32_t)song.g[G_SLOT] * 13u + TSEL->user * 257u + up_gen * 7919u + ui.uslot * 104729u;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     if (pg->scope == SC_SYN)                         /* the layer's sound, A and B */
         h ^= syn_sig() * 2246822519u;
 #endif
@@ -445,7 +445,7 @@ static uint32_t graph_signature(void)
         uint32_t q;
         for (q = 0; q < FAV_N; q++)
             h = h * 31u + fav[q];
-        h ^= (uint32_t)(fav_at + 1) * 2654435761u + br_eng * 40503u;
+        h ^= (uint32_t)(fav_at + 1) * 2654435761u + br_eng * 40503u + br_current() * 104729u;
     }
     if (pg->graph == GR_SLCR && t->p[P_SLCR])        /* the SLICER's step playing */
         h ^= (sl[song.sel].idx + 1u) * 2654435761u;
@@ -464,6 +464,32 @@ static uint32_t graph_signature(void)
 /* preset browser: the list by kind (ui.c BANK), the current one in white */
 static void graph_browse(void)
 {
+#if SYNTHMAVEN_SYNTH
+    uint32_t total, cur = br_current(), e, k, pos, cnt = br_count(&pos);
+    uint32_t first, row, start = pos / 4u * 4u;
+    preset_pos(&total);
+    if (!total || !cnt)
+        return;
+    first = br_walk(total - 1u, 1);
+    for (row = 0; row < 4u && start + row < cnt; row++) {
+        int32_t y = 4 + (int32_t)row * 30;
+        char tag[5], nm[13];
+        uint32_t n = br_walk(first, (int32_t)(start + row));
+        int sel = n == cur;
+        e = preset_at(n, &k);
+        if (e == NENGINES) {
+            up_slot_label(tag, k);
+            up_name(k, nm);
+        } else {
+            str_cpy(tag, preset_kind(n), sizeof tag);
+            str_cpy(nm, ENGINES[e]->presets[k].name, sizeof nm);
+        }
+        if (sel)
+            cv_rect(4, y, 232, 24, C_DIM);
+        cv_text(10, y + 4, &FONT_S, tag, sel ? C_WHITE : C_DIM);
+        cv_text(54, y + 4, &FONT_S, nm, sel ? C_WHITE : C_GRAY);
+    }
+#else
     uint32_t total, cur = preset_pos(&total), e, k, pos, cnt = br_count(&pos), first = cur;
     int32_t row, r0 = -3, r1 = 3;
     if (!total || !cnt)
@@ -490,6 +516,7 @@ static void graph_browse(void)
         cv_text(14, y, &FONT_S, tag, sel ? C_GRAY : C_DIM);
         cv_text(54, y, &FONT_S, nm, sel ? C_WHITE : C_GRAY);
     }
+#endif
 }
 
 /* user preset slots around the selected one: "U07  NAME" / EMPTY, the selected one in white */
@@ -716,7 +743,7 @@ static void graph_scope(uint16_t c)
     }
 }
 
-/* Clipper: HOME, the instrument: the sound's name large, its kind and place in the list, its engine; the
+/* SynthMaven: HOME, the instrument: the sound's name large, its kind and place in the list, its engine; the
  * scope under it (from the top of the graph strip: cv_oy 0) */
 static uint32_t preset_pos(uint32_t *total);
 static const char *preset_kind(uint32_t n);
@@ -741,7 +768,7 @@ static void graph_home(uint16_t c)
     str_cpy(b + str_len(b), "/", 4);
     fmt_int(b + str_len(b), (int32_t)total);
     x = cv_text(x + 8, 36, &FONT_S, b, C_GRAY);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     if (hist_cmp_on)                                 /* (0.7) COMPARE: the sound as loaded; else edited since */
         cv_text(x + 8, 36, &FONT_S, "ORIG", C_AMB);
     else if (hist_edited)
@@ -813,7 +840,7 @@ static void draw_graph(void)
     ui.graph_sig = sig;
     cv_begin(240, H_GRAPH, C_BLACK);
     cv_oy = G_OY;
-    if (ui.home && CLIPPER_SYNTH) {
+    if (ui.home && SYNTHMAVEN_SYNTH) {
         cv_oy = 0;
         graph_home(c);
     } else if (ui.home) {
@@ -858,7 +885,7 @@ static void draw_graph(void)
             cv_oy = 0;
             graph_user();
             break;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         case GR_LAYER:
             graph_layer();
             break;
@@ -886,7 +913,7 @@ static void draw_graph(void)
             break;
         }
     }
-    top = (ui.home && CLIPPER_SYNTH) || (!ui.home && !drum_note && (pg->graph == GR_BROWSE || pg->graph == GR_SLOTS || pg->graph == GR_USER ||
+    top = (ui.home && SYNTHMAVEN_SYNTH) || (!ui.home && !drum_note && (pg->graph == GR_BROWSE || pg->graph == GR_SLOTS || pg->graph == GR_USER ||
                                      pg->graph == GR_ROLL || big_page(pg)));   /* these draw from the top */
     cv_oy = 0;
     if (ui.hot_t && settings.zoom && !(top && (big_page(pg) || pg->graph == GR_ROLL) && !drum_note)) {   /* (the big values show it already) */                 /* focus (menu ZOOM): the touched value, large and white */
@@ -1026,8 +1053,9 @@ static void draw_columns(void)
         return;
     }
     if (cur_page()->graph == GR_BROWSE) {
-        uint32_t total, cur = preset_pos(&total);
+        uint32_t total, cur = br_current();
         char u[8];
+        preset_pos(&total);
         fmt_int(val, (int32_t)cur + 1);
         str_cpy(u, "/", 8);
         fmt_int(u + 1, (int32_t)total);
@@ -1039,8 +1067,13 @@ static void draw_columns(void)
         draw_column(0, "No.", val, u, VAL(0u), -1, ICON_NONE);
         draw_column(1, "ENG", br_eng == BR_ALL ? "ALL" : br_eng == NENGINES ? "USER" : ENGINES[br_eng]->name, "", VAL(1u), -1,
                     br_eng < NENGINES ? engine_icon(ENGINES[br_eng]->name) : ICON_NONE);   /* (1.0: the filter) */
+#if SYNTHMAVEN_SYNTH
+        draw_column(2, "LOAD", "GO", "", VAL(2u), -1, ICON_NONE);
+        draw_column(3, "EDIT", "GO", "", VAL(3u), -1, ICON_NONE);
+#else
         draw_column(2, "", "", "", C_HI, -1, ICON_AUTO);
         draw_column(3, "FAV", fav_has(fav_key()) ? "ON" : "--", "", VAL(3u), -1, ICON_NONE);   /* (0.7) KNOB 4 */
+#endif
         return;
     }
     if (cur_page()->graph == GR_USER) {                  /* SLOT, then three GO buttons */

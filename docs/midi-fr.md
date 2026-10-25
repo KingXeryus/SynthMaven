@@ -1,6 +1,6 @@
-# Clipper 1.1 : l'implémentation MIDI
+# SynthMaven 1.1 : l'implémentation MIDI
 
-Clipper est fait pour être joué depuis un clavier MIDI, un contrôleur, un séquenceur ou un DAW autant que depuis ses propres touches. Voici tout ce qu'il reçoit et tout ce qu'il envoie, en USB comme sur le jack TRS. *(In English: [midi.md](midi.md).)*
+SynthMaven est fait pour être joué depuis un clavier MIDI, un contrôleur, un séquenceur ou un DAW autant que depuis ses propres touches. Voici tout ce qu'il reçoit et tout ce qu'il envoie, en USB comme sur le jack TRS. *(In English: [midi.md](midi.md).)*
 
 ## Les réglages (GLO > MIDI, GLO > MIDI 2)
 
@@ -8,10 +8,10 @@ Ce sont des réglages de la FM-1 : ils restent après extinction, quel que soit 
 
 | Page | Knob | Valeurs | Rôle |
 |---|---|---|---|
-| MIDI | **IN CH** | OMNI, 1..16 | Le canal que Clipper écoute. OMNI (par défaut) : tous les canaux. Avec le MPE, tous les canaux ; en MULTI, le layer garde son propre canal (EDIT > LAYER > CH). |
+| MIDI | **IN CH** | OMNI, 1..16 | Le canal que SynthMaven écoute. OMNI (par défaut) : tous les canaux. Avec le MPE, tous les canaux ; en MULTI, le layer garde son propre canal (EDIT > LAYER > CH). |
 | MIDI | **OUT** | 1..16 | Le canal sur lequel partent les touches, l'arpégiateur, le séquenceur et les knobs (CC OUT). |
 | MIDI | **BEND** | AUTO, 1..24 | L'amplitude du pitch bend en demi-tons. AUTO : celle du patch HYBRID, ±2 sur les autres moteurs. Le RPN 0 la règle aussi. |
-| MIDI | **LOCAL** | ON, OFF | OFF : les touches partent seulement en MIDI, le son joue ce qui arrive (un DAW qui renvoie la piste à Clipper : pas de notes doublées). Le CC 122 le règle aussi. |
+| MIDI | **LOCAL** | ON, OFF | OFF : les touches partent seulement en MIDI, le son joue ce qui arrive (un DAW qui renvoie la piste à SynthMaven : pas de notes doublées). Le CC 122 le règle aussi. |
 | MIDI 2 | **PROG** | ON, OFF | Les program changes chargent les sons (ON, par défaut) ou sont ignorés. |
 | MIDI 2 | **SEND** | OFF, CC | CC : tourner un knob envoie le CC qui le règle (les CC ci-dessous), donc un DAW enregistre les mouvements et les rejoue. OFF (par défaut) : rien n'est envoyé. |
 | MIDI 2 | **EWI** | OFF, VOL, V+AT | Pour un contrôleur de souffle (un EWI, un TEC, un Yamaha BC avec un adaptateur) qui envoie le CC 2. VOL : le souffle est le volume (0 muet, 127 tel que réglé). V+AT : aussi l'aftertouch, donc la destination AT de la page MOD (CUT : le filtre s'ouvre quand on souffle ; VIB, WAH, TREM) et la source AT de la matrice le suivent. OFF (par défaut) : le CC 2 ne fait rien. Mets la VOICE du son en MONO ou LEGATO, avec un peu de GLIDE. |
@@ -50,7 +50,7 @@ GLO > SYSTEM garde le reste : **MIDI** (ce qui sort : les touches seules, ou aus
 | **CC 123** | All notes off (124..127, les messages de mode, aussi). |
 | Horloge, start, continue, stop | Avec GLO > SYSTEM > SYNC = USB ou TRS : le séquenceur, l'arpégiateur et le delay suivent le tempo, le départ et l'arrêt du maître. |
 | MPE | MENU > SYSTEM > MPE : le bend, la pression et le CC 74 propres à chaque note sur les canaux 2..16. |
-| **Identity request** | `F0 7E 7F 06 01 F7` (n'importe quel device ID) : Clipper répond `F0 7E 7F 06 02 7D 43 4C 46 31 01 01 00 00 F7` (7D, non commercial ; famille « CL », modèle « F1 », version 1.1). |
+| **Identity request** | `F0 7E 7F 06 01 F7` (n'importe quel device ID) : SynthMaven répond `F0 7E 7F 06 02 7D 43 4C 46 31 01 01 00 00 F7` (7D, non commercial ; famille « CL », modèle « F1 », version 1.1). |
 | SysEx | Les commandes de l'éditeur web et de la mise à jour. |
 
 Un CC règle sa valeur comme le ferait le knob : 0..127 sur toute la plage, 64 au milieu d'une valeur bipolaire.
@@ -75,7 +75,7 @@ Song position pointer, CC 65 (portamento on / off), CC 66 (sostenuto), les NRPN,
 3. Tiens un accord et descends le CC 11 : le son s'éteint en fondu ; remonte : comme avant.
 4. Tiens un accord et envoie le CC 123 (ou le bouton panic du DAW, souvent CC 120 / 123) : les notes s'arrêtent.
 5. RPN 0 = 12 (CC 101 0, CC 100 0, CC 6 12) : le bend monte d'une octave. GLO > MIDI > BEND affiche 12 ; remets AUTO.
-6. LOCAL OFF avec la piste du DAW qui renvoie vers Clipper : chaque touche joue une seule fois, en passant par le DAW.
+6. LOCAL OFF avec la piste du DAW qui renvoie vers SynthMaven : chaque touche joue une seule fois, en passant par le DAW.
 7. SEND = CC, enregistre les CC sur une piste du DAW, tourne le RELEASE de ENV et les envois de FX : le DAW reçoit les CC 72, 91, 94 ; à la relecture, les mouvements des knobs reviennent.
 8. Avec un EWI ou un contrôleur de souffle : MIDI 2 > EWI = VOL, VOICE LEGATO : souffle doucement puis fort : la note enfle ; EWI = V+AT et l'AT de la page MOD = CUT : le son s'éclaircit quand on souffle.
 9. Un DAW ou un outil qui demande l'identité (MIDI-OX, Bome SendSX, `amidi`) reçoit la réponse ci-dessus.

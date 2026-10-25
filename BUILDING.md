@@ -1,4 +1,4 @@
-# Building Clipper
+# Building SynthMaven
 
 The build makes three files in `build/`:
 
@@ -10,13 +10,13 @@ The build makes three files in `build/`:
 
 ## Windows (WSL)
 
-`INSTALL-CLIPPER.bat` (`INSTALL-CLIPPER.bat 12` or `16` for more voices) runs `build-clipper.ps1`:
+`INSTALL-SYNTHMAVEN.bat` (`INSTALL-SYNTHMAVEN.bat 12` or `16` for more voices) runs `build-synthmaven.ps1`:
 it builds in the WSL distribution `MinUI-Build` with the JieLi toolchain at
 `/root/fm1-codex-deps/jieli/toolchain` (SLOOP's setup; edit the `build_windows.py` line of
-`build-clipper.ps1` if yours differ), makes the site and opens the installer on
+`build-synthmaven.ps1` if yours differ), makes the site and opens the installer on
 `http://localhost:8767/webapp/installer/` (SLOOP uses 8766). It needs Python 3 with Pillow on
 Windows and the three SDK files (below) in `build/deps/ac79`: the first run copies them from a
-SLOOP folder next to this one (`..\sloop-fm1`, `..\SLOOP`) or from `CLIPPER_SDK`.
+SLOOP folder next to this one (`..\sloop-fm1`, `..\SLOOP`) or from `SYNTHMAVEN_SDK`.
 `OPEN-EDITOR.bat` serves the editor of the last build on the same port.
 
 ## Prerequisites (macOS)
@@ -67,11 +67,11 @@ Build options (environment, `0` or `1`; defaults in `firmware/src/felucca.c`):
 
 ## Samples
 
-The Clipper synth (`CLIPPER_SYNTH 1`, the default) has no built-in samples: SAMPLE and GRAIN
+The SynthMaven synth (`SYNTHMAVEN_SYNTH 1`, the default) has no built-in samples: SAMPLE and GRAIN
 play the four user slots sent from the editor, and the flash goes to synthesis. The CC0
 instrument and drum samples in `assets/samples-cc0/` (Versilian Studios VSCO-2 CE and VCSL,
 Sonic Pi for SCRCH: see `ATTRIBUTION.txt` there) are only built into the groovebox
-(`CLIPPER_SYNTH 0`, which the tests use).
+(`SYNTHMAVEN_SYNTH 0`, which the tests use).
 
 ## Tests
 
@@ -86,7 +86,7 @@ formats, the groovebox's 4-track mix, the regression suite, the command-line ins
 and, with Node.js, the web page tests. `HOST_ONLY=1` skips what needs the JieLi toolchain. Run it after `./build.sh`
 (it uses `build/` and needs `AC79_SDK` set as for the build).
 
-The regression suite (`tests/regress.c`, built as the groovebox, `CLIPPER_SYNTH 0`) renders
+The regression suite (`tests/regress.c`, built as the groovebox, `SYNTHMAVEN_SYNTH 0`) renders
 each of its 13 engines and their presets and compares a hash of each render with
 `tests/golden.txt` (the synth's own engines and presets have their own tests: `synth*_test`,
 `hybrid_test`, `wave_test`, `clean_test`...); it also checks levels, voices and the CPU
@@ -98,7 +98,7 @@ the hashes; `BUDGET_UPDATE=1` does the same for the cost files.
 
 ## Install
 
-On Windows, `INSTALL-CLIPPER.bat` builds and opens the web installer (Chrome or Edge). The
+On Windows, `INSTALL-SYNTHMAVEN.bat` builds and opens the web installer (Chrome or Edge). The
 `.fwsc` of each release is on the GitHub releases page.
 
 From the command line (needs `pip3 install mido python-rtmidi`):
@@ -122,9 +122,9 @@ starts, recovery needs [FM-1-transporter](https://github.com/kurogedelic/FM-1-tr
 
 ## Publishing a release on GitHub
 
-`PUBLISH-GITHUB.bat` (Windows, after `INSTALL-CLIPPER.bat` has built the firmware) publishes from the CLIPPER folder with
-your own Git and GitHub CLI login: the source from `clipper-1.1.bundle` to `YOUR-NAME/clipper-fm1` (created if needed;
+`PUBLISH-GITHUB.bat` (Windows, after `INSTALL-SYNTHMAVEN.bat` has built the firmware) publishes from the SYNTHMAVEN folder with
+your own Git and GitHub CLI login: the source from `synthmaven-1.1.bundle` to `YOUR-NAME/synthmaven-fm1` (created if needed;
 an existing repository with another history stops it, nothing is forced on `main`), the tag and the pre-release
 `v1.1-experimental` (notes: `docs/release-1.1.md`, the `.fwsc` package and the demo WAV attached), and the installer and
-the editor (`build/clipper-site`) on GitHub Pages (branch `gh-pages`, replaced each time):
-`https://YOUR-NAME.github.io/clipper-fm1/webapp/installer/`. `PUBLISH-GITHUB.bat -Repo another-name` for another name.
+the editor (`build/synthmaven-site`) on GitHub Pages (branch `gh-pages`, replaced each time):
+`https://YOUR-NAME.github.io/synthmaven-fm1/webapp/installer/`. `PUBLISH-GITHUB.bat -Repo another-name` for another name.

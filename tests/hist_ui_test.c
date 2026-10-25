@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper 0.7 on the FM-1 (the harness of tests/ui_pages_test.c): the sound's history and COMPARE (ui_synth.c hist_*),
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven 0.7 on the FM-1 (the harness of tests/ui_pages_test.c): the sound's history and COMPARE (ui_synth.c hist_*),
  * the favourites (ui.c fav_*), KBD HOLD (seq.c kh_*), the arp's new modes and a sound loaded under a running arp.
  *   UNDO     a knob turned and left: one step (a sweep: one step); UNDO left goes back, right forward; a new change
  *            drops the steps forward; a sound loaded: the edits are a step (UNDO brings them back); RANDOM: a step;
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
     palette_set(4);
     host_tracks_init();
     for (i = 0; i < NPART; i++) { set_engine_of(&trk[i], i ? 1u : 0u); apply_preset_to(&trk[i], 0); trk[i].engine = trk[i].eng_req; }
-    clipper_proj_neutral();
+    synthmaven_proj_neutral();
     go_home(); ui.force = 1; frames(4);
 
     /* ---- UNDO */

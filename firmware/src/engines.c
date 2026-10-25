@@ -18,7 +18,7 @@ static inline int32_t soft_knee(int32_t y, int32_t k)   /* linear up to k, then 
 /* 0.7: the second core renders some of a part's voices (voice.c track_render) into vs_buf while this core renders the
  * others: an engine's scratch that is not on the stack is one per core, picked by C1_IX(out) (1: the second core's) */
 static int32_t vs_buf[CTL] __attribute__((aligned(8)));
-#if CLIPPER_SYNTH                       /* (1.0) SPREAD: a voice alone into a scratch first (voice.c vrender), one a core */
+#if SYNTHMAVEN_SYNTH                       /* (1.0) SPREAD: a voice alone into a scratch first (voice.c vrender), one a core */
 static int32_t vs_tmp[2][CTL] __attribute__((aligned(8)));
 #define C1_IX(out) ((out) == vs_buf || (out) == vs_tmp[1] ? 1u : 0u)
 #else
@@ -28,7 +28,7 @@ static int32_t vs_tmp[2][CTL] __attribute__((aligned(8)));
  * a change of it brings (fx.c mix_part1: no click), SVF in the groovebox */
 static inline int32_t fm_model(const track_t *t)
 {
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     return t->fm_eff ? t->fm_eff : clamp(t->p[P_FMODEL], FM_SVF, FM_LAST);
 #else
     (void)t;
@@ -48,18 +48,18 @@ static inline int32_t fm_model(const track_t *t)
 #include "eng_fm6.c"            /* FM6: 6-operator FM, msfa ported (fm6_core.c, Apache-2.0); SLOOP 2.4 */
 #include "eng_phys.c"           /* PHYS: physical models, from Felucca 1.0 (DaisySP, Rings: MIT); SLOOP 2.5 */
 #include "eng_noise.c"          /* NOISE: from Felucca 1.0; SLOOP 2.5 */
-#include "eng_hybrid.c"         /* HYBRID: the Clipper voice (3 oscillators, 2 filters, the matrix) */
-#if CLIPPER_SYNTH
-#include "eng_wave.c"           /* WAVE: wavetables (Clipper 0.2) */
+#include "eng_hybrid.c"         /* HYBRID: the SynthMaven voice (3 oscillators, 2 filters, the matrix) */
+#if SYNTHMAVEN_SYNTH
+#include "eng_wave.c"           /* WAVE: wavetables (SynthMaven 0.2) */
 #include "eng_acid.c"           /* ACID: a 303-style bass line */
 #include "eng_strings.c"        /* STRINGS: a string machine */
 #include "eng_macro.c"          /* MACRO: chords, swarm, additive, speech (after Plaits) */
-#include "eng_vps.c"            /* VPS: vector phaseshaping (Clipper 0.5) */
-#include "eng_terrain.c"        /* TERRAIN: wave terrain, lite (Clipper 0.5) */
-#include "eng_fmx.c"            /* FMX: six operators, waves, PM / FM / RING, any routing (Clipper 0.6) */
-#include "eng_wseq.c"           /* WSEQ: wave sequencing (Clipper 0.6) */
-#include "eng_juno.c"           /* JUNO: the Juno poly, its chorus in fx.c (Clipper 0.8) */
-#include "eng_vector.c"         /* VECTOR: vector synthesis (Clipper 0.8) */
+#include "eng_vps.c"            /* VPS: vector phaseshaping (SynthMaven 0.5) */
+#include "eng_terrain.c"        /* TERRAIN: wave terrain, lite (SynthMaven 0.5) */
+#include "eng_fmx.c"            /* FMX: six operators, waves, PM / FM / RING, any routing (SynthMaven 0.6) */
+#include "eng_wseq.c"           /* WSEQ: wave sequencing (SynthMaven 0.6) */
+#include "eng_juno.c"           /* JUNO: the Juno poly, its chorus in fx.c (SynthMaven 0.8) */
+#include "eng_vector.c"         /* VECTOR: vector synthesis (SynthMaven 0.8) */
 #endif
 
 typedef union {
@@ -67,7 +67,7 @@ typedef union {
     fm6_note_t fm6[FM6_POLY];
     uint32_t phys[PHYS_ARENA / 4u];      /* eng_phys.c: two SYMP slots or three small ones */
     hy_part_t hybrid;                    /* eng_hybrid.c: the voices */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     fmx_part_t fmx;                      /* eng_fmx.c: the voices */
 #endif
 } eng_arena_t;
@@ -105,7 +105,7 @@ static const engine_t *const ENGINES[NENGINES] = {&ENG_ANALOG, &ENG_DIGITAL, &EN
 #if FELUCCA_SLICE
                                                     &ENG_SLICE,
 #endif
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
                                                     &ENG_WAVE,   /* 13 (ENGI_WAVE) */
                                                     &ENG_ACID, &ENG_STRINGS, &ENG_MACRO,   /* 14, 15, 16 */
                                                     &ENG_VPS, &ENG_TERRAIN,                /* 17, 18 */
@@ -113,10 +113,10 @@ static const engine_t *const ENGINES[NENGINES] = {&ENG_ANALOG, &ENG_DIGITAL, &EN
                                                     &ENG_JUNO, &ENG_VECTOR,                /* 21, 22 */
 #endif
 };
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
 _Static_assert(ENGI_WAVE == 13u && ENGI_ACID == 14u && ENGI_STRINGS == 15u && ENGI_MACRO == 16u && ENGI_VPS == 17u &&
                ENGI_TERRAIN == 18u && ENGI_FMX == 19u && ENGI_WSEQ == 20u && ENGI_JUNO == 21u && ENGI_VECTOR == 22u,
-               "ENGINES[] order (Clipper)");
+               "ENGINES[] order (SynthMaven)");
 /* (eng_wave.c) the table of the instrument: track 1's, else its layer's (one table in RAM: two WAVE sounds share
  * track 1's); while a sound fades out after a change (voice.c sound_fade_begin) its table stays */
 static int32_t wt_wanted(void)
@@ -140,15 +140,15 @@ _Static_assert(ENGI_GRAIN == 8u && ENGI_PHYS == 10u && ENGI_NOISE == 11u && ENGI
 /* every factory sound as loud as the others: a level trim per preset, 1/2 dB, measured on a phrase
  * that fits the sound (tools/level_presets.py writes preset_trim.h); a track keeps it in P_ED_FX */
 #include "preset_trim.h"
-#if CLIPPER_SYNTH
-#include "preset_trim_clipper.h"
+#if SYNTHMAVEN_SYNTH
+#include "preset_trim_synthmaven.h"
 #endif
 static int16_t preset_trim(uint32_t e, uint32_t pi)
 {
-    if (CLIPPER_SYNTH && (ENGINES[e % NENGINES] == &ENG_SAMPLE || ENGINES[e % NENGINES] == &ENG_GRAIN))
-        return 0;                                    /* (Clipper: the user's own samples, no factory level) */
-#if CLIPPER_SYNTH
-    if (e >= PTC_FIRST)                              /* Clipper's own engines: their table (preset_trim_clipper.h) */
+    if (SYNTHMAVEN_SYNTH && (ENGINES[e % NENGINES] == &ENG_SAMPLE || ENGINES[e % NENGINES] == &ENG_GRAIN))
+        return 0;                                    /* (SynthMaven: the user's own samples, no factory level) */
+#if SYNTHMAVEN_SYNTH
+    if (e >= PTC_FIRST)                              /* SynthMaven's own engines: their table (preset_trim_synthmaven.h) */
         return e - PTC_FIRST < PTC_ENGINES && pi < PTC_MAX ? PRESET_TRIM_CL[e - PTC_FIRST][pi] : 0;
 #endif
     return e < PT_ENGINES && pi < PT_MAX ? PRESET_TRIM[e][pi] : 0;

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* VPS: vector phaseshaping (Clipper 0.5; Felucca discussion #145, after J. Kleimola, V. Lazzarini, J. Timoney and
+ * Copyright (C) 2026 3dSam */
+/* VPS: vector phaseshaping (SynthMaven 0.5; Felucca discussion #145, after J. Kleimola, V. Lazzarini, J. Timoney and
  * V. Valimaki, "Vector Phaseshaping Synthesis", DAFx-11: the idea, not any code). A sine read through a bent phase:
  * the phase phi (0..1) is mapped by a line through the inflection point (D, V): phi < D goes 0 -> V, phi >= D goes
  * V -> 1, and the output is -cos(2 pi P(phi)). V below 1: a pulse-like, phase-distorted wave (CZ style); V above 1:

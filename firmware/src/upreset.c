@@ -5,7 +5,7 @@
  * records each, mirrored in RAM so browsing never reads flash. A record:
  * engine, name, the instrument parameters, a 16-step pattern.
  *
- * A bank whose magic, record size or slot count differ reads as empty (Clipper: but its own 0.4 bank, converted); so
+ * A bank whose magic, record size or slot count differ reads as empty (SynthMaven: but its own 0.4 bank, converted); so
  * does a record with another UP_VER. A record keeps np = the P_COUNT it was
  * stored with; when that differs it is mapped by count: its last 8 values
  * are P_E0..P_E7, the first np - 8 are P_LEVEL.. in order, missing ones take
@@ -30,26 +30,26 @@ typedef struct {
     uint16_t rsize, nslot;
     up_rec_t r[UP_PER_BANK];
 } up_bank_t;
-_Static_assert(sizeof(up_rec_t) == 192, "user preset record layout (SLOOP's and Clipper's: one bank for both)");
+_Static_assert(sizeof(up_rec_t) == 192, "user preset record layout (SLOOP's and SynthMaven's: one bank for both)");
 _Static_assert(P_COUNT < 128, "user preset record: P_COUNT");
-#if CLIPPER_SYNTH
-/* Clipper: the record SLOOP reads (the banks are shared when the FM-1 goes from one firmware to the other: a bank of
- * another shape reads as empty there, and a save there writes over it). A Clipper record holds SLOOP 2.5's layout
+#if SYNTHMAVEN_SYNTH
+/* SynthMaven: the record SLOOP reads (the banks are shared when the FM-1 goes from one firmware to the other: a bank of
+ * another shape reads as empty there, and a save there writes over it). A SynthMaven record holds SLOOP 2.5's layout
  * (np = UP_NP: the 53 common parameters, then P_E0..P_E7), and its 25 parameters SLOOP has not (LFO 2, ENV 2, the
  * matrix: P_L2RATE .. P_M6AMT) packed in the record's spare values p[UP_NP .. UP_NP + 9] (129 bits), marked
  * UP_XMAGIC in p[71] (SLOOP leaves them 0: up_store clears the record). SLOOP maps it by count (its own new values
  * at their defaults); a SLOOP record (np 61, or 71 from 2.6) here: the common ones by place, the engine's 8 last, the
- * rest (2.6's INSERT and the like, which Clipper has not) dropped, LFO 2 / ENV 2 / the matrix at their defaults.
- * Clipper 0.4's own bank (232-byte records, np 86) is read and made this one (up_bank_check) */
+ * rest (2.6's INSERT and the like, which SynthMaven has not) dropped, LFO 2 / ENV 2 / the matrix at their defaults.
+ * SynthMaven 0.4's own bank (232-byte records, np 86) is read and made this one (up_bank_check) */
 #define UP_E0V 53u                               /* P_E0 of SLOOP 2.4 / 2.5 and of the stored layout */
 #define UP_NP (UP_E0V + 8u)
-#define UP_NX ((uint32_t)P_IMIX + 1u - UP_E0V)    /* the Clipper parameters packed (0.8's MOD SEQ and SPICE: up_side) */
+#define UP_NX ((uint32_t)P_IMIX + 1u - UP_E0V)    /* the SynthMaven parameters packed (0.8's MOD SEQ and SPICE: up_side) */
 #define UP_NX4 25u                               /* .. by 0.4 / 0.5 (LFO 2, ENV 2, the matrix) */
 #define UP_XMAGIC 0x434C                         /* "CL": a 0.4 / 0.5 record (p[71]) */
 #define UP_XMAGIC6 0x4Du                         /* 0.6: p[71]'s low byte; its high byte the stream's bits 160..167 */
-#define UP_RSIZE_04 232u                         /* Clipper 0.4's record (92 values) */
+#define UP_RSIZE_04 232u                         /* SynthMaven 0.4's record (92 values) */
 #define UP_NP_V26 71u
-#define UP_P04 86u                               /* Clipper 0.4's P_COUNT, and its P_E0 */
+#define UP_P04 86u                               /* SynthMaven 0.4's P_COUNT, and its P_E0 */
 #define UP_E004 78u                            /* SLOOP 2.6's records: its INSERT at p[53..57] */
 static const uint8_t UP_XW[UP_NX] = {7, 3, 1, 7, 7, 7, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7, 4, 4, 7,
                                      4, 7, 7, 7, 7};   /* bits (0.6: + the INSERT's TYPE, A, B, C, MIX) */
@@ -96,7 +96,7 @@ static void up_xunpack(const int16_t *p, int16_t *x, uint32_t nx)   /* the first
     }
 }
 _Static_assert(160u + 8u >= 129u + 32u, "the packed parameters fit the record's spare values");
-/* Clipper's own record: 0 none, 4 of 0.4 / 0.5 (25 packed), 6 of 0.6 (30) */
+/* SynthMaven's own record: 0 none, 4 of 0.4 / 0.5 (25 packed), 6 of 0.6 (30) */
 static int up_xrec(const up_rec_t *r)
 {
     if (r->np != UP_NP)
@@ -207,7 +207,7 @@ static int up_used(uint32_t k) { return k < UP_SLOTS && up_valid(up_rec(k)); }
 static void up_rec_set(up_rec_t *r, const int16_t *v)
 {
     uint32_t i;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     r->np = UP_NP;
     for (i = 0; i < UP_E0V; i++)
         r->p[i] = v[i];
@@ -239,8 +239,8 @@ static void up_params(const up_rec_t *r, int16_t *out, const int16_t *def)
         out[i] = i < ncm ? r->p[i] : def[i];
     for (i = 0; i < 8u; i++)
         out[P_E0 + i] = r->p[nc + i];
-#if CLIPPER_SYNTH
-    if (up_xrec(r))                                     /* Clipper's own: LFO 2, ENV 2, the matrix (0.6: the INSERT) */
+#if SYNTHMAVEN_SYNTH
+    if (up_xrec(r))                                     /* SynthMaven's own: LFO 2, ENV 2, the matrix (0.6: the INSERT) */
         up_xunpack(r->p, &out[UP_E0V], up_xrec(r) == 6 ? UP_NX : UP_NX4);
     else if (r->np == UP_NP_V26)                        /* SLOOP 2.6's: its INSERT, the same types and values */
         for (i = 0; i < 5u; i++)
@@ -270,8 +270,8 @@ static void up_bank_check(uint32_t b, int len)  /* after loading bank b (len byt
         bk->nslot != UP_PER_BANK)
         memset(bk, 0, sizeof *bk);
 }
-#if CLIPPER_SYNTH
-/* a stored bank (len bytes of src, -1 = none) into bank b: today's as it is, Clipper 0.4's (232-byte records, np 86,
+#if SYNTHMAVEN_SYNTH
+/* a stored bank (len bytes of src, -1 = none) into bank b: today's as it is, SynthMaven 0.4's (232-byte records, np 86,
  * P_E0 at 78) made today's record by record. 1: it was 0.4's (to be written back, so SLOOP reads it too) */
 static int up_bank_import(uint32_t b, const uint8_t *src, int len)
 {
@@ -416,7 +416,7 @@ static void up_boot(void)                      /* persist_boot: the banks from f
 #if FELUCCA_FLASH
     uint32_t b;
     for (b = 0; b < UP_SLOTS / UP_PER_BANK; b++)
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     {
         memset(&up_side[b], 0, sizeof up_side[b]);
         if (up_bank_import(b, up_ld, flash_ok ? st_load(OBJ_UPRESET0 + b, up_ld, sizeof up_ld) : -1))
@@ -459,7 +459,7 @@ static int up_put(uint32_t k, const up_rec_t *r)
         *up_rec(k) = *r;
     else
         memset(up_rec(k), 0, sizeof(up_rec_t));
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     {   /* (0.8) its side bytes: up_rec_set's (made just before), none when erased */
         up_side_t *sd = &up_side[k / UP_PER_BANK];
         if (sd->magic != UP_SIDE_MAGIC)
@@ -493,7 +493,7 @@ static int up_put(uint32_t k, const up_rec_t *r)
 #if FELUCCA_FLASH
     if (flash_ok) {
         int rc;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         st_side = &up_side[k / UP_PER_BANK];
         st_side_len = sizeof(up_side_t);
         st_tail = &up_tail[k / UP_PER_BANK];
@@ -541,7 +541,7 @@ static int up_store(uint32_t k, const char *name)
             r.name[i] = b[i];
     }
     up_rec_set(&r, TSEL->p);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     up_ms_put(&r, TSEL->ms);                            /* (0.8) the MOD SEQ's steps where the pattern was */
 #else
     up_pat_from(&r, TSEL->step);
@@ -570,7 +570,7 @@ static int up_load_to(track_t *t, uint32_t k)
     if (!v[P_AMODE] && !t->p[P_AMODE])
         v[P_AHOLD] = t->p[P_AHOLD];                     /* (0.7) KBD HOLD (HOLD with the arp OFF) is the part's, not the
                                                          * preset's (an older preset's HOLD meant nothing there) */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     if (t == &trk[0])
         hist_before_load();                             /* (0.7: the edits a step of their own, ui_synth.c) */
 #endif
@@ -583,7 +583,7 @@ static int up_load_to(track_t *t, uint32_t k)
     t->eng_req = r->engine;
     for (i = 0; i < P_COUNT; i++)
         t->p[i] = v[i];
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     if (up_has_ms(r))                                   /* (0.8) its MOD SEQ, or the shapes to start from */
         up_ms_get(r, t->ms);
     else

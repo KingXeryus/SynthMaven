@@ -26,7 +26,7 @@ fm1_c1_entry:
 	.balign 8
 	.globl _c1_ustack
 _c1_ustack:			/* after rti the core runs on this one: the render's (filled with a mark at start) */
-	.space 4096		/* (Clipper 0.7: 4 KB, X0X's 2816: the synth engines go deeper) */
+	.space 4096		/* (SynthMaven 0.7: 4 KB, X0X's 2816: the synth engines go deeper) */
 _c1_ustack_top:
 _c1_sstack:			/* exceptions only (no interrupts on this core) */
 	.space 256

@@ -47,7 +47,7 @@ static void fm1_delay_ms(uint32_t ms) { (void)ms; }
 #include "../firmware/src/arranger.c"
 #endif
 #include "../firmware/src/seq.c"
-#if CLIPPER_SYNTH                       /* the main loop's WAVE service (main.c) before each block, as the FM-1 runs it */
+#if SYNTHMAVEN_SYNTH                       /* the main loop's WAVE service (main.c) before each block, as the FM-1 runs it */
 static void mix_block_svc(int32_t *o, uint32_t n)
 {
     wt_service();
@@ -120,7 +120,7 @@ static void host_preset_req(track_t *t, uint32_t e, uint32_t pi)
         t->p[P_AMODE + i] = (int16_t)(p->arp[i] ? p->arp[i] - 1 : TP[P_AMODE + i].def);
     }
     preset_extras(t->p, p);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     mseq_init(t);                                 /* (0.8) the MOD SEQ's shapes (ui.c apply_preset_to) */
 #endif
     fm6_track_loaded(t);                          /* FM6: the preset's patch (ui.c apply_preset_to) */
@@ -582,7 +582,7 @@ static int rec_test(void)
     input_off(t1, 64);
     rec_run_to(t1, 12, 50);
     ok_half = rec_step_is(t1, 10, ST_NOTE, 1, 64) && rec_step_is(t1, 11, ST_TIE, 0, 0) && rec_step_is(t1, 12, ST_REST, 0, 0);
-    /* (d) a two-key chord, one key up early in step 15, the other held 2.6 steps: Clipper 1.0 (SLOOP 2.7.1), each note
+    /* (d) a two-key chord, one key up early in step 15, the other held 2.6 steps: SynthMaven 1.0 (SLOOP 2.7.1), each note
      * to its own end: step 15 the one still held going on (a NOTE of it, CONT), step 16 a TIE (before, the chord tied
      * until its last key) */
     rec_run_to(t1, 13, 5);

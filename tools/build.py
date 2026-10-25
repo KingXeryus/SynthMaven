@@ -103,7 +103,7 @@ def generate():
             [tools / "gen_samples.py", GEN / "felucca_samples.h"],
             [tools / "gen_drumkits.py", GEN / "felucca_drumkits.h"],
             [tools / "gen_fm6_patches.py", GEN / "felucca_fm6.h"],
-            [tools / "gen_wavetables.py", GEN / "felucca_wavetables.h"],   # Clipper 0.2: WAVE
+            [tools / "gen_wavetables.py", GEN / "felucca_wavetables.h"],   # SynthMaven 0.2: WAVE
             [tools / "gen_logo.py", GEN / "sloop_logo.h"]]
     procs = [subprocess.Popen([sys.executable, *map(str, c)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                               text=True) for c in cmds]
@@ -181,7 +181,7 @@ def build_loader():
 def build_app():
     flags = [*CFLAGS, "-Ifirmware/hal", "-Ifirmware/src", "-Ibuild/gen"]
     for flag in ("FELUCCA_FLASH", "FELUCCA_OTA", "FELUCCA_OTA_DRYRUN", "FELUCCA_CDC", "FELUCCA_UART",
-                 "FELUCCA_ICONS", "FELUCCA_SLICE", "FELUCCA_CPU1", "NVOICE"):   # (Clipper: NVOICE=12 ./build.sh, the CPU trials)
+                 "FELUCCA_ICONS", "FELUCCA_SLICE", "FELUCCA_CPU1", "NVOICE"):   # (SynthMaven: NVOICE=12 ./build.sh, the CPU trials)
         v = os.environ.get(flag)    # unset: the default in firmware/src/felucca.c
         if v in ("0", "1") or (flag == "NVOICE" and v in ("8", "12", "16")):
             flags.append(f"-D{flag}={v}")
@@ -324,7 +324,7 @@ def main():
         if not m:
             raise SystemExit(f"--release {a.release}: use X.Y or X.Y-suffix, one digit each")
         PRODUCT = "FM-1_9" + m[1] + m[2]
-        VERSION = a.release.upper() if "BETA" in a.release.upper() else a.release.upper() + " BETA"
+        VERSION = "SYNTHMAVEN " + a.release.upper()
         name = f"felucca-{a.release}.fwsc"
     fm1pkg_make.SDK = a.sdk
     for rel, sha in SDK_SHA256.items():          # fail early without the SDK

@@ -37,8 +37,8 @@
  * (gr_p, in the pool section); per voice s[0] the zone, s[1] the countdown to the next grain,
  * s[2] the low-pass, voice_t's phases are unused. */
 #define GR_POLY 3                /* voices per part */
-#if CLIPPER_SYNTH
-#define GR_OUT_SH 2              /* (0.9) Clipper: +6 dB, its clouds as loud as its other pads within the trims */
+#if SYNTHMAVEN_SYNTH
+#define GR_OUT_SH 2              /* (0.9) SynthMaven: +6 dB, its clouds as loud as its other pads within the trims */
 #else
 #define GR_OUT_SH 1
 #endif
@@ -424,9 +424,9 @@ static void grain_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const
     v->s[2] = y;
 }
 
-#if CLIPPER_SYNTH
-/* Clipper (0.9): clouds of its own synthesized sources (SRC 4 VOX: "oo" opening to "ah", 5 GLASS: a glass harmonica,
- * 6 PAD: seven saws, the filter opening, 7 AIR: breath on the note's harmonics; tools/gen_clipper_sets.py). (1.0: no
+#if SYNTHMAVEN_SYNTH
+/* SynthMaven (0.9): clouds of its own synthesized sources (SRC 4 VOX: "oo" opening to "ah", 5 GLASS: a glass harmonica,
+ * 6 PAD: seven saws, the filter opening, 7 AIR: breath on the note's harmonics; tools/gen_synthmaven_sets.py). (1.0: no
  * user samples, SRC from 4.) POS moves through each source: LFO DEST SHP scans it */
 static const preset_t GRAIN_PRESETS[] = {
     /* name, {SRC, POS, SIZE, DENS, PTCH, SPRD, RAND, TONE}, {A D S R}, fenv, mono, sends */

@@ -138,7 +138,7 @@ static struct {
     uint8_t sx_len, sx_on;
     volatile uint8_t uboot_req;
     volatile uint8_t ota_req;    /* F0 22 24 35 7F F7: M-UPGRADE upgrade command (FELUCCA_OTA) */
-    volatile uint8_t id_req;     /* (Clipper 1.0) F0 7E xx 06 01 F7: identity request, answered by the main loop */
+    volatile uint8_t id_req;     /* (SynthMaven 1.0) F0 7E xx 06 01 F7: identity request, answered by the main loop */
     uint8_t rx_pend;             /* EP1 OUT packet seen, not yet taken (the MIDI ring was too full) */
     uint32_t rx_held, rx_bad;    /* packets held back (NAK) for room, malformed events ignored */
 } usb;
@@ -269,10 +269,9 @@ static const uint8_t STR0[4] = {4, 3, 0x09, 0x04};
 static const uint8_t STR1[] = {42, 3, 'H', 0, 0xFC, 0, 'g', 0, 'e', 0, 'l', 0, 't', 0, 'o', 0, 'n', 0, ' ', 0, 'I', 0,
                                'n', 0, 's', 0, 't', 0, 'r', 0, 'u', 0, 'm', 0, 'e', 0, 'n', 0, 't', 0, 's', 0};
 #ifdef FELUCCA_LOADER
-static const uint8_t STR2[] = {30, 3, 'F', 0, 'e', 0, 'l', 0, 'u', 0, 'c', 0, 'c', 0, 'a', 0, ' ', 0, 'U', 0, 'p', 0,
-                               'd', 0, 'a', 0, 't', 0, 'e', 0};
+static const uint8_t STR2[] = {22, 3, 'S', 0, 'y', 0, 'n', 0, 't', 0, 'h', 0, 'M', 0, 'a', 0, 'v', 0, 'e', 0, 'n', 0};
 #else
-static const uint8_t STR2[] = {16, 3, 'C', 0, 'l', 0, 'i', 0, 'p', 0, 'p', 0, 'e', 0, 'r', 0};   /* Clipper: the MIDI port's name */
+static const uint8_t STR2[] = {22, 3, 'S', 0, 'o', 0, 'u', 0, 'n', 0, 'd', 0, 'M', 0, 'a', 0, 'v', 0, 'e', 0, 'n', 0};   /* SynthMaven: the MIDI port's name */
 #endif
 
 #if FELUCCA_UAC_48K

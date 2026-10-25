@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
+ * Copyright (C) 2026 3dSam */
 /* HYBRID engine test (firmware/src/eng_hybrid.c, hybrid_patches.h) on the host, through hostsim.c.
  *   build/host/hybrid_test [DEMODIR]
  * 1. oscillators: every type sounds at the pitch of its key (zero crossings), bounded; COARSE +12 an octave
@@ -22,7 +22,7 @@
 #include <math.h>
 
 #define HY_COST_MAX 400.0         /* host instructions per sample and voice, the heaviest factory patch (a regression
-                                   * guard: CLIPPER's two SUPERs are ~390, ~6.6 % each; ANALOG's WARM PAD ~170) */
+                                   * guard: SYNTHMAVEN's two SUPERs are ~390, ~6.6 % each; ANALOG's WARM PAD ~170) */
 #define DEV_PER_100 1.7
 /* the most a voice can give by construction: the soft knee's ceiling (2 x 32384), LEVEL 127 (x 1.27),
  * VOICE_FS, the final x 2 (as ANALOG) */
@@ -536,7 +536,7 @@ static void t_patches(void)
         setup(0);
         trk[0].p[P_E3] = 0;
         run_blocks(1);
-        check("PTCH 0 loads CLIPPER", !memcmp(&hy_cur[0], &HY_FACTORY[0], sizeof(hy_patch_t)));
+        check("PTCH 0 loads SYNTHMAVEN", !memcmp(&hy_cur[0], &HY_FACTORY[0], sizeof(hy_patch_t)));
         hy_set_patch(0, &p);
         run_blocks(1);
         check("the editor's patch is played from the next block", hy_cur[0].level == 77 && hy_cur[0].osc[0].type == HO_SINE);
@@ -581,14 +581,14 @@ static void t_patches(void)
                  HY_VOICE_MAX * 2);
         check(what, !fails);
     }
-    {   /* UNISON on CLIPPER */
+    {   /* UNISON on SYNTHMAVEN */
         setup(0);
         trk[0].p[P_E3] = 0;
         trk[0].p[P_VOICE] = V_UNISON;
         trk[0].p[P_DETUNE] = 40;
         run_blocks(1);
         render(48, 127, Y, N1 / 2, N1 / 4);
-        snprintf(what, sizeof what, "UNISON on CLIPPER (8 voices on a note): no wrap-around (peak %.0f)", peak(Y, 0, N1 / 2));
+        snprintf(what, sizeof what, "UNISON on SYNTHMAVEN (8 voices on a note): no wrap-around (peak %.0f)", peak(Y, 0, N1 / 2));
         check(what, peak(Y, 0, N1 / 2) < 2 * HY_VOICE_MAX && finite_all(Y, N1 / 2));
     }
 }

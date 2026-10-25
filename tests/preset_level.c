@@ -57,8 +57,8 @@ int main(int argc, char **argv)
         for (pi = 0; pi < ENGINES[e]->npresets; pi++) {
             const char *name = ENGINES[e]->presets[pi].name;
             int role = role_of(name);
-#if CLIPPER_SYNTH
-            if (e == ENGI_ACID)                                /* Clipper's engines: by what they are */
+#if SYNTHMAVEN_SYNTH
+            if (e == ENGI_ACID)                                /* SynthMaven's engines: by what they are */
                 role = has(name, "LEAD") ? R_MELODY : R_BASS;
             else if (e == ENGI_STRINGS)
                 role = R_HELD;

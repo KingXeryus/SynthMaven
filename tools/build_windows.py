@@ -20,7 +20,7 @@ def main():
     ap.add_argument('--skip-generate', action='store_true')
     ap.add_argument('--slice', choices=['0', '1'], help='FELUCCA_SLICE for the compile (the SLICE engine); '
                     'the BREAK sample follows FELUCCA_SLICE in this process environment (tools/gen_samples.py)')
-    ap.add_argument('--nvoice', choices=['8', '12', '16'], help='NVOICE for the compile (Clipper: the voices; default 8)')
+    ap.add_argument('--nvoice', choices=['8', '12', '16'], help='NVOICE for the compile (SynthMaven: the voices; default 8)')
     args = ap.parse_args()
     os.chdir(ROOT)
     import build

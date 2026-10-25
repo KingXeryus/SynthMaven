@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* JUNO (Clipper 0.8): the poly synth of the Roland Juno-6 / 60 / 106, one of the most loved sounds there is (its
+ * Copyright (C) 2026 3dSam */
+/* JUNO (SynthMaven 0.8): the poly synth of the Roland Juno-6 / 60 / 106, one of the most loved sounds there is (its
  * idea: one DCO with a saw, a pulse whose width the LFO moves, a sub oscillator an octave down and noise; a high-pass
  * in four positions; a 24 dB resonant low-pass; and the BBD chorus, I, II or both). No code or sample of Roland's.
  * EDIT 1  WAVE  PW  SUB  NOIS        EDIT 2  HPF  CUT  RES  CHOR

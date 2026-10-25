@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* VECTOR (Clipper 0.8): vector synthesis, after the Sequential Prophet VS and the Korg Wavestation's joystick (the
+ * Copyright (C) 2026 3dSam */
+/* VECTOR (SynthMaven 0.8): vector synthesis, after the Sequential Prophet VS and the Korg Wavestation's joystick (the
  * idea, not any code or wave of theirs). Four single-cycle waves sit at the corners of a square, A top left, B top
  * right, C bottom left, D bottom right; a point in it (X, Y) mixes them, each by its nearness (bilinear: the centre
  * an equal mix, a corner its wave alone); MOVE sends the point round a path by itself, from each note's start.
- * EDIT 1  A  B  C  D           the corners' waves (16 of Clipper's: vector_tables.h, tools/gen_vector.py)
+ * EDIT 1  A  B  C  D           the corners' waves (16 of SynthMaven's: vector_tables.h, tools/gen_vector.py)
  * EDIT 2  X  Y  MOVE  CUT
  *   X Y   the point, -64 (A's side) .. 63; SHAPE (LFO DEST SHP, MW / AT SHP, the matrix's SHP) moves X; the matrix
  *         moves X or Y themselves (DEST E5, E6: X, Y)

@@ -137,7 +137,7 @@ int main(int argc, char **argv)
         }
     for (i = 0; i < NROLL; i++)
         assert(!roll[i].on);                                 /* every roll ended with its key */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     for (b = 0; b < 15u * FS / CTL; b++)                     /* (1.0: HALL's tail, up to ~10 s) */
         mix_block(out, CTL);
 #endif

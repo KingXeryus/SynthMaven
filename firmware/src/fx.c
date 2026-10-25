@@ -2,7 +2,7 @@
  * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
 /* Effects: per-track DIST insert, then sends into three shared buses (chorus, tempo delay, reverb).
  * Stereo dry mix; the chorus and the reverb come back in stereo, the delay in the middle. */
-#if CLIPPER_SYNTH                /* Clipper: the line at half the rate (22.05 kHz, its repeats are low-passed anyway):
+#if SYNTHMAVEN_SYNTH                /* SynthMaven: the line at half the rate (22.05 kHz, its repeats are low-passed anyway):
                                   * the same 1.49 s in half the memory (64 KB for the wavetables) */
 #define DLY_LEN 32768u
 #define DLY_SPAN (2u * DLY_LEN)  /* samples the line holds */
@@ -22,7 +22,7 @@ static int16_t cho_buf[CHO_LEN] __attribute__((section(".pool")));
 #define REV_MOD 12               /* samples the modulated line moves (+-) */
 static const uint16_t REV_LINE[4] = {1559, 1931, 2389, 2791};   /* 35..63 ms, coprime */
 static const uint16_t REV_AP[2] = {556, 441};
-#if CLIPPER_SYNTH                /* (1.0) in the pool, which has room in the synth (48 KB free): .lowram put line 0, the
+#if SYNTHMAVEN_SYNTH                /* (1.0) in the pool, which has room in the synth (48 KB free): .lowram put line 0, the
                                   * left channel's own, right above the second core's stacks */
 static int16_t rev_line[1559 + 1931 + 2389 + 2791 + REV_MOD + 2] __attribute__((section(".pool")));
 #else
@@ -38,7 +38,7 @@ static struct {
     uint32_t dl_cur, dl_old;            /* (0.9) the delay's TIME now and the one it fades from (DL_XF samples) */
     uint32_t dl_x;                      /* .. samples into that fade (DL_XF: none) */
     int32_t cdep;                       /* (0.9) the chorus's DEPTH now (glides: a jump moved its taps at once) */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     uint32_t dm_cur, dm_old, dm_x;      /* (1.0) the delay's MODE now, the one it fades from, samples into that fade */
     uint32_t tw_ph, tf_ph;              /* (1.0) TAPE: the wow's and the flutter's phases */
     int32_t tp0, tpd;                   /* .. the swing of the tap (Q8 samples, more delay) at the block's start, a step */
@@ -50,7 +50,7 @@ static struct {
 /* DIST: low cut -> drive (1x..8x, exponential) -> asymmetric soft clip
  * (a little bias = even harmonics) -> tone low-pass that closes with drive ->
  * make-up gain. State per part (track_t dist_*). */
-/* (Clipper 0.9) DIST turned on or off while the part sounds: the dry and the driven cross-fade over 2.9 ms (SL_SLOPE;
+/* (SynthMaven 0.9) DIST turned on or off while the part sounds: the dry and the driven cross-fade over 2.9 ms (SL_SLOPE;
  * it switched at once: a crack on a held chord); a part starting from silence (fresh): at once, as before, bit for bit */
 static void track_dist(track_t *t, int32_t *b, uint32_t n, uint32_t fresh)
 {
@@ -76,7 +76,7 @@ static void track_dist(track_t *t, int32_t *b, uint32_t n, uint32_t fresh)
     b0 = softclip(bias);
     for (i = 0; i < (int32_t)n; i++) {
         int32_t x = b[i], y;
-        t->dist_hp += (x - t->dist_hp + 64) >> 7;           /* ~55 Hz low cut: keep the bass out of the clipper */
+        t->dist_hp += (x - t->dist_hp + 64) >> 7;           /* ~55 Hz low cut: keep the bass out of the synthmaven */
         x = clamp(x - t->dist_hp, -230000, 230000);         /* (x >> 2) * g fits 32 bits; the clip is flat out there */
         y = softclip((((x >> 2) * g) >> 10) + bias) - b0;   /* >> 2 first: no overflow for loud poly */
         t->dist_lp1 += mulq15(y - t->dist_lp1, k);         /* two poles: tames the fizz */
@@ -91,7 +91,7 @@ static void track_dist(track_t *t, int32_t *b, uint32_t n, uint32_t fresh)
         t->dist_on = 0;                                 /* (faded out: off) */
 }
 
-/* master: peak limiter in front of the soft clipper, a 35 ms hold then ~46 ms release (SLOOP 2.6), threshold where tanh is still nearly linear,
+/* master: peak limiter in front of the soft synthmaven, a 35 ms hold then ~46 ms release (SLOOP 2.6), threshold where tanh is still nearly linear,
  * so chords get quieter instead of crushed. SLOOP 2.6: it looks one block ahead (lim_block): the output is the mix
  * CTL samples late (0.73 ms) and the gain glides over each block to what the loudest sample of it and of the next one
  * needs, so a hot kick or bass is already turned down when it comes. Before, the gain caught up in ~4 samples and the
@@ -110,7 +110,7 @@ typedef struct {
 #define LIM_HOLD 48u
 #define LIM_REL 11                      /* the release after the hold: ~46 ms (12 before the hold: ~93 ms; the same loudness) */
 static lim_t lim_dac = {.env = LIM_T, .g = 32768}, lim_usb = {.env = LIM_T, .g = 32768};
-/* (Clipper 0.9) the gain's way over a block: an S curve (smoothstep at (i + 1) / 32), not a straight line: no corner in
+/* (SynthMaven 0.9) the gain's way over a block: an S curve (smoothstep at (i + 1) / 32), not a straight line: no corner in
  * the gain at the blocks' joints (a straight ramp put one at each, a tick on every loud attack). Each block still ends
  * at the gain its look-ahead asks for; the samples going out were in the last block's look-ahead (g0 fits them) */
 static const uint16_t LIM_S[CTL] = {94, 368, 810, 1408, 2150, 3024, 4018, 5120, 6318, 7600, 8954, 10368, 11830, 13328,
@@ -240,8 +240,8 @@ static uint32_t delay_samples(void)
     return s < 16u ? 16u : s >= DLY_SPAN - 4u ? DLY_SPAN - 4u : s;
 }
 
-#if CLIPPER_SYNTH
-/* Clipper 0.2: a plate reverb (G_RTYPE = PLATE), after J. Dattorro, "Effect Design, Part 1" (JAES 45/9, 1997): a
+#if SYNTHMAVEN_SYNTH
+/* SynthMaven 0.2: a plate reverb (G_RTYPE = PLATE), after J. Dattorro, "Effect Design, Part 1" (JAES 45/9, 1997): a
  * pre-delay (G_RPRE), a bandwidth low-pass and four input diffusers, then a tank of two halves feeding each other (a
  * figure eight); in each half a modulated diffuser (moving reflections: long tails do not ring), a delay, the damping
  * low-pass (DAMP), the decay (SIZE), a second diffuser and a delay. The output is taken from seven taps across the
@@ -412,7 +412,7 @@ static void plate_run(const int32_t *rev_in, int32_t *wet_l, int32_t *wet_r, uin
 }
 #endif
 
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
 /* (1.0) the half-rate line read q (Q8) samples back: entry e ~ sample 2e, linear between entries */
 static inline int32_t dly_rd(uint32_t q)
 {
@@ -459,11 +459,11 @@ static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t
     int32_t g = 17000 + song.g[G_RSIZE] * 104, lpk = 32767 - song.g[G_RDAMP] * 200;   /* loop gain (RT60 ~0.4..4 s), damping */
     int32_t cdepth = song.g[G_CDEPTH] * 6, cdep0;
     int32_t ca0, ca1, cb0, cb1, ma, mb, dca, dcb;
-    int plate = CLIPPER_SYNTH && song.g[G_RTYPE] >= RT_PLATE;   /* Clipper: the plate (1.0: HALL, SHIMMER: its tank)
+    int plate = SYNTHMAVEN_SYNTH && song.g[G_RTYPE] >= RT_PLATE;   /* SynthMaven: the plate (1.0: HALL, SHIMMER: its tank)
                                                                  * instead of the room */
     const uint32_t L0 = REV_LINE[0] + REV_MOD + 2u, B1 = L0, B2 = B1 + REV_LINE[1], B3 = B2 + REV_LINE[2];
     int32_t rg0 = 32767, rg1 = 32767;                   /* (1.0) the reverb's share over the block (a change of type) */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     {   /* a change between the room and the plate's tank (PLATE, HALL, SHIMMER share it: they change on the fly): the
          * old one fades out over 6 blocks (1.0: it was cut, a click on a ringing tail), then the other starts from
          * silence (no old tail bursting out of its lines) */
@@ -498,7 +498,7 @@ static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t
     if (dl != fx.dl_cur && fx.dl_x >= DL_XF)            /* (0.9) a new TIME: the fade starts (one at a time) */
         fx.dl_old = fx.dl_cur, fx.dl_cur = dl, fx.dl_x = 0;
     dl = fx.dl_cur, dlo = fx.dl_old;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     {   /* (1.0) a new MODE: the fade starts (one at a time); TAPE's swing at both ends of the block */
         uint32_t dm = song.g[G_DMODE] <= DM_TAPE ? song.g[G_DMODE] : DM_MONO;
         int32_t dw = (int32_t)((dl * 197u) >> 8) + 1536, t1;   /* (wow: 0.3 % of TIME + 6 samples; flutter: 2) */
@@ -527,7 +527,7 @@ static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t
     }
     for (i = 0; i < n; i++) {
         int32_t yl, yr, a, o0, o1, o2, o3;
-#if !CLIPPER_SYNTH
+#if !SYNTHMAVEN_SYNTH
         int32_t x;
 #endif
         /* chorus: two modulated short delays, 5..15 ms, the LFO half a turn apart: left and right move apart */
@@ -542,7 +542,7 @@ static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t
         }
         fx.cho_w++;
         /* delay with a low-passed feedback (in the middle) */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         {   /* half rate: an entry is the mean of two samples (entry e ~ sample 2e); a position between two entries
              * reads between them. (1.0) MONO: one tap in the middle; PING: the echoes left (TIME) and right (2 x
              * TIME), the feedback from the right; TAPE: the tap swung by wow and flutter, the feedback saturating.
@@ -591,7 +591,7 @@ static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t
         yl += x;
         yr += x;
 #endif
-        /* reverb: two diffusers, then the four lines (Clipper: or the plate, after the loop) */
+        /* reverb: two diffusers, then the four lines (SynthMaven: or the plate, after the loop) */
         if (plate) {
             wet_l[i] = yl;
             wet_r[i] = yr;
@@ -643,7 +643,7 @@ static void fx_buses(const int32_t *cho_in, const int32_t *dly_in, const int32_t
         wet_l[i] = yl + o0 + o2;
         wet_r[i] = yr + o1 - o3;
     }
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     if (plate)
         plate_run(rev_in, wet_l, wet_r, n, rg0, rg1);
 #endif
@@ -672,7 +672,7 @@ static struct {
 
 static void duck_block(uint32_t adv)
 {
-    int32_t depth = CLIPPER_SYNTH ? 0 : song.g[G_DUCK] * 258, x;   /* (Clipper: its slot is the reverb TYPE) */
+    int32_t depth = SYNTHMAVEN_SYNTH ? 0 : song.g[G_DUCK] * 258, x;   /* (SynthMaven: its slot is the reverb TYPE) */
     uint32_t len = BEAT_U / 2u;
     duck.g0 = duck.g1;
     if (drums.kick) {
@@ -707,7 +707,7 @@ static int djf_block(djf_t *f, int32_t v, tsvf_t *c)
 {
     int32_t to;
     if ((v < 0 && f->mode > 0) || (v > 0 && f->mode < 0))
-        v = 0;                                          /* (Clipper 0.9) from one side to the other (a CC, the editor):
+        v = 0;                                          /* (SynthMaven 0.9) from one side to the other (a CC, the editor):
                                                          * open this side first, then the other from open (a jump from
                                                          * the low-pass to the high-pass was a crack) */
     if (v < 0 && f->mode >= 0) {                        /* (switching side: from open) */
@@ -760,8 +760,8 @@ static void tflt_run(djf_t *f, const tsvf_t *c, int32_t *b, uint32_t n, uint32_t
         b[i] <<= 2;
 }
 
-#if CLIPPER_SYNTH
-/* INSERT (Clipper 0.6: SLOOP 2.6's, after Felucca 1.5 by Leo Kuroshita, Discussions #78 and #177): one effect per
+#if SYNTHMAVEN_SYNTH
+/* INSERT (SynthMaven 0.6: SLOOP 2.6's, after Felucca 1.5 by Leo Kuroshita, Discussions #78 and #177): one effect per
  * sound (the instrument and its layer each their own, kept with the sound: presets, projects), after DIST and before
  * the sound's FILTER, with a dry / wet MIX. TYPE (P_ITYPE, N_ITYPE; stored, append-only) and its three values A B C
  * (P_IA .. P_IC, what they mean: params.c ins_desc):
@@ -806,7 +806,7 @@ typedef struct {
     int16_t line[IL_LEN];               /* FLANG / CHOR, at a quarter (headroom) */
 } ins_t;
 /* (in .bss, not the pool: tools/build.py keeps 8 KiB of the pool spare; RAM has room) */
-static ins_t ins[NPART];                         /* the parts (Clipper: the instrument and its layer) */
+static ins_t ins[NPART];                         /* the parts (SynthMaven: the instrument and its layer) */
 
 static inline int32_t ins_mixq(int32_t m) { return m >= 127 ? 32768 : m <= 0 ? 0 : m * 258; }   /* MIX -> Q15 */
 static inline int32_t ins_mix(int32_t x, int32_t y, int32_t w) { return w == 32768 ? y : x + mulq16(y - x, (uint32_t)w << 1); }
@@ -996,7 +996,7 @@ static __attribute__((noinline)) void ins_rest(track_t *t)
     t->ins_run = 0;
 }
 
-/* ---- the JUNO chorus (Clipper 0.8): the stereo BBD chorus of the Juno-60 / 106, its idea and its published
+/* ---- the JUNO chorus (SynthMaven 0.8): the stereo BBD chorus of the Juno-60 / 106, its idea and its published
  * measurements (no code of anyone's): one line, two taps whose delays a triangle LFO sweeps in opposite directions,
  * each tap low-passed as a BBD's, left = dry + tap 1, right = dry + tap 2.
  *   I     0.513 Hz, 1.66 .. 5.35 ms        II  0.863 Hz, the same range        I+II  9.75 Hz, 3.3 .. 3.7 ms
@@ -1110,8 +1110,8 @@ static int32_t mix_glide(int32_t from, int32_t to)
     return d <= 8 && d >= -8 ? to : from + d / 4;
 }
 
-#if CLIPPER_SYNTH
-/* Clipper 0.9, the part's duck: what cannot change under a sounding part without a crack (another filter MODEL, another
+#if SYNTHMAVEN_SYNTH
+/* SynthMaven 0.9, the part's duck: what cannot change under a sounding part without a crack (another filter MODEL, another
  * WAVE table, which is built in the voices' own memory, another FMX patch: PTCH) waits for it: the part fades out over
  * 2.9 ms (an S curve), holds silent while the change lands (a table built: a few ms), fades in over 2.9 ms. A silent part:
  * at once; one fading out for a sound loaded: after its fade. part_pending: what waits; part_apply: lands it (FMX: fmx_block loads
@@ -1187,7 +1187,7 @@ static void mix_part1(track_t *t, uint32_t n)
     int32_t *b = part_buf;
     uint32_t i, fresh = !t->tail;                       /* (0.9) the part was silent: a change takes effect at once */
     int32_t g0 = 32767 - t->att, g1 = gain_next(t);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     int32_t fmw = clamp(t->p[P_FMODEL], FM_SVF, FM_LAST);
     if (part_pending(t, fmw)) {                         /* (0.9) a change that would crack the sound: the duck first */
         if (fresh)
@@ -1226,7 +1226,7 @@ static void mix_part1(track_t *t, uint32_t n)
         return;
     }
 #endif
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     if (t->dk_phase)
         part_duck(t, b, part_side_on ? part_side : 0, n, fmw);
 #endif
@@ -1236,16 +1236,16 @@ static void mix_part1(track_t *t, uint32_t n)
     }
     {
         int32_t lvl = LEVEL_Q12[t->p[P_LEVEL] ? clamp(t->p[P_LEVEL] + t->p[P_ED_FX], 1, 127) : 0], pan = t->p[P_PAN];   /* (+ the sound's trim: 1/2 dB steps, as LEVEL's) */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         {   /* (1.0) the expression (CC 11): x (cc + 1)^2 / 128^2, 127 unchanged */
             int32_t ex = 128 - part_ctl[ctl_part(t)].exoff;
             lvl = (lvl * ex * ex) >> 14;
         }
-        pan = clamp(pan + t->panmod, -64, 64);         /* Clipper 0.4: + the matrix's PAN (voice.c) */
+        pan = clamp(pan + t->panmod, -64, 64);         /* SynthMaven 0.4: + the matrix's PAN (voice.c) */
 #endif
         int32_t gl = 4096 - (pan > 0 ? pan * 64 : 0), gr = 4096 + (pan < 0 ? pan * 64 : 0);
         int32_t c = t->p[P_CHOR] * 258, d = t->p[P_DLY] * 258, r = t->p[P_REV] * 258, pk = t->peak;
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         int32_t sa = 0;                                 /* (1.0) |the part| before DIST and the INSERT (SPREAD's side
                                                          * follows their level: they run on the mid) */
         {   /* (1.0) SPACE: more reverb and delay */
@@ -1265,13 +1265,13 @@ static void mix_part1(track_t *t, uint32_t n)
         xmax = xmax > r0 ? xmax : r0;
         xmax = xmax > c ? xmax : c, xmax = xmax > d ? xmax : d, xmax = xmax > r ? xmax : r;
         xmax = 0x7FFFFFFF / (xmax | 1);                 /* sends: loud chords at a high LEVEL */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         if (part_side_on && (t->p[P_DIST] | t->dist_w | t->p[P_ITYPE] | t->ins_run))
             for (i = 0; i < n; i++)
                 sa += b[i] < 0 ? -(b[i] >> 6) : b[i] >> 6;
 #endif
         track_dist(t, b, n, fresh);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         if (t->p[P_ITYPE] | t->ins_run) {
             track_insert(t, b, n, fresh);               /* the INSERT (0.6): off, nothing */
             t->ins_res = (uint16_t)(b[n - 1u] < 0 ? (-b[n - 1u] > 65535 ? 65535 : -b[n - 1u])
@@ -1284,13 +1284,13 @@ static void mix_part1(track_t *t, uint32_t n)
             djf_t *f = &tflt[(uint32_t)(t - trk) % NTRK];
             if (djf_block(f, t->p[P_TFLT], &fc)) {
                 tflt_run(f, &fc, b, n, 0);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
                 if (part_side_on)                       /* (1.0) SPREAD's side through the same filter (its own state) */
                     tflt_run(f, &fc, part_side, n, 1);
 #endif
             }
         }
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
         if (part_side_on && sa) {                       /* (1.0) the side as loud as DIST / the INSERT left the mid */
             int32_t sb = 0, g, g0s = t->sd_g ? t->sd_g : 32768;
             for (i = 0; i < n; i++)
@@ -1323,7 +1323,7 @@ static void mix_part1(track_t *t, uint32_t n)
         t->lvl = mix_glide(lvl0, lvl), t->gpl = mix_glide(gl0, gl), t->gpr = mix_glide(gr0, gr);
         dl = (t->lvl - lvl0) >> CTL_LOG2, dgl = t->gpl - gl0, dgr = t->gpr - gr0;
         for (i = 0; i < n; i++) {
-#if NVOICE > 8                                          /* Clipper: 12 / 16 loud voices: one more bit of headroom */
+#if NVOICE > 8                                          /* SynthMaven: 12 / 16 loud voices: one more bit of headroom */
             int32_t x = ((clamp(b[i], -PART_MAX * 2, PART_MAX * 2) >> 3) * (lvl0 + dl * (int32_t)i)) >> 9, a;
 #else
             int32_t x = ((clamp(b[i], -PART_MAX, PART_MAX) >> 2) * (lvl0 + dl * (int32_t)i)) >> 10, a;   /* pre-shift: 8
@@ -1345,7 +1345,7 @@ static void mix_part1(track_t *t, uint32_t n)
             if (r)
                 send_r[i] += mulq15(xs, r);
             gl = gl0 + ((dgl * (int32_t)i) >> CTL_LOG2), gr = gr0 + ((dgr * (int32_t)i) >> CTL_LOG2);   /* (0.7) */
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
             if (side) {                                 /* the chorus's left - right, through the same level */
 #if NVOICE > 8
                 int32_t sd = ((side[i] >> 3) * (lvl0 + dl * (int32_t)i)) >> 9;
@@ -1366,11 +1366,11 @@ static void mix_part1(track_t *t, uint32_t n)
     }
 }
 
-/* Clipper 0.3: a sound fading out after a change renders, mixes and sends with its own values (voice.c
+/* SynthMaven 0.3: a sound fading out after a change renders, mixes and sends with its own values (voice.c
  * sound_fade_begin) */
 static void mix_part(track_t *t, uint32_t n)
 {
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     if (t->xf_snd && t->xf_on && t->xf) {
         int16_t keep[P_E0];
         memcpy(keep, t->p, sizeof keep);
@@ -1451,8 +1451,8 @@ static void djf_process(int32_t *l, int32_t *r, uint32_t n)
 }
 
 #include "punch.c"            /* PUNCH-IN FX on the whole mix (FX held + a white key) */
-#if CLIPPER_SYNTH
-#include "bus.c"              /* Clipper 0.3: the master EQ and compressor */
+#if SYNTHMAVEN_SYNTH
+#include "bus.c"              /* SynthMaven 0.3: the master EQ and compressor */
 #endif
 static int32_t master_cur = -1;                        /* the volume knob, ramped per sample (no zipper) */
 static void mix_block(int32_t *out, uint32_t n)
@@ -1498,7 +1498,7 @@ static void mix_block(int32_t *out, uint32_t n)
     dust_process(mix_l, mix_r, n);
     punch_process(mix_l, mix_r, n);
     djf_process(mix_l, mix_r, n);
-#if CLIPPER_SYNTH
+#if SYNTHMAVEN_SYNTH
     bus_process(mix_l, mix_r, n);
 #endif
     m1 = (int32_t)song.master_q12;

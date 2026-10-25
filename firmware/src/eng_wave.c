@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* WAVE: wavetables (Clipper 0.2). A table is 16 frames, each a single cycle; POS sweeps through them, the frames
+ * Copyright (C) 2026 3dSam */
+/* WAVE: wavetables (SynthMaven 0.2). A table is 16 frames, each a single cycle; POS sweeps through them, the frames
  * either side crossfaded (a smooth morph, PPG / Serum style). The ENV and the LFO move POS through the part's SHP
  * destinations (ENV DEST SHP, LFO DEST SHP), as they move ANALOG's pulse width.
  *
@@ -16,7 +16,7 @@
  *         SUB   a sine an octave down
  * EDIT 2  CUT RES DRV KTR: ANALOG's filter (FX > FILTER > MODL: SVF or the MOOG ladder) and drive.
  * Voice state: ph[0..2] (osc, the detuned one, the sub), s[0..1] the SVF, s[3..6] the ladder, s[7] the last
- * POS (ramped over a block). In the Clipper synth only (the RAM: the groovebox has its punch-in ring there). */
+ * POS (ramped over a block). In the SynthMaven synth only (the RAM: the groovebox has its punch-in ring there). */
 #include "felucca_wavetables.h"
 
 #define WT_LEVELS 7u
@@ -78,7 +78,7 @@ static const int16_t (*wt_spec(uint32_t table, uint32_t f))[2]
     }
 }
 
-/* one frame of the table: its seven copies, each an inverse FFT of its harmonics (Clipper 0.3: was additive, 16 x
+/* one frame of the table: its seven copies, each an inverse FFT of its harmonics (SynthMaven 0.3: was additive, 16 x
  * slower; the same samples within a step): X[h + 1] = (a - i b) / 2, X[N - h - 1] its conjugate, x = IFFT(X), in
  * Q8 (int32, the twiddles Q30, 64-bit products: the int16 copies as the additive sum made them, within a step or two). A missing user table builds
  * silence. ~0.3 ms a frame on the FM-1 (an estimate) */
@@ -341,7 +341,7 @@ static const preset_t WAVE_PRESETS[] = {
     {"PWM STR", {1, 30, 9, 0, 90, 10, 0, 40}, {60, 100, 120, 90}, 0, 0, FX(0, 60, 0, 55),
      XP(P_LRATE + 1, 30, P_LD_SHP + 1, 40)},
     {"USER WT", {16, 0, 0, 0, 110, 10, 0, 64}, {0, 80, 110, 40}, 0, 0, FX(0, 10, 10, 20)},
-    /* Clipper 0.3 */
+    /* SynthMaven 0.3 */
     {"WT BASS", {0, 60, 0, 80, 60, 30, 20, 64}, {0, 70, 80, 20}, 20, 1, FX(0, 0, 0, 5), XP(P_TRANS + 1, -12)},
     {"VOCAL PAD", {4, 40, 10, 20, 100, 10, 0, 40}, {80, 100, 115, 95}, 0, 0, FX(0, 40, 20, 60), XP(P_LRATE + 1, 20, P_LD_SHP + 1, 40)},
     {"ODD LEAD", {3, 50, 6, 0, 110, 20, 10, 64}, {2, 70, 110, 40}, 0, 1, FX(0, 10, 26, 24), XP(P_GLIDE + 1, 30, P_MWDST + 1, MD_VIB)},

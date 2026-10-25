@@ -1,6 +1,6 @@
-# Felucca licensing
+# SynthMaven licensing and upstream notices
 
-Felucca is free software. Its **code** is licensed under the GNU General Public License,
+SynthMaven inherits the following upstream licensing terms. The **code** is licensed under the GNU General Public License,
 version 3 only (`GPL-3.0-only`, full text in `LICENSE`). Its **assets** are not part of
 that licence: the icon atlas `assets/icons.png`, the panel image `docs/panel.jpg` and the drum sounds made by
 `tools/gen_waves.py` (the Hügelton Sample Pack) are Copyright (C) 2026 Hügelton Instruments,
@@ -51,7 +51,7 @@ assets, is entirely governed by the GPL.
 | klattsch by Tony Gies (<https://github.com/tgies/klattsch>): design reference for the VOICE (formant) engine; no code copied. Formant data from Klatt (1980) / Hillenbrand et al. (1995) | MIT (klattsch) | credit only |
 | msfa by Google Inc. and Pascal Gauthier, from Dexed (<https://github.com/asb2m10/dexed>): the FM6 engine's synthesis (SLOOP 2.4), ported to integer C for Felucca 1.0 by Leo Kuroshita (Dexed itself is GPL-3.0; only msfa is used; the FM6 factory patches are Felucca's own) | Apache-2.0 | `firmware/src/fm6_core.c`, `LICENSES/Apache-2.0-msfa.txt` |
 | DaisySP (Electrosmith, Emilie Gillet) and Rings' sympathetic strings (Emilie Gillet): the PHYS engine's models (SLOOP 2.5, from Felucca 1.0, ported to fixed point by Leo Kuroshita) | MIT | `firmware/src/phys_dsp.c`, `firmware/src/phys_symp.c` (the notice is in each file) |
-| The second core's HAL (Clipper 0.7): Charles Vestal's X0X (<https://github.com/charlesvestal/fm1-x0x>), after Kerem Kilic's Melodee; `cpu1.c`, `cpu1.h` and the host double by Andre Rezemini (<https://github.com/andrerezemini/sloop-lab>), through SLOOP 2.7 | GPL-3.0 | `firmware/hal/fm1_cpu1.h`, `firmware/hal/fm1_cpu1.S`, `firmware/src/cpu1.c`, `firmware/src/cpu1.h`, `tests/cpu1_host.c` (the notice is in each file) |
+| The second core's HAL (SynthMaven 0.7): Charles Vestal's X0X (<https://github.com/charlesvestal/fm1-x0x>), after Kerem Kilic's Melodee; `cpu1.c`, `cpu1.h` and the host double by Andre Rezemini (<https://github.com/andrerezemini/sloop-lab>), through SLOOP 2.7 | GPL-3.0 | `firmware/hal/fm1_cpu1.h`, `firmware/hal/fm1_cpu1.S`, `firmware/src/cpu1.c`, `firmware/src/cpu1.h`, `tests/cpu1_host.c` (the notice is in each file) |
 | JieLi AC79 SDK: `uboot.boot`, `cfg_tool.bin`, `eq_cfg_hw.bin` are read from your SDK checkout at build time and placed in the package; no SDK files are in this tree | Apache-2.0 | <https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK> |
 
 ## Contributions

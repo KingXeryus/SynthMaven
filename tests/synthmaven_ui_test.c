@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 3dSam (Clipper) */
-/* Clipper's synth interface (CLIPPER_SYNTH 1), on the harness of tests/ui_pages_test.c (the real UI on a
+ * Copyright (C) 2026 3dSam */
+/* SynthMaven's synth interface (SYNTHMAVEN_SYNTH 1), on the harness of tests/ui_pages_test.c (the real UI on a
  * framebuffer, the audio running between frames):
- *   power-on: the instrument plays CLIPPER; HOME is the synth screen (no tracks; 0.3: no visualiser)
+ *   power-on: the instrument plays SYNTHMAVEN; HOME is the synth screen (no tracks; 0.3: no visualiser)
  *   PRESETS browses the sounds, ALGORITHM jumps from kind to kind (and back); not on a page that edits the sound
  *   one instrument: an old project / the editor selecting another track comes back to track 1; tracks 2..4 and the
  *   drums are silent even with patterns and notes; MIDI plays the instrument on every channel (omni, 10 too)
@@ -12,7 +12,7 @@
  *   editor and its sheet; MENU > SEQ > STEP ADVANCE; step entry from a MIDI keyboard
  *   the pages: no SLICER, no DRUMS, no SONG page; MASTER without DUCK and ROLL; VOICE 2 without MUTE
  *   the REC screen: the instrument alone; REC held: "PATTERN CLEARED"
- *   screens to DIR/clipper-*.ppm for review. */
+ *   screens to DIR/synthmaven-*.ppm for review. */
 #define UI_PAGES_HARNESS_ONLY
 #include "ui_pages_test.c"
 
@@ -52,7 +52,7 @@ int main(int argc, char **argv)
 {
     uint32_t i;
     outdir = argc > 1 ? argv[1] : "build/host";
-    check(CLIPPER_SYNTH == 1, "built as the synth (CLIPPER_SYNTH 1)");
+    check(SYNTHMAVEN_SYNTH == 1, "built as the synth (SYNTHMAVEN_SYNTH 1)");
     bank_resolve();
     panel = PANEL_DEFAULT;
     layers_init();
@@ -62,13 +62,13 @@ int main(int argc, char **argv)
     for (i = 0; i < NPART; i++) { set_engine_of(&trk[i], TRK_DEF[i][0]); apply_preset_to(&trk[i], TRK_DEF[i][1]); trk[i].engine = trk[i].eng_req; }
     TDRUM->p[P_E0] = DRUM_DEFAULT_KIT;
     song.g[G_BPM] = 120;
-    sloop_splash(); ppm("clipper-splash");
+    sloop_splash(); ppm("synthmaven-splash");
     go_home(); ui.force = 1; frames(3);
-    check(ui.home && song.sel == 0 && trk[0].eng_req == ENGI_HYBRID && !strcmp(sound_name(), "CLIPPER"),
-          "power-on: HOME, the instrument plays CLIPPER");
+    check(ui.home && song.sel == 0 && trk[0].eng_req == ENGI_HYBRID && !strcmp(sound_name(), "SYNTHMAVEN"),
+          "power-on: HOME, the instrument plays SYNTHMAVEN");
     key(7); frames(2);                                    /* (a note, for the scope) */
-    fm1_in.notes |= 1u << 7; frames(6); ui.force = 1; frame(); ppm("clipper-home"); fm1_in.notes &= ~(1u << 7); frames(30);
-    ui.menu = 2; ui.force = 1; frame(); ppm("clipper-about"); ui.menu = 0; ui.force = 1; frame();
+    fm1_in.notes |= 1u << 7; frames(6); ui.force = 1; frame(); ppm("synthmaven-home"); fm1_in.notes &= ~(1u << 7); frames(30);
+    ui.menu = 2; ui.force = 1; frame(); ppm("synthmaven-about"); ui.menu = 0; ui.force = 1; frame();
 
     /* PRESETS and ALGORITHM */
     {
@@ -92,11 +92,11 @@ int main(int argc, char **argv)
         check(preset_pos(&total) == p0, "on the ENV page PRESETS and ALGORITHM leave the sound alone");
         go_home(); frames(2);
     }
-    {   /* the preset list: every name found; every preset of Clipper's own engines (WAVE .. MACRO) there once */
+    {   /* the preset list: every name found; every preset of SynthMaven's own engines (WAVE .. MACRO) there once */
         uint32_t e, k, n, hits, ok = 1;
         for (n = 0; n < NBANK; n++)
             if (bank_pi[n] == 0xFF) {
-                printf("clipper: BANK %s: no such preset in engine %u\n", BANK[n].name, BANK[n].e);
+                printf("synthmaven: BANK %s: no such preset in engine %u\n", BANK[n].name, BANK[n].e);
                 ok = 0;
             }
         for (e = 0; e < NENGINES; e++)
@@ -104,13 +104,13 @@ int main(int argc, char **argv)
                 for (hits = 0, n = 0; n < NBANK; n++)
                     hits += BANK[n].e == e && bank_pi[n] == k;
                 if (hits != 1) {
-                    printf("clipper: preset %s (engine %u) is %u times in BANK\n", ENGINES[e]->presets[k].name, e, hits);
+                    printf("synthmaven: preset %s (engine %u) is %u times in BANK\n", ENGINES[e]->presets[k].name, e, hits);
                     ok = 0;
                 }
             }
         check(ok, "the preset list: every name found, every factory preset of every engine once");
     }
-    /* back to CLIPPER for the rest */
+    /* back to SYNTHMAVEN for the rest */
     set_engine_of(TSEL, ENGI_HYBRID); apply_preset_to(TSEL, 0); frames(3);
 
     /* one instrument */
@@ -170,26 +170,40 @@ int main(int argc, char **argv)
         check(cur_page()->graph == GR_BROWSE && br_eng == BR_ALL, "SAVE: the PRESETS page, the filter on ALL");
         encs[panel.enc[EN_K2]] = 1; frames(2);
         e = br_eng;
-        ok = e < NENGINES && TSEL->eng_req == e && user_of(TSEL) >= UP_SLOTS;
+        ok = e < NENGINES;
         c = br_count(&pos);
         for (n = 0; n < c + 2u; n++) {                /* KNOB 1 round the engine's sounds (and once more) */
-            uint32_t p = preset_pos(&total);
-            ok &= TSEL->eng_req == e;
+            uint32_t p = br_current(), pk;
+            ok &= preset_at(p, &pk) == e;
             seen += p != prev;
             prev = p;
             encs[panel.enc[EN_K1]] = 1; frames(1);
         }
         encs[panel.enc[EN_PRESET]] = -1; frames(1);
-        ok &= TSEL->eng_req == e;
-        ui.force = 1; frame(); ppm("clipper-presets-filter");
+        { uint32_t pk; ok &= preset_at(br_current(), &pk) == e; }
+        ui.force = 1; frame(); ppm("synthmaven-presets-filter");
         check(ok && c >= 2u && seen >= c, "PRESETS page: KNOB 2 filters by engine (the first one with sounds); KNOB 1 and PRESETS go through its sounds only");
         for (k = 0; k < NENGINES + 2u && br_eng != BR_ALL; k++) {
             encs[panel.enc[EN_K2]] = 1; frames(1);
         }
         check(br_eng == BR_ALL, "KNOB 2 round the engines (and USER when there are user presets) back to ALL");
         encs[panel.enc[EN_K2]] = -1; frames(1);
-        ok = br_eng == NENGINES || (br_eng < NENGINES && TSEL->eng_req == br_eng);   /* (the harness's user presets: names only) */
+        ok = br_eng == NENGINES || (br_eng < NENGINES);   /* (the harness's user presets: names only) */
         check(ok, "KNOB 2 left from ALL: the last filter (USER, or the last engine and its first sound)");
+        while (br_eng != BR_ALL) { encs[panel.enc[EN_K2]] = 1; frames(1); }
+        {
+            uint32_t before = preset_pos(&total), chosen;
+            encs[panel.enc[EN_K1]] = 1; frame(); chosen = br_current();
+            check(preset_pos(&total) == before && chosen != before,
+                  "four-patch browser: selection does not change the playing sound");
+            encs[panel.enc[EN_K3]] = 1; frames(2);
+            check(preset_pos(&total) == chosen && cur_page()->graph == GR_BROWSE,
+                  "LOAD plays the highlighted sound and stays in browser");
+            encs[panel.enc[EN_K1]] = 1; frame(); chosen = br_current();
+            encs[panel.enc[EN_K4]] = 1; frames(2);
+            check(preset_pos(&total) == chosen && cur_fam() == FAM_EDIT,
+                  "EDIT loads the highlighted sound and opens engine editing");
+        }
         while (br_eng != BR_ALL) { encs[panel.enc[EN_K2]] = 1; frames(1); }
         go_home(); frames(2);
         set_engine_of(TSEL, ENGI_HYBRID); apply_preset_to(TSEL, 0); frames(3);
@@ -203,7 +217,7 @@ int main(int argc, char **argv)
         go_home(); frames(2);
         while (strcmp(cur_page()->title, "MIDI")) { open_family(FAM_GLO); frame(); }
         encs[panel.enc[EN_K1]] = 1; frame(); encs[panel.enc[EN_K1]] = 1; frame(); encs[panel.enc[EN_K1]] = 1; frame();
-        ui.force = 1; frame(); ppm("clipper-midi");
+        ui.force = 1; frame(); ppm("synthmaven-midi");
         ok = midi_in_ch == 3u;
         midi_in(0x90u, 60, 100); frames(2);
         n1 = voices_part(0);
@@ -238,7 +252,7 @@ int main(int argc, char **argv)
         uint32_t total, b2[FAV_N], nf = fav_list(b2), ok, i2, on, l_full, l_cut, cc_n, cc_v;
         go_home(); frames(2);
         to_page(FAM_GLO, "MIDI");
-        ui.force = 1; frame(); ppm("clipper-midi-1");
+        ui.force = 1; frame(); ppm("synthmaven-midi-1");
         check(cur_page()->id[2] == 52u && cur_page()->id[3] == 53u && midi_bend == 0u && !midi_local_off,
               "GLO > MIDI: BEND (AUTO) and LOCAL (ON) next to the channels");
         midi_in(0xC0u, 5, 0); frames(2);
@@ -251,7 +265,7 @@ int main(int argc, char **argv)
         to_page(FAM_GLO, "MIDI");
         open_family(FAM_GLO); frame();
         check(!ui.home && !strcmp(cur_page()->title, "MIDI 2"), "GLO: then the MIDI 2 page");
-        ui.force = 1; frame(); ppm("clipper-midi-2");
+        ui.force = 1; frame(); ppm("synthmaven-midi-2");
         frames(20);
         encs[panel.enc[EN_K1]] = -1; frame();
         midi_in(0xC0u, 7, 0); frames(2);
@@ -355,7 +369,7 @@ int main(int argc, char **argv)
         encs[panel.enc[EN_K3]] = 1; frame();
         midi_in(0xB0u, 2, 90); frames(2);
         check(midi_breath == 2u && part_ctl[0].at == 90u && part_ctl[0].exoff == 37u, "EWI V+AT: and the aftertouch");
-        ui.force = 1; frame(); ppm("clipper-midi-breath");
+        ui.force = 1; frame(); ppm("synthmaven-midi-breath");
         encs[panel.enc[EN_K3]] = -1; frame(); encs[panel.enc[EN_K3]] = -1; frame();
         midi_in(0xB0u, 121, 0); midi_in(0x80u, 60, 0); frames(40);
         check(!midi_breath && !part_ctl[0].exoff && !part_ctl[0].at, "EWI back OFF");
@@ -460,14 +474,14 @@ int main(int argc, char **argv)
         go_home(); frames(2);
         tap(B_SAVE); frames(2);
         check(!ui.home && cur_page()->fam == FAM_SAVE && cur_page()->scope != SC_SONG, "SAVE tapped on HOME: the SAVE pages (no song screen)");
-        ui.force = 1; frame(); ppm("clipper-save");
+        ui.force = 1; frame(); ppm("synthmaven-save");
     }
     /* SEQ and SEL keep their layers */
     {
         go_home(); frames(2);
         press(B_SEQ); frames(12);
         check(ui.layer == LY_STEP, "SEQ held: the steps layer");
-        ui.force = 1; frame(); ppm("clipper-layer-steps");
+        ui.force = 1; frame(); ppm("synthmaven-layer-steps");
         key(0); frames(2);
         check(trk_step_on(TSEL, 0), "SEQ held + key 1: step 1 set");
         release(B_SEQ); frames(2);
@@ -488,7 +502,7 @@ int main(int argc, char **argv)
         for (j = 0; j < 16u; j += 4u) put_step(t, j, 1, j % 8u ? n64 : n60, ST_NOTE, 0);
         press(B_EDIT); frames(12);
         ok = ui.layer == LY_ERASE;
-        ui.force = 1; frame(); ppm("clipper-layer-edit");
+        ui.force = 1; frame(); ppm("synthmaven-layer-edit");
         {                                             /* EDIT + a key, stopped: that note gone from the whole pattern */
             uint32_t k;
             for (k = 0; k < 27u && kb_map(t, k) != 64u; k++)
@@ -515,7 +529,7 @@ int main(int argc, char **argv)
         go_home(); frames(2);
         press(B_GLO); frames(12);
         ok = ui.layer == LY_MIX;
-        ui.force = 1; frame(); ppm("clipper-layer-glo");
+        ui.force = 1; frame(); ppm("synthmaven-layer-glo");
         fm1_in.notes |= 1u << key_of_white(8); frames(2);
         ok &= fill_now != 0;
         fm1_in.notes &= ~(1u << key_of_white(8)); frames(2);
@@ -552,7 +566,7 @@ int main(int argc, char **argv)
             }
             fm1_in.notes &= ~(1u << k); frames(4);
             ok &= on >= 4u;
-            printf("clipper:   ARP roll: %u hits in 120 frames\n", on);
+            printf("synthmaven:   ARP roll: %u hits in 120 frames\n", on);
         }
         transport_req = 2; frames(4);
         release(B_ARP); frames(30);
@@ -610,7 +624,7 @@ int main(int argc, char **argv)
             encs[panel.enc[EN_PRESET]] = 1; frame();
             check(ok && (int8_t)ui.zoom == 0 && preset_pos(&total) == p0, "NOTES: PRESETS zooms (16 -> 32, then 8; the sound stays)");
         }
-        ui.force = 1; frame(); ppm("clipper-notes-chord");
+        ui.force = 1; frame(); ppm("synthmaven-notes-chord");
         tap(B_OCTUP); frame();
         check(song.octave == 1 && !ui.sheet, "NOTES: OCT+ tapped: the octave up, as before (on release)");
         song.octave = 0;
@@ -618,7 +632,7 @@ int main(int argc, char **argv)
         ok = ui.sheet == 1u && song.octave == 0;
         release(B_OCTUP); frame();
         check(ok && ui.sheet == 1u && song.octave == 0, "NOTES: OCT+ held 0.4 s: the note's sheet (the octave stays)");
-        ui.force = 1; frame(); ppm("clipper-notes-sheet");
+        ui.force = 1; frame(); ppm("synthmaven-notes-sheet");
         tap(B_OCTUP); frame();
         ok = (t->step[4].flags & SF_SLIDE) != 0;
         encs[panel.enc[EN_K1]] = 1; frame();
@@ -654,7 +668,7 @@ int main(int argc, char **argv)
         check(!step_on(&t->step[5]) && t->step[6].time == ST_REST, "NOTES: the chord's last note: the step and its TIEs go");
         press(B_EDIT); press(B_OCTDN); release(B_OCTDN); release(B_EDIT); frames(2);
         check(step_on(&t->step[5]), "NOTES: EDIT + OCT- brings it back (undo)");
-        cursor_set(0); ui.force = 1; frame(); ppm("clipper-notes");
+        cursor_set(0); ui.force = 1; frame(); ppm("synthmaven-notes");
         frames(20);                                   /* (EDIT let go: KNOB 1..4 quiet 250 ms, #39) */
         /* the keys write the step under edit; STEP ADVANCE (MENU > SEQ) */
         {
@@ -733,7 +747,7 @@ int main(int argc, char **argv)
         }
         /* the menu: MENU > SEQ > STEP ADVANCE */
         {
-            ui.menu = 1; ui.menu_sel = MI_ADV; ui.force = 1; frame(); ppm("clipper-menu-seq");
+            ui.menu = 1; ui.menu_sel = MI_ADV; ui.force = 1; frame(); ppm("synthmaven-menu-seq");
             check(mi_sec(MI_ADV) == MS_SEQ && !strcmp(MS_NAME[MS_SEQ], "SEQ") && !strcmp(MI_NAME[MI_ADV], "STEP ADVANCE"),
                   "MENU: a SEQ section (STEP ADVANCE), between AUDIO and MIDI");
             encs[panel.enc[EN_K1]] = -1; frame();
@@ -772,13 +786,13 @@ int main(int argc, char **argv)
                 open_family(FAMS[f]); ui.force = 1; frame();
                 bad += cur_page()->scope == SC_SONG || cur_page()->scope == SC_DRUM || cur_page()->scope == SC_TRK;
                 if (n < 4u) {
-                    snprintf(nm, sizeof nm, "clipper-page-%u-%u", f, n);
+                    snprintf(nm, sizeof nm, "synthmaven-page-%u-%u", f, n);
                     ppm(nm);
                 }
             }
         check(!bad, "the pages of every button: never a SONG, DRUMS or TRACKS screen");
     }
-    /* HOME again: Clipper 0.3 has no full-screen visualiser: still the synth screen */
+    /* HOME again: SynthMaven 0.3 has no full-screen visualiser: still the synth screen */
     go_home(); frames(2);
     tap(B_HOME); frames(3);
     check(!vis_shown() && ui.home, "HOME on HOME: still the synth screen (no visualiser)");
@@ -786,7 +800,7 @@ int main(int argc, char **argv)
     check(!vis_shown() && ui.home, "HOME again: the synth screen");
     /* REC: armed, the screen shows the instrument alone; held: the pattern cleared */
     press(B_REC); release(B_REC); frames(4);
-    ui.force = 1; frame(); ppm("clipper-rec");
+    ui.force = 1; frame(); ppm("synthmaven-rec");
     check(rec_wait, "REC: armed");
     press(B_REC); release(B_REC); frames(4);
     {
@@ -797,7 +811,7 @@ int main(int argc, char **argv)
         release(B_REC); frames(4);
     }
     /* the header: ARP when the arpeggiator runs */
-    TSEL->p[P_AMODE] = 1; ui.force = 1; frames(2); ppm("clipper-home-arp"); TSEL->p[P_AMODE] = 0; frames(2);
+    TSEL->p[P_AMODE] = 1; ui.force = 1; frames(2); ppm("synthmaven-home-arp"); TSEL->p[P_AMODE] = 0; frames(2);
     {   /* (1.0) the arp a preset brings is the sound's: the next sound turns it off; the player's own runs on */
         track_t *t = TSEL;
         uint32_t ea = ENGI_ACID, pa = 0, k, eb = 0;
@@ -824,6 +838,33 @@ int main(int argc, char **argv)
         t->p[P_AMODE] = 0; frames(2);
         set_engine_of(t, eb); apply_preset_to(t, 0); frames(2);
     }
-    printf("clipper_ui: %s\n", fails ? "FAILED" : "all passed");
+    /* Run extra performance routing checks after the audio fixtures so their note
+     * and program events cannot seed the reverb smoothness test's tank. */
+    {
+        uint32_t total;
+        go_home(); frames(2);
+        midi_in_ch = 0;
+        midi_pc_off = 0;
+        /* Pedal ch2 bank selection stays independent of a keyboard on ch1. */
+        test_up_loaded = UP_SLOTS;
+        midi_in(0xB1u, 0, 127); midi_in(0xB0u, 0, 0); midi_in(0xC1u, 1, 0); frames(2);
+        check(test_up_loaded == 1u, "pedal bank 127 + program 1 loads U02; keyboard bank on ch1 is independent");
+        midi_in(0xC1u, 2, 0); frames(2);
+        check(test_up_loaded == 1u, "empty user slot leaves the loaded sound alone");
+        midi_in(0xC1u, 127, 0); frames(2);
+        check(test_up_loaded == 1u, "out-of-range user program leaves the loaded sound alone");
+        midi_in(0xC0u, 0, 0); frames(2);
+        check(base_pos(&total) == 0u, "keyboard bank 0 keeps the existing factory program map");
+        midi_pc_off = 1; test_up_loaded = UP_SLOTS;
+        midi_in(0xC1u, 0, 0); frames(2);
+        check(test_up_loaded == UP_SLOTS, "PROG OFF also blocks pedal user-slot changes");
+        midi_pc_off = 0;
+        midi_in(0xC1u, 0, 0); frames(2);
+        midi_in(0x90u, 60, 100); frames(6);
+        check(test_up_loaded == 0u && voices_part(0) > 0u,
+              "keyboard notes still play after a pedal program selection");
+        midi_in(0x80u, 60, 0); frames(30);
+    }
+    printf("synthmaven_ui: %s\n", fails ? "FAILED" : "all passed");
     return fails != 0;
 }
