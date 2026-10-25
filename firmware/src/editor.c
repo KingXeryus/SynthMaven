@@ -33,7 +33,8 @@ enum { ED_INFO = 1, ED_GET, ED_SET, ED_DUMP, ED_DESC, ED_STEP_GET, ED_STEP_SET, 
 #define ED_PROTO (SYNTHMAVEN_SYNTH ? 15u : 11u)           /* the protocol version INFO ends with (12: SynthMaven's FMX, 13: its
                                                         * MOD SEQ, JUNO, VECTOR, 14: the TUNING) */
 
-static uint8_t ed_out[600];
+/* Full FM6 stock + user list: 68 used entries need up to 824 wire bytes. */
+static uint8_t ed_out[1024];
 static uint32_t ed_n;
 
 static void ed_begin(uint32_t cmd)

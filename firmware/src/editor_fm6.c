@@ -4,6 +4,7 @@
  * A patch travels as the 128-byte packed record (every byte 7-bit: no pack7). Targets: 0 a part's own patch
  * (track 0..NPART-1; the drum track has none), 1 a bank slot (0..FM6_BANK_N-1, flash: only while the song is
  * stopped, rc 3 as the other flash writes), 2 a factory patch (0..FM6_NFACTORY-1, read only). */
+_Static_assert(sizeof ed_out >= 8u + 12u * (FM6_NFACTORY + FM6_BANK_N), "FM6 list reply capacity");
 enum { ED_FM6_TRACK, ED_FM6_BANK, ED_FM6_FACTORY };
 
 static void ed_fm6_name(const uint8_t *pk)       /* the record's name, trailing spaces off */
