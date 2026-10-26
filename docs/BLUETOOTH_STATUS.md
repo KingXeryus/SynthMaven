@@ -52,3 +52,19 @@ matching the upstream adapter. The host test now uses the actual `len=0` call,
 including wrong-source/null rejection and a ready event after the 15-second
 timeout. This corrects a deterministic startup blocker. Physical pairing,
 reconnect and radio/audio performance still require hardware checks.
+
+## Native 1.1 target validation
+
+[Actions run 40247482272](https://github.com/KingXeryus/SynthMaven/actions/runs/40247482272)
+built commit 32dae18c786001f9805ba4a42b5a5071ecd0277c with native BLE,
+all 23 engines and 537 factory presets. The image uses **580504/581564 bytes**
+of app flash, **91220/98304 bytes** of static RAM, **24832/25672 bytes** of low
+SRAM, and **329008/344064 bytes** of pool. The existing -Oz fallback retained all
+engines and the logo. The **610045-byte** package identifies as **FM-1_911** and
+the application reports **SYNTHMAVEN 1.1**. All enforced target bounds and the
+host/editor suite pass; the full web regression also passes locally.
+
+A read-only USB check on the connected physical FM1 before updating reported
+FELUCCA SYNTHMAVEN 1.0, Bluetooth enabled and BLE state 7 (startup failure),
+consistent with the rejected ready event. No firmware was flashed during that
+check. Physical Chocolate/Chocolate Plus pairing and audio remain unverified.

@@ -415,7 +415,9 @@ For recovery tooling, see the [build/install guide](../BUILDING.md#install).
 
 ## Version, validation and support
 
-The release uses 23 engines and 537 factory presets. The product version **1.1**
+The 1.1 native BLE build passes the enforced flash/RAM/pool limits with all
+23 engines and 537 factory presets. The installable package identifies as
+FM-1_911; the splash and editor identify SynthMaven 1.1. The product version **1.1**
 is separate from editor protocol **16** and retained hardware-loader identifiers.
 The automated checks cover preset values, browser indexing, MIDI response,
 project recall, input routing, storage, editor transfers and target memory bounds.

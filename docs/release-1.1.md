@@ -36,6 +36,11 @@ new assignments. They default to OFF if absent.
 
 ## Validation
 
+The [native BLE target build](https://github.com/KingXeryus/SynthMaven/actions/runs/40247482272)
+passes: 580504/581564 bytes flash, 91220/98304 static RAM, 24832/25672 low SRAM,
+329008/344064 pool. The 610045-byte package identifies as FM-1_911. All 23 engines
+remain; the existing size-optimization fallback is used.
+
 The host regression exercises the real zero-length SDK callback, timeout/late
 recovery, input routing, press/release values, PC override, per-bank wrapping,
 saved/corrupt/legacy settings and the rendered HOME screen. Editor, Oriental,
