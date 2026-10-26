@@ -2,6 +2,7 @@
 set -eu
 cd "$(dirname "$0")/.."
 mkdir -p build/gen build/host
+python3 tools/gen_release_meta.py --check
 python3 tools/gen_maqam.py --check
 for g in font:felucca_font icons:felucca_icons samples:felucca_samples drumkits:felucca_drumkits logo:sloop_logo tables:felucca_tables fm6_patches:felucca_fm6 wavetables:felucca_wavetables; do
  python3 "tools/gen_${g%%:*}.py" "build/gen/${g#*:}.h" >/dev/null

@@ -2,8 +2,9 @@
  * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
 /* Felucca user interface. Four columns map to KNOB 1..4. Rendering is lazy:
  * every element remembers what it last drew and is redrawn only on change. */
+#include "release_meta.h"
 #ifndef FELUCCA_VERSION
-#define FELUCCA_VERSION "SYNTHMAVEN 1.9"  /* (experimental) the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
+#define FELUCCA_VERSION SM_RELEASE_BANNER  /* (experimental) the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
 #endif
 static void project_save(uint32_t slot);
 static void program_layer_set(uint32_t on);

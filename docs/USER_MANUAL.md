@@ -1,8 +1,17 @@
 # SynthMaven 1.9 — FM1 user manual
 
+Generated from release metadata: firmware **1.9**, protocol **21**, shared synth voice limit **8**.
+
+## Sound presets, programs and library entries
+
+- A **sound preset** is one engine sound and its synthesis settings. Loading one replaces the focused part’s sound. A USER sound-preset slot stores one sound.
+- A **four-part program** stores four loaded sounds and their part routing, mix, tuning and layer state. The eight named program slots are device flash storage.
+- An **editor library entry** is a computer/browser-side item or imported file. It becomes device state only when sent to a part or saved to a device slot; keeping a library entry does not save a four-part program. Export library files separately from device backups.
+
+
 SynthMaven is an open-source firmware based on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1).
 This manual covers the **M-VAVE FM1 hardware firmware**, its web installer and
-web editor. Version 1.6 provides **23 engines and 537 factory presets**. The Mac
+web editor. Version 1.9 provides **23 engines and 537 factory presets**. The Mac
 software instrument has a separate feature set; its eight-layer interface and
 DAW formats are not features of this hardware firmware.
 
@@ -30,7 +39,7 @@ DAW formats are not features of this hardware firmware.
 
 ## Before installation
 
-Back up the FM1 before installing custom firmware. Version 1.6 removes Bluetooth. Direct USB host mode has software test coverage but still needs Chocolate Plus hardware validation.
+Back up the FM1 before installing custom firmware. Bluetooth is removed. Direct USB host mode has software test coverage but still needs Chocolate Plus hardware validation.
 
 ### Connection options
 
@@ -48,12 +57,12 @@ The FM1 port cannot act as host and computer device at the same time. This host 
    in Chrome or Edge with the FM1 connected over USB.
 2. Close other programs using the FM1 MIDI ports if connection fails.
 3. Follow the installer prompts and keep power connected until it finishes.
-4. Check the splash/About screen for **SYNTHMAVEN 1.6**.
+4. Check the splash/About screen for **SYNTHMAVEN 1.9**.
 5. Open the [editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/),
    click **Connect**, grant MIDI/SysEx access when prompted and choose the FM1.
 
 Use the matching online editor after updating. The firmware/editor wire protocol
-is version **19**; that protocol number is independent of product version 1.6.
+is version **21**; that protocol number is independent of product version 1.9.
 A URL ending in `?mock=1` uses a simulated device for previewing the editor.
 It does not communicate with or validate a physical FM1.
 
@@ -74,7 +83,7 @@ HOME displays the four sounds loaded in the working program. The outline marks t
 
 SAVE → PROGRAM provides **eight named program slots**. SELECT cycles slots 1–8, wrapping at either end; KNOB 1 also selects a slot. ALGORITHM chooses a name character (1–12); PRESET or KNOB 2 changes that character. The complete pending name appears next to the selected slot. Turn LOAD or SAVE twice to confirm. Editing a name does not overwrite the saved program until SAVE completes. Slots 1–4 and 5–8 appear in groups of four on screen.
 
-The redundant PROGRAM MODE, PRESETS and USER pages have been removed from SAVE. Layering ON/OFF remains in **GLO → LAYER PITCH**, on GLO’s two-second hold, and in the editor. Use HOME for engine/preset browsing and the editor for library and layer editing. The SAVE → TOOLS page remains for initialization/clearing operations. Each sound has an eight-voice budget.
+The redundant PROGRAM MODE, PRESETS and USER pages have been removed from SAVE. Layering ON/OFF remains in **GLO → LAYER PITCH**, on GLO’s two-second hold, and in the editor. Use HOME for engine/preset browsing and the editor for library and layer editing. The SAVE → TOOLS page remains for initialization/clearing operations. All four parts share **8 voices total**. This is not 8 voices per part. Each enabled layer and each unison voice consumes that shared budget; a note using all four parts normally costs four voices, so a two-note chord fills an eight-voice budget. Additional notes can steal existing voices. Release tails and unison also use voices; stolen voices may briefly fade over one audio block.
 
 Function-layer screens first appear at two seconds. Except GLO, function layers remain open after holding their button for three seconds. Release the button and continue editing. Tap the same function button or HOME to exit. REC’s clear action still requires its confirmation hold.
 
@@ -122,7 +131,7 @@ assuming that changing engines will preserve an equivalent tone.
 
 ## Editing a sound
 
-Load a preset and tap **EDIT**, or choose a sound from HOME. Hardware pages expose
+Load a sound preset and tap **EDIT**, or choose a sound from HOME. Hardware pages expose
 engine controls and shared sound parameters. Labels vary with the engine.
 The editor's Sound tab exposes the available parameters and specialised HYBRID,
 FM6 and FMX panels when those engines are selected.
@@ -287,7 +296,7 @@ SAVE → PROGRAM provides eight persistent named program slots. SELECT chooses S
 
 Programs contain each sound’s engine, preset identity, edited parameters, modulation sequence and HYBRID/FMX/FM6 patch, plus selected sound, tuning configuration and layer mode. The working program autosaves after an idle period when stopped and quiet. Custom-scale definitions persist in settings and are also included in programs and working-program backups. Loading a program restores its custom scales.
 
-USER presets store individual sounds. Export user banks and backups before updates. Older four-track project records remain readable; PRG1 programs from 1.4 upgrade automatically; new PRG2 records require firmware 1.6 or later. Do not overwrite valuable slots while testing custom firmware.
+USER sound presets store individual sounds. Export user banks and backups before updates. Older four-track project records remain readable; PRG1 programs from 1.4 upgrade automatically; new PRG2 records require firmware 1.6 or later. Do not overwrite valuable slots while testing custom firmware.
 
 ## Troubleshooting
 
@@ -295,7 +304,7 @@ USER presets store individual sounds. Export user banks and backups before updat
 |---|---|
 | Editor does not connect | Chrome/Edge, USB data cable, MIDI/SysEx permission, correct port; close competing MIDI applications |
 | Only highlight changes | Use KNOB 3 to load or KNOB 4 to load and edit |
-| Oriental collection missing | Verify SYNTHMAVEN 1.6, refresh the matching editor, select ORIENTAL on the hardware |
+| Oriental collection missing | Verify SYNTHMAVEN 1.9, refresh the matching editor, select ORIENTAL on the hardware |
 | USB keyboard is silent | Confirm a MIDI host exists; separate power alone is insufficient; check KEY IN and channel |
 | TRS keyboard is silent | Check MIDI direction, compatible cable/adapter, channel and KEY IN |
 | Pedal scans but does not switch | Wait for MIDI READY; enable PROG; check PORT, channel and actual Program Change/CC0 data |
