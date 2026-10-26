@@ -164,7 +164,7 @@ whole output, including a layered part.
 
 ## Layer, split and performance
 
-The four program sounds replace the previous two-part layer workflow. Use SAVE → PROGRAM MODE → LAYER. OFF plays the SELECT-focused sound; ON plays all four sounds. Selecting a different slot changes editing focus. Note releases follow the sounds that received the note-on. Release held keys before saving a program. Layering increases processing load.
+The four program sounds replace the previous two-part layer workflow. Use GLO → LAYER PITCH → LAYER, or hold GLO for two seconds. OFF plays the SELECT-focused sound; ON plays all four sounds. Selecting a different slot changes editing focus. Note releases follow the sounds that received the note-on. Release held keys before saving a program. Layering increases processing load.
 
 ## Tuning and Scala scales
 
@@ -283,7 +283,7 @@ files outside browser storage, which can be cleared by the browser.
 
 ## Saving, projects and backups
 
-SAVE → PROGRAM provides four persistent program slots. Choose SLOT 1–4; turn SAVE twice to store the current four sounds, or LOAD twice to restore a saved program. Release held keys and stop the transport first. An empty slot reports EMPTY SLOT.
+SAVE → PROGRAM provides eight persistent named program slots. SELECT chooses SLOT 1–8. ALGORITHM chooses a name character; PRESET or KNOB 2 edits it. Turn SAVE twice to store the current four sounds and name, or LOAD twice to restore a saved program. Release held keys and stop the transport first. An empty slot reports EMPTY SLOT.
 
 Programs contain each sound’s engine, preset identity, edited parameters, modulation sequence and HYBRID/FMX/FM6 patch, plus selected sound, tuning configuration and layer mode. The working program autosaves after an idle period when stopped and quiet. Custom-scale definitions persist in settings and are also included in programs and working-program backups. Loading a program restores its custom scales.
 

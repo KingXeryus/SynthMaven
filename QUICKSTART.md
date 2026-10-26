@@ -4,7 +4,7 @@ Back up before installing. Open the [installer](https://kingxeryus.github.io/Syn
 
 On HOME, ALGORITHM cycles engines, PRESET cycles that engine’s presets, and SELECT focuses one of the four loaded sounds. KNOB 1–4 edit that sound. The four sounds form a program.
 
-Tap SAVE for PROGRAM. Choose SLOT 1–4; turn SAVE or LOAD twice to confirm. PROGRAM MODE → LAYER OFF plays only the selected sound; ON plays all four, sharing eight voices. Release notes and stop playback before saving.
+Tap SAVE for PROGRAM. SELECT chooses SLOT 1–8; ALGORITHM chooses a name character and PRESET or KNOB 2 edits it. Turn SAVE or LOAD twice to confirm. GLO → LAYER PITCH → LAYER OFF plays only the selected sound; ON enables the four-sound mix. Hold GLO for two seconds for the same layering toggle. Release notes and stop playback before saving.
 
 Tap SEL to cycle tuning scales. Hold SEL for three seconds, then release, to edit CUSTOM 1–4. SELECT chooses the custom slot; PRESET chooses ROOT. Repeated presses of a key cycle −25/−50/−75/0 cents for that pitch class. SAVE stores it; SEL exits. Except GLO, function layers latch after a three-second hold; tap their button or HOME to exit.
 
