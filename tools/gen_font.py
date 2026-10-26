@@ -92,11 +92,11 @@ def render_bdf(path, scale, first, last):
 def render(ttf, px, scale, pixel, first, last):
     if ttf.endswith(".bdf"):
         return render_bdf(FONTS / ttf, scale, first, last)
-    font = ImageFont.truetype(str(FONTS / ttf), px)
+    font = ImageFont.truetype(str(FONTS / ttf), px, layout_engine=ImageFont.Layout.BASIC)
     if hasattr(font,"get_variation_axes"):
         try:font.set_variation_by_axes([500])  # Melodee Rubik medium, no synthetic bold
         except (OSError, ValueError):pass
-    feats = None if pixel or not features.check("raqm") else ["tnum"]
+    feats = None  # BASIC is deterministic across macOS/Linux, including C1 fallback glyphs
     asc, desc = font.getmetrics()
     top = max(0, font.getbbox("A8|(", features=feats)[1] - 1)
     h = asc + desc - top
