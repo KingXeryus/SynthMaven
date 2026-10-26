@@ -10421,7 +10421,7 @@ async function smRefresh() {
     $("sm-patch-enabled").disabled = $("sm-key-port").disabled = $("sm-save").disabled = false;
     $("sm-status").textContent = "USB MIDI ready. Pedal messages use USB only.";
     smCascade();
-  } catch(e) { $("sm-status").textContent = e.message; for (const id of ["sm-patch-enabled","sm-key-port","sm-save"]) $(id).disabled = true; }
+  } catch(e) { $("sm-status").textContent = e.message; for (const id of ["sm-program-layer","sm-patch-enabled","sm-key-port","sm-save"]) $(id).disabled = true; }
 }
 $("sm-program-layer").addEventListener("change",()=>op(async()=>{
  const r=await rq([108,[+$("sm-program-layer").checked]]);checkRc(r[0]);$("sm-program-layer").checked=!!r[2];
