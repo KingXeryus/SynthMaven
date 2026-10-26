@@ -1,41 +1,37 @@
-SynthMaven software instrument 0.2.0 — validation
-Development Mac: Apple Silicon, macOS; universal arm64 + x86_64 build,
-minimum deployment target macOS 11.0. JUCE 7.0.12 (GPL v3).
+SynthMaven software instrument 0.3.0 — validation
 
-PASS: 23 engines, 449 factory programs, 160 native parameters;
-      147 synthesis parameters per layer; eight layers plus tuning/routing
-      parameters and the Master Tuning toggle exposed to host automation.
-PASS: every factory preset renders finite audio.
-PASS: concurrent and interleaved DSP contexts retain independent state.
-PASS: all enumeration strings across every engine and valid value.
-PASS: all 449 presets yield byte-identical 8192-frame float output to
-      the untransformed original desktop DSP adapter at 44.1 kHz.
-PASS: rates 44100, 48000, 88200, 96000, 192000;
-      buffer sizes 1, 32, 127, 512, 1024.
-PASS: every factory preset through the JUCE processor at 48 kHz.
-PASS: factory program and edited parameter state round trip.
-PASS: all 32 ROM1A DX7 voices import, render and recall in project state.
-PASS: custom editor construction and rendered visual inspection.
-PASS: x86_64 DSP executable through Rosetta.
-PASS: Apple auval, aumu/SyMv/Smvn.
-PASS: pluginval VST3 strictness 5, including editor automation.
+Mac: universal arm64/x86_64 Standalone, VST3 and Audio Unit built. Deployment
+minimum is macOS 11.0 (verified in Mach-O load commands, not just CMake labels).
+Seven CTest checks pass:
+- DSP isolation, factory presets and original DSP render equivalence.
+- Processor render across 5 sample rates and 5 block sizes, all factory sounds,
+  host parameter/program state and editor construction.
+- Eight-layer MIDI routes, controller mapping/Learn, portamento and legacy recall.
+- Scala/custom scales and master tuning.
+- New mixer mute/solo/master, independent faders, octave popup controls, split
+  boundaries, sampler chromatic pitch/tuning, reverse/loop bounds, sample playback
+  across 5 host rates and 3 block sizes, and embedded audio recall after deleting
+  the original imported file.
+- Actual built AU bundle registration/instantiation, 1572 parameters, MIDI input
+  and finite stereo audio render. No existing installed plug-in was overwritten.
+VST3 factory/module metadata generated successfully. No claim is made that every
+DAW/version has been tested interactively.
 
-Final distribution validation logs accompany the DMG.
-Individual DAW session compatibility is not exhaustively tested.
-Developer ID signing / notarization: pending paid Apple Developer Program
-membership. Current account is an Apple Personal Team. Local-Test bundles
-use ad-hoc signatures and do not have Apple notarization tickets.
+The shared editor's mixer and sampler screenshots were rendered and inspected.
+The existing 24 factory banks / 3383 entries remain. Sampler is an additional
+user-audio source, with 16 voices per layer and portable embedded 24-bit WAV.
 
-0.2 ADDITIONAL VALIDATION (2026-10-25)
-PASS: 3383 library entries across 24 populated browser banks, finite render.
-PASS: eight independent engines/layers; gain/pan/transpose/channel recall.
-PASS: CC assignment, MIDI Learn, channel filtering, portamento CC5/65.
-PASS: legacy 0.1 state migration and full layered project recall.
-PASS: Scala ratio/cents/integer-ratio parsing and invalid-input rejection.
-PASS: native DSP audio changes with scale tuning; per-layer isolation.
-PASS: Master Tuning overrides all eight layers; OFF restores layer scales.
-PASS: master toggle MIDI mapping and DAW state persistence.
-PASS: five scale memories, bypass, non-12-tone Scala data and project recall.
-PASS: all five CTest suites; AUval; pluginval strictness 5 for AU and VST3.
-GUI: tuning panel rendered and visually inspected at 1180x880.
-No claim of certification in every DAW or of Intel hardware testing.
+The iOS arm64 device app/AUv3 and arm64 simulator app/AUv3 compile successfully
+with Xcode 27.1 SDKs, minimum iOS 15. The standalone embeds the AUv3 extension.
+The app was launched and its mixer controls inspected in an iPadOS 27 simulator
+in Device Hub. A reproducible single-scene lifecycle patch for pinned JUCE 7 is
+included in prepare.py / patch-ios-scenes.py. Headless simulator RemoteIO audio
+requires the Device Hub audio service to be running.
+Bluetooth usage strings, native pairing panel and standalone dynamic Core MIDI
+input discovery are included. Physical Bluetooth pairing, reconnect, latency,
+iOS hardware audio and AUv3 host routing still require a signed device test.
+
+No valid Developer ID signing identity is installed on the development Mac.
+Mac artifacts are ad-hoc signed Local-Test builds, not notarized. iOS device
+bundles are unsigned and cannot be installed as a normal signed IPA. Signing,
+provisioning and TestFlight/App Store distribution remain separate steps.

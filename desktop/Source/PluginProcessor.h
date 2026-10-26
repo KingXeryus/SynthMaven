@@ -4,6 +4,7 @@
 #include <juce_dsp/juce_dsp.h>
 #include "SynthMavenDSP.h"
 #include "ScaleTuning.h"
+#include "SamplerEngine.h"
 #include <array>
 #include <atomic>
 struct FactorySound { juce::String name,engine,soundType,collection,character,source; int engineIndex=0,catalogIndex=0,baseProgram=0,customKind=0;std::array<uint8_t,128>customPatch{}; std::vector<float> values; };
@@ -29,6 +30,11 @@ public:
  juce::String parameterLabel(int,int layer=-1)const;juce::String parameterText(int,float,int layer=-1)const;
  void savePreset(const juce::File&);bool loadPreset(const juce::File&,juce::String&,int voice=0);
  static juce::StringArray dx7VoiceNames(const juce::File&,juce::String&);juce::String displayName(int layer=-1)const;
+ bool loadSample(int,const juce::File&,juce::String&);void clearSample(int);void activateSample(int);
+ std::shared_ptr<const MavenSample> sampleForLayer(int)const;
+ bool sampleEnabled(int)const;juce::String layerInstrument(int)const;
+ static juce::String sampleId(int,const juce::String&);static const char*const sampleKeys[19];
+ std::array<std::atomic<float>,9> meters{};
  void requestPanic(){panic.store(true);}void beginLearn(const juce::String&);void cancelLearn();void removeMapping(const juce::String&);
  bool assignMapping(int channel,int cc,const juce::String& target);juce::String mappingDescription(const juce::String&)const;
  juce::String learningDescription()const;juce::String controllerStatus()const;void clearMappings();
@@ -44,10 +50,15 @@ private:
   sm_context*dsp=nullptr;std::atomic<int>program{0},pending{-1},generation{0},midiProgram{-1};
   std::vector<std::atomic<float>*> values;std::vector<juce::RangedAudioParameter*> params;std::vector<float>applied;
   std::atomic<int>patchKind{0},patchVersion{0};std::array<std::atomic<uint8_t>,128>patchBytes{};int appliedPatch=-1;
-  std::atomic<float>*enabled=nullptr,*gain=nullptr,*pan=nullptr,*transpose=nullptr,*channel=nullptr,*portamento=nullptr;
+  std::atomic<float>*enabled=nullptr,*gain=nullptr,*pan=nullptr,*transpose=nullptr,*channel=nullptr,*portamento=nullptr,*mute=nullptr,*solo=nullptr,*split=nullptr,*splitPoint=nullptr,*splitSide=nullptr,*sampleOn=nullptr;
+  std::array<std::atomic<float>*,19> sampleValues{};MavenSampler sampler;std::shared_ptr<const MavenSample> sampleData;float blockPeak=0;int activeSample=-1,activeSplit=-1,activePoint=-1,activeSide=-1;
   int tuningTarget=-1;unsigned tuningRevision=~0u;int portamentoIndex=-1;bool wasEnabled=false;int activeTranspose=0,activeChannel=0;float leftGain=0,rightGain=0;
  };
  std::array<Layer,layerCount> layers;
+ std::atomic<float>*masterGain=nullptr,*masterPan=nullptr,*masterMute=nullptr;float masterL=1,masterR=1;bool anySolo=false;
+ juce::CriticalSection sampleLock;std::vector<std::shared_ptr<const MavenSample>>retiredSamples;
+ void publishSample(int,std::shared_ptr<const MavenSample>);static std::shared_ptr<const MavenSample> decodeSample(juce::AudioFormatReader&,const juce::String&,juce::String&);
+
  struct Tuning {std::array<std::atomic<float>,140>scala{};std::array<std::atomic<float>*,12>notes{};std::atomic<float>*root=nullptr,*reference=nullptr,*bypass=nullptr,*scalaOn=nullptr;std::atomic<unsigned>version{0};juce::String source,description;std::array<juce::ValueTree,5>memories;std::array<float,16>cachedValues{};std::array<double,128>cachedOffsets{};unsigned cachedVersion=~0u,revision=0;};
  std::array<Tuning,9>tunings;std::atomic<float>*masterTuning=nullptr;mutable juce::CriticalSection tuningLock;
  juce::ValueTree tuningState(int)const;void restoreTuning(int,const juce::ValueTree&);void applyTuning();

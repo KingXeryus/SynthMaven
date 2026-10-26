@@ -1,20 +1,20 @@
-# SynthMaven software instrument
+# SynthMaven software instrument 0.3
 
-Mac standalone, VST3 and Audio Unit versions of the SynthMaven firmware DSP.
+Mac standalone, VST3, Audio Unit, and iOS app/AUv3 targets of the SynthMaven firmware DSP.
 This open-source software is based on Clipper. This desktop project uses the
 same 23 synthesis engines and the original 449 factory presets, including the FM6
 ROM1A/ARABESC bank and the nine XD HYBRID translations. The latter approximate
 Korg program settings in the existing HYBRID engine; they do not execute Korg
 user oscillator binaries or reproduce analog circuitry exactly.
 
-The original interface has a searchable engine/preset browser, live output
+The shared interface has a searchable engine/preset browser, live output
 scope, engine controls, amplitude/filter controls, four performance macros,
 LFO/envelope and twelve-slot modulation matrix controls, effects, a complete
 parameter page and an on-screen keyboard. Each of eight layers exposes 147 synthesis parameters plus routing and
 portamento controls. Layer scales and a separate master scale expose note
 offsets, root, A4, bypass and Scala enable to host automation. The eight engine parameter meanings follow the selected
-engine, with stable host IDs `p118`–`p125`. Hardware connection, radio, storage
-and device maintenance settings are omitted.
+engine, with stable host IDs `p118`–`p125`. FM1 hardware storage and maintenance settings are omitted. iOS Bluetooth MIDI
+uses Apple’s native pairing panel and Core MIDI.
 
 DX7 32-voice bulk `.syx` files have checksum/7-bit validation and a voice picker.
 Imported voices persist in saved `.synthmaven` presets and DAW project state.
@@ -38,7 +38,7 @@ is evidence of format conformance, not certification of every DAW/version.
 `Local-Test` DMGs are ad-hoc signed and **not notarized**. They are development
 builds. Apple Developer ID signing/notarization requires a paid membership,
 valid signing identities and notary credentials. The development Mac currently
-has only an Apple Personal Team. No system security protections are disabled.
+has no valid Developer ID signing identity available. No system security protections are disabled.
 
 ## Build
 
@@ -124,3 +124,28 @@ Successive keys map to successive degrees, anchored at MIDI 60 plus root.
 `.kbm` mappings are not supported. This is an original interface informed by
 arranger keyboard workflows, including the Yamaha PSR-A5000's scale memories;
 no Yamaha graphics or proprietary tuning code are included.
+
+## 0.3 mixer and wave sampler
+
+[Software user guide](USER_MANUAL.md) · [iOS setup/builds](IOS.md)
+
+LAYERS is a nine-fader mixer: eight independently enabled instruments plus a
+stereo master, with pan above each fader, meters and per-layer mute/solo. Octave
+buttons change each layer independently. LAYER opens a routing popup with Layer
+or Split mode, lower/upper zone, split point and MIDI channel. Faders are
+independent; older layered presets receive compensating master gain on recall.
+
+SAMPLER imports mono/stereo audio up to 30 seconds, maps it chromatically, and
+provides waveform trim, sustain loops/crossfades, reverse, root/fine tuning,
+ADSR, low-pass/resonance, velocity and pitch/filter LFO controls. The sampled
+layer's Effects page provides chorus, 250 ms delay and reverb sends. Audio is
+converted to 44.1 kHz and embedded as 24-bit WAV in preset/host state. This is
+conventional pitch resampling, not independent time-stretch or a full Logic
+Quick Sampler clone. Sampler parameters support MIDI Learn and host automation.
+The existing 24 factory banks / 3383 sounds remain; sampler is a user-audio source.
+
+iOS targets use the same functionality. Narrow layouts have a Library button
+and scrollable editor panels. The iOS standalone automatically opens newly
+available Core MIDI devices after pairing; AUv3 receives MIDI routed by its host.
+Simulator/unsigned device builds do not establish Bluetooth radio performance.
+Signed iOS installation/distribution requires valid Apple provisioning.

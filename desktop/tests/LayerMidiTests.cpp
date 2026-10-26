@@ -21,4 +21,4 @@ int main(){ScopedJuceInitialiser_GUI gui;SynthMavenProcessor p;
  if(play(restored,2)<=0)return 14;restored.prepareToPlay(44100,128);cc(restored,6,22,100);if(std::abs(get(restored,restored.layerId(7,"gain"))-100.f/127.f)>.001)return 15;
  // A 0.1 state remains loadable and resets added layers to disabled.
  ValueTree legacy("SynthMavenState");legacy.setProperty("program",269,nullptr);ValueTree value("PARAM");value.setProperty("id","p96",nullptr);value.setProperty("value",.3f,nullptr);legacy.addChild(value,-1,nullptr);auto xml=legacy.createXml();MemoryBlock old;AudioProcessor::copyXmlToBinary(*xml,old);restored.setStateInformation(old.getData(),(int)old.getSize());if(restored.layerProgram(0)!=269||get(restored,restored.layerId(1,"enabled"))>.5f)return 16;
- puts("PASS: 24 populated banks / 449 presets; eight distinct-engine layers; MIDI channels; CC mapping/Learn; portamento CCs; complete layered recall; legacy preset migration.");return 0;}
+ puts("PASS: 24 populated banks / complete factory catalog; eight distinct-engine layers; MIDI channels; CC mapping/Learn; portamento CCs; complete layered recall; legacy preset migration.");return 0;}

@@ -29,6 +29,7 @@ static Image createNSWindowSnapshot (NSWindow* nsWindow)
     return ImageFileFormat::loadFrom ([png bytes], [png length]);
 }
 '''+s[b:];p.write_text(s)
+subprocess.run([sys.executable,str(ROOT/'desktop/tools/patch-ios-scenes.py'),str(JUCE)],check=True)
 sys.path.insert(0,str(ROOT/'tools'));import build
 build.generate()
 subprocess.run([sys.executable,str(ROOT/'desktop/tools/contextualize.py'),str(ROOT/'build/desktop-generated')],check=True)

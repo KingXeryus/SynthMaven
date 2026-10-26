@@ -1,4 +1,4 @@
-SynthMaven 0.2.0 — macOS Universal
+SynthMaven 0.3.0 — macOS Universal
 
 Open the SynthMaven installer package inside this disk image.
 The installer lets you independently select Standalone, VST3 and Audio Unit.
@@ -75,3 +75,7 @@ the new Oriental voices are original synthesis approximations.
 Legacy VST2 is not included: this project has no licensed VST2 SDK and
 Steinberg no longer grants new VST2 agreements. VST3 is the included VST
 format. Audio Unit is the included format for Logic Pro and GarageBand.
+
+0.3 adds the eight-layer/master mixer, octave/split popup and embedded wave sampler.
+See USER_MANUAL.md in the corresponding source for controls. iOS builds are separate
+from this Mac installer and require Apple signing/provisioning for device install.
