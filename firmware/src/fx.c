@@ -1239,7 +1239,7 @@ static void mix_part1(track_t *t, uint32_t n)
 #if SYNTHMAVEN_SYNTH
         /* Independent half-dB factory trim: preserve boosts above the LEVEL control range. */
         lvl = (int32_t)(((int64_t)LEVEL_Q12[clamp(t->p[P_LEVEL], 0, 127)] *
-                         SM_TRIM_GAIN_Q12[clamp(t->p[P_ED_FX], -64, 63) + 64]) >> 12);
+                         SM_TRIM_GAIN_Q12[clamp(t->p[P_ED_FX]-sm_filter_comp_steps(t), -64, 63) + 64]) >> 12);
         {   /* (1.0) the expression (CC 11): x (cc + 1)^2 / 128^2, 127 unchanged */
             int32_t ex = 128 - part_ctl[ctl_part(t)].exoff;
             lvl = (int32_t)(((int64_t)lvl * ex * ex) >> 14);

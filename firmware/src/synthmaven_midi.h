@@ -24,23 +24,47 @@ static uint8_t sm_key_port = 2;   /* 0 USB, 1 TRS, 2 BOTH */
 static uint8_t sm_bluetooth;
 /* Four pedal actions: patch +/-, bank +/-. Type 0 disables, 1 CC, 2 PC.
  * Channel 0 follows IN CH; 1..16 explicitly selects a pedal channel. */
-static uint8_t sm_pedal[4][4];
+#define SM_ACTIONS 10u
+static const char *const SM_ACTION_NAME[SM_ACTIONS]={"PATCH UP","PATCH DOWN","BANK UP","BANK DOWN","PROGRAM NEXT","PROGRAM PREV","SCENE NEXT","SCENE PREV","SETLIST NEXT","SETLIST PREV"};
+static uint8_t sm_pedal[SM_ACTIONS][4];
+static uint16_t sm_repeat_ms; /* 0 disables suppression; identical accepted events only. */
+static uint32_t sm_repeat_at[SM_ACTIONS];static uint8_t sm_repeat_valid[SM_ACTIONS];
+static volatile uint8_t sm_learn_state,sm_learn_action,sm_candidate[4],sm_last[4],sm_last_match=127,sm_last_result;
+static volatile uint32_t sm_last_at,sm_trigger_at,sm_trigger_count;
+static uint8_t sm_usb_device_seen,sm_usb_midi_seen;
+static uint8_t sm_setlist[32],sm_setlist_len,sm_setlist_pos,sm_setlist_active;
+static uint8_t sm_current_program=255;
+static uint8_t sm_learn_arm(uint32_t action){if(action>=SM_ACTIONS)return 1;sm_learn_action=(uint8_t)action;sm_learn_state=1;return 0;}
+static int sm_map_conflict(const uint8_t *m,uint32_t action){uint32_t i;if(!m[0])return 0;for(i=0;i<SM_ACTIONS;i++){const uint8_t *o=sm_pedal[i];if(i!=action&&o[0]==m[0]&&o[1]==m[1]&&(m[0]==2||o[2]==m[2])&&(!o[3]||!m[3]||o[3]==m[3]))return 1;}return 0;}
+static uint8_t sm_learn_accept(void){if(sm_learn_state!=2)return 1;if(sm_map_conflict((const uint8_t *)sm_candidate,sm_learn_action))return 2;uint32_t i;for(i=0;i<4;i++)sm_pedal[sm_learn_action][i]=sm_candidate[i];sm_learn_state=0;memset(sm_repeat_valid,0,sizeof sm_repeat_valid);return 0;}
+
 static volatile uint32_t sm_action_w, sm_action_r;
 static uint8_t sm_actions[16];
 static int sm_pedal_receive(uint32_t st,uint32_t ch,uint32_t n,uint32_t v,uint32_t port,int accepted)
 {
-    uint32_t i;
-    if(port != 0u) return 0;
-    for(i=0;i<4u;i++) {
+    uint32_t i;int enabled=accepted>=0; /* -1 observes while PATCH MIDI is disabled. */
+    if(port != 0u)return 0;
+    sm_last[0]=(uint8_t)st;sm_last[1]=(uint8_t)(ch+1u);sm_last[2]=(uint8_t)n;sm_last[3]=(uint8_t)v;sm_last_at=fm1_ms;sm_last_match=127;sm_last_result=0;
+    if(sm_learn_state==1 && (st==0xB0u || st==0xC0u)){
+        sm_candidate[0]=st==0xB0u?1:2;sm_candidate[1]=(uint8_t)n;sm_candidate[2]=st==0xB0u?(uint8_t)v:0;sm_candidate[3]=(uint8_t)(ch+1u);sm_learn_state=2;sm_last_result=3;return 1;
+    }
+    if(sm_learn_state==2 && (st==0xB0u || st==0xC0u))return 1; /* candidate cannot trigger an old assignment */
+    for(i=0;i<SM_ACTIONS;i++) {
         const uint8_t *m=sm_pedal[i];
-        if(!m[0] || (m[3] ? ch+1u!=m[3] : !accepted))continue;
+        if(!m[0] || (m[3] ? ch+1u!=m[3] : accepted<=0))continue;
+        if(m[0]==1u && st==0xB0u && n==m[1] && v!=m[2]){sm_repeat_valid[i]=0;continue;} /* release re-arms immediately */
         if(((m[0]==1u && st==0xB0u && v==m[2]) || (m[0]==2u && st==0xC0u)) && n==m[1]) {
-            if(sm_action_w-sm_action_r<16u){sm_actions[sm_action_w%16u]=(uint8_t)i;__asm__ volatile("" ::: "memory");sm_action_w++;}
-            return 1;
+            sm_last_match=(uint8_t)i;
+            if(!enabled){sm_last_result=4;return 0;}
+            if(sm_repeat_ms && sm_repeat_valid[i] && (uint32_t)(fm1_ms-sm_repeat_at[i])<sm_repeat_ms){sm_last_result=2;return 1;}
+            if(sm_action_w-sm_action_r>=16u){sm_last_result=5;return 1;}
+            sm_repeat_at[i]=fm1_ms;sm_repeat_valid[i]=1;sm_last_result=1;sm_trigger_at=fm1_ms;sm_trigger_count++;
+            sm_actions[sm_action_w%16u]=(uint8_t)i;__asm__ volatile("" ::: "memory");sm_action_w++;return 1;
         }
     }
     return 0;
 }
+
 static uint32_t sm_set(uint32_t patch_port, uint32_t key_port, uint32_t bluetooth)
 {
     if (patch_port > 2u || key_port > 2u || bluetooth > 1u) return 1;

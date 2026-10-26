@@ -31,3 +31,9 @@ SEL QNT value 3 (**ALL**) snaps keyboard, incoming USB/TRS MIDI, arp and sequenc
 ## Eight named program slots (protocol 21)
 
 PROJECT addresses slots 0–7. Command 111 reads `[slot]` or stages a name with `[slot, twelve zero-padded printable ASCII bytes]`. Success returns `[0, slot, used, twelve name bytes]`. Staging does not write flash; PROJECT SAVE commits the name with the sound program. PROJECT status 0 is success, 1 busy, 2 invalid, 4 flash error. PBK1 backup objects 2–5 each contain a pair of programs (1+5, 2+6, 3+7, 4+8); format 9 requires protocol 21. Existing object IDs and sample regions remain unchanged.
+
+## Performance assignments
+
+Current firmware supports ten learned actions: Patch Up/Down, Bank Up/Down, Program Next/Previous, Scene Next/Previous and Setlist Next/Previous. Learn captures CC/PC number, value and channel, then requires Accept; it never replaces a map on capture. GLO diagnostics distinguish USB attachment from a MIDI interface and show match/trigger status. Settings in the editor offers the same controls in COMPUTER mode. Direct pedal learning uses the device in PEDAL mode.
+
+Duplicate suppression defaults OFF. Enable 1–500 ms only when a pedal emits duplicates. A CC release re-arms immediately; PC has no release and intentional identical taps within the chosen interval will also be suppressed. Setlists reference saved program slots; scenes recall compact changes within the loaded program. See [release details](release-2.0.md) and [protocol](EDITOR_PROTOCOL.md).

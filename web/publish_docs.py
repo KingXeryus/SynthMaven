@@ -1,5 +1,6 @@
 """Publish readable, version-matched documentation alongside the installer."""
 import html
+import json
 import posixpath
 import re
 from pathlib import Path
@@ -9,7 +10,9 @@ ROOT = Path(__file__).resolve().parents[1]
 PAGES = {
     'docs/USER_MANUAL.md': 'user-manual.html',
     'QUICKSTART.md': 'quick-start.html',
-    'docs/release-1.9.md': 'release-notes.html',
+    'docs/release-'+json.loads((ROOT/'release.json').read_text())['version']+'.md': 'release-notes.html',
+    'docs/release-1.9.md': 'release-1.9.html',
+    'docs/FILTER_CAPABILITIES.md': 'filter-capabilities.html',
     'docs/release-1.8.md': 'release-1.8.html',
     'docs/release-1.7.md': 'release-1.7.html',
     'docs/release-1.6.md': 'release-1.6.html',

@@ -52,6 +52,7 @@ static struct {
 static void usb_host_switch(uint32_t on) { if (!usb.detached) uh.want = on != 0; }
 static uint32_t usb_host_active(void) { return uh.on; }
 static uint32_t usb_host_connected(void) { return uh.run; }
+static uint32_t usb_host_device_present(void) { return uh.on && uh.seen; }
 static uint32_t usb_host_message(void)
 {
     uint32_t msg = uh.msg;

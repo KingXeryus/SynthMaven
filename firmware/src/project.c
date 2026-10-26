@@ -756,7 +756,7 @@ static int program_bank_read(uint32_t bank){
    for(copy=0;copy<2;copy++){if(st_read(st_sector(OBJ_PROJECT0+bank,copy),header,sizeof header))return 0;for(k=0;k<sizeof header;k++)if(header[k]!=255u)return 0;}
    return 1; /* truly erased; a corrupt nonblank pair is never treated as empty */
  }
- if(n==(int)sizeof(program_bank_t) && ((const program_bank_t *)&proj_tmp)->magic==PROGRAM_BANK_MAGIC){memcpy(&program_bank_work,&proj_tmp,sizeof program_bank_work);return program_bank_valid(&program_bank_work,&proj_tmp.pg);}
+ if(n>=4 && (((const program_bank_t *)&proj_tmp)->magic==PROGRAM_BANK_MAGIC || ((const program_bank_t *)&proj_tmp)->magic==0x314B4250u))return program_bank_import(&program_bank_work,&proj_tmp,(uint32_t)n,&proj_tmp.pg);
  if(program_import(&proj_tmp.pg,&proj_tmp,(uint32_t)n))return program_pack(&program_bank_work.slot[0],&proj_tmp.pg,program_names[bank]);
  return 0; /* A legacy groovebox project must be loaded/resaved before adding its paired program. */
 }
@@ -806,7 +806,7 @@ static void project_save(uint32_t slot)
         program_name_focus(slot);program_capture(&proj_tmp.pg);
         if(!program_pack(&program_bank_work.slot[slot/4u],&proj_tmp.pg,(program_editor_name_mask&(1u<<slot))?program_editor_names[slot]:program_name_draft)){program_io_rc=2;ui_message("PROGRAM INVALID");return;}
         if(st_save(OBJ_PROJECT0+(slot&3u),&program_bank_work,sizeof program_bank_work)){program_io_rc=4;ui_message("SAVE ERROR");return;}
-        program_bank_sync(slot&3u);program_editor_name_mask&=(uint8_t)~(1u<<slot);program_draft_slot=255;ui.force=1;ui_message("PROGRAM SAVED");return;
+        sm_current_program=(uint8_t)slot;program_bank_sync(slot&3u);program_editor_name_mask&=(uint8_t)~(1u<<slot);program_draft_slot=255;ui.force=1;ui_message("PROGRAM SAVED");return;
     }
 #endif
     if(slot>=4u){program_io_rc=4;ui_message("FLASH REQUIRED");return;}
@@ -860,16 +860,16 @@ static void project_load(uint32_t slot)
 #if SYNTHMAVEN_SYNTH
     if(flash_ok && slot<8u && program_bank_read(slot&3u)){
         program_bank_sync(slot&3u);
-        if(program_unpack(&proj_tmp.pg,&program_bank_work.slot[slot/4u])){program_apply(&proj_tmp.pg);program_editor_name_mask&=(uint8_t)~(1u<<slot);program_draft_slot=255;song.g[G_SLOT]=(int16_t)(slot+1u);ui_message("PROGRAM LOADED");return;}
-        ui_message("EMPTY SLOT");return;
+        if(program_unpack(&proj_tmp.pg,&program_bank_work.slot[slot/4u])){program_apply(&proj_tmp.pg);sm_current_program=(uint8_t)slot;sm_setlist_active=0;program_editor_name_mask&=(uint8_t)~(1u<<slot);program_draft_slot=255;song.g[G_SLOT]=(int16_t)(slot+1u);ui_message("PROGRAM LOADED");return;}
+        program_io_rc=2;ui_message("EMPTY SLOT");return;
     }
-    if(slot>=4u){ui_message("EMPTY SLOT");return;}
+    if(slot>=4u){program_io_rc=2;ui_message("EMPTY SLOT");return;}
 #endif
     if (flash_ok && !proj_ok(p))
         proj_fetch(slot);
 #endif
 #if SYNTHMAVEN_SYNTH
-    if(program_valid((const program_t *)p)) {program_apply((const program_t *)p);ui_message("PROGRAM LOADED");return;}
+    if(program_valid((const program_t *)p)) {program_apply((const program_t *)p);sm_current_program=(uint8_t)slot;sm_setlist_active=0;ui_message("PROGRAM LOADED");return;}
 #endif
     if (!proj_ok(p)) {
         ui_message("EMPTY SLOT");
@@ -1165,7 +1165,7 @@ static int project_used(uint32_t slot) {
  * there they came back at their defaults, and a SLOOP 2.6 object without them reads as 2.5's) */
 #if SYNTHMAVEN_SYNTH
 #include "custom_scale_store.h"
-#define SET_TAIL_MAX 100u
+#define SET_TAIL_MAX (100u+sizeof(sm_performance_record_t))
 #include "master_tuning_store.h"
 #else
 #define SET_TAIL_MAX 64u
@@ -1181,6 +1181,7 @@ static int settings_write(const persist_t *p)
 #if SYNTHMAVEN_SYNTH
     {custom_scale_record_t r;custom_scale_fill(&r);memcpy(set_tail+CUSTOM_SCALE_OFF,&r,sizeof r);set_tail_n=SET_TAIL_MAX;}
     {master_tuning_record_t r;master_tuning_fill(&r);memcpy(set_tail+88,&r,sizeof r);}
+    {sm_performance_record_t r;sm_performance_fill(&r);memcpy(set_tail+100,&r,sizeof r);}
 #endif
     side_fill(&side_out);
     st_side = &side_out;
@@ -1202,6 +1203,9 @@ static void dsu_boot(void)                          /* the SYN kits from the set
     st_hdr_t h;
     dsu_defaults();
     set_tail_n = 0;
+#if SYNTHMAVEN_SYNTH
+    sm_repeat_ms=0;sm_current_program=255;sm_setlist_active=0;sm_setlist_len=sm_setlist_pos=0;memset(sm_setlist,0,sizeof sm_setlist);memset(sm_pedal+4,0,sizeof sm_pedal-16u);
+#endif
     if (st_current(OBJ_SETTINGS, &h) >= 0 && h.len >= sizeof(persist_t) + sizeof(dsu_bank_t) &&
         h.len <= sizeof(persist_t) + sizeof(dsu_bank_t) + SET_TAIL_MAX &&
         dsu_valid((const dsu_bank_t *)(st_buf + sizeof(persist_t)))) {
@@ -1219,6 +1223,7 @@ static void dsu_boot(void)                          /* the SYN kits from the set
 #endif
  #if SYNTHMAVEN_SYNTH
     if(set_tail_n>=100u){master_tuning_record_t r;memcpy(&r,set_tail+88,sizeof r);master_tuning_take(&r);}
+    if(set_tail_n>=SET_TAIL_MAX){sm_performance_record_t r;memcpy(&r,set_tail+100,sizeof r);sm_performance_take(&r);}
  #endif
     dsu_dirty = 0;
 }
@@ -1321,9 +1326,9 @@ static uint32_t project_restore(uint32_t slot, const void *raw, uint32_t n)
     if (song.playing || transport_req)
         return 3;
 #if SYNTHMAVEN_SYNTH
-    if(slot<4u && n==sizeof(program_bank_t) && ((const program_bank_t *)raw)->magic==PROGRAM_BANK_MAGIC){
-        memcpy(&program_bank_work,raw,n);if(!program_bank_valid(&program_bank_work,&proj_tmp.pg))return 2;
-        if(!flash_ok || st_save(OBJ_PROJECT0+slot,&program_bank_work,sizeof program_bank_work))return 4;
+    if(slot<4u && n>=4 && (((const program_bank_t *)raw)->magic==PROGRAM_BANK_MAGIC || ((const program_bank_t *)raw)->magic==0x314B4250u)){
+        if(!program_bank_import(&program_bank_work,raw,n,&proj_tmp.pg))return 1;
+        if(st_save(OBJ_PROJECT0+slot,&program_bank_work,sizeof program_bank_work))return 1;
         program_bank_sync(slot);program_editor_name_mask&=(uint8_t)~((1u<<slot)|(1u<<(slot+4u)));program_draft_slot=255;return 0;
     }
     if(slot<4u && !n){

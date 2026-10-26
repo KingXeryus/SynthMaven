@@ -660,6 +660,9 @@ static int ed_backup(uint32_t cmd, const uint8_t *a, uint32_t na)   /* no flash:
 #include "editor_fmx.c"                               /* v12 (SynthMaven 0.6): the FMX patches (90..92) */
 #endif
 
+#if SYNTHMAVEN_SYNTH
+#include "editor_performance.c"
+#endif
 static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0 and F7 */
 {
     uint32_t cmd = f[3], i;
@@ -668,6 +671,9 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
     int16_t *vp;
     const param_desc_t *d;
     ed_begin(cmd);
+#if SYNTHMAVEN_SYNTH
+    if(ed_performance(cmd,a,na)){ed_send();return;}
+#endif
     if (ed_backup(cmd, a, na)) {                           /* v6: backup / restore */
         ed_send();
         return;

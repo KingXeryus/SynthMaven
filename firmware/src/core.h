@@ -78,7 +78,8 @@ enum {
     F_SWING,                    /* 0..100: MPC swing, 50 % (straight) .. 75 % */
     F_FILT,                     /* -64..63: the DJ filter, LP <- OFF -> HP */
     F_CDB,                      /* SynthMaven: dB around the middle of the range (the master EQ) */
-    F_SPLIT                     /* SynthMaven: the layer's split, a MIDI note stored + 4 (68 = C4) */
+    F_SPLIT                     /* SynthMaven: the layer's split, a MIDI note stored + 4 (68 = C4) */,
+    F_HALFDB
 };
 
 typedef struct {

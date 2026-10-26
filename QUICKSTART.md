@@ -1,4 +1,4 @@
-# SynthMaven 1.9 — quick start
+# SynthMaven 2.0 — quick start
 
 Back up before installing. Open the [installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) in Chrome or Edge. Connect the FM1 by USB in COMPUTER mode and follow the prompts. For rescue, hold OCT− while powering on.
 
@@ -14,7 +14,7 @@ Set GLO → PATCH MIDI → PROG ON, then configure PATCH UP/DOWN and BANK UP/DOW
 
 Choose USB ROLE → COMPUTER before reconnecting the web editor or installer. The USB port supports one role at a time.
 
-Read the [user manual](docs/USER_MANUAL.md), [release notes](docs/release-1.9.md), and [maqam catalogue](docs/MAQAM_SCALES.md).
+Read the [user manual](docs/USER_MANUAL.md), [release notes](docs/release-2.0.md), and [maqam catalogue](docs/MAQAM_SCALES.md).
 
 Choose **Appearance → Dark / Light / System** in the installer or editor. In the editor’s Sound page, use the instrument tabs and rotary controls; drag an envelope handle to edit its shape. The 537-entry bank contains 536 level-matched audible sounds and USER WT, which stays silent until you upload a wavetable.
 
@@ -36,3 +36,9 @@ Tap SEL to open the scale browser without changing the scale. SELECT cycles the 
 EDIT now has four standard pages: EDIT 1, EDIT 2, VOICE and CHARACTER. FMX keeps its operator/routing pages; OP ENV is under ENV. Macros, morph, randomize, undo and FMX STORE remain accessible in the editor. Layer ON/OFF stays in GLO and on its two-second hold.
 
 Hold EDIT for two seconds to preview the four-sound mixer. KNOBS 1–4 control the volumes of sounds 1–4. SELECT cycles the selected part; ALGORITHM sets that part’s split point from A1 to A6 (shown as note and octave), and PRESET/parameter controls its pan. Editing a split point enables the selected part’s existing Lower/Upper zone. GLO → LAYER ROUTE or the editor can choose the zone or restore full-keyboard layering. At three seconds the mixer latches and stays open after release. Tap EDIT or HOME to exit; save a program to keep the mix. The keyboard still plays and EDIT no longer erases sequence notes. Short presses never show a held-layer screen. HOME opens its menu after three seconds.
+
+## Performance controls
+
+In GLO → PEDAL LEARN choose an action, arm Learn, press a pedal, then Accept the displayed message. Duplicate suppression defaults OFF; CC release re-arms immediately. Direct pedal learning uses the device in PEDAL mode; return to COMPUTER for the editor, audio, backup or installation. GLO SCENES captures/recalls four compact scenes within the current program; save the program afterward. GLO SETLIST orders up to 32 references to the eight saved programs. The editor supports scene Capture/Recall/Clear and setlist reordering. EDIT FILTER groups only controls supported by the engine; optional compensation is estimated attenuation and defaults OFF.
+
+Eight voices are shared across all four parts. A four-part layered note uses four voices, leaving two such notes before release tails or unison. A sound preset, four-part program and editor library entry are separate kinds of storage. See the [user manual](docs/USER_MANUAL.md) for details.

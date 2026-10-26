@@ -10,6 +10,15 @@ outputs={
  'docs/USER_MANUAL.md':(ROOT/'docs/USER_MANUAL.template.md').read_text()
 }
 for k in m:outputs['docs/USER_MANUAL.md']=outputs['docs/USER_MANUAL.md'].replace('{{'+k+'}}',str(m[k]))
+# Current public labels are derived from metadata; historical release notes stay unchanged.
+e=(ROOT/'web/editor.html').read_text()
+e=re.sub(r'const SM_RELEASE = .*?;', 'const SM_RELEASE = '+json.dumps(m)+';',e,count=1)
+e=re.sub(r'SynthMaven \d+\.\d+ Editor','SynthMaven '+m['version']+' Editor',e)
+e=re.sub(r'Version \d+\.\d+ ·','Version '+m['version']+' ·',e)
+e=re.sub(r'FELUCCA SYNTHMAVEN \d+\.\d+ \(MOCK\)(?=" : opt.synthmaven)', 'FELUCCA SYNTHMAVEN '+m['version']+' (MOCK)',e)
+e=re.sub(r'const SM_FILTER_MAP = .*?(?=/\* Compact performance protocol)' , 'const SM_FILTER_MAP = '+json.dumps(json.loads((ROOT/'assets/filter-capabilities.json').read_text()))+';\n',e,count=1,flags=re.S)
+outputs['web/editor.html']=e
+outputs['web/index_pkg.html']=re.sub(r'SynthMaven \d+\.\d+', 'SynthMaven '+m['version'],(ROOT/'web/index_pkg.html').read_text())
 for p,s in outputs.items():
  path=ROOT/p
  if args.check:assert path.exists() and path.read_text()==s,f'{p} stale: run python3 tools/gen_release_meta.py'

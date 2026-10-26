@@ -1,5 +1,5 @@
 {
-  "version": "1.9",
-  "protocol": 21,
+  "version": "2.0",
+  "protocol": 22,
   "shared_voices": 8
 }

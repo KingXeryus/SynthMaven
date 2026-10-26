@@ -31,6 +31,10 @@ int main(void){
  master_tuning_bypass=0;memset(&mt,0,sizeof mt);check(st_load(OBJ_SETTINGS,&mt,sizeof mt)==sizeof mt&&!master_tuning_take(&mt)&&master_tuning_bypass==5,"master tuning switches restore after a settings reload");
  mt.crc^=1;master_tuning_bypass=0;check(master_tuning_take(&mt)&&!master_tuning_bypass,"corrupt switch settings retain default enabled tuning");
  memset(&mt,255,sizeof mt);check(master_tuning_take(&mt)&&!master_tuning_bypass,"erased legacy settings retain default enabled tuning");
+ program_v2_t v2;memcpy(&v2,&a,sizeof v2-4);v2.magic=0x32475250u;v2.size=sizeof v2;v2.sum=program_hash(&v2,sizeof v2-4);check(program_import(&b,&v2,sizeof v2)&&!b.scenes[0].valid&&b.sound[1].p[P_LEVEL]==80,"real PRG2 migrates sounds and empty scenes");
+ program_bank_v1_t oldbank;memset(&oldbank,0,sizeof oldbank);oldbank.magic=0x314B4250u;
+ program_bank_t migration;memset(&migration,0,sizeof migration);migration.magic=PROGRAM_BANK_MAGIC;check(program_pack(&migration.slot[0],&a,"OLD PROGRAM"),"prepare named legacy fixture");memcpy(&oldbank.slot[0],&migration.slot[0],sizeof oldbank.slot[0]);
+ check(program_bank_import(&migration,&oldbank,sizeof oldbank,&b)&&program_unpack(&b,&migration.slot[0])&&!b.scenes[0].valid&&b.sound[1].p[P_LEVEL]==80,"real PBK1 named pair migrates without touching sample regions");
  program_bank_t bank,loaded;memset(&bank,0,sizeof bank);bank.magic=PROGRAM_BANK_MAGIC;
  for(uint32_t e=0;e<NENGINES;e++)for(uint32_t k=0;k<8;k++){const param_desc_t *d=&ENGINES[e]->edit[k];check(d->min>=-128&&d->max<=127,"engine parameter range fits lossless packed program storage");}
  for(uint32_t k=0;k<P_E0;k++)check(TP[k].min>=-128&&TP[k].max<=127,"shared parameter range fits lossless packed program storage");

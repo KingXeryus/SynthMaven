@@ -1,0 +1,232 @@
+[
+  {
+    "engine": 0,
+    "name": "ANALOG",
+    "architecture": "multi",
+    "cutoff": "P_E4",
+    "resonance": "P_E5",
+    "envelope": "P_ED_FLT",
+    "drive": "P_E6",
+    "notes": "Selectable native model"
+  },
+  {
+    "engine": 1,
+    "name": "DIGITAL",
+    "architecture": "none",
+    "cutoff": "-1",
+    "resonance": "-1",
+    "envelope": "-1",
+    "drive": "-1",
+    "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"
+  },
+  {
+    "engine": 2,
+    "name": "PHASE",
+    "architecture": "none",
+    "cutoff": "-1",
+    "resonance": "-1",
+    "envelope": "-1",
+    "drive": "-1",
+    "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"
+  },
+  {
+    "engine": 3,
+    "name": "LOFI",
+    "architecture": "ONE POLE",
+    "cutoff": "P_E7",
+    "resonance": "-1",
+    "envelope": "P_ED_FLT",
+    "drive": "-1",
+    "notes": "Fixed architecture; unavailable controls are disabled"
+  },
+  {
+    "engine": 4,
+    "name": "SAMPLE",
+    "architecture": "ONE POLE",
+    "cutoff": "P_E4",
+    "resonance": "-1",
+    "envelope": "P_ED_FLT",
+    "drive": "-1",
+    "notes": "Fixed architecture; unavailable controls are disabled"
+  },
+  {
+    "engine": 5,
+    "name": "VOICE",
+    "architecture": "none",
+    "cutoff": "-1",
+    "resonance": "-1",
+    "envelope": "-1",
+    "drive": "-1",
+    "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"
+  },
+  {
+    "engine": 6,
+    "name": "TRIO",
+    "architecture": "TRIO",
+    "cutoff": "P_E5",
+    "resonance": "P_E6",
+    "envelope": "P_ED_FLT",
+    "drive": "-1",
+    "notes": "Selectable native model"
+  },
+  {
+    "engine": 7,
+    "name": "WHEEL",
+    "architecture": "none",
+    "cutoff": "-1",
+    "resonance": "-1",
+    "envelope": "-1",
+    "drive": "-1",
+    "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"
+  },
+  {
+    "engine": 8,
+    "name": "GRAIN",
+    "architecture": "ONE POLE",
+    "cutoff": "P_E7",
+    "resonance": "-1",
+    "envelope": "P_ED_FLT",
+    "drive": "-1",
+    "notes": "Fixed architecture; unavailable controls are disabled"
+  },
+  {
+    "engine": 9,
+    "name": "FM6",
+    "architecture": "none",
+    "cutoff": "-1",
+    "resonance": "-1",
+    "envelope": "-1",
+    "drive": "-1",
+    "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"
+  },
+  {
+    "engine": 10,
+    "name": "PHYS",
+    "architecture": "none",
+    "cutoff": "-1",
+    "resonance": "-1",
+    "envelope": "-1",
+    "drive": "-1",
+    "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"
+  },
+  {
+    "engine": 11,
+    "name": "NOISE",
+    "architecture": "SVF",
+    "cutoff": "P_E2",
+    "resonance": "P_E3",
+    "envelope": "P_ED_FLT",
+    "drive": "-1",
+    "notes": "Fixed architecture; unavailable controls are disabled"
+  },
+  {
+    "engine": 12,
+    "name": "HYBRID",
+    "architecture": "HYBRID",
+    "cutoff": "P_E0",
+    "resonance": "P_E1",
+    "envelope": "P_E2",
+    "drive": "-1",
+    "notes": "HYBRID filter 1 base controls; filter 2 and serial/parallel/split architecture remain in editor"
+  },
+  {
+    "engine": 13,
+    "name": "WAVE",
+    "architecture": "multi",
+    "cutoff": "P_E4",
+    "resonance": "P_E5",
+    "envelope": "P_ED_FLT",
+    "drive": "P_E6",
+    "notes": "Selectable native model"
+  },
+  {
+    "engine": 14,
+    "name": "ACID",
+    "architecture": "LADDER",
+    "cutoff": "P_E1",
+    "resonance": "P_E2",
+    "envelope": "P_E3",
+    "drive": "P_E6",
+    "notes": "Fixed architecture; unavailable controls are disabled"
+  },
+  {
+    "engine": 15,
+    "name": "STRINGS",
+    "architecture": "SVF",
+    "cutoff": "P_E4",
+    "resonance": "P_E7",
+    "envelope": "P_ED_FLT",
+    "drive": "-1",
+    "notes": "Fixed architecture; unavailable controls are disabled"
+  },
+  {
+    "engine": 16,
+    "name": "MACRO",
+    "architecture": "LPG",
+    "cutoff": "P_E4",
+    "resonance": "-1",
+    "envelope": "P_ED_FLT",
+    "drive": "-1",
+    "notes": "Fixed architecture; unavailable controls are disabled"
+  },
+  {
+    "engine": 17,
+    "name": "VPS",
+    "architecture": "SVF",
+    "cutoff": "P_E4",
+    "resonance": "P_E5",
+    "envelope": "P_ED_FLT",
+    "drive": "-1",
+    "notes": "Fixed architecture; unavailable controls are disabled"
+  },
+  {
+    "engine": 18,
+    "name": "TERRAIN",
+    "architecture": "SVF",
+    "cutoff": "P_E6",
+    "resonance": "P_E7",
+    "envelope": "P_ED_FLT",
+    "drive": "-1",
+    "notes": "Fixed architecture; unavailable controls are disabled"
+  },
+  {
+    "engine": 19,
+    "name": "FMX",
+    "architecture": "none",
+    "cutoff": "-1",
+    "resonance": "-1",
+    "envelope": "-1",
+    "drive": "-1",
+    "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"
+  },
+  {
+    "engine": 20,
+    "name": "WSEQ",
+    "architecture": "SVF",
+    "cutoff": "P_E6",
+    "resonance": "P_E7",
+    "envelope": "P_ED_FLT",
+    "drive": "-1",
+    "notes": "Fixed architecture; unavailable controls are disabled"
+  },
+  {
+    "engine": 21,
+    "name": "JUNO",
+    "architecture": "LADDER",
+    "cutoff": "P_E5",
+    "resonance": "P_E6",
+    "envelope": "P_ED_FLT",
+    "drive": "-1",
+    "notes": "Fixed architecture; unavailable controls are disabled"
+  },
+  {
+    "engine": 22,
+    "name": "VECTOR",
+    "architecture": "multi",
+    "cutoff": "P_E7",
+    "resonance": "-1",
+    "envelope": "P_ED_FLT",
+    "drive": "-1",
+    "notes": "Selectable native model"
+  }
+]

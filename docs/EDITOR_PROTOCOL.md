@@ -1,0 +1,14 @@
+
+## Protocol 22 performance additions
+
+112 PEDAL: `[0]` status, `[1,action]` Learn, `[2]` Accept, `[3]` Cancel, `[4,action]` mapping read, `[4,action,type,number,value,channel]` write, `[5,msLo7,msHi7]` repeat 0–500 ms, `[6,role]` role 0 COMPUTER/1 PEDAL. Actions 0–9: patch up/down, bank up/down, program next/prev, scene next/prev, setlist next/prev. Type 0 disabled/1 CC/2 PC; channel 0 follows input or 1–16 explicit. Mapping reply `[rc,action,type,number,value,channel]`. Status `[rc,role,deviceDetected,midiInterfaceDetected,statusNibble,channel,number,value,matchedActionOr127,result,learnState,learnAction,candidateType,candidateNumber,candidateValue,candidateChannel,repeatLo7,repeatHi7,triggerCountLo7,triggerCountHi7,actionRc,pendingProgramOr127]`. Result 0 unmatched/1 triggered/2 duplicate/3 learning/4 patch disabled/5 queue full. Learn state 0 idle/1 waiting/2 captured. Accept rc2 indicates conflict. Changing to PEDAL removes the computer interface; return via device GLO → USB ROLE.
+
+113 SCENE: `[0]` returns `[rc,validMask,currentOr127]`; `[1,slot]` capture; `[2,slot]` recall; `[3,slot]` clear; `[4,slot]` raw get; `[5,slot,pack7(raw48)]` raw put. Other replies `[rc,slot]`; get appends packed raw48. Slot 0–3. Raw bytes: valid, tuning system, root, signed A4 offset, master-bypass mask, compensation mask, two reserved zeros; then four ten-byte parts: level,mute,dist,chor,dly,rev,macro1..4. Signed macro values are encoded relative to their native minima. Capture/put is working state until program save.
+
+114 SETLIST: `[0]` read; `[1,length,programRefs...]` replace (0–32 entries, slots 0–7); `[2,direction]` next0/prev1; `[3,entry]` load. Reply `[rc,length,positionOr127,programRefs...]`. References are validated before replacing the list. Program loads are deferred until transport and voices are quiet, not performed inside the MIDI parser.
+
+115 FILTER CAPS: empty/current or `[engine]`, reply `[rc,engine,kind,cutParamPlus1,resParamPlus1,envParamPlus1,driveParamPlus1,architectureString]`. Zero param means unavailable. Kind 0 none/1 fixed/2 multi/3 HYBRID/4 TRIO.
+
+116 FILTER: `[0]` read; `[1,field,valueLo14,valueHi14]` native descriptor write; `[2,template]` template 0–3 (velocity brightness, pressure vibrato, wheel vibrato, envelope swell). Reply `[rc,engine,sevenDescriptors...]`. Fields model/cutoff/resonance/envelope/drive/compensation/trim. Each descriptor: signed14 value,min,max (offset8192), format byte, zero-terminated label, formatted value, unit, nameCount, zero-terminated enum names. Equal min/max means read-only. Native ranges/units are authoritative.
+
+PRG3 (`0x33475250`) and PBK2 (`0x324b4250`) add four 48-byte scenes per program. Backup format10 requires protocol22; PRG1/2 and PBK1 remain importable. Global PRF1 settings append duplicate interval, setlist and six new action maps without changing existing records or flash sectors. See release metadata for current protocol identity.

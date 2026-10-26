@@ -23,15 +23,16 @@ enum { X_LYMODE, X_LYSOUND, X_LYSPLIT, X_LYLEVEL, X_LYOCT, X_LYPAN, X_LYFILT, X_
        X_MIN, X_MOUT,                                  /* 1.0: GLO > MIDI, the instrument's channels (seq.c midi_in_ch) */
        X_MBEND, X_MLOCAL, X_MPROG, X_MCCO,             /* 1.0: the bend range (voice.c midi_bend), LOCAL, PROG, CC OUT */
        X_MBRTH,                                        /* 1.0: EWI (seq.c midi_breath) */
-       X_SMPORT, X_SMKEY, X_SMBT, X_SMPAIR, X_SMDEV, X_SMCON, X_PTYPE, X_PNUM, X_PVAL, X_PCH, X_USBROLE, X_PGLAYER, X_PGENABLE, X_PGSPLIT, X_PGSIDE, X_PGPOINT, X_PGLEVEL, X_PGPAN, X_PGMUTE, X_PGSOLO, X_PGTRANS, X_MTUNE, X_COUNT };
+       X_SMPORT, X_SMKEY, X_SMBT, X_SMPAIR, X_SMDEV, X_SMCON, X_PTYPE, X_PNUM, X_PVAL, X_PCH, X_USBROLE, X_PGLAYER, X_PGENABLE, X_PGSPLIT, X_PGSIDE, X_PGPOINT, X_PGLEVEL, X_PGPAN, X_PGMUTE, X_PGSOLO, X_PGTRANS, X_MTUNE, X_PEDACT, X_LEARN, X_ACCEPT, X_REPEAT, X_SCENE, X_SCAP, X_SLOAD, X_LISTPOS, X_LISTSLOT, X_LISTLEN, X_LISTGO, X_FMODEL, X_FCUT, X_FRES, X_FENV, X_FDRIVE, X_FCOMP, X_FTRIM, X_TEMPLATE, X_APPLY, X_COUNT };
 static void mseq_fill(struct track *t, uint32_t l, uint32_t f);
 static const char *const N_QFILL[] = {"--", "RAMP+", "RAMP-", "TRI", "SINE", "SQR", "RND", "FLAT", "INVRT", "SHIFT"};
 enum { QF_NONE, QF_UP, QF_DOWN, QF_TRI, QF_SINE, QF_SQR, QF_RND, QF_FLAT, QF_INV, QF_SHIFT, QF_N };
 static const char *const N_RNDWHAT[] = {"EDIT", "+ENV", "ALL", "ENV", "MOD", "FX", "OPS"};   /* (0.7: one section, as the
                                                         * Hydrasynth's; OPS: FMX's operators, opsix style) */
 static const char *const N_OCTS[] = {"-2", "-1", "0", "+1", "+2"};
+static const char *const N_MOD_TEMPLATE[]={"VEL BRIGHT","PRESS VIB","WHEEL VIB","ENV SWELL"};
 static int16_t xv[X_COUNT] = {[X_RNDAMT] = 40, [X_RNDWHAT] = 1, [X_MSLOT] = 1, [X_FOP] = 1, [X_FTO] = 1, [X_FFROM] = 2,
-                              [X_FSLOT] = 1, [X_QLANE] = 1, [X_QSTEP] = 1};
+                              [X_SCENE]=1,[X_LISTPOS]=1,[X_FSLOT] = 1, [X_QLANE] = 1, [X_QSTEP] = 1};
 static const char *const N_FRATIO[32] = {"0.5", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13",
                                          "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26",
                                          "27", "28", "29", "30", "31"};
@@ -128,7 +129,14 @@ static const param_desc_t XD[X_COUNT] = {
     [X_FSTORE] = PE("STORE", N_GO, 0),
     [X_HPOS] = PD("UNDO", F_INT, -16, 0, 0),
     [X_HCMP] = PE("CMP", N_CMP, 0),
+    [X_PEDACT]={"ACTION",F_ENUM,0,SM_ACTIONS-1,0,SM_ACTION_NAME,0},
+    [X_LEARN]=PD("LEARN",F_ONOFF,0,1,0),[X_ACCEPT]=PD("ACCEPT",F_INT,0,1,0),[X_REPEAT]=PD("DUP ms",F_INT,0,500,0),
+    [X_SCENE]=PD("SCENE",F_INT,1,4,1),[X_SCAP]=PD("CAPTURE",F_INT,0,1,0),[X_SLOAD]=PD("RECALL",F_INT,0,1,0),
+    [X_LISTPOS]=PD("ENTRY",F_INT,1,32,1),[X_LISTSLOT]=PD("PROGRAM",F_INT,1,8,1),[X_LISTLEN]=PD("LENGTH",F_INT,0,32,0),[X_LISTGO]=PD("LOAD",F_INT,0,1,0),
+    [X_TEMPLATE]={"MOD",F_ENUM,0,3,0,N_MOD_TEMPLATE,0},[X_APPLY]=PD("APPLY",F_INT,0,1,0),
 };
+
+#include "performance_ui.c"
 
 /* ---- a sound (engine + every parameter) as a snapshot */
 typedef struct {
@@ -605,7 +613,13 @@ static void layer_swap(void)
 static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
 {
     track_t *l = &trk[1];
+    if(id>=X_FMODEL && id<=X_FTRIM)return sm_filter_desc(id-X_FMODEL,valp);
     switch (id) {
+    case X_LEARN:xv[id]=sm_learn_state!=0;*valp=&xv[id];break;
+    case X_ACCEPT:case X_SCAP:case X_SLOAD:case X_LISTGO:case X_APPLY:xv[id]=0;*valp=&xv[id];break;
+    case X_REPEAT:xv[id]=sm_repeat_ms;*valp=&xv[id];break;
+    case X_LISTSLOT:xv[id]=sm_setlist[(xv[X_LISTPOS]-1u)%32u]+1u;*valp=&xv[id];break;
+    case X_LISTLEN:xv[id]=sm_setlist_len;*valp=&xv[id];break;
     case X_LYMODE: *valp = &l->p[P_LYMODE]; break;
     case X_HPOS: {                                    /* 0.7: the place in the history, 0 the newest */
         static param_desc_t hd = {"UNDO", F_INT, 0, 0, 0, 0, 0};
@@ -654,7 +668,7 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
     }
     case X_PTYPE: case X_PNUM: case X_PVAL: case X_PCH: {
         const char *title=cur_page()->title;
-        uint32_t action=str_eq(title,"PATCH UP")?0u:str_eq(title,"PATCH DOWN")?1u:str_eq(title,"BANK UP")?2u:3u;
+        uint32_t action=str_eq(title,"PEDAL MAP")?(uint32_t)xv[X_PEDACT]:str_eq(title,"PATCH UP")?0u:str_eq(title,"PATCH DOWN")?1u:str_eq(title,"BANK UP")?2u:3u;
         xv[id]=sm_pedal[action][id-X_PTYPE]; *valp=&xv[id]; break;
     }
     case X_SMBT: xv[X_SMBT] = sm_bluetooth; *valp = &xv[X_SMBT]; break;
@@ -743,7 +757,18 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
 /* ui_input.c: a value of the synth's pages was turned to *vp */
 static void syn_changed(uint32_t id, int16_t *vp)
 {
+    if(id>=X_FMODEL && id<=X_FTRIM){sm_filter_changed(id-X_FMODEL,*vp);ui.force=1;return;}
     switch (id) {
+    case X_LEARN:if(*vp)sm_learn_arm((uint32_t)xv[X_PEDACT]);else sm_learn_state=0;ui.force=1;break;
+    case X_ACCEPT:if(*vp){uint32_t rc=sm_learn_accept();if(!rc){settings_later=1;ui_message("PEDAL ASSIGNMENT SAVED");}else ui_message(rc==2?"MESSAGE ALREADY ASSIGNED":"LEARN A MESSAGE FIRST");}*vp=0;break;
+    case X_REPEAT:sm_repeat_ms=(uint16_t)*vp;memset(sm_repeat_valid,0,sizeof sm_repeat_valid);settings_later=1;break;
+    case X_PEDACT:sm_learn_state=0;break;
+    case X_SCAP:if(*vp){sm_scene_capture(xv[X_SCENE]-1u);ui_message("SCENE CAPTURED; SAVE");}*vp=0;break;
+    case X_SLOAD:if(*vp)ui_message(sm_scene_apply(xv[X_SCENE]-1u)?"EMPTY SCENE":"SCENE RECALLED");*vp=0;break;
+    case X_LISTLEN:sm_setlist_active=0;sm_setlist_len=(uint8_t)*vp;if(sm_setlist_pos>=sm_setlist_len)sm_setlist_pos=0;settings_later=1;break;
+    case X_LISTSLOT:sm_setlist_active=0;sm_setlist[(xv[X_LISTPOS]-1u)%32u]=(uint8_t)(*vp-1);if(sm_setlist_len<xv[X_LISTPOS])sm_setlist_len=(uint8_t)xv[X_LISTPOS];settings_later=1;break;
+    case X_LISTGO:if(*vp)sm_program_request(sm_setlist[(xv[X_LISTPOS]-1u)%32u],(uint32_t)xv[X_LISTPOS]-1u);*vp=0;break;
+    case X_APPLY:if(*vp)ui_message(sm_mod_template((uint32_t)xv[X_TEMPLATE])?"TEMPLATE UNAVAILABLE":"MOD TEMPLATE APPLIED");*vp=0;break;
     case X_LYSOUND:
         layer_load((uint32_t)*vp);
         break;
@@ -820,8 +845,8 @@ static void syn_changed(uint32_t id, int16_t *vp)
         break;
     case X_PTYPE: case X_PNUM: case X_PVAL: case X_PCH: {
         const char *title=cur_page()->title;
-        uint32_t action=str_eq(title,"PATCH UP")?0u:str_eq(title,"PATCH DOWN")?1u:str_eq(title,"BANK UP")?2u:3u;
-        sm_pedal[action][id-X_PTYPE]=(uint8_t)*vp; settings_later=1; break;
+        uint32_t action=str_eq(title,"PEDAL MAP")?(uint32_t)xv[X_PEDACT]:str_eq(title,"PATCH UP")?0u:str_eq(title,"PATCH DOWN")?1u:str_eq(title,"BANK UP")?2u:3u;
+        sm_pedal[action][id-X_PTYPE]=(uint8_t)*vp;sm_repeat_valid[action]=0; settings_later=1; break;
     }
     case X_PGLAYER: program_layer_set((uint32_t)*vp);break;
     case X_PGENABLE: case X_PGSPLIT: case X_PGSIDE: case X_PGPOINT: case X_PGTRANS: {
@@ -987,10 +1012,12 @@ static void syn_changed(uint32_t id, int16_t *vp)
 static void syn_tick(void)
 {
     hist_poll();                                      /* (0.7) the sound's history */
-    while(sm_action_r!=sm_action_w) {
+    sm_performance_tick();
+    while(sm_action_r!=sm_action_w && sm_pending_program==255) {
         uint32_t a=sm_actions[sm_action_r%16u];RING_PUBLISH();sm_action_r++;
         if(a<2u)home_preset_step(a? -1:1);
-        else home_engine_step(a==2u?1:-1);
+        else if(a<4u)home_engine_step(a==2u?1:-1);
+        else {sm_action_rc=(uint8_t)sm_performance_action(a);if(sm_action_rc==1)ui_message("ACTION EMPTY / INVALID");}
     }
     int16_t r = syn_morph_req;
     uint32_t pc = midi_pc_req, total, b[FAV_N];

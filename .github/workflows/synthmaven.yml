@@ -46,11 +46,11 @@ jobs:
         if: steps.deps.outcome == 'success'
         continue-on-error: true
         run: |
-          JIELI_TOOLCHAIN="$RUNNER_TEMP/jieli/toolchain" AC79_SDK="$RUNNER_TEMP/ac79" sh build.sh --release 1.9
-          python3 tools/make_synthmaven_site.py --package build/felucca-1.9.fwsc
+          JIELI_TOOLCHAIN="$RUNNER_TEMP/jieli/toolchain" AC79_SDK="$RUNNER_TEMP/ac79" sh build.sh --release "$(python3 -c 'import json; print(json.load(open("release.json"))["version"])')"
+          python3 tools/make_synthmaven_site.py --package "build/felucca-$(python3 -c 'import json; print(json.load(open("release.json"))["version"])').fwsc"
       - name: Report target build status
         run: |
-          if [ ! -f build/felucca-1.9.fwsc ]; then
+          if [ ! -f build/felucca-$(python3 -c 'import json; print(json.load(open("release.json"))["version"])').fwsc ]; then
             echo 'Target firmware not built; deployment is blocked.' >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi

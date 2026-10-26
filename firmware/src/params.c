@@ -334,6 +334,7 @@ static void param_format(const param_desc_t *d, int32_t v, char *val, const char
 {
     *unit = "";
     switch (d->fmt) {
+    case F_HALFDB: fmt_fix(val,v*5,1);*unit="dB";break;
     case F_PCT:                                       /* of the range: 0 .. 100 % */
         fmt_int(val, d->max > 0 ? (v * 100 + d->max / 2) / d->max : v);
         *unit = "%";
@@ -487,11 +488,14 @@ static void param_format(const param_desc_t *d, int32_t v, char *val, const char
 }
 
 /* ------------------------------------------------------------ pages --- */
+#if SYNTHMAVEN_SYNTH
+#include "filter_caps.h"
+#endif
 enum { FAM_HOME, FAM_ENV, FAM_LFO, FAM_FX, FAM_SCL, FAM_EDIT, FAM_GLO, FAM_SAVE, FAM_ARP, FAM_SEQ, FAM_TRK,
        FAM_COUNT };
 enum { SC_TRACK, SC_GLOBAL, SC_ENGINE, SC_STEP, SC_TRK, SC_SONG, SC_DRUM, SC_SYN };   /* SC_SYN: ui_synth.c */
 enum { GR_NONE, GR_ADSR, GR_LFO, GR_STEPS, GR_ARP, GR_SCALE, GR_FX, GR_ROLL, GR_BROWSE, GR_SLOTS, GR_USER, GR_TRK,
-       GR_SLCR, GR_LAYER, GR_MORPH, GR_MATRIX, GR_FMX, GR_HIST, GR_MSEQ };
+       GR_SLCR, GR_LAYER, GR_MORPH, GR_MATRIX, GR_FMX, GR_HIST, GR_MSEQ, GR_PEDAL, GR_SCENE, GR_SETLIST, GR_FILTER };
 
 typedef struct {
     const char *title;
@@ -510,6 +514,7 @@ static const page_t PAGES[] = {
     {"LFO", FAM_LFO, SC_TRACK, GR_LFO, {P_LRATE, P_LWAVE, P_LPHASE, P_LFADE}},
     {"LFO DEST", FAM_LFO, SC_TRACK, GR_NONE, {P_LD_PIT, P_LD_FLT, P_LD_SHP, P_LD_AMP}},
 #if SYNTHMAVEN_SYNTH                                                        /* (velocity, mod wheel, aftertouch) */
+    {"MOD PRESET", FAM_LFO, SC_SYN, GR_NONE, {97,98,0xFF,0xFF}},
     {"MOD", FAM_LFO, SC_TRACK, GR_NONE, {P_VELF, P_MWDST, P_ATDST, 0xFF}},
     {"LFO 2", FAM_LFO, SC_TRACK, GR_NONE, {P_L2RATE, P_L2WAVE, P_L2MODE, 0xFF}},
     {"LFO 3", FAM_LFO, SC_TRACK, GR_NONE, {P_L3RATE, P_L3WAVE, P_L3MODE, 0xFF}},   /* (1.0) */
@@ -519,7 +524,7 @@ static const page_t PAGES[] = {
 #endif
     {"FX", FAM_FX, SC_TRACK, GR_FX, {P_DIST, P_CHOR, P_DLY, P_REV}},
 #if SYNTHMAVEN_SYNTH                                                        /* (the sound's filter model too) */
-    {"FILTER", FAM_FX, SC_TRACK, GR_NONE, {P_TFLT, P_FMODEL, 0xFF, 0xFF}},
+    {"PART FILTER", FAM_FX, SC_TRACK, GR_NONE, {P_TFLT, 0xFF, 0xFF, 0xFF}},
     {"INSERT", FAM_FX, SC_TRACK, GR_NONE, {P_ITYPE, P_IA, P_IB, P_IC}},   /* 0.6: the sound's INSERT (fx.c), */
     {"INSERT 2", FAM_FX, SC_TRACK, GR_NONE, {P_IMIX, 0xFF, 0xFF, 0xFF}},  /* .. its dry / wet */
 #else
@@ -541,6 +546,10 @@ static const page_t PAGES[] = {
 #endif
     {"SEL", FAM_SCL, SC_TRACK, GR_SCALE, {P_ROOT, P_SCALE, P_QUANT, P_CHORD}},
     {"SEL 2", FAM_SCL, SC_TRACK, GR_SCALE, {P_TRANS, P_STRUM, P_VLEAD, 0xFF}},   /* (2.4: the chords played) */
+#if SYNTHMAVEN_SYNTH
+    {"FILTER", FAM_EDIT, SC_SYN, GR_FILTER, {90,91,92,93}},
+    {"FILTER GAIN", FAM_EDIT, SC_SYN, GR_FILTER, {94,95,96,0xFF}},
+#endif
     {"EDIT 1", FAM_EDIT, SC_ENGINE, GR_NONE, {P_E0, P_E1, P_E2, P_E3}},
     {"EDIT 2", FAM_EDIT, SC_ENGINE, GR_NONE, {P_E4, P_E5, P_E6, P_E7}},
 #if SYNTHMAVEN_SYNTH                                          /* 0.6: FMX's own pages (ui_synth.c X_F*), on FMX only */
@@ -564,6 +573,10 @@ static const page_t PAGES[] = {
     {"MIDI 2", FAM_GLO, SC_SYN, GR_NONE, {54, 55, 56, 0xFF}},
     {"PATCH MIDI", FAM_GLO, SC_SYN, GR_NONE, {54, 57, 0xFF, 0xFF}},
     {"KEY MIDI", FAM_GLO, SC_SYN, GR_NONE, {58, 50, 0xFF, 0xFF}},
+    {"PEDAL LEARN", FAM_GLO, SC_SYN, GR_PEDAL, {79,80,81,82}},
+    {"SCENES", FAM_GLO, SC_SYN, GR_SCENE, {83,84,85,0xFF}},
+    {"SETLIST", FAM_GLO, SC_SYN, GR_SETLIST, {86,87,88,89}},
+    {"PEDAL MAP", FAM_GLO, SC_SYN, GR_PEDAL, {63,64,65,66}},
     {"PATCH UP", FAM_GLO, SC_SYN, GR_NONE, {63, 64, 65, 66}},
     {"PATCH DOWN", FAM_GLO, SC_SYN, GR_NONE, {63, 64, 65, 66}},
     {"BANK UP", FAM_GLO, SC_SYN, GR_NONE, {63, 64, 65, 66}},
@@ -602,7 +615,7 @@ static const page_t PAGES[] = {
 static int page_hidden(uint32_t i)
 {
 #if SYNTHMAVEN_SYNTH
-    return i < NPAGES && PAGES[i].graph == GR_FMX && TSEL->eng_req != ENGI_FMX;
+    return i < NPAGES && ((PAGES[i].graph == GR_FMX && TSEL->eng_req != ENGI_FMX) || (PAGES[i].graph==GR_FILTER && SM_FILTER_CAP[TSEL->eng_req%NENGINES].cut<0));
 #else
     (void)i;
     return 0;

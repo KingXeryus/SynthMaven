@@ -72,7 +72,7 @@ int main(void) {
  frames(65);release(B_EDIT);check(ly_lock==LY_ERASE && ui.layer==LY_ERASE,"EDIT mixer latches at three seconds and remains after release");
  encs[panel.enc[EN_SELECT]]=4;frames(2);check(song.sel==prior_part && song.g[G_BPM]==prior_tempo,"latched mixer SELECT wraps across all four parts without changing tempo");press(B_SCL);frames(8);check(ly_lock==LY_PLAY && ui.layer==LY_PLAY,"switching from a latched mixer never flashes the next hold screen");release(B_SCL);frames(2);
  press(B_EDIT);frames(190);release(B_EDIT);tap(B_EDIT);check(ly_lock==LY_PLAY,"EDIT tap exits latched mixer");
- set_engine(0);open_family(FAM_EDIT);uint32_t edit_pages=0;for(i=0;i<NPAGES;i++)if(PAGES[i].fam==FAM_EDIT&&!page_hidden(i))edit_pages++;check(edit_pages==4,"normal EDIT has four focused sound pages");
+ set_engine(0);open_family(FAM_EDIT);uint32_t edit_pages=0;for(i=0;i<NPAGES;i++)if(PAGES[i].fam==FAM_EDIT&&!page_hidden(i))edit_pages++;check(edit_pages==6,"EDIT has four sound pages plus engine-aware filter controls");
  go_home();frames(110);ppm("synthmaven-four-program-sounds");
  open_family(FAM_SAVE);check(!strcmp(cur_page()->title,"PROGRAM"),"SAVE opens program save/load page");
  int16_t old_bpm=song.g[G_BPM];uint8_t save_page=ui.page,old_focus=song.sel;song.g[G_SLOT]=GP[G_SLOT].min;ui.arm=G_SAVE;ui.arm_t=40;

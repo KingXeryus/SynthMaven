@@ -6,6 +6,7 @@ static int st_read(uint32_t o,void*d,uint32_t n){return -1;}
 static int st_erase(uint32_t o){return -1;}
 static int st_prog(uint32_t o,const void*d,uint32_t n){return -1;}
 #include "../firmware/src/storage.c"
+static uint32_t fm1_ms;
 #include "../firmware/src/synthmaven_midi.h"
 #include "../firmware/src/synthmaven_store.h"
 int main(void) {

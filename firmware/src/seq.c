@@ -3224,8 +3224,7 @@ static void events_block(uint32_t n)
         }
 #if SYNTHMAVEN_SYNTH
         /* Pedal actions have their own PATCH route, before KEY IN rejects BLE CCs. */
-        if(!song.g[G_ROUTE] && !midi_pc_off &&
-           sm_pedal_receive(st,ch,d1,d2,port,(program_mode ? midi_track(ch)!=0 : midi_track(ch)==&trk[0])))continue;
+        if(sm_pedal_receive(st,ch,d1,d2,port,(!song.g[G_ROUTE] && !midi_pc_off)?(program_mode ? midi_track(ch)!=0 : midi_track(ch)==&trk[0]):-1))continue;
 #endif
 /* Performance controls follow KEY IN, just like note-ons. Bank selection
          * and Program Change keep their independent PATCH MIDI route. Release

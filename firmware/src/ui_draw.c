@@ -421,12 +421,17 @@ static uint32_t str_hash(uint32_t h, const char *s)
 
 /* a page drawn with its values large (graph_big) */
 static int big_page(const page_t *pg) { return pg->graph == GR_NONE && pg->scope != SC_SONG && pg->scope != SC_DRUM; }
+#if SYNTHMAVEN_SYNTH
+#include "performance_draw.c"
+#endif
 static uint32_t graph_signature(void)
 {
     const page_t *pg = cur_page();
     const track_t *t = TSEL;
     uint32_t h = 2166136261u, i;
 #if SYNTHMAVEN_SYNTH
+    if(!ui.home && pg->graph==GR_PEDAL)h^=sm_last_at+sm_last_result*137u+sm_last_match*7919u+sm_learn_state*333u+sm_trigger_count+((fm1_ms-sm_trigger_at)<1000u?0x777u:0);
+    if(!ui.home && pg->graph==GR_SETLIST)h^=sm_setlist_active*7919u+sm_setlist_pos*137u+sm_setlist_len+sm_pending_program*333u;
     if(!ui.home && pg->scope==SC_SYN && pg->id[0]==X_TSYS)h^=tune_cfg.sys*7777u+tune_cfg.root*131u;
 #endif
     if (ui.hot_t && settings.zoom)
@@ -857,6 +862,12 @@ static void draw_graph(void)
         cv_text((240 - text_w(&FONT_S, L[1])) / 2, 52, &FONT_S, L[1], C_DIM);
     } else {
         switch (pg->graph) {
+#if SYNTHMAVEN_SYNTH
+        case GR_PEDAL:cv_oy=0;graph_pedal();break;
+        case GR_SCENE:cv_oy=0;graph_scenes();break;
+        case GR_SETLIST:cv_oy=0;graph_setlist();break;
+        case GR_FILTER:cv_oy=0;graph_filter_caps();break;
+#endif
         case GR_ADSR:
             graph_adsr(t, c);
             break;
@@ -922,10 +933,10 @@ static void draw_graph(void)
     top = (ui.home && SYNTHMAVEN_SYNTH) || (!ui.home && !drum_note && (pg->graph == GR_BROWSE || pg->graph == GR_SLOTS || pg->graph == GR_USER ||
                                      pg->graph == GR_ROLL || big_page(pg)));   /* these draw from the top */
 #if SYNTHMAVEN_SYNTH
-    if(tuning_page(pg) && tune_is_chromatic(tune_cfg.sys))top=1;
+    if((tuning_page(pg) && tune_is_chromatic(tune_cfg.sys)) || pg->graph>=GR_PEDAL)top=1;
 #endif
     cv_oy = 0;
-    if (ui.hot_t && settings.zoom && !(ui.home && SYNTHMAVEN_SYNTH) && !(top && (big_page(pg) || pg->graph == GR_ROLL) && !drum_note)) {   /* (the big values show it already) */                 /* focus (menu ZOOM): the touched value, large and white */
+    if (ui.hot_t && settings.zoom && (!SYNTHMAVEN_SYNTH || pg->graph<GR_PEDAL) && !(ui.home && SYNTHMAVEN_SYNTH) && !(top && (big_page(pg) || pg->graph == GR_ROLL) && !drum_note)) {   /* (the big values show it already) */                 /* focus (menu ZOOM): the touched value, large and white */
         int32_t x;
         top = 1;
         cv_rect(0, 0, 150, 50, C_BLACK);

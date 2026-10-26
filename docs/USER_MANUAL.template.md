@@ -387,3 +387,23 @@ Tap SEL to open the scale browser without changing the scale. SELECT cycles the 
 EDIT now has four standard pages: EDIT 1, EDIT 2, VOICE and CHARACTER. FMX keeps its operator/routing pages; OP ENV is under ENV. Macros, morph, randomize, undo and FMX STORE remain accessible in the editor. Layer ON/OFF stays in GLO and on its two-second hold.
 
 Hold EDIT for two seconds to preview the four-sound mixer. KNOBS 1–4 control the volumes of sounds 1–4. SELECT cycles the selected part; ALGORITHM sets that part’s split point from A1 to A6 (shown as note and octave), and PRESET/parameter controls its pan. Editing a split point enables the selected part’s existing Lower/Upper zone. GLO → LAYER ROUTE or the editor can choose the zone or restore full-keyboard layering. At three seconds the mixer latches and stays open after release. Tap EDIT or HOME to exit; save a program to keep the mix. The keyboard still plays and EDIT no longer erases sequence notes. Short presses never show a held-layer screen. HOME opens its menu after three seconds.
+
+### Performance workflow ({{version}}, protocol {{protocol}})
+
+A **sound preset** describes one engine sound. A **four-part program** stores four sounds with routing, mix, tuning and four scenes. An **editor library entry** is a computer-side sound record. These names are not interchangeable.
+
+GLO → PEDAL LEARN: select an action, arm LEARN, press the pedal, review the captured message, then ACCEPT. Learn consumes CC/PC messages without triggering an existing assignment. Cancel leaves mappings intact. Duplicate assignments are refused. Settings in the editor offers the same staged flow; direct-pedal operation uses the FM1's own screen because PEDAL USB host mode disconnects the computer interface.
+
+GLO pedal diagnostics show COMPUTER/PEDAL role, USB device presence separately from MIDI interface detection, the last message, matched action and trigger/suppression status. Return to GLO → USB ROLE → COMPUTER before using the editor, USB audio, backups or installer. A powered adapter/hub is required for a directly attached pedal. Physical pedal interoperability remains subject to hardware testing.
+
+REPEAT sets duplicate suppression from 0–500 ms; default 0/OFF preserves repeated taps. Only identical messages for the same action inside the chosen window are suppressed. A CC release immediately re-arms the action. PC has no release event, so deliberate identical PC taps inside that window are also suppressed; choose a shorter window or OFF.
+
+GLO → SCENES provides four compact snapshots within the current program. Select a scene, CAPTURE the current levels/mutes, effect sends, macros and tuning settings, or RECALL it. Save the program after capture. Scenes do not replace engines, presets, pan, split routing or modulation matrices. The editor can also clear a scene. Selected tuning includes system, root, A4 and per-part master-tuning switches; Scala tables and custom scale definitions remain program data.
+
+GLO → SETLIST stores up to 32 ordered references to the eight saved programs. Set ENTRY, PROGRAM and LENGTH; LOAD selects that entry. The editor supports reordering/removing entries and Save order. The setlist is global and included in backups. Assign SETLIST NEXT/PREV to pedals. First NEXT starts at the first entry; first PREV starts at the final entry; both wrap thereafter. Empty slots report an error. Program loads stop transport and wait for quiet before reading flash; queued taps remain ordered, with a five-second timeout.
+
+EDIT → FILTER groups the selected engine's native model, cutoff, resonance and envelope amount; FILTER GAIN groups drive, optional compensation and trim. Unsupported fields are disabled and engines without an exposed filter omit these pages. See the [capability map](FILTER_CAPABILITIES.md). HYBRID edits filter 1 and preserves filter 2/routing. Standard EDIT now has these two extra pages only where supported. Earlier page counts describe earlier releases.
+
+LFO → MOD PRESET offers velocity→brightness, pressure→vibrato, wheel→vibrato and envelope swell. HYBRID pressure/wheel vibrato uses a free matrix slot and sets LFO1 to sine, rate 64; a full matrix is unchanged. Compensation is optional estimated attenuation for resonance/drive, up to 12 dB, OFF by default; it is not an automatic loudness measurement. Trim is displayed in half-decibel steps.
+
+Programs now use PRG3/PBK2; older PRG1/PRG2/PBK1 saves import with empty scenes and compensation OFF. Flash addresses and sample/wavetable regions are unchanged. New-format backups require protocol {{protocol}} and are refused on older firmware. See [current release details](release-2.0.md).
