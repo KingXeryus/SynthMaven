@@ -63,9 +63,9 @@
 <link rel="stylesheet" href="synthmaven-theme.css">
 <script src="synthmaven-theme.js"></script>
 <style>
-@font-face{font-family:"Installer Modular";src:url("fonts/Modular.ttf") format("truetype");font-weight:100 900;font-style:normal;font-display:swap}
-html[data-sm-app=installer]{--sm-font:"Installer Modular",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
-/* Modular has a small visual footprint: double the installer type sizes. */
+@font-face{font-family:"Installer Medula One";src:url("fonts/MedulaOne-Regular.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap;size-adjust:81.765%}
+html[data-sm-app=installer]{--sm-font:"Installer Medula One",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+/* Preserve the enlarged installer text; size-adjust matches the previous lowercase height (417/510). */
 html[data-sm-app=installer] body{font-size:26px}
 html[data-sm-app=installer] h1,html[data-sm-app=installer] h2{font-size:26px}
 html[data-sm-app=installer] .lead{font-size:44px}
@@ -315,7 +315,7 @@ html[data-sm-app=installer] .tiles{grid-template-columns:repeat(auto-fit,minmax(
   <p class="small"><b>SynthMaven</b>, based on Clipper by 3dSam (<a href="https://github.com/isod89" target="_blank" rel="noopener">isod89</a>), grown from <a href="https://github.com/isod89/sloop-fm1" target="_blank" rel="noopener">SLOOP</a> and based on <a href="https://github.com/hugelton/Felucca" target="_blank" rel="noopener">Felucca</a> by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener">Hügelton Instruments</a>.
     FM6: msfa / Dexed (Apache-2.0). PHYS: DaisySP and Mutable Instruments Rings (MIT). Supersaw after Adam Szabo's JP-8000 analysis; ladder after Vadim Zavalishin; plate after Jon Dattorro. JUNO, VECTOR, FMX, WSEQ, MACRO, the filter models, TURNG and SPICE / DICE are inherited from <a href="https://github.com/isod89/clipper-fm1" target="_blank" rel="noopener">Clipper by 3dSam</a>. Their design inspirations include the Roland Juno, Prophet VS, Wavestation, Korg opsix, Mutable Instruments Plaits, MS-20, SEM, diode ladders, Music Thing Modular’s Turing Machine and Arturia MicroFreak. These inspirations are separate from the code’s authorship; .scl is the Scala format.
     Hold OCT− alone while switching on for USB rescue.<br>
-    Font: Modular (supplied font). <a href="https://www.onlinewebfonts.com">Web Fonts</a> · <a href="fonts/Modular-LICENSE.txt">Supplied license</a>.<br>
+    Font: Medula One by LatinoType · <a href="fonts/MedulaOne-OFL.txt">SIL Open Font License 1.1</a>.<br>
     M-VAVE, FM-1 and the other product names above are trademarks of their respective owners; SynthMaven is not affiliated with them.<br>
     <span data-t="license"></span> <a href="https://github.com/KingXeryus/SynthMaven" target="_blank" rel="noopener">github.com/KingXeryus/SynthMaven</a></p>
 </main>
