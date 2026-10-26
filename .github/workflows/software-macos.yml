@@ -1,0 +1,27 @@
+name: SynthMaven Mac instrument
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ['desktop/**', '.github/workflows/software-macos.yml']
+  push:
+    paths: ['desktop/**', '.github/workflows/software-macos.yml']
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build dependencies
+        run: python3 -m pip install Pillow cmake ninja
+      - name: Universal standalone, VST3 and AU with tests
+        run: desktop/tools/build-mac.sh
+      - name: Package local test DMG and corresponding source
+        run: python3 desktop/tools/package-mac.py build/mac-distribution
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SynthMaven-macOS-Universal-Local-Test
+          path: build/mac-distribution/*

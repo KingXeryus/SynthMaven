@@ -1,0 +1,85 @@
+SynthMaven 0.5.0 — macOS Universal
+
+Open the SynthMaven installer package inside this disk image.
+The installer lets you independently select Standalone, VST3 and Audio Unit.
+All three are selected by default; deselect formats you do not need.
+The package installs:
+  /Applications/SynthMaven.app
+  /Library/Audio/Plug-Ins/VST3/SynthMaven.vst3
+  /Library/Audio/Plug-Ins/Components/SynthMaven.component
+Restart your DAW and rescan plug-ins after installation.
+
+Use Audio Unit in Logic Pro/GarageBand, and VST3 or Audio Unit in other
+compatible Mac DAWs. Pro Tools/AAX is not included. macOS 11 or later,
+Apple Silicon or Intel. Validation was performed on the development Mac;
+every DAW/version has not been individually tested.
+
+LOCAL TEST BUILD
+If the filename contains Local-Test, it is ad-hoc signed, not Developer ID
+signed or notarized. Gatekeeper may prevent installation/loading on other
+Macs. A paid Apple Developer Program membership is needed to produce the
+notarized distribution. Do not disable system security protections.
+
+Standalone: choose your audio output and MIDI inputs using Options >
+Audio/MIDI Settings. Click the on-screen keyboard or connect a MIDI keyboard.
+Browser: search/filter factory sounds, then click a sound to load it.
+Sound / Modulation / Effects / All Parameters expose the synthesis controls.
+Drag knobs; double-click to reset. DAWs can automate the exposed parameters.
+Import accepts .synthmaven presets and valid DX7 32-voice .syx banks; choose
+any of the bank's 32 voices. Save stores an instrument preset. DAW projects
+recall the program, parameter edits and imported DX7 voice.
+
+3383 browser entries across 24 banks are included: 449 original factory
+sounds, 2694 labelled performance variations, 208 original Oriental /
+Middle Eastern modeled instrument articulations, and 32 CC0 YSE FM voices.
+The 24 banks cover 23 native engines plus a dedicated XD catalog. The nine
+XD defaults are the existing SynthMaven HYBRID translations, not Korg binary
+oscillators or an emulation of the original analog circuitry. FM6 includes
+ROM1A and ARABESC defaults. No Bluetooth, USB-host or TRS hardware settings.
+
+MIDI notes, velocity, sustain, mod wheel, aftertouch and pitch bend use the
+firmware implementation. Bank Select CC0 + Program Change selects factory
+sounds (bank * 128 + program, both zero based); program changes are applied
+from the message thread, so allow about 34 ms. Host tempo follows the DAW.
+The original DSP runs at 44.1 kHz; other rates use cubic interpolation.
+
+License: GPL-3.0-only, with original third-party notices retained.
+This open-source software is based on Clipper.
+Source and build instructions are included with this distribution.
+
+0.2 PERFORMANCE AND TUNING
+LAYERS: enable up to eight independent engines in one saved patch. Select a
+layer to edit, or use LAYERS for its engine, preset, level, pan, transpose
+and MIDI channel. The mix applies headroom normalization as layers are added.
+PORTAMENTO: SOUND includes enable, voice mode, glide time and glide mode.
+MIDI MAP: select target, Learn and move a CC; or assign channel/CC manually.
+Right-click native synthesis controls for Learn. All maps persist in patches.
+Browser filters combine sound type, engine, collection, character and search.
+
+TUNING: twelve note buttons toggle -50 cents; sliders/type-in offsets range
+from -200 to +200 cents. ROOT rotates the note offsets. A4 is 400-480 Hz.
+The note names refer to intervals relative to ROOT. Editable Rast, Bayati,
+Sikah and quarter-tone starting points are not fixed rules for maqam playing.
+LOAD .SCL imports ratios or cents; successive keys step through the scale's
+degrees, anchored at MIDI note 60 + ROOT. Limits: 1-4096 degrees, period up to
+12000 cents, generated offsets within +/-10000 cents. Scala .kbm is not read.
+USE SCALA combines imported degrees with the twelve editable offsets.
+STORE then 1-5 writes a tuning memory; 1-5 recalls it for the displayed scope.
+MASTER TUNING uses a separate master scale for ALL eight layers. Turning it
+off restores each layer's own scale. BYPASS skips tuning for the displayed
+scope. Master, Scala data, memories, root, A4 and offsets persist in patches
+and DAW projects. Master Tuning is available as a DAW/MIDI mapping target.
+Commercial Yamaha ESP / TAQS.IM preset and sample libraries are not bundled;
+the new Oriental voices are original synthesis approximations.
+
+Legacy VST2 is not included: this project has no licensed VST2 SDK and
+Steinberg no longer grants new VST2 agreements. VST3 is the included VST
+format. Audio Unit is the included format for Logic Pro and GarageBand.
+
+0.3 adds the eight-layer/master mixer, octave/split popup and embedded wave sampler.
+See USER_MANUAL.md in the corresponding source for controls. iOS builds are separate
+from this Mac installer and require Apple signing/provisioning for device install.
+
+0.5.0 expands the graphical controls: ADSR attack/decay/sustain/release for synth, sampler and extra oscillators; cutoff/resonance; delay echoes; reverb tail; EQ; distortion; LFOs; and stereo chorus/flanger modulation. See USER_MANUAL.md in the corresponding source archive for graph interactions and preview limits.
+
+0.5 adds a tuning keyboard with scale-degree/detuning colors, 34 canonical maqam names with independent root selection and direction variants, and 24 named persistent custom scales.
