@@ -538,6 +538,7 @@ static void edit_param(uint32_t slot, int32_t steps)
     if (!d || !vp || d->max == d->min)
         return;
     v = clamp(*vp + accel(EN_K1 + slot, steps, d->names ? 0 : d->max - d->min), d->min, d->max);
+    if(pg->scope==SC_TRACK && id==P_CHORD)v=chord_mode_step(TSEL,steps);
 #if SYNTHMAVEN_SYNTH
     {
         int32_t old = *vp;

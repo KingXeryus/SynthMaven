@@ -1,4 +1,4 @@
-# SynthMaven 2.1.1 — quick start
+# SynthMaven 2.1.2 — quick start
 
 Back up before installing. Open the [installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) in Chrome or Edge. Connect the FM1 by USB in COMPUTER mode and follow the prompts. For rescue, hold OCT− while powering on.
 
@@ -14,7 +14,7 @@ Set GLO → PATCH MIDI → PROG ON, then configure PATCH UP/DOWN and BANK UP/DOW
 
 Choose USB ROLE → COMPUTER before reconnecting the web editor or installer. The USB port supports one role at a time.
 
-Read the [user manual](docs/USER_MANUAL.md), [release notes](docs/release-2.1.1.md), and [maqam catalogue](docs/MAQAM_SCALES.md).
+Read the [user manual](docs/USER_MANUAL.md), [release notes](docs/release-2.1.2.md), and [maqam catalogue](docs/MAQAM_SCALES.md).
 
 Choose **Appearance → Dark / Light / System** in the installer or editor. In the editor’s Sound page, use the instrument tabs and rotary controls; drag an envelope handle to edit its shape. The 557-entry bank contains 556 level-matched audible sounds and USER WT, which stays silent until you upload a wavetable.
 
@@ -59,4 +59,8 @@ Selection uses compatibility checks and native waveform spectral fitting, with n
 
 ## Chord controls in 2.1
 
-Use the existing SEL page CHORD control to choose a legacy or new chord mode. SEL 2 provides VOIC and STRUM. AUTO follows in-scale harmony; AUTO2 places harmony below your melody. AUTO modes bypass master microtuning rather than changing its note mapping. See [the complete mode/strum reference](docs/release-2.1.1.md). Hold ENV for three seconds to open CHORDS, with CHORD, VOIC and STRUM on the first three assignable knobs. Release ENV to keep editing; tap ENV for envelopes or HOME to return. The chord screen appears only after the full three seconds.
+Use the existing SEL page CHORD control to choose a legacy or new chord mode. SEL 2 provides VOIC and STRUM. AUTO follows in-scale harmony; AUTO2 places harmony below your melody. When microtonal master tuning applies, the selector offers OPEN 5 and NEUTRAL instead; incompatible saved AUTO modes play OPEN 5. See [the current chord reference](docs/release-2.1.2.md). Hold ENV for three seconds to open CHORDS, with CHORD, VOIC and STRUM on the first three assignable knobs. Release ENV to keep editing; tap ENV for envelopes or HOME to return. The chord screen appears only after the full three seconds.
+
+## Scale-aware chords in 2.1.2
+
+Chord mode plays all physical keys, including black keys. Generated tones follow the selected scale and root; named shapes adapt to the scale. Maqam chords use the catalogue’s documented degree keys with existing tuning offsets. Microtonal tuning offers OFF, OPEN 5 and NEUTRAL; other templates are hidden until tuning is equal-tempered or bypassed for that part. OPEN 5 selects scale tones near a fifth and octave; NEUTRAL selects scale tones near a neutral third and fifth, using actual tuned pitch. Neither inserts new detuned notes. If an older saved mode is incompatible, OPEN 5 is heard without overwriting its saved ID. Hold ENV for three seconds to open CHORDS.

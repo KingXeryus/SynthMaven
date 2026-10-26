@@ -18,7 +18,7 @@ static uint32_t chord_melody_rotate(uint32_t bits, int32_t semitones)
 }
 static int32_t chord_melody_mapped(const track_t *t, uint32_t input)
 {
-    uint32_t allowed = chord_melody_rotate(scale_mask(t), t->p[P_ROOT] + t->p[P_TRANS]);
+    uint32_t allowed = chord_allowed(t);
     int32_t note = (int32_t)input;
     while (note >= 0 && !(allowed & (1u << (uint32_t)(note % 12)))) note--;
     if (note < 0) { note = 0; while (!(allowed & (1u << (uint32_t)(note % 12)))) note++; }
@@ -31,7 +31,7 @@ static int32_t chord_melody_below(int32_t melody, uint32_t pitch_class)
 static uint32_t chord_melody_make(const track_t *t, uint32_t input, uint8_t *out, int32_t *rp, uint16_t *maskp)
 {
     int32_t tonic = t->p[P_ROOT] + t->p[P_TRANS], melody = chord_melody_mapped(t, input);
-    uint32_t allowed = chord_melody_rotate(scale_mask(t), tonic), pc = (uint32_t)melody % 12u;
+    uint32_t allowed = chord_allowed(t), pc = (uint32_t)melody % 12u;
     *rp = melody; *maskp = 1;
     if (!voice_poly(t->p[P_VOICE])) { out[0] = (uint8_t)melody; return 1; }
     uint32_t root = pc, chosen = 0xFFFFu, mask = 0;

@@ -359,7 +359,7 @@ static void graph_scale(const track_t *t, uint16_t c)
     static const uint8_t BLACK[12]={0,1,0,1,0,0,1,0,1,0,1,0};
     uint32_t part=trk_index(t)%NPART,mask=scale_mask(t),pcs=0;char title[24],notes[32];notes[0]=0;
     if(t->p[P_CHORD] && sm_chord_view[part].n) {
-        chord_auto_name(title,sm_chord_view[part].root,sm_chord_view[part].mask);
+        if(chord_effective(t)>=CH_OPEN5)str_cpy(title,N_CHORD[chord_effective(t)],sizeof title);else chord_auto_name(title,sm_chord_view[part].root,sm_chord_view[part].mask);
         for(uint32_t i=0;i<sm_chord_view[part].n;i++) {char b[8];uint32_t n=sm_chord_view[part].note[i];pcs|=1u<<(n%12u);note_name(b,n);
             if(str_len(notes)+str_len(b)+2<sizeof notes){str_cpy(notes+str_len(notes),b,sizeof notes-str_len(notes));str_cpy(notes+str_len(notes)," ",sizeof notes-str_len(notes));}}
     } else {str_cpy(title,t->p[P_CHORD]?"PLAY A CHORD":N_SCALE[t->p[P_SCALE]%NSCALES],sizeof title);}
@@ -1062,7 +1062,7 @@ static void draw_columns(void)
         for (c = 0; c < 4u; c++) {
             int16_t *vp;
             const param_desc_t *d = home_param(c, &vp);
-            param_format(d, *vp, val, &unit);
+            param_format(d, d==&TP[P_CHORD]?(int32_t)chord_effective(TSEL):*vp, val, &unit);
             draw_column(c, d->label, val, unit, VAL(c), RATIO(d, *vp), param_icon(d, *vp));
         }
         return;
@@ -1194,7 +1194,7 @@ static void draw_columns(void)
             fmt_int(val, (int32_t)(song.cpu_q8 * 100u / 256u));
             unit = "%";
         } else {
-            param_format(d, *vp, val, &unit);
+            param_format(d, d==&TP[P_CHORD]?(int32_t)chord_effective(TSEL):*vp, val, &unit);
         }
         draw_column(c, d->label, val, unit, VAL(c), d->fmt == F_ENUM && d->max < 2 ? -1 : RATIO(d, *vp),
                     param_icon(d, *vp));
@@ -1240,7 +1240,7 @@ static void ui_draw(void)
         if(!scale_browser_shown){lcd_fill(0,0,240,240,C_BLACK);scale_browser_shown=1;}
         cv_begin(240,32,C_BLACK);cv_text(4,4,&FONT_S,"SCALES",C_HI);cv_text(140,4,&FONT_S,"ROOT",C_GRAY);cv_text(204,4,&FONT_S,N_NOTE[tune_cfg.root%12u],C_WHITE);cv_blit(0,0);
         cv_begin(240,124,C_BLACK);graph_tuning();cv_blit(0,36);
-        cv_begin(240,80,C_BLACK);cv_text(4,4,&FONT_S,"SELECT: SCALE",C_WHITE);cv_text(4,28,&FONT_S,"PRESET: ROOT",C_GRAY);char q[12],ch[12];const char *u;param_format(&TP[P_QUANT],TSEL->p[P_QUANT],q,&u);param_format(&TP[P_CHORD],TSEL->p[P_CHORD],ch,&u);
+        cv_begin(240,80,C_BLACK);cv_text(4,4,&FONT_S,"SELECT: SCALE",C_WHITE);cv_text(4,28,&FONT_S,"PRESET: ROOT",C_GRAY);char q[12],ch[12];const char *u;param_format(&TP[P_QUANT],TSEL->p[P_QUANT],q,&u);param_format(&TP[P_CHORD],chord_effective(TSEL),ch,&u);
         cv_text(4,52,&FONT_S,"QNT",C_GRAY);cv_text(44,52,&FONT_S,q,C_WHITE);cv_text(120,52,&FONT_S,"CHD",C_GRAY);cv_text(160,52,&FONT_S,ch,C_WHITE);cv_blit(0,160);
         ui_timers();ui.force=0;return;
     }

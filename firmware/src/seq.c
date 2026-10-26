@@ -220,7 +220,8 @@ static uint32_t program_quantize(uint32_t note) {
     return note;
 }
 #endif
-/* key k's note on a scaled track with the octave buttons at oct (KB_SILENT: none): QNT, ROOT, SCALE, TRN as they are
+/* SynthMaven chord mode uses chromatic physical keys; generated harmony follows the scale.
+ * key k's note on a scaled track with the octave buttons at oct (KB_SILENT: none): QNT, ROOT, SCALE, TRN as they are
  * now. The keys (kb_map), and the notes the arp holds (arp_next, SLOOP 2.6 after Felucca 1.5 #191: a latched chord
  * follows TRN, ROOT, SCALE and QNT, in the octave its keys were pressed in) */
 static uint32_t kb_pitch(const track_t *t, uint32_t k, int32_t oct)
@@ -234,7 +235,7 @@ static uint32_t kb_pitch(const track_t *t, uint32_t k, int32_t oct)
             n--;
         return (uint32_t)clamp(n, 0, 127);
     }
-    if (t->p[P_QUANT] == 2 || t->p[P_CHORD]) {   /* WHITE: white keys walk the scale, black keys are silent */
+    if (t->p[P_QUANT] == 2 && !t->p[P_CHORD]) {   /* WHITE: white keys walk the scale, black keys are silent */
         uint32_t mask = t->p[P_CHORD] && !t->p[P_SCALE] ? SCALE_MASK[2] : scale_mask(t), i;
         int32_t count = 0, degree = DEGREE[n % 12], wo;
         if (degree < 0)
@@ -295,11 +296,23 @@ static void sm_chord_view_set(const track_t *t,uint32_t root,const uint8_t *note
 }
 static uint32_t chord_notes(const track_t *t, uint32_t n, uint8_t *c)
 {
-    uint32_t type = (uint32_t)clamp(t->p[P_CHORD], 0, 15), mask = t->p[P_SCALE] ? scale_mask(t) : SCALE_MASK[2];
-    uint32_t k = 0, j;
+    uint32_t type = (uint32_t)clamp(t->p[P_CHORD], 0, CH_LAST), mask = chord_auto_rotate(chord_allowed(t),-t->p[P_ROOT]-t->p[P_TRANS]);
+    type=chord_effective(t);
+    if(type>=CH_OPEN5 && !chord_kit(t))return chord_neutral_make(t,n,type,c);
+    uint32_t k = 0, j, sus2=type==11u;
+    int32_t tonic=t->p[P_ROOT]+t->p[P_TRANS];
+    if(type && !chord_kit(t)) {
+        uint32_t allowed=chord_auto_rotate(mask,t->p[P_ROOT]+t->p[P_TRANS]);
+        while(n && !(allowed&(1u<<(n%12u))))n--;
+        while(n<127u && !(allowed&(1u<<(n%12u))))n++;
+    }
     if(type>=CH_AUTO) { int32_t root;uint16_t mask;
         if(chord_kit(t)||sm_chord_micro(t)){c[0]=(uint8_t)n;return 1;}
         return type==CH_AUTO?chord_auto_make(t,n,c,&root,&mask):chord_melody_make(t,n,c,&root,&mask);
+    }
+    if(type && (!voice_poly(t->p[P_VOICE]) || chord_kit(t))){c[0]=(uint8_t)n;return 1;}
+    if(type>=6u && mask!=0xFFFu) {
+        type=(type==8u || type==9u || type==10u)?2u:type==11u?4u:1u;
     }
     if(type>=6u) {
         if(!voice_poly(t->p[P_VOICE]) || chord_kit(t)){c[0]=(uint8_t)n;return 1;}
@@ -307,17 +320,19 @@ static uint32_t chord_notes(const track_t *t, uint32_t n, uint8_t *c)
         for(j=0;j<4u && shapes[type-6u][j]>=0;j++)if(n+(uint32_t)shapes[type-6u][j]<128u)c[k++]=(uint8_t)(n+shapes[type-6u][j]);return k;
     }
     if (type == 5u) {
-        static const uint8_t PW[3] = {0, 7, 12};
+        uint8_t PW[3] = {0, 7, 12};
+        if(mask!=0xFFFu){uint32_t fifth=n+7u,allowed=chord_auto_rotate(mask,tonic);while(fifth>n && !(allowed&(1u<<(fifth%12u))))fifth--;PW[1]=(uint8_t)(fifth-n);}
         for (j = 0; j < 3u; j++)
             if (n + PW[j] < 128u)
                 c[k++] = (uint8_t)(n + PW[j]);
         return k;
     }
+    if(mask==0xFFFu){mask=SCALE_MASK[1];tonic=(int32_t)n;}
     for (j = 0; j < 4u && CHORD_DEG[type][j] >= 0; j++) {
-        int32_t m = (int32_t)n, d = CHORD_DEG[type][j], guard = 48;
+        int32_t m = (int32_t)n, d = sus2 && j==1u ? 1 : CHORD_DEG[type][j], guard = 96;
         while (d > 0 && guard--) {                       /* d scale degrees up */
             m++;
-            if ((mask >> (uint32_t)((m - t->p[P_ROOT] + 120) % 12)) & 1u)
+            if ((mask >> (uint32_t)((m - tonic + 132) % 12)) & 1u)
                 d--;
         }
         if (m < 128)
@@ -345,11 +360,11 @@ static uint32_t chord_mod_of_key(uint32_t k)            /* key k's modifier (0: 
 static uint8_t vl_prev[NPART][4], vl_n[NPART];          /* the last chord played on each part (voice leading) */
 static uint32_t scale_up(const track_t *t, uint32_t n, uint32_t deg)   /* deg scale degrees above n */
 {
-    uint32_t mask = t->p[P_SCALE] ? scale_mask(t) : SCALE_MASK[2];
+    uint32_t mask = t->p[P_SCALE] ? scale_mask(t) : SCALE_MASK[1];
     int32_t m = (int32_t)n, guard = 48;
     while (deg > 0 && guard--) {
         m++;
-        if ((mask >> (uint32_t)((m - t->p[P_ROOT] + 120) % 12)) & 1u)
+        if ((mask >> (uint32_t)((m - t->p[P_ROOT] - t->p[P_TRANS] + 132) % 12)) & 1u)
             deg--;
     }
     return (uint32_t)m;
@@ -365,11 +380,13 @@ static void sort_notes(uint8_t *c, uint32_t n)
 /* the chord of white key n with the modifiers held, voiced (VLEAD); its notes (<= 4) into c[] */
 static uint32_t chord_play_notes(track_t *t, uint32_t n, uint32_t mods, uint8_t *c)
 {
-    uint32_t k = chord_notes(t, n, c), j, type = (uint32_t)clamp(t->p[P_CHORD], 0, 15), part = trk_index(t);
+    n=t->p[P_CHORD]?chord_map_root(t,n):n;
+    uint32_t k = chord_notes(t, n, c), j, type = chord_effective(t), part = trk_index(t);
+    
     if(type>=6u && type<CH_AUTO && (!voice_poly(t->p[P_VOICE]) || chord_kit(t))) {
         sm_chord_view_set(t,n,c,k);return k;
     }
-    if(type>=CH_AUTO) {
+    if(type>=CH_AUTO && type<CH_OPEN5) {
         if(type==CH_AUTO && !sm_chord_micro(t) && !chord_kit(t)) {
             int32_t root;uint16_t mask;k=chord_auto_make(t,n,c,&root,&mask);chord_auto_remember(t,root,mask,c,k);
         }

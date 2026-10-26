@@ -8,13 +8,58 @@
 enum { CH_OFF=0, CH_AUTO=14, CH_MELODY=15 };
 enum { VC_CLOSE=0, VC_SMOOTH=1, VC_OPEN=2, VC_INV1=3, VC_INV2=4, VC_BASS=5 };
 #define CHORD_MAX 4u
-static int sm_chord_micro(const track_t *t) { return tune_cfg.sys!=TU_EQUAL && !(master_tuning_bypass&(1u<<trk_index(t))); }
+enum { CH_OPEN5=16, CH_NEUTRAL=17, CH_LAST=17 };
+static int sm_chord_micro(const track_t *t) {
+    if(master_tuning_bypass&(1u<<trk_index(t)))return 0;
+    uint32_t sys=tune_cfg.sys;
+    if(sys==TU_EQUAL)return 0;
+    if(tune_is_chromatic(sys)){for(uint32_t i=0;i<12;i++)if(tuning_cents(sys,i))return 1;return 0;}
+    if(sys==TU_USER && tune_cfg.n==12 && tune_cfg.period==19200){for(uint32_t i=0;i<12;i++)if(tune_cfg.deg[i]!=i*1600u)return 1;return 0;}
+    return 1;
+}
+/* Non-neutral harmonic templates are not offered under a microtonal tuning.
+ * Saved incompatible IDs remain intact but sound as OPEN 5 until changed. */
+static int chord_mode_allowed(const track_t *t,uint32_t mode){return mode<=CH_LAST && (!sm_chord_micro(t) || !mode || mode>=CH_OPEN5);}
+static uint32_t chord_effective(const track_t *t){uint32_t mode=(uint32_t)clamp(t->p[P_CHORD],0,CH_LAST);return chord_mode_allowed(t,mode)?mode:CH_OPEN5;}
+static int32_t chord_mode_step(const track_t *t,int32_t steps){
+    int32_t mode=(int32_t)chord_effective(t),dir=steps<0?-1:1;
+    uint32_t count=(uint32_t)(steps<0?-steps:steps);if(count>CH_LAST+1u)count=CH_LAST+1u;
+    while(count--){int32_t next=mode;do{next+=dir;}while(next>=0 && next<=CH_LAST && !chord_mode_allowed(t,(uint32_t)next));if(next<0 || next>CH_LAST)break;mode=next;}
+    return mode;
+}
+static uint32_t chord_allowed(const track_t *t){
+    uint32_t mask=scale_mask(t);int32_t root=t->p[P_ROOT]+t->p[P_TRANS];
+    if(!(master_tuning_bypass&(1u<<trk_index(t))) && tune_is_maqam(tune_cfg.sys)){
+        uint32_t row=tune_cfg.sys<8u?tune_cfg.sys-6u:tune_cfg.sys-12u;
+        mask=MAQAM_NOTE_MASKS[row];root=tune_cfg.root;
+    }
+    uint32_t shift=(uint32_t)((root%12+12)%12);return ((mask<<shift)|(mask>>(12u-shift)))&0xFFFu;
+}
+static uint32_t chord_map_root(const track_t *t,uint32_t note){uint32_t allowed=chord_allowed(t);while(note && !(allowed&(1u<<(note%12u))))note--;while(note<127u && !(allowed&(1u<<(note%12u))))note++;return note;}
+/* Choose existing scale keys by their actual tuned pitch: never synthesize a
+ * major/minor third or assume that twelve keys equal an octave in a Scala/EDO map. */
+static uint32_t chord_neutral_make(const track_t *t,uint32_t note,uint32_t mode,uint8_t *out){
+    uint32_t allowed=chord_allowed(t),n=0;note=chord_map_root(t,note);out[n++]=(uint8_t)note;
+    if(!voice_poly(t->p[P_VOICE]))return n;
+    uint32_t tuned=!(master_tuning_bypass&(1u<<trk_index(t)));
+    const int32_t target[3]={14336,28672,49152}; /* 350, 700, 1200 cents, Q12 semitones */
+    uint32_t first=mode==CH_NEUTRAL?0u:1u,last=mode==CH_NEUTRAL?2u:3u;
+    for(uint32_t j=first;j<last;j++){
+        int32_t best=0x7FFFFFFF;uint32_t chosen=note;
+        for(uint32_t key=note+1u;key<128u;key++)if(allowed&(1u<<(key%12u))){
+            int32_t pitch=(int32_t)(key-note)*4096+(tuned?tun_tab[key]-tun_tab[note]:0),cost=pitch-target[j];if(cost<0)cost=-cost;
+            if(pitch>0 && cost<best){best=cost;chosen=key;}
+        }
+        if(chosen>out[n-1])out[n++]=(uint8_t)chosen;
+    }
+    return n;
+}
 static int chord_kit(const track_t *t) { return !kb_scaled(t); }
 static uint32_t sm_chord_beat(void) { return FS*60u/(uint32_t)clamp(song.g[G_BPM],30,300); }
 static int sm_chord_held(const track_t *t) { for(uint32_t v=0;v<NVOICE;v++)if(t->v[v].active && t->v[v].gate)return 1;return 0; }
 typedef struct {
     uint8_t n, note[CHORD_MAX], root;
-    uint16_t mask, melody;
+    uint16_t mask, melody, allowed;
     int16_t scale, tonic, quant, voicing;
     uint32_t at;
 } chord_auto_t;
@@ -56,7 +101,7 @@ static uint32_t chord_auto_rotate(uint32_t bits, int32_t semitones)
 static int chord_auto_config(const track_t *t, const chord_auto_t *h)
 {
     return h->n && voice_poly(t->p[P_VOICE]) && h->scale == t->p[P_SCALE] && h->tonic == t->p[P_ROOT] + t->p[P_TRANS] &&
-        h->quant == t->p[P_QUANT] && h->voicing == t->p[P_VLEAD];
+        h->quant == t->p[P_QUANT] && h->voicing == t->p[P_VLEAD] && h->allowed==chord_allowed(t);
 }
 static int chord_auto_same(const track_t *t, const chord_auto_t *h)
 {
@@ -179,7 +224,7 @@ static void chord_auto_voice(const track_t *t, int32_t root, const uint8_t *pitc
 static uint32_t chord_auto_make(const track_t *t, uint32_t input, uint8_t *out, int32_t *rp, uint16_t *maskp)
 {
     int32_t tonic = t->p[P_ROOT] + t->p[P_TRANS], root = (int32_t)input;
-    uint32_t allowed = chord_auto_rotate(scale_mask(t), tonic);
+    uint32_t allowed = chord_allowed(t);
     /* Use the same downward policy as DIA/SNAP, except the lower endpoint must
      * take the next available note instead of clamping to an out-of-scale C. */
     while (root >= 0 && !(allowed & (1u << (uint32_t)(root % 12)))) root--;
@@ -238,11 +283,11 @@ static uint32_t chord_auto_make(const track_t *t, uint32_t input, uint8_t *out, 
 static void chord_auto_remember(const track_t *t, int32_t root, uint16_t mask, const uint8_t *notes, uint32_t n)
 {
     chord_auto_t *h = &chord_auto[trk_index(t)];
-    h->root = (uint8_t)root; h->mask = mask; h->n = (uint8_t)n;
+    h->root = (uint8_t)root; h->mask = mask; h->allowed=(uint16_t)chord_allowed(t); h->n = (uint8_t)n;
     for (uint32_t i = 0; i < n; i++) h->note[i] = notes[i];
     h->scale = t->p[P_SCALE]; h->tonic = t->p[P_ROOT] + t->p[P_TRANS];
     h->quant = t->p[P_QUANT]; h->voicing = t->p[P_VLEAD];
-    h->melody = (uint16_t)chord_auto_melody(t, chord_auto_rotate(scale_mask(t), h->tonic));
+    h->melody = (uint16_t)chord_auto_melody(t, chord_allowed(t));
     h->at = chord_auto_clock;
 }
 
