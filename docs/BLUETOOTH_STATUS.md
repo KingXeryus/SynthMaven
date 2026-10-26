@@ -68,3 +68,12 @@ A read-only USB check on the connected physical FM1 before updating reported
 FELUCCA SYNTHMAVEN 1.0, Bluetooth enabled and BLE state 7 (startup failure),
 consistent with the rejected ready event. No firmware was flashed during that
 check. Physical Chocolate/Chocolate Plus pairing and audio remain unverified.
+
+### HOME SELECT control update
+
+[Actions run 40249130630](https://github.com/KingXeryus/SynthMaven/actions/runs/40249130630)
+validates commit c8c5a65968e9398679a0c0d3b6c9d7e8ae29e6c2, adding SELECT preset
+navigation on HOME. The firmware uses 580552/581564 bytes of app flash;
+static RAM, low SRAM and pool remain 91220/98304, 24832/25672 and 329008/344064.
+All enforced target bounds pass. Host tests verify forward/reverse wrap,
+every detent, unchanged HOME tempo and retained editing-page navigation.

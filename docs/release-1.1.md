@@ -43,8 +43,8 @@ new assignments. They default to OFF if absent.
 
 ## Validation
 
-The [native BLE target build](https://github.com/KingXeryus/SynthMaven/actions/runs/40247482272)
-passes: 580504/581564 bytes flash, 91220/98304 static RAM, 24832/25672 low SRAM,
+The [native BLE target build](https://github.com/KingXeryus/SynthMaven/actions/runs/40249130630)
+passes: 580552/581564 bytes flash, 91220/98304 static RAM, 24832/25672 low SRAM,
 329008/344064 pool. The 610045-byte package identifies as FM-1_911. All 23 engines
 remain; the existing size-optimization fallback is used.
 
