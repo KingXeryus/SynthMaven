@@ -24,9 +24,15 @@ static volatile uint32_t diag_peak;      /* the worst half (render + TIMER5 in i
 #define SM_BLE 0
 #endif
 static volatile uint8_t sm_radio_quiet;
-#define NPART 3                  /* synth parts: tracks 1..3 */
-#define NTRK 4                   /* + the drum track */
+#if SYNTHMAVEN_SYNTH
+#define NPART 4
+#define NTRK 5
+#define TRK_DRUM 4
+#else
+#define NPART 3
+#define NTRK 4
 #define TRK_DRUM 3
+#endif
 enum { V_POLY, V_MONO, V_LEGATO, V_UNISON, V_PUNI2, V_PUNI4 };   /* P_VOICE (SynthMaven 0.3: UNI2 / UNI4, poly unison) */
 static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /* a note per key, its own voices */
 #define NSTEP 64
@@ -483,8 +489,9 @@ typedef struct {
 static track_t trk[NTRK];        /* the instrument: three parts and the drum track */
 static song_t song;
 #if SYNTHMAVEN_SYNTH
+static uint8_t program_mode, program_layer;
 /* SynthMaven 0.6: the layer in MULTI (the two sounds two parts: the layer on its own MIDI channel, its own controls) */
-static inline int layer_multi(void) { return trk[1].p[P_LYMODE] == LY_MULTI; }
+static inline int layer_multi(void) { return !program_mode && trk[1].p[P_LYMODE] == LY_MULTI; }
 /* the part whose performance controls (bend, mod wheel, pressure, pedal: part_ctl) a track follows: the instrument's,
  * the layer's own in MULTI */
 static inline uint32_t ctl_part(const track_t *t) { return layer_multi() ? (uint32_t)(t - trk) % NPART : 0u; }
@@ -530,6 +537,9 @@ static int is_drum(const track_t *t) { return t == TDRUM; }
 static int trk_silent(const track_t *t)
 {
     uint32_t i = (uint32_t)(t - trk);
+#if SYNTHMAVEN_SYNTH
+    if(program_mode)return i>=4u || (!program_layer && i!=song.sel) || t->p[P_MUTE];
+#endif
     if (SYNTHMAVEN_SYNTH && i)      /* SynthMaven: only the instrument (track 1) sounds, and its layer (track 2) when on */
         return i != 1u || (trk[1].p[P_LYMODE] != LY_LAYER && trk[1].p[P_LYMODE] != LY_SPLIT && trk[1].p[P_LYMODE] != LY_MULTI);
     return t->p[P_MUTE] || (song.solo && !((song.solo >> i) & 1u));

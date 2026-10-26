@@ -179,7 +179,7 @@ def build_loader():
 # ---- app
 
 def build_app():
-    ble = os.environ.get("SYNTHMAVEN_BLE", "0") == "1"
+    ble = False  # Radio removed: pedal MIDI uses the USB host.
     radio_units, radio_objs, radio_libs = [], [], []
     if ble:
         import synthmaven_radio_build as radio
@@ -191,7 +191,7 @@ def build_app():
         v = os.environ.get(flag)    # unset: the default in firmware/src/felucca.c
         if v in ("0", "1") or (flag == "NVOICE" and v in ("8", "12", "16")):
             flags.append(f"-D{flag}={v}")
-    flags.append("-DSM_PACKED_WT=1")
+    flags += ["-DSM_PACKED_WT=1", "-DFELUCCA_USB_HOST=1"]
     if ble:
         flags += ["-DSM_BLE=1", "-DFELUCCA_CDC=0", "-Ifirmware/vendor/fm1-base/shim"]
     flags.append(f'-DFELUCCA_ID="{PRODUCT}"')

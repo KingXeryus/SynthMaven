@@ -30,7 +30,7 @@ enum { ED_INFO = 1, ED_GET, ED_SET, ED_DUMP, ED_DESC, ED_STEP_GET, ED_STEP_SET, 
        ED_FM6_GET = 68, ED_FM6_PUT, ED_FM6_LIST, ED_FM6_ERASE };                /* v9: FM6 patches (Felucca's numbers) */
 /* v10 (SLOOP 2.5): DSYN_LIST .. DSYN_PLAY = 72..76, editor_dsyn.c; backup object 9 = the SYN kits */
 /* v11 (SynthMaven): HY_GET, HY_PUT = 77, 78, editor_hybrid.c */
-#define ED_PROTO (SYNTHMAVEN_SYNTH ? 17u : 11u)           /* the protocol version INFO ends with (12: SynthMaven's FMX, 13: its
+#define ED_PROTO (SYNTHMAVEN_SYNTH ? 18u : 11u)           /* the protocol version INFO ends with (12: SynthMaven's FMX, 13: its
                                                         * MOD SEQ, JUNO, VECTOR, 14: the TUNING, 17: 46 maqam tunings) */
 
 /* Extended PHYS list: 140 entries need up to 1828 wire bytes. */
@@ -437,7 +437,11 @@ static const uint8_t *ed_bk_obj(uint32_t id, uint32_t *len)   /* 0 = no such obj
 {
     *len = 0;
     if (id == 0u) {
+        #if SYNTHMAVEN_SYNTH
+        *len = sizeof(program_t);
+#else
         *len = sizeof(project_t);
+#endif
         return ED_BK_RAW;
     }
     if (id == 1u) {
@@ -447,6 +451,9 @@ static const uint8_t *ed_bk_obj(uint32_t id, uint32_t *len)   /* 0 = no such obj
     if (id >= 2u && id <= 5u) {
         if (project_used(id - 2u))
             *len = sizeof proj_slot[0];
+#if SYNTHMAVEN_SYNTH
+        if(program_valid((const program_t *)&proj_slot[id-2u]))*len=sizeof(program_t);
+#endif
         return (const uint8_t *)&proj_slot[id - 2u];
     }
     if (id == 6u || id == 7u) {
@@ -548,7 +555,11 @@ static int ed_backup(uint32_t cmd, const uint8_t *a, uint32_t na)   /* 1: a back
     if (cmd == ED_BK_LIST) {
         rc = !flash_ok ? 4u : 0u;
         if (!rc) {
-            proj_capture((project_t *)ED_BK_RAW);           /* the working project, as it is now */
+#if SYNTHMAVEN_SYNTH
+            program_capture((program_t *)ED_BK_RAW);
+#else
+            proj_capture((project_t *)ED_BK_RAW);
+#endif           /* the working project, as it is now */
             persist_fill(&ed_bk_set);
             ed_bk_valid = 1;
             ed_bk_put = 0;
@@ -688,7 +699,7 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
 #endif
         ed_send();return;
     }
-    if (cmd >= 100u && cmd <= 105u) {
+    if (cmd >= 100u && cmd <= 106u) {
         uint32_t rc = 0;
         if (cmd == 100u && na) rc = 1;
         if (cmd == 101u) {
@@ -707,14 +718,40 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
             rc=4;
 #endif
         }
-        ed_begin(cmd); ed_b(rc); ed_b(1); ed_b(SM_CAPS);
+        if(cmd==106u) {
+#if FELUCCA_USB_HOST
+            if(na!=1u || a[0]>1u)rc=1;
+            else {sm_usb_host=a[0];settings_later=1;ui.force=1;}
+#else
+            rc=4;
+#endif
+        }
+        ed_begin(cmd); ed_b(rc); ed_b(2); ed_b(SM_CAPS);
         ed_b(!midi_pc_off); ed_b(sm_patch_port); ed_b(sm_key_port); ed_b(sm_bluetooth);
 #if SM_BLE
         ed_b(sm_ble_state());
 #else
         ed_b(0);
 #endif
+        ed_b(sm_usb_host);
+#if FELUCCA_USB_HOST
+        ed_b(usb_host_connected());
+#else
+        ed_b(0);
+#endif
         ed_send(); return;
+    }
+    if(cmd==107u) {
+        uint32_t slot=na?a[0]:4u,rc=0,k;
+        if(slot>=4u || (na!=1u && na!=13u))rc=1;
+        if(!rc && na==13u) {
+            uint32_t mask=0;
+            for(k=0;k<12u;k++){if(a[k+1]>3u)rc=1;mask|=(a[k+1]&3u)<<(k*2u);}
+            if(!rc){custom_scale[slot]=mask;custom_scale_dirty=1;settings_later=1;tune_build();ui.force=1;}
+        }
+        ed_begin(cmd);ed_b(rc);ed_b(slot);
+        if(!rc)for(k=0;k<12u;k++)ed_b((custom_scale[slot]>>(k*2u))&3u);
+        ed_send();return;
     }
     switch (cmd) {
     case ED_INFO:

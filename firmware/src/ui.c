@@ -6,6 +6,7 @@
 #define FELUCCA_VERSION "SYNTHMAVEN 1.3"  /* (experimental) the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
 #endif
 static void project_save(uint32_t slot);
+static void program_layer_set(uint32_t on);
 static void arrangement_save(void);
 static void panel_setup(void);
 static void project_load(uint32_t slot);
@@ -1071,23 +1072,26 @@ static void preset_kind_jump(int32_t s)
 /* HOME and pedal patch actions wrap within the current bank. */
 static uint32_t home_preset_next(uint32_t cur,int32_t steps)
 {
-    uint32_t total,n=cur,k=kind_at(cur),guard;
+    uint32_t total,n=cur,p,e=preset_at(cur,&p),guard,count=0,i;
     preset_pos(&total);if(!total)return cur;
-    /* Reduce large encoder deltas without changing round-robin ordering. */
-    uint32_t count=0,i;for(i=0;i<total;i++)count+=kind_at(i)==k;
+    for(i=0;i<total;i++){uint32_t q;count+=preset_at(i,&q)==e;}
     if(count)steps%=(int32_t)count;
     while(steps) {
         guard=total;
-        do n=steps>0?(n+1u)%total:(n+total-1u)%total;
-        while(--guard && kind_at(n)!=k);
+        do {n=steps>0?(n+1u)%total:(n+total-1u)%total;uint32_t q;if(preset_at(n,&q)==e)break;}while(--guard);
         steps+=steps>0?-1:1;
     }
     return n;
 }
+static void home_engine_step(int32_t steps) {
+    uint32_t e=(uint32_t)(((int32_t)TSEL->eng_req+steps%(int32_t)NENGINES+(int32_t)NENGINES)%(int32_t)NENGINES);
+    set_engine(e);apply_preset(0);ui.force=1;
+}
 static void home_preset_step(int32_t steps)
 {
-    uint32_t total,cur=preset_pos(&total);
-    if(total)preset_go(home_preset_next(cur,steps));
+    uint32_t n=sm_factory_count(TSEL->eng_req);
+    if(n)apply_preset((uint32_t)(((int32_t)TSEL->preset+steps%(int32_t)n+(int32_t)n)%(int32_t)n));
+    ui.force=1;
 }
 /* HOME: what KNOB k edits: the engine's four main parameters; on the drum track
  * LEVEL and REV (GLO > DRUMS), PAN and LEN */
@@ -1112,7 +1116,7 @@ static const param_desc_t *home_param(uint32_t k, int16_t **vp)
 /* select track i (KNOB 1 on TRACKS, the editor): its sound, pages and pattern from now on */
 static void track_select(uint32_t i)
 {
-    if (i >= NTRK || i == song.sel || SYNTHMAVEN_SYNTH)   /* (SynthMaven: one instrument) */
+    if (i >= NTRK || i == song.sel || (SYNTHMAVEN_SYNTH && i>=4u))   /* (SynthMaven: one instrument) */
         return;
     song.sel = (uint8_t)i;
     rec_follow(i);                                   /* LIVE: recording follows the selected track */
@@ -1122,3 +1126,7 @@ static void track_select(uint32_t i)
     sync_reload = 1;
     ui.force = 1;
 }
+
+#if SYNTHMAVEN_SYNTH
+#include "program.c"
+#endif

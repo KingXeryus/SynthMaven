@@ -7,7 +7,7 @@ for g in font:felucca_font icons:felucca_icons samples:felucca_samples drumkits:
  python3 "tools/gen_${g%%:*}.py" "build/gen/${g#*:}.h" >/dev/null
 done
 CC="${CC:-cc} -O1 -w -DSYNTHMAVEN_SYNTH=1 -Ibuild/gen -Ifirmware/src -Ifirmware/hal"
-for t in synthmaven_maqam_test synthmaven_navigation_test oriental_test synthmaven_usb_performance_test synthmaven_test synthmaven_storage_test synthmaven_ui_test synthmaven_stock_test hybrid_editor_test; do
+for t in synthmaven_maqam_test synthmaven_navigation_test synthmaven_program_store_test oriental_test synthmaven_usb_performance_test synthmaven_test synthmaven_storage_test synthmaven_ui_test synthmaven_stock_test hybrid_editor_test; do
  $CC -o "build/host/$t" "tests/$t.c" -lm
  if [ "$t" = hybrid_editor_test ]; then "build/host/$t" build/host/hy_factory.json; else "build/host/$t"; fi
 done
@@ -23,11 +23,11 @@ $CC -o build/host/wt_rom_test tests/wt_rom_test.c firmware/vendor/tinf/tinflate.
 build/host/wt_rom_test
 node web/test_korg.mjs
 
-$CC -o build/host/synthmaven_ble_discovery_test tests/synthmaven_ble_discovery_test.c
-build/host/synthmaven_ble_discovery_test
-
-$CC -o build/host/synthmaven_ble_test tests/synthmaven_ble_test.c
-build/host/synthmaven_ble_test
+for mode in host audio device loader; do
+ flags="";case "$mode" in audio) flags="-DTEST_UAC=1";;device) flags="-DTEST_HOST=0";;loader) flags="-DFELUCCA_LOADER=1";;esac
+ $CC $flags -fsanitize=address,undefined -o "build/host/usb_$mode" tests/usb_host_test.c
+ "build/host/usb_$mode"
+done
 
 for packed in 0 1; do
  $CC -DSM_PACKED_WT=$packed -o build/host/wt_render_$packed tests/wt_render_test.c firmware/vendor/tinf/tinflate.c -lm

@@ -850,12 +850,10 @@
 <h2>SynthMaven MIDI connections</h2>
 <p id="sm-status" role="status">Connect SynthMaven firmware to read MIDI settings.</p>
 <p><label><input type="checkbox" id="sm-patch-enabled" disabled> Enable patch switching</label></p>
-<div id="sm-patch-options" hidden><label>Pedal connection <select id="sm-patch-port"><option value="0">USB</option><option value="1">Bluetooth</option><option value="2">Any input (legacy)</option></select></label></div>
-<p><label>Keyboard connection <select id="sm-key-port" disabled><option value="0">USB (external host required in this build)</option><option value="1">TRS MIDI</option><option value="2">USB + TRS (legacy)</option></select></label></p>
-<p><label><input type="checkbox" id="sm-bt" disabled> Enable Bluetooth MIDI</label> <button id="sm-pair" disabled>Scan for MIDI pedals</button></p>
-<p><label>Bluetooth pedal <select id="sm-ble-device" disabled></select></label> <button id="sm-ble-connect" disabled>connect selected pedal</button> <button id="sm-ble-disconnect" disabled>disconnect pedal</button></p>
-<p id="sm-ble-status" role="status"></p>
-<p id="sm-limit" class="dim">Bluetooth availability is reported by the connected firmware. USB keyboards still require a USB MIDI host; a power bank supplies power only.</p>
+<div id="sm-patch-options" hidden>Pedal connection: USB MIDI</div>
+<p><label>Keyboard connection <select id="sm-key-port" disabled><option value="0">USB MIDI</option><option value="1">TRS MIDI</option><option value="2">USB + TRS MIDI</option></select></label></p>
+<p>On the FM1, open GLO → USB ROLE and select PEDAL for a direct pedal connection, or COMPUTER for this editor and updates. Use a powered USB adapter or hub for the pedal. Direct-host operation requires hardware validation.</p>
+<p id="sm-limit" class="dim">The USB port has one role at a time. Return to COMPUTER before reconnecting this editor. Hold OCT− at power-on for USB recovery.</p>
 <p class="bar"><button id="sm-read">Read settings</button><button id="sm-save" disabled>Apply settings</button></p>
 </div><div class="groups" id="setgroups"></div>
       <div class="card">
@@ -3023,7 +3021,7 @@ function makeMockDevice(opt = {}) {
         s(opt.synthmaven ? "FELUCCA SYNTHMAVEN 1.3 (MOCK)" : opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : (opt.synthmaven ? "FELUCCA SYNTHMAVEN 1.3 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)")); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
         ENG.forEach((e) => s(e.name));
         if (!opt.legacy) b(NTRK);
-        if (v5) b(opt.synthmaven ? (opt.maqam?17:opt.oriental?16:15) : opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : opt.synthmaven ? (JU_E >= 0 ? (opt.synthmaven === "0.8" ? 13 : 14) : FX_E >= 0 ? 12 : 11) : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
+        if (v5) b(opt.synthmaven ? (opt.maqam?18:opt.oriental?16:15) : opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : opt.synthmaven ? (JU_E >= 0 ? (opt.synthmaven === "0.8" ? 13 : 14) : FX_E >= 0 ? 12 : 11) : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
         break;
       case CMD.GET: case CMD.SET: {
         if (a.length < 2) return null;
@@ -4690,7 +4688,7 @@ function patchByCount(p, pe0, n, ne0 = n - 8) {
 /* (after SLOOP 2.6) a backup's projects in a format the device cannot read stop the restore before anything is written:
    the format of a stored project ("FUN6" low byte first: 6), and the newest a device reads (SLOOP 2.6: 6, 2.4 .. 2.5: 5,
    older 4; SynthMaven from 0.4.1: 6, before 5) */
-const bkProjFormat = (d) => (d && d.length >= 4 && d[1] === 0x4E && d[2] === 0x55 && d[3] === 0x46 ? d[0] - 0x30 : 0);
+const bkProjFormat = (d) => (d && d.length>=4 && d[0]===0x50 && d[1]===0x52 && d[2]===0x47 && d[3]===0x31 ? 7 : d && d.length >= 4 && d[1] === 0x4E && d[2] === 0x55 && d[3] === 0x46 ? d[0] - 0x30 : 0);
 const bkFwAtLeast = (v, want) => {
   const m = /(\d+)\.(\d+)(?:\.(\d+))?/.exec(String(v || ""));
   if (!m) return false;
@@ -4698,7 +4696,7 @@ const bkFwAtLeast = (v, want) => {
   for (let i = 0; i < 3; i++) if (a[i] !== want[i]) return a[i] > want[i];
   return true;
 };
-const bkDevFormat = (info) => (/synthmaven/i.test(info.version || "") ? (bkFwAtLeast(info.version, [0, 4, 1]) ? 6 : 5)
+const bkDevFormat = (info) => (info.proto >= 18 && /synthmaven/i.test(info.version || "") ? 7 : /synthmaven/i.test(info.version || "") ? (bkFwAtLeast(info.version, [0, 4, 1]) ? 6 : 5)
   : info.pcount >= 71 ? 6 : info.pcount >= 61 ? 5 : 4);
 /*PROTO-END*/
 
@@ -9950,11 +9948,11 @@ async function lySet(id, v) {
 }
 /* ---------------------------------------------------------------- TUNING --- */
 /* SynthMaven 0.9: the FM-1's tuning (firmware v14): a system and its root, or a USER scale from a Scala .scl file */
-const TU_NAMES = ["EQUAL", "JUST", "PYTHAG", "MEANTONE", "WERCK III", "KIRNB III", "RAST", "BAYATI", "SLENDRO", "PELOG", "19-EDO", "24-EDO", "31-EDO", "USER", "AJAM", "AJAM USHAYRAN", "ATHAR KURD", "AWJ IRAQ", "BASTANIKAR", "BAYATI SHURI", "DALANSHIN", "FARAHFAZA", "HIJAZ", "HIJAZKAR", "HIJAZKAR KURD", "HUSAYNI", "HUZAM", "IRAQ", "JIHARKAH", "KIRDAN", "KURD", "LAMI", "MAHUR", "MUHAYYAR", "MUSTAAR", "NAHAWAND", "NAHAWAND MURASSAA", "NAIRUZ", "NAWA ATHAR", "NIKRIZ", "RAHAT AL-ARWAH", "SABA", "SABA ZAMZAM", "SAZKAR", "SHADD ARABAN", "SHAHNAZ", "SHAWQ AFZA", "SIKAH", "SIKAH BALADI APPROX", "SUZDALARA", "SUZIDIL", "SUZNAK", "USHAQ MASRI", "YAKAH", "ZANJARAN", "RAST DESCENDING", "BAYATI UPPER RAST", "HIJAZ UPPER RAST"];
+const TU_NAMES = ["EQUAL", "JUST", "PYTHAG", "MEANTONE", "WERCK III", "KIRNB III", "RAST", "BAYATI", "SLENDRO", "PELOG", "19-EDO", "24-EDO", "31-EDO", "USER", "AJAM", "AJAM USHAYRAN", "ATHAR KURD", "AWJ IRAQ", "BASTANIKAR", "BAYATI SHURI", "DALANSHIN", "FARAHFAZA", "HIJAZ", "HIJAZKAR", "HIJAZKAR KURD", "HUSAYNI", "HUZAM", "IRAQ", "JIHARKAH", "KIRDAN", "KURD", "LAMI", "MAHUR", "MUHAYYAR", "MUSTAAR", "NAHAWAND", "NAHAWAND MURASSAA", "NAIRUZ", "NAWA ATHAR", "NIKRIZ", "RAHAT AL-ARWAH", "SABA", "SABA ZAMZAM", "SAZKAR", "SHADD ARABAN", "SHAHNAZ", "SHAWQ AFZA", "SIKAH", "SIKAH BALADI APPROX", "SUZDALARA", "SUZIDIL", "SUZNAK", "USHAQ MASRI", "YAKAH", "ZANJARAN", "RAST DESCENDING", "BAYATI UPPER RAST", "HIJAZ UPPER RAST", "CUSTOM1", "CUSTOM2", "CUSTOM3", "CUSTOM4"];
 const TU_USER = 13;
 const TU_MAQAM = [{"sys":6,"name":"Rast","offsets":[0,0,0,0,-50,0,0,0,0,0,0,-50],"note":""},{"sys":7,"name":"Bayati","offsets":[0,0,-50,0,0,0,0,0,0,0,0,0],"note":""},{"sys":14,"name":"Ajam","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":15,"name":"Ajam Ushayran","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Transposed Ajam"},{"sys":16,"name":"Athar Kurd","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":17,"name":"Awj Iraq","offsets":[0,0,-50,0,-50,-50,0,0,-50,-50,0,50],"note":"Tonic normalized from a half-flat reference; descending outline"},{"sys":18,"name":"Bastanikar","offsets":[0,0,-50,0,-50,0,0,-50,-50,0,50,50],"note":"First octave only; upper ajnas extend beyond the octave"},{"sys":19,"name":"Bayati Shuri","offsets":[0,0,-50,0,0,0,0,0,0,0,0,0],"note":""},{"sys":20,"name":"Dalanshin","offsets":[0,0,0,0,-50,0,0,0,0,0,0,-50],"note":"First-octave Rast outline; upper modulation is played separately"},{"sys":21,"name":"Farahfaza","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Transposed Nahawand"},{"sys":22,"name":"Hijaz","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Nahawand upper jins reference"},{"sys":23,"name":"Hijazkar","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":24,"name":"Hijazkar Kurd","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Lower-octave Kurd reference; octave-dependent alterations cannot be encoded in a repeating 12-key table"},{"sys":25,"name":"Husayni","offsets":[0,0,-50,0,0,0,0,0,0,-50,0,0],"note":"Upper Bayati reference; B-flat alternative remains on its chromatic key"},{"sys":26,"name":"Huzam","offsets":[0,0,-50,0,-50,-50,0,0,-50,-50,0,-50],"note":"Tonic normalized from a half-flat reference"},{"sys":27,"name":"Iraq","offsets":[0,0,-50,0,-50,0,0,-50,0,-50,0,-50],"note":"Tonic normalized from a half-flat reference"},{"sys":28,"name":"Jiharkah","offsets":[0,0,0,0,-25,-25,0,0,0,0,0,-50],"note":"Reference approximation: thirds/fourths 25 cents low"},{"sys":29,"name":"Kirdan","offsets":[0,0,0,0,-50,0,0,0,0,0,0,-50],"note":"Rast tuning; descending melodic identity"},{"sys":30,"name":"Kurd","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":31,"name":"Lami","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":32,"name":"Mahur","offsets":[0,0,0,0,-50,0,0,0,0,0,0,0],"note":""},{"sys":33,"name":"Muhayyar","offsets":[0,0,-50,0,0,0,0,0,0,0,0,0],"note":"Bayati tuning; upper-register melodic identity"},{"sys":34,"name":"Mustaar","offsets":[0,0,0,-50,-50,0,-50,-50,0,-50,0,-50],"note":"Tonic normalized from a half-flat reference"},{"sys":35,"name":"Nahawand","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Harmonic-minor reference; descending flat seventh is still available"},{"sys":36,"name":"Nahawand Murassaa","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":37,"name":"Nairuz","offsets":[0,0,0,0,-50,0,0,0,0,-50,0,0],"note":""},{"sys":38,"name":"Nawa Athar","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":39,"name":"Nikriz","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":40,"name":"Rahat al-Arwah","offsets":[0,0,-50,0,-50,-50,0,0,-50,-50,0,-50],"note":"Transposed Huzam"},{"sys":41,"name":"Saba","offsets":[0,0,-50,0,0,0,0,0,0,0,0,0],"note":"Repeating first-octave reference; upper lowered tonic is played chromatically"},{"sys":42,"name":"Saba Zamzam","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Repeating first-octave reference"},{"sys":43,"name":"Sazkar","offsets":[0,0,0,0,-50,0,0,0,0,0,0,-50],"note":"Rast tuning; chromatic D-sharp remains available"},{"sys":44,"name":"Shadd Araban","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Transposed Hijazkar"},{"sys":45,"name":"Shahnaz","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Transposed Hijazkar"},{"sys":46,"name":"Shawq Afza","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":47,"name":"Sikah","offsets":[0,0,-50,0,-50,0,-50,0,0,-50,0,-50],"note":"Tonic normalized from a half-flat reference"},{"sys":48,"name":"Sikah Baladi approx","offsets":[0,0,-50,0,-50,-25,0,0,0,-50,0,-50],"note":"Approximation only; variable intonation is not fully representable by a fixed table"},{"sys":49,"name":"Suzdalara","offsets":[0,0,0,0,-50,0,0,0,0,0,0,0],"note":""},{"sys":50,"name":"Suzidil","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Transposed Hijazkar"},{"sys":51,"name":"Suznak","offsets":[0,0,0,0,-50,0,0,0,0,0,0,0],"note":""},{"sys":52,"name":"Ushaq Masri","offsets":[0,0,0,0,0,0,0,0,0,-50,0,0],"note":""},{"sys":53,"name":"Yakah","offsets":[0,0,0,0,-50,0,0,0,0,-50,0,0],"note":"Transposed Nairuz"},{"sys":54,"name":"Zanjaran","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":55,"name":"Rast descending","offsets":[0,0,0,0,-50,0,0,0,0,0,0,0],"note":"Flat seventh descending reference"},{"sys":56,"name":"Bayati upper Rast","offsets":[0,0,-50,0,0,0,0,0,0,-50,0,0],"note":"Rast upper jins"},{"sys":57,"name":"Hijaz upper Rast","offsets":[0,0,0,0,0,0,0,0,0,-50,0,0],"note":"Rast upper jins"}];
 let tuv = null;
-const tuSystems = () => TU_NAMES.slice(0, dev?.info?.proto >= 17 ? TU_NAMES.length : 14);
+const tuSystems = () => TU_NAMES.slice(0, dev?.info?.proto >= 18 ? TU_NAMES.length : dev?.info?.proto >= 17 ? 58 : 14);
 const tuOk = () => !!dev && !!dev.info && dev.info.proto >= 14;
 function tuShow() {
   const on = tuOk();
@@ -10019,7 +10017,7 @@ $("tufile").addEventListener("change", async (e) => {
 const MS_SHAPES = ["RAMP+", "RAMP-", "TRI", "SINE", "SQR", "RND", "FLAT", "INVRT", "SHIFT"];
 let msv = new Array(64).fill(0), msLane = 0, msTimer = null, msPending = false;
 const msOk = () => !!dev && !!dev.info && dev.info.proto >= 13;
-const msTrack = () => (dev && dev.sel != null ? Math.min(dev.sel, 1) : 0);
+const msTrack = () => (dev && dev.sel != null ? Math.min(dev.sel, dev.info.proto >= 18 ? 3 : 1) : 0);
 function msShow() {
   const on = msOk();
   $("mspanel").hidden = !on;
@@ -10389,87 +10387,32 @@ $("bkexport").addEventListener("click", () => libOp(async () => {
   sayK("ready");
 }));
 
-// SynthMaven v15 settings: never show a browser Bluetooth connection as a hardware pairing.
+// SynthMaven USB-only routing. Direct host mode is selected on the hardware.
 let smState = null;
-function smCascade() {
-  $("sm-patch-options").hidden = !$("sm-patch-enabled").checked;
-}
+function smCascade() { $("sm-patch-options").hidden = !$("sm-patch-enabled").checked; }
 async function smRequest(cmd, values = []) {
-  if (!dev || !dev.info || dev.info.proto < 15 || !/SYNTHMAVEN/i.test(dev.info.version)) throw new Error("SynthMaven v15 protocol required; installed firmware is unchanged.");
+  if (!dev || !dev.info || dev.info.proto < 18 || !/SYNTHMAVEN/i.test(dev.info.version)) throw new Error("SynthMaven 1.4 firmware required.");
   const a = await rq([cmd, values]);
-  if (!a || a.length !== 8 || a[1] !== 1) throw new Error("Invalid SynthMaven settings reply");
-  if (a[0]) throw new Error(a[0] === 4 ? "Connection unavailable or not ready: enable Bluetooth, wait for startup, then scan/select a MIDI pedal." : "Invalid MIDI settings");
-  return {caps:a[2], enabled:a[3], patch:a[4], key:a[5], bt:a[6], state:a[7]};
+  if (!a || a.length !== 10 || a[1] !== 2) throw new Error("Invalid SynthMaven settings reply");
+  if (a[0]) throw new Error("USB MIDI settings unavailable");
+  return {caps:a[2], enabled:a[3], patch:a[4], key:a[5], host:a[8], connected:a[9]};
 }
 async function smRefresh() {
   try {
     smState = await smRequest(100);
     $("sm-patch-enabled").checked = !!smState.enabled;
-    $("sm-patch-port").value = String(smState.patch);
     $("sm-key-port").value = String(smState.key);
-    $("sm-bt").checked = !!smState.bt;
     $("sm-patch-enabled").disabled = $("sm-key-port").disabled = $("sm-save").disabled = false;
-    $("sm-patch-port").querySelector('option[value="1"]').disabled = !(smState.caps & 4);
-    $("sm-bt").disabled = !(smState.caps & 4);
-    $("sm-pair").disabled = !(smState.caps & 4) || !smState.bt;
-    $("sm-status").textContent = "Read from SynthMaven. Bluetooth: " + ((smState.caps & 4) ? "available" : "driver unavailable");
-    smBleStatus(smState);
+    $("sm-status").textContent = "USB MIDI ready. Pedal messages use USB only.";
     smCascade();
-  } catch(e) { $("sm-status").textContent = e.message; for (const id of ["sm-patch-enabled","sm-key-port","sm-save","sm-bt","sm-pair"]) $(id).disabled = true; }
+  } catch(e) { $("sm-status").textContent = e.message; for (const id of ["sm-patch-enabled","sm-key-port","sm-save"]) $(id).disabled = true; }
 }
 $("sm-read").addEventListener("click", smRefresh);
 $("sm-patch-enabled").addEventListener("change", smCascade);
 $("sm-save").addEventListener("click", async () => {
- try { await smRequest(101, [+$("sm-patch-enabled").checked, +$("sm-patch-port").value, +$("sm-key-port").value, +$("sm-bt").checked]); await smRefresh(); }
+ try { await smRequest(101, [+$("sm-patch-enabled").checked, 0, +$("sm-key-port").value, 0]); await smRefresh(); }
  catch(e) { $("sm-status").textContent = e.message; }
 });
-const SM_BLE_STATES=['off','starting radio','idle','scanning','connecting','discovering MIDI service','MIDI ready','radio startup failed'];
-function smBleStatus(state) {
-  $('sm-ble-status').textContent=(state.caps&4)?'Bluetooth: '+(SM_BLE_STATES[state.state]||'unknown'):'Bluetooth central driver unavailable in this firmware.';
-  $('sm-ble-disconnect').disabled=!(state.caps&4)||state.state<4||state.state>6;
-  $('sm-ble-device').disabled=!(state.caps&4)||!state.bt;
-  $('sm-ble-connect').disabled=!(state.caps&4)||!state.bt||!$('sm-ble-device').options.length||state.state===6;
-}
-function smParseDevices(a) {
-  if(!a || a.length<2 || a[0] || a[1]>8)throw new Error('Bluetooth device list unavailable');
-  let at=2;const entries=[],seen=new Set();
-  for(let i=0;i<a[1];i++) {
-    const index=a[at++];if(index==null||index>7||seen.has(index))throw new Error('Invalid Bluetooth device list');
-    seen.add(index);let name='';
-    while(at<a.length && a[at] && name.length<31)name+=String.fromCharCode(a[at++]);
-    if(at>=a.length||a[at++]!==0||at>=a.length)throw new Error('Invalid Bluetooth device list');
-    const rssi=a[at++]-127;entries.push({index,name,rssi});
-  }
-  if(at!==a.length)throw new Error('Invalid Bluetooth device list');
-  return entries;
-}
-async function smBleList() {
-  if(!dev || !smState || !(smState.caps&4))return;
-  const entries=smParseDevices(await rq([103,[]]));
-  const select=$('sm-ble-device'),keep=select.value;
-  select.replaceChildren(...entries.map(x=>el('option',{value:x.index,text:x.name+' ('+x.rssi+' dBm)'})));
-  if(entries.some(x=>String(x.index)===keep))select.value=keep;
-  smBleStatus(smState);
-}
-$('sm-pair').addEventListener('click', async () => {
- try { smState=await smRequest(102);await smBleList();smBleStatus(smState); }
- catch(e){$('sm-status').textContent=e.message;}
-});
-$('sm-ble-connect').addEventListener('click', async () => {
- try {smState=await smRequest(104,[+$('sm-ble-device').value]);smBleStatus(smState);}
- catch(e){$('sm-status').textContent=e.message;}
-});
-$('sm-ble-disconnect').addEventListener('click', async () => {
- try {smState=await smRequest(105);smBleStatus(smState);}
- catch(e){$('sm-status').textContent=e.message;}
-});
-let smBlePolling=false;
-setInterval(async()=>{
- if(smBlePolling || !dev || !smState || !(smState.caps&4) || !smState.bt || $('p-settings').hidden)return;
- smBlePolling=true;
- try{smState=await smRequest(100);await smBleList();smBleStatus(smState);}catch(e){$('sm-ble-status').textContent=e.message;}
- finally{smBlePolling=false;}
-},1000);
 
 
 var smPage = 0;

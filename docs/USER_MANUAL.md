@@ -1,8 +1,8 @@
-# SynthMaven 1.3 — FM1 user manual
+# SynthMaven 1.4 — FM1 user manual
 
 SynthMaven is an open-source firmware based on [Clipper](https://github.com/isod89/clipper-fm1).
 This manual covers the **M-VAVE FM1 hardware firmware**, its web installer and
-web editor. Version 1.3 provides **23 engines and 537 factory presets**. The Mac
+web editor. Version 1.4 provides **23 engines and 537 factory presets**. The Mac
 software instrument has a separate feature set; its eight-layer interface and
 DAW formats are not features of this hardware firmware.
 
@@ -21,7 +21,7 @@ DAW formats are not features of this hardware firmware.
 7. [Layer, split and performance](#layer-split-and-performance)
 8. [Tuning and Scala scales](#tuning-and-scala-scales)
 9. [MIDI keyboards and controllers](#midi-keyboards-and-controllers)
-10. [Bluetooth pedals and patch switching](#bluetooth-pedals-and-patch-switching)
+10. [USB pedals and patch switching](#usb-pedals-and-patch-switching)
 11. [Arpeggiator and sequencer](#arpeggiator-and-sequencer)
 12. [Importing sounds](#importing-sounds)
 13. [Saving, projects and backups](#saving-projects-and-backups)
@@ -30,29 +30,17 @@ DAW formats are not features of this hardware firmware.
 
 ## Before installation
 
-Back up the currently installed firmware's user data before updating. Use its
-matching editor to save a full backup, and keep a copy outside the browser.
-Use reliable power during installation. Start listening with the output volume
-low: envelope, resonance and modulation edits can change perceived loudness.
-
-Version 1.3 includes native Bluetooth and all 23 engines. Consult the release
-validation section for target build and memory-limit results. Listening tests, pairing/reconnect with both
-Chocolate models and audio timing under wireless load remain outstanding.
+Back up the FM1 before installing custom firmware. Version 1.4 removes Bluetooth. Direct USB host mode has software test coverage but still needs Chocolate Plus hardware validation.
 
 ### Connection options
 
-| Connection | Current operation |
+| Connection | Role |
 |---|---|
-| Computer USB → FM1 | USB MIDI device input, web editing and installation |
-| MIDI keyboard → FM1 TRS MIDI input | Keyboard input; use a compatible MIDI cable/adapter |
-| BLE MIDI pedal → FM1 | Native scan, select and link controls; hardware validation pending |
-| USB keyboard directly → FM1 | USB host mode is not integrated; requires a MIDI host |
-| Power bank → FM1 | Power only; it does not provide a USB MIDI host |
+| Computer → FM1 | COMPUTER: editor, MIDI, audio and firmware updates |
+| USB pedal → FM1 directly | PEDAL: class-compliant USB MIDI, powered adapter/hub required |
+| TRS MIDI keyboard → FM1 | TRS or BOTH keyboard input |
 
-A separately powered USB keyboard still normally needs a host to communicate
-with the FM1. The intended computer-free arrangement for this build is a TRS
-MIDI keyboard with a BLE pedal. Do not select adapters solely by connector shape;
-check the MIDI wiring requirements of the devices being connected.
+The FM1 port cannot act as host and computer device at the same time. This host implementation does not drive 5 V VBUS. Choose a powered adapter/hub with correct host wiring; connector shape alone does not establish compatibility. Hold OCT− during power-on for USB recovery.
 
 ## Install and connect the editor
 
@@ -60,53 +48,38 @@ check the MIDI wiring requirements of the devices being connected.
    in Chrome or Edge with the FM1 connected over USB.
 2. Close other programs using the FM1 MIDI ports if connection fails.
 3. Follow the installer prompts and keep power connected until it finishes.
-4. Check the splash/About screen for **SYNTHMAVEN 1.3**.
+4. Check the splash/About screen for **SYNTHMAVEN 1.4**.
 5. Open the [editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/),
    click **Connect**, grant MIDI/SysEx access when prompted and choose the FM1.
 
 Use the matching online editor after updating. The firmware/editor wire protocol
-is version **17**; that protocol number is independent of product version 1.3.
+is version **18**; that protocol number is independent of product version 1.4.
 A URL ending in `?mock=1` uses a simulated device for previewing the editor.
 It does not communicate with or validate a physical FM1.
 
 ## Hardware controls and preset browsing
 
-HOME displays four patches from the current category bank. The loaded patch is
-highlighted, with its engine below. SELECT loads the previous/next sound in that bank and wraps in
-either direction. PRESET also browses within the bank; ALGORITHM switches category banks. The displayed page follows
-the current patch, with fewer entries on a partially filled final page. Tap the labelled page buttons
-such as EDIT, FX, ARP, GLO and SAVE to reach their settings. Some buttons also
-have held sequencer functions; tap when the intention is page navigation.
+HOME displays the four sounds loaded in the working program. The outline marks the focused sound.
 
-Tap **SAVE** to reach **PRESETS**. Four names are visible at once, except at the
-end of a short list. Highlighting a sound does not load it.
-
-| PRESETS control | Action |
+| Control | Action on HOME |
 |---|---|
-| KNOB 1 | Move the highlight |
-| KNOB 2 | Filter ALL, an engine, USER or ORIENTAL |
-| KNOB 3 clockwise | Load the highlighted sound |
-| KNOB 4 clockwise | Load the sound and open Edit |
+| ALGORITHM | Cycle all 23 engines for the focused sound |
+| PRESET | Cycle factory presets within that engine, wrapping at either end |
+| SELECT | Cycle focus through sound slots 1–4 |
+| KNOB 1–4 | Edit the focused sound’s main parameters |
+| SEL tap | Cycle tuning scales |
+| SEL hold 3 seconds | Latch the custom-scale editor |
+| SAVE | Open PROGRAM save/load settings |
 
-The engine filter includes that engine's appended Oriental presets. USER shows
-saved user presets. XD compatibility sounds are identified by their **XD** names
-inside the HYBRID list. The web editor also offers Load/Edit actions.
+SAVE → PROGRAM selects a slot, loads or saves it. Turn LOAD or SAVE twice to confirm. PROGRAM MODE → LAYER chooses focused sound alone (OFF) or all four sounds together (ON). All layers share the eight-voice budget.
+
+Other SAVE pages include PRESETS and USER. On PRESETS, KNOB 1 highlights a candidate, KNOB 2 filters ALL/engine/USER/ORIENTAL, KNOB 3 loads it and KNOB 4 loads and opens Edit. Loading replaces the focused sound only. Factory presets load dry; add effects afterward.
+
+Function layers remain open after holding their button for three seconds. Release the button and continue editing. Tap the same function button or HOME to exit. REC’s clear action still requires its confirmation hold.
 
 ### Oriental / Middle Eastern sounds
 
-Select **ORIENTAL** with KNOB 2. The collection has **44 melodic instrument
-recipes × two variations = 88 presets**. It includes plucked strings, winds,
-regional strings, reeds and leads. No percussion is added in this collection.
-
-The short hardware name ends in **D** for Dry or **E** for Expressive. Both start
-with chorus, delay and reverb sends and the SPACE macro at zero. Add the effects you want from FX.
-The Expressive variation changes the performance/tone recipe rather than
-providing an additional hall or live-effects version.
-
-In the editor, use the **Oriental / Middle Eastern** selector for full names.
-These are SynthMaven synthesis recipes using its native engines, not commercial
-Yamaha ESP or TAQS.IM samples. [See every instrument](release-1.0.md#melodic-instrument-catalog).
-Choosing a sound does not choose its tuning; set the desired maqam separately.
+The factory library includes 88 melodic Oriental/Middle Eastern sounds. Use the ORIENTAL browser filter or find them inside their engines. See [the collection](../assets/oriental/README.md).
 
 ## Factory library and engines
 
@@ -190,17 +163,7 @@ whole output, including a layered part.
 
 ## Layer, split and performance
 
-The hardware supports a main sound plus a second instrument part through the
-**LAYER** controls. Available modes include OFF, LAYER, SPLIT and MULTI. Choose
-the second sound, balance its level, and adjust octave/pan as needed. SPLIT uses
-a split point; MULTI uses separate MIDI-channel operation. This is distinct from
-the eight independent engine layers in the Mac software instrument.
-
-In the voice controls, select POLY for chords or MONO/LEGATO for appropriate
-lead phrasing. **GLIDE** controls portamento time. Modulation response depends
-on the loaded patch: a received mod-wheel or pressure message only changes the
-sound through its assigned response. Dense layers, long releases and heavy
-effects increase voice and processing demand; reduce them if performance suffers.
+The four program sounds replace the previous two-part layer workflow. Use SAVE → PROGRAM MODE → LAYER. OFF plays the SELECT-focused sound; ON plays all four sounds. Selecting a different slot changes editing focus. Note releases follow the sounds that received the note-on. Release notes before saving a program. Layers share eight voices; four sounds consume up to four voices per played note.
 
 ## Tuning and Scala scales
 
@@ -254,79 +217,17 @@ same notes through two host paths unless that is intentional. Old-source note
 releases, sustain-up and safety resets remain accepted after an input change to
 help prevent hanging notes. See the [MIDI reference](midi.md) for the complete list.
 
-## Bluetooth pedals and patch switching
+## USB pedals and patch switching
 
-Patch switching has its own route, independent of KEY IN:
+Bluetooth is removed. For a pedal directly connected to the FM1, choose GLO → USB ROLE → PEDAL and use a powered USB adapter or hub. A class-compliant USB MIDI pedal is required. USB MIDI CONNECTED indicates enumeration; USB DEVICE NOT MIDI means no supported MIDI interface was found. A disconnect releases notes. To return to the editor, choose COMPUTER and reconnect the USB cable. Recovery always uses device mode.
 
-- **GLO → PATCH MIDI → PROG**: enable or disable MIDI patch changes.
-- **PORT**: select USB, BLE or ANY when patch switching is enabled.
-
-Version 1.3 recognizes FootCtrl/Chocolate names even when the advertisement
-contains HID service 0x1812 rather than the MIDI service UUID. FootCtrlPlus was
-observed using that format. The FM1 checks for the actual MIDI characteristic
-after connecting; a name match alone never establishes MIDI READY.
-
-To attempt a BLE MIDI pedal connection:
-
-1. Enable the pedal's documented Bluetooth MIDI mode.
-2. On the FM1, open **GLO → BLUETOOTH** and enable **BT MIDI**.
-3. Start **SCAN**, then select the intended **PEDAL** from the discovered list.
-4. Use **LINK** to connect. Wait for **MIDI READY**.
-5. Set PATCH MIDI to BLE or ANY and test one patch change at a time.
-
-LINK also provides disconnect control. A device appearing in a scan is not yet a
-working MIDI link: discovery/subscription must finish. The editor provides the
-same controls and actual link status. Original Chocolate and Chocolate Plus
-pairing, reconnect and sustained performance are still hardware-validation items.
+GLO → PATCH MIDI → PROG enables/disables patch switching. The source is fixed to USB. GLO → KEY MIDI independently chooses USB, TRS or BOTH for keyboard notes.
 
 ### Assign pedal messages to relative navigation
 
-GLO has separate **PATCH UP**, **PATCH DOWN**, **BANK UP** and **BANK DOWN** pages.
-Each page has the following saved settings:
+Open GLO → PATCH UP, PATCH DOWN, BANK UP or BANK DOWN. Set TYPE to CC or PC, NUMBER to 0–127, VALUE to the triggering CC value, and CH to IN CH or an explicit channel 1–16. OFF disables an action. CC release values do not trigger an action unless configured as the trigger. Patch actions wrap within the focused engine; bank actions select the next/previous engine. Save the pedal’s matching configuration using its own configuration tool if required.
 
-| Control | Meaning |
-|---|---|
-| TYPE | OFF (default), CC or PC |
-| NUMBER | Raw controller/program number, 0–127 |
-| VALUE | Exact CC value that triggers; ignored for PC |
-| CH | IN CH follows MIDI input channel; 1–16 selects an independent pedal channel |
-
-For a pedal that sends CC80=127 on press and CC80=0 on release, assign PATCH UP
-with TYPE CC, NUMBER 80, VALUE 127 and the pedal's channel. Release then does not
-trigger a second patch change. Assign different messages to the other actions.
-A mapped PC performs the relative action instead of loading its absolute program.
-Avoid assigning the same message to more than one action: the first matching
-action wins in patch-up, patch-down, bank-up, bank-down order.
-
-These incoming assignments use PATCH MIDI PORT and PROG, independently of KEY IN.
-An explicit pedal channel also works independently of the keyboard's MIDI IN
-channel. Patch up/down wrap within the current category bank; bank up/down select
-the previous/next category. Settings are saved automatically and survive restart.
-The web editor currently provides BLE connection controls; use the hardware GLO
-pages for the new message assignments. This does not reprogram the pedal itself.
-
-### Bluetooth startup status
-
-The 1.1 update accepts the SDK's ready notification with length zero, fixing a 1.0
-callback mismatch that prevented BLE initialization. SCAN says ENABLE BT FIRST
-only when BT MIDI is off. BT STARTING means initialization is pending;
-BT START TIMEOUT means no ready event arrived within 15 seconds. A later ready
-event clears the failure and runs the queued scan. If it never arrives, restart
-the FM1 and report the firmware version and pedal model. MIDI READY still means
-GATT discovery and notification subscription have finished; SCANNING alone does
-not establish a link.
-
-### Absolute user-slot selection
-
-For stable user-slot addressing, program the pedal to send **Bank Select MSB
-CC0=127**, followed by **Program Change 0 for U01, 1 for U02**, and so on. Some
-pedal applications display program numbers starting at 1 although MIDI data
-starts at 0; verify the actual transmitted data. Empty or out-of-range user slots
-do not load a sound. Save a factory/FM6 sound as a user preset before addressing
-it this way. Bank state is separate for each input port and MIDI channel.
-
-Turning PROG off disables patch switching while allowing keyboard performance
-through KEY IN. Native USB host mode is not enabled by choosing USB in this menu.
+Absolute Program Change remains available. Bank MSB 127 addresses physical user-preset slots, with Program Change 0 selecting user slot 1. Other banks retain factory-list mapping. The web editor exposes patch enable and keyboard routing; use the hardware for pedal-message mapping and USB role selection.
 
 ## Arpeggiator and sequencer
 
@@ -381,22 +282,11 @@ files outside browser storage, which can be cleared by the browser.
 
 ## Saving, projects and backups
 
-Factory presets are starting points. To preserve an edit on the hardware, open
-**SAVE → USER**, choose a slot with KNOB 1, and use **KNOB 4 / SAVE**. On that
-page, KNOB 2 loads and KNOB 3 erases; check the slot before using either erase or
-save. Saving into an occupied slot replaces that user preset.
+SAVE → PROGRAM provides four persistent program slots. Choose SLOT 1–4; turn SAVE twice to store the current four sounds, or LOAD twice to restore a saved program. Release notes and stop the transport first. An empty slot reports EMPTY SLOT.
 
-Projects capture a broader instrument state. The firmware's project recall tests
-verify that appended Oriental preset IDs and all 126 track parameters survive
-recall. A project and an individual preset serve different purposes; keep full
-backups as well as important individual sounds.
+Programs contain each sound’s engine, preset identity, edited parameters, modulation sequence and HYBRID/FMX/FM6 patch, plus selected sound, tuning configuration and layer mode. The working program autosaves after an idle period when stopped and quiet. Custom-scale definitions persist in settings and are also included in programs and working-program backups. Loading a program restores its custom scales.
 
-Use the editor **Backup** tab to save a complete backup before firmware changes.
-Keep the file in a named folder with its firmware version and date. Restore with
-a compatible editor/firmware and follow its stopped-playback prompts. Do not
-interrupt a flash write or unplug during installation/restore. Radio bond data
-uses separate storage; a radio-journal rollover interrupted by power loss can
-forget bonds, requiring another connection attempt.
+USER presets store individual sounds. Export user banks and backups before updates. Older four-track project records remain readable; new PRG1 records require this release. Do not overwrite valuable slots while testing custom firmware.
 
 ## Troubleshooting
 
@@ -404,7 +294,7 @@ forget bonds, requiring another connection attempt.
 |---|---|
 | Editor does not connect | Chrome/Edge, USB data cable, MIDI/SysEx permission, correct port; close competing MIDI applications |
 | Only highlight changes | Use KNOB 3 to load or KNOB 4 to load and edit |
-| Oriental collection missing | Verify SYNTHMAVEN 1.3, refresh the matching editor, select ORIENTAL on the hardware |
+| Oriental collection missing | Verify SYNTHMAVEN 1.4, refresh the matching editor, select ORIENTAL on the hardware |
 | USB keyboard is silent | Confirm a MIDI host exists; separate power alone is insufficient; check KEY IN and channel |
 | TRS keyboard is silent | Check MIDI direction, compatible cable/adapter, channel and KEY IN |
 | Pedal scans but does not switch | Wait for MIDI READY; enable PROG; check PORT, channel and actual Program Change/CC0 data |
@@ -420,27 +310,8 @@ For recovery tooling, see the [build/install guide](../BUILDING.md#install).
 
 ## Version, validation and support
 
-The 1.3 native BLE build passes flash/RAM/pool limits with all
-23 engines and 537 factory presets. The installable package identifies as
-FM-1_913; the splash and editor identify SynthMaven 1.3. The product version **1.3**
-is separate from editor protocol **17** and retained hardware-loader identifiers.
-The automated checks cover preset values, browser indexing, MIDI response,
-project recall, input routing, storage, editor transfers and target memory bounds.
-They do not establish real pedal pairing or real-time audio quality on the FM1.
+Version 1.4 uses editor protocol 18. See [release notes](release-1.4.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
 
-Report issues at [SynthMaven Issues](https://github.com/KingXeryus/SynthMaven/issues).
-Include firmware version, engine/preset, connection route, steps to reproduce,
-and the actual pedal/keyboard messages where possible. Do not send private
-account credentials. Source and retained licences are available in the repository
-and alongside the installer. See [1.3 release notes](release-1.3.md), [preset catalog](release-1.0.md),
-[Bluetooth status](BLUETOOTH_STATUS.md) and [USB status](USB_MIDI_STATUS.md).
-
-## Known Bluetooth crash — experimental release
-
-During 1.1 Bluetooth/Chocolate Plus testing, the FM1 crashed and entered USB
-rescue; the user restored the original firmware. The cause remains unresolved.
-Version 1.3 fixes discovery and link-status reporting, but has not been shown
-to fix that crash. Hardware stability and pedal MIDI remain unverified.
 
 
 ## Arabic maqam selection
@@ -451,3 +322,7 @@ Only the displayed nonzero offsets retune keys; all other chromatic notes stay
 available. A4 remains adjustable from 400 to 480 Hz. The editor has the same
 list and root control. See the [full maqam catalogue](MAQAM_SCALES.md) for every
 setting, variant, reference degrees and tuning limitations.
+
+## Custom chromatic scales
+
+Tap SEL to cycle scales. Hold SEL for three seconds to enter the latched editor. SELECT chooses CUSTOM 1–4; PRESET selects ROOT C–B. Each chromatic key press cycles its offset through −25, −50, −75 and 0 cents. Other pitch classes stay unchanged. The offsets repeat across octaves relative to ROOT. Press SAVE and wait for SCALE SAVED; press SEL to leave. These custom scales appear in the tuning list alongside the 46 maqam reference tunings and Scala USER scale.

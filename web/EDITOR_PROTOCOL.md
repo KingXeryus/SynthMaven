@@ -561,3 +561,7 @@ maqam presets do not change the USER degree buffer or map successive keys to
 seven-note degrees. A4 applies uniformly. The editor gates the expanded list
 on protocol >=17 and always chooses USER ID 13 after Scala import. See
 [maqam catalogue](../docs/MAQAM_SCALES.md) and assets/maqam/scales.json.
+
+## SynthMaven 1.4 / protocol 18
+
+Four synth parts (0–3), PRG1 program backups, CUSTOM 1–4 tuning IDs 58–61, USB-only pedal routing and USB host role/status replace the previous Bluetooth extension. The hidden drum runtime track is index 4. See [current MIDI extension](../docs/SYNTHMAVEN_MIDI.md). Earlier Bluetooth commands are unavailable.

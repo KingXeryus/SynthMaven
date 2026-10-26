@@ -1,101 +1,17 @@
-# SynthMaven 1.3 — quick start
+# SynthMaven 1.4 — quick start
 
-SynthMaven 1.3 for the M-VAVE FM1 includes **23 engines and 537 factory presets**,
-including 41 FM6 voices, nine XD compatibility sounds and 88 melodic Oriental /
-Middle Eastern presets. Hardware listening, Bluetooth pedal pairing/reconnect
-and audio timing under wireless load remain to be validated.
+Back up before installing. Open the [installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) in Chrome or Edge. Connect the FM1 by USB in COMPUTER mode and follow the prompts. For rescue, hold OCT− while powering on.
 
-## Install
+On HOME, ALGORITHM cycles engines, PRESET cycles that engine’s presets, and SELECT focuses one of the four loaded sounds. KNOB 1–4 edit that sound. The four sounds form a program.
 
-Use Chrome or Edge. Connect the FM1 to your computer by USB and save a full
-backup from the [web editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/).
-Open the [installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/)
-and follow its prompts. The splash and About screen identify **SynthMaven 1.3**.
-The installer links directly to this guide, the full manual and the 1.3 release notes.
-See [BUILDING.md](BUILDING.md) to compile the firmware yourself.
+Tap SAVE for PROGRAM. Choose SLOT 1–4; turn SAVE or LOAD twice to confirm. PROGRAM MODE → LAYER OFF plays only the selected sound; ON plays all four, sharing eight voices. Release notes and stop playback before saving.
 
-## Find, load and edit sounds
+Tap SEL to cycle tuning scales. Hold SEL for three seconds, then release, to edit CUSTOM 1–4. SELECT chooses the custom slot; PRESET chooses ROOT. Repeated presses of a key cycle −25/−50/−75/0 cents for that pitch class. SAVE stores it; SEL exits. Function layers latch after a three-second hold; tap their button or HOME to exit.
 
-HOME now shows four patches from the current category bank, with the loaded
-patch highlighted. Turn ALGORITHM to change banks; turn SELECT (or PRESET) to load sounds within
-that bank. Both directions wrap around. The four visible names follow the
-current page. A final page can contain fewer than four patches.
+For a pedal directly into the FM1, choose GLO → USB ROLE → PEDAL. Use a powered USB adapter or hub with a class-compliant USB MIDI pedal. This host implementation does not supply 5 V VBUS. Direct Chocolate Plus operation still needs hardware validation. Bluetooth is removed.
 
-Tap SAVE to open PRESETS for engine filtering and editing. Its controls are:
+Set GLO → PATCH MIDI → PROG ON, then configure PATCH UP/DOWN and BANK UP/DOWN as CC or PC messages. Patch actions cycle presets within the selected engine; bank actions cycle engines. Set KEY MIDI independently for the keyboard.
 
-| Control | Action |
-|---|---|
-| KNOB 1 | Highlight a sound |
-| KNOB 2 | Choose ALL, an engine, USER or ORIENTAL |
-| KNOB 3 clockwise | Load the highlighted sound |
-| KNOB 4 clockwise | Load it and open Edit |
+Choose USB ROLE → COMPUTER before reconnecting the web editor or installer. The USB port supports one role at a time.
 
-ORIENTAL contains 44 melodic instrument recipes, each in Dry and Expressive
-variations (88 presets). Short names end in D or E. Percussion is excluded.
-Chorus, delay and reverb sends start at zero; add effects with FX or the editor.
-Save changes as a USER preset. The [release notes](docs/release-1.0.md) list every
-instrument and the preset totals for each engine.
-
-The web editor provides a matching full-name Oriental / Middle Eastern selector.
-FM6 includes the supplied ROM1A and ARABESC sounds. HYBRID includes the nine XD
-compatibility presets; these approximate the imported Korg programs using native
-engines. Custom Korg oscillator binaries do not run on the FM1.
-
-## MIDI and Bluetooth
-
-GLO → KEY MIDI → KEY IN selects USB, TRS or BOTH. Notes, velocity, bend,
-modulation, expression, sustain and supported pressure/MPE controls follow that
-route. Patch response depends on its modulation assignments.
-
-GLO → PATCH MIDI → PROG toggles patch switching; PORT selects USB, BLE or ANY.
-For user presets, send CC0=127 then Program Change 0 for U01, 1 for U02, etc.
-Empty slots leave the sound unchanged.
-
-GLO → BLUETOOTH: enable BT MIDI, SCAN, select a PEDAL, then LINK. Only MIDI READY
-indicates completed service discovery/subscription. The web editor exposes the
-same connection controls. FootCtrlPlus can advertise only HID service 0x1812;
-1.2 lists recognized FootCtrl/Chocolate names and verifies the MIDI characteristic
-after connecting. A discovered name is a candidate, not proof of MIDI readiness.
-The 1.1 update fixed the SDK-ready callback that blocked
-Bluetooth startup in 1.0. A zero-length SDK event is valid. OFF, STARTING and
-START TIMEOUT are now distinct; a late ready event recovers correctly.
-Both Chocolate models still require physical pairing/audio validation.
-
-For relative pedal controls, open GLO → PATCH UP, PATCH DOWN, BANK UP or BANK DOWN.
-Set TYPE to CC or PC, NUMBER to the raw MIDI number (0–127), VALUE to the exact
-CC press value, and CH to the pedal channel (1–16) or IN CH to follow MIDI IN.
-VALUE is ignored for PC. For a pedal that sends 127 on press and 0 on release,
-use VALUE 127 to avoid a second action on release. Each action defaults to OFF;
-assignments are saved automatically. PROG and PATCH MIDI PORT also apply.
-These assignments interpret messages; they do not change the pedal's firmware.
-Patch up/down use the same bank-limited wrap as PRESET; bank up/down match ALGORITHM.
-
-USB currently operates in **device mode** and needs a MIDI host. Direct USB
-keyboard host mode is not integrated; separately powering a keyboard does not
-supply the host function. TRS keyboard plus BLE pedal is the intended
-computer-free arrangement. See [USB status](docs/USB_MIDI_STATUS.md) and
-[Bluetooth status](docs/BLUETOOTH_STATUS.md).
-
-## Tuning, effects and saving
-
-Use the editor Tuning panel to load Scala `.scl` files or set tuning, root and A4.
-A preset does not automatically select a maqam. FX adjusts sends and effect
-parameters; Edit opens the engine and modulation controls. Save edited sounds
-under USER, and keep full backups before firmware updates.
-
-## Known Bluetooth crash — experimental release
-
-During 1.1 Bluetooth/Chocolate Plus testing, the FM1 crashed and entered USB
-rescue; the user restored the original firmware. The cause remains unresolved.
-Version 1.3 fixes discovery and link-status reporting, but has not been shown
-to fix that crash. Hardware stability and pedal MIDI remain unverified.
-
-
-## Arabic maqam selection
-
-Choose **GLO → TUNING → TUNE**, select one of **46 maqam settings**, then choose
-**ROOT C–B**. The 12-note grid shows each chromatic key’s offset in cents.
-Only the displayed nonzero offsets retune keys; all other chromatic notes stay
-available. A4 remains adjustable from 400 to 480 Hz. The editor has the same
-list and root control. See the [full maqam catalogue](docs/MAQAM_SCALES.md) for every
-setting, variant, reference degrees and tuning limitations.
+Read the [user manual](docs/USER_MANUAL.md), [release notes](docs/release-1.4.md), and [maqam catalogue](docs/MAQAM_SCALES.md).

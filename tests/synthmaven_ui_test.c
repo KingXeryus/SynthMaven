@@ -115,9 +115,10 @@ int main(int argc, char **argv)
 
     /* one instrument */
     track_select(2); frames(1);
-    check(song.sel == 0, "track_select (an editor, a stray call): still track 1");
+    check(song.sel == 2, "track_select focuses the third program sound");
     song.sel = 3; frames(1);
-    check(song.sel == 0, "an old project's selected track 4: back to track 1 at the next frame");
+    check(song.sel == 3, "the fourth program sound remains selected");
+    track_select(0);frames(2);
     {
         uint32_t j;
         uint8_t n[1] = {60};
@@ -166,7 +167,7 @@ int main(int argc, char **argv)
     {
         uint32_t total, k, e, ok = 1, pos, c, n, seen = 0, prev = 0xFFFFu;
         go_home(); frames(2);
-        open_family(FAM_SAVE); frames(2);
+        to_page(FAM_SAVE,"PRESETS"); frames(2);
         check(cur_page()->graph == GR_BROWSE && br_eng == BR_ALL, "SAVE: the PRESETS page, the filter on ALL");
         encs[panel.enc[EN_K2]] = 1; frames(2);
         e = br_eng;

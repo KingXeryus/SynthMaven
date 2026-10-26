@@ -135,18 +135,18 @@ int main(int argc, char **argv)
               "HY_PUT of 0xEE bytes: every field in range");
     }
     {   /* bad requests */
-        static const uint8_t a1[2] = {ED_HY_TRACK, 3}, a2[2] = {ED_HY_FACTORY, 99}, a3[2] = {ED_HY_FACTORY, 0};
+        static const uint8_t a1[2] = {ED_HY_TRACK, NPART}, a2[2] = {ED_HY_FACTORY, 99}, a3[2] = {ED_HY_FACTORY, 0};
         hy_patch_t before = hy_cur[0];
         uint8_t g0 = hy_gen[0];
         n = cmd(ED_HY_GET, a1, 2, 0, 0);
-        check(n == 3u && ed_out[2] == 1, "HY_GET of part 4 (the drums): rc 1");
+        check(n == 3u && ed_out[2] == 1, "HY_GET of drum part: rc 1");
         n = cmd(ED_HY_GET, a2, 2, 0, 0);
         check(n == 3u && ed_out[2] == 1, "HY_GET of factory 99: rc 1");
         n = cmd(ED_HY_PUT, a3, 2, &p, sizeof p);
         check(n == 3u && ed_out[2] == 1, "HY_PUT to a factory patch: rc 1");
         n = cmd(ED_HY_PUT, a1, 2, &p, 60);
         check(n == 3u && ed_out[2] == 1 && hy_gen[0] == g0 && !memcmp(&hy_cur[0], &before, sizeof before),
-              "HY_PUT short or to part 4: rc 1, nothing changes");
+              "HY_PUT short or to drum part: rc 1, nothing changes");
     }
     check(!cmd(76, 0, 0, 0, 0), "other commands are not HYBRID's");
     {   /* PTCH turned: the factory patch again */

@@ -136,20 +136,7 @@ For a local matching site after a successful build:
 python3 tools/make_synthmaven_site.py --package build/felucca.fwsc
 ```
 
-## SynthMaven 1.3 native BLE release
 
-Install the pinned AC79NN_SDK_V1.2.1_2023-12-13 SDK and the JieLi toolchain as
-above. The hardware release requires the complete SDK (Bluetooth headers,
-configuration sources and static libraries), not just the three packaging files.
-On macOS the compiler needs a Linux x86-64 runtime such as Docker. CI uses Ubuntu.
+## SynthMaven 1.4 USB host release
 
-```
-SYNTHMAVEN_BLE=1 ./build.sh --release 1.3
-python3 tools/make_synthmaven_site.py --package build/felucca-1.3.fwsc
-```
-
-The output site includes readable, linked manuals in `docs/` and the matching
-source archive. The installer package metadata contains the 1.3 version and
-SHA256, and the device reports SYNTHMAVEN 1.3 / FM-1_913. The build checks flash,
-static RAM, pool and low-SRAM bounds before making a package; it retains all
-23 engines. See `.github/workflows/synthmaven.yml` for the release build.
+Run `sh tools/test_synthmaven.sh`, then `sh build.sh --release 1.4`. USB host support is enabled for the app and disabled for the rescue loader. Bluetooth is excluded. The AC79 SDK remains a packaging dependency. Linux CI checks target flash, static RAM, low SRAM and pool limits before deployment. macOS requires Docker for the Linux toolchain.

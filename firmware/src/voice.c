@@ -653,6 +653,13 @@ static uint32_t layer_mode(void)
 }
 static void trk_note_on(track_t *t, uint32_t note, uint32_t vel)
 {
+    if(program_mode && !is_drum(t) && note<128u) {
+        uint32_t i,mask=program_layer?15u:1u<<(song.sel%4u);
+        for(i=0;i<4;i++)if(ly_route[note]&(1u<<i))trk_note_off1(&trk[i],note);
+        ly_route[note]=(uint8_t)mask;
+        for(i=0;i<4;i++)if(mask&(1u<<i))trk_note_on1(&trk[i],note,vel);
+        return;
+    }
     uint32_t m, r = 1;
     if (t != &trk[0] || note > 127u) {
         trk_note_on1(t, note, vel);
@@ -675,6 +682,11 @@ static void trk_note_on(track_t *t, uint32_t note, uint32_t vel)
 }
 static void trk_note_off(track_t *t, uint32_t note)
 {
+    if(program_mode && !is_drum(t) && note<128u) {
+        uint32_t i,mask=ly_route[note];ly_route[note]=0;
+        for(i=0;i<4;i++)if(mask&(1u<<i))trk_note_off1(&trk[i],note);
+        return;
+    }
     uint32_t r;
     if (t != &trk[0] || note > 127u) {
         trk_note_off1(t, note);
@@ -689,12 +701,14 @@ static void trk_note_off(track_t *t, uint32_t note)
 }
 static void trk_sustain_up(track_t *t)
 {
+    if(program_mode){uint32_t i;for(i=0;i<4;i++)trk_sustain_up1(&trk[i]);return;}
     trk_sustain_up1(t);
     if (t == &trk[0] && !layer_multi())                /* (MULTI: the layer has its own pedal) */
         trk_sustain_up1(&trk[1]);
 }
 static void trk_all_off(track_t *t)
 {
+    if(program_mode){uint32_t i;for(i=0;i<4;i++)trk_all_off1(&trk[i]);memset(ly_route,0,sizeof ly_route);return;}
     trk_all_off1(t);
     if (t == &trk[0]) {
         trk_all_off1(&trk[1]);
@@ -764,6 +778,18 @@ static void strum_block(uint32_t n)
 #else
 #define XF_BLOCKS 4u                                    /* 4 x 32 samples: 2.9 ms */
 #endif
+#if SYNTHMAVEN_SYNTH
+static uint8_t program_patch[4][156] __attribute__((aligned(4)));
+static volatile uint8_t program_patch_pending;
+static void program_patch_commit(track_t *t) {
+    uint32_t p=(uint32_t)(t-trk);
+    if(p>=4 || !(program_patch_pending&(1u<<p)) || t->xf_on || t->engine!=t->eng_req)return;
+    if(t->engine==ENGI_HYBRID){hy_set_patch(p,(const hy_patch_t *)program_patch[p]);hy_block(t);}
+    else if(t->engine==ENGI_FMX){memcpy(&fmx_cur[p],program_patch[p],sizeof(fmx_patch_t));fmx_sanitize(&fmx_cur[p]);fmx_reload&=(uint8_t)~(1u<<p);fmx_slot_seen[p]=t->p[P_E0]+1;fmx_dirty[p]=1;fmx_block(t);}
+    else if(t->engine==ENGI_FM6){fm6_set_patch(p,program_patch[p]);fm6_slot[p]=(uint8_t)t->p[P_E7];fm6_pend&=(uint8_t)~(1u<<p);}
+    program_patch_pending&=(uint8_t)~(1u<<p);
+}
+#endif
 static void engine_block(track_t *t)
 {
     uint32_t i, any = 0;
@@ -793,6 +819,9 @@ static void engine_block(track_t *t)
 #if SYNTHMAVEN_SYNTH
         t->xf_snd = 0;
 #endif
+#if SYNTHMAVEN_SYNTH
+        program_patch_commit(t);
+#endif
         t->nmono = 0;
         t->mono_note = 0;
         {
@@ -804,6 +833,9 @@ static void engine_block(track_t *t)
     }
     for (i = 0; i < 8u; i++)                            /* the engine's own values, for a later fade */
         t->pe_old[i] = t->p[P_E0 + i];
+#if SYNTHMAVEN_SYNTH
+    program_patch_commit(t);
+#endif
 }
 
 #if SYNTHMAVEN_SYNTH
@@ -961,21 +993,28 @@ static int32_t mseq_q15(int32_t v) { return clamp(v * 4369, -32767, 32767); }   
 #include "maqam_scales.h"
 #define TU_ENUM(id,name,profile) TU_##id,
 enum { TU_EQUAL, TU_JUST, TU_PYTH, TU_MEAN, TU_WERCK, TU_KIRN, TU_RAST, TU_BAYATI, TU_SLENDRO, TU_PELOG, TU_19, TU_24,
-       TU_31, TU_USER, MAQAM_ADDED(TU_ENUM) TU_N };
+       TU_31, TU_USER, MAQAM_ADDED(TU_ENUM) TU_CUSTOM1, TU_CUSTOM2, TU_CUSTOM3, TU_CUSTOM4, TU_N };
 #undef TU_ENUM
 #define TU_NAME(id,name,profile) name,
 static const char *const N_TUNE[TU_N] = {"EQUAL", "JUST", "PYTHA", "MEANT", "WERCK", "KIRNB", "RAST", "BAYATI", "SLEND",
-    "PELOG", "19EDO", "24EDO", "31EDO", "USER", MAQAM_ADDED(TU_NAME)};
+    "PELOG", "19EDO", "24EDO", "31EDO", "USER", MAQAM_ADDED(TU_NAME) "CUSTOM 1", "CUSTOM 2", "CUSTOM 3", "CUSTOM 4"};
 #undef TU_NAME
 #define TU_PROFILE(id,name,profile) [TU_##id] = profile,
 static const uint8_t TU_MAQAM[TU_N] = {MAQAM_EXISTING(TU_PROFILE) MAQAM_ADDED(TU_PROFILE)};
 #undef TU_PROFILE
 _Static_assert(TU_RAST == 6 && TU_BAYATI == 7 && TU_USER == 13 && TU_N < 128, "saved tuning and MIDI IDs");
-static int tune_is_maqam(uint32_t sys) { return sys == TU_RAST || sys == TU_BAYATI || (sys > TU_USER && sys < TU_N); }
+static int tune_is_maqam(uint32_t sys) { return sys == TU_RAST || sys == TU_BAYATI || (sys > TU_USER && sys < TU_CUSTOM1); }
 static int32_t maqam_cents(uint32_t sys,uint32_t pc)
 {
     const uint16_t *m=MAQAM_MASKS[TU_MAQAM[sys]];
     return -50*(int32_t)((m[0]>>pc)&1u)+50*(int32_t)((m[1]>>pc)&1u)-25*(int32_t)((m[2]>>pc)&1u);
+}
+/* Four user scales: two bits per chromatic key, 0/-25/-50/-75 cents. */
+static uint32_t custom_scale[4];
+static uint8_t custom_scale_dirty;
+static int tune_is_chromatic(uint32_t sys) { return tune_is_maqam(sys) || (sys>=TU_CUSTOM1 && sys<TU_N); }
+static int32_t tuning_cents(uint32_t sys,uint32_t pc) {
+    return sys>=TU_CUSTOM1 && sys<TU_N ? -25*(int32_t)((custom_scale[sys-TU_CUSTOM1]>>(2u*pc))&3u) : maqam_cents(sys,pc);
 }
 #define TU_MAXDEG 48u
 typedef struct {
@@ -986,6 +1025,7 @@ typedef struct {
 } tune_t;
 static tune_t tune_cfg = {TU_EQUAL, 0, 12, 0, 19200,      /* (USER until a scale comes: equal temperament) */
                           {0, 1600, 3200, 4800, 6400, 8000, 9600, 11200, 12800, 14400, 16000, 17600}};
+#include "program_types.h"
 static int32_t tun_tab[129];
 /* (1.0) the reference A4, 400 .. 480 Hz: 12 x log2(A4 / 440) in 1/4096 semitone (432: -1301, 415: -4148) */
 static const int16_t TU_A4[81] = {-6759, -6582, -6405, -6229, -6053, -5878, -5703, -5528, -5354, -5181, -5008, -4835, -4663,
@@ -1025,8 +1065,8 @@ static void tune_build(void)
         int32_t off = 0;
         if (sys >= TU_JUST && sys <= TU_KIRN) {
             off = TU_TAB12[sys - TU_JUST][(key + 12u - root) % 12u] * 4096 / 1000;
-        } else if (tune_is_maqam(sys)) {
-            off = maqam_cents(sys,(key + 12u - root) % 12u) * 4096 / 100;
+        } else if (tune_is_chromatic(sys)) {
+            off = tuning_cents(sys,(key + 12u - root) % 12u) * 4096 / 100;
         } else if (sys != TU_EQUAL) {
             int32_t d = (int32_t)key - (60 + (int32_t)root), oct, k;
             uint32_t n, per;

@@ -752,27 +752,18 @@ static uint32_t preset_pos(uint32_t *total);
 static const char *preset_kind(uint32_t n);
 static void graph_home(uint16_t c)
 {
-    uint32_t total,cur=preset_pos(&total),first=cur,i,k=kind_at(cur),count=0,pos=0,n;
-    char b[24],name[24];
-    (void)c;
-    for(n=0;n<total;n++)if(kind_at(n)==k){if(n<cur)pos++;count++;}
-    /* Four consecutive bank entries; page follows selection. */
-    first=home_preset_next(cur,-(int32_t)(pos%4u));
-    cv_text(4,0,&FONT_S,preset_kind(cur),C_HI);
-    fmt_int(b,(int32_t)pos+1);str_cpy(b+str_len(b),"/",2);fmt_int(b+str_len(b),(int32_t)count);
-    cv_text(236-text_w(&FONT_S,b),0,&FONT_S,b,C_GRAY);
-    for(i=0;i<4u && pos-pos%4u+i<count;i++) {
-        uint32_t p=home_preset_next(first,(int32_t)i),preset,engine=preset_at(p,&preset);
-        int32_t x=(i%2u)*120+4,y=26+(i/2u)*43;
-        uint16_t color=p==cur?C_WHITE:C_GRAY;
-        if(engine<NENGINES)str_cpy(name,sm_factory_name(engine,preset),sizeof name);
-        else up_name(preset,name);
+    uint32_t i;char b[24],name[24];(void)c;
+    str_cpy(b,"PROGRAM ",sizeof b);fmt_int(b+8,song.g[G_SLOT]);
+    cv_text(4,0,&FONT_S,b,C_HI);
+    cv_text(236-text_w(&FONT_S,program_layer?"LAYER":"SOLO"),0,&FONT_S,program_layer?"LAYER":"SOLO",C_GRAY);
+    for(i=0;i<4;i++) {
+        const track_t *t=&trk[i];uint32_t e=t->eng_req%NENGINES;
+        int32_t x=(i%2u)*120+4,y=26+(i/2u)*43;uint16_t color=i==song.sel?C_WHITE:C_GRAY;
+        if(user_of(t)<UP_SLOTS)up_name(user_of(t),name);else str_cpy(name,sm_factory_name(e,t->preset),sizeof name);
         while(text_w(&FONT_S,name)>110 && str_len(name))name[str_len(name)-1u]=0;
-        if(p==cur)cv_rect(x-2,y-3,116,38,C_LINE);
-        cv_text(x,y,&FONT_S,name,color);
-        cv_text(x,y+17,&FONT_S,engine<NENGINES?ENGINES[engine]->name:"USER",p==cur?C_HI:C_GRAY);
+        if(i==song.sel)cv_rect(x-2,y-3,116,38,C_LINE);
+        cv_text(x,y,&FONT_S,name,color);cv_text(x,y+17,&FONT_S,ENGINES[e]->name,i==song.sel?C_HI:C_GRAY);
     }
-
 }
 
 /* SLOOP 2.4: a page without a graph (EDIT, VOICE, the DEST pages, GLOBAL, MASTER, SYSTEM...): its values
@@ -811,7 +802,7 @@ static void graph_tuning(void)
     for(i=0;i<12;i++) {
         char b[12];int32_t x=(i%6u)*40,y=28+(i/6u)*44;
         cv_text(x,y,&FONT_S,N_NOTE[(i+tune_cfg.root)%12u],C_GRAY);
-        fmt_int(b,tune_is_maqam(sys)?maqam_cents(sys,i):0);
+        fmt_int(b,tune_is_chromatic(sys)?tuning_cents(sys,i):0);
         cv_text(x,y+17,&FONT_S,b,C_WHITE);
     }
 }
@@ -837,7 +828,7 @@ static void draw_graph(void)
         cv_oy = 0;
         graph_home(c);
 #if SYNTHMAVEN_SYNTH
-    } else if (tuning_page(pg) && tune_is_maqam(tune_cfg.sys)) {
+    } else if (tuning_page(pg) && tune_is_chromatic(tune_cfg.sys)) {
         cv_oy=0;graph_tuning();
 #endif
     } else if (ui.home) {
@@ -913,7 +904,7 @@ static void draw_graph(void)
     top = (ui.home && SYNTHMAVEN_SYNTH) || (!ui.home && !drum_note && (pg->graph == GR_BROWSE || pg->graph == GR_SLOTS || pg->graph == GR_USER ||
                                      pg->graph == GR_ROLL || big_page(pg)));   /* these draw from the top */
 #if SYNTHMAVEN_SYNTH
-    if(tuning_page(pg) && tune_is_maqam(tune_cfg.sys))top=1;
+    if(tuning_page(pg) && tune_is_chromatic(tune_cfg.sys))top=1;
 #endif
     cv_oy = 0;
     if (ui.hot_t && settings.zoom && !(ui.home && SYNTHMAVEN_SYNTH) && !(top && (big_page(pg) || pg->graph == GR_ROLL) && !drum_note)) {   /* (the big values show it already) */                 /* focus (menu ZOOM): the touched value, large and white */

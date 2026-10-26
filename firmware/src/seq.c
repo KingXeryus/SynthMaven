@@ -2676,7 +2676,7 @@ static track_t *midi_track(uint32_t ch)
         return &trk[1];                               /* 0.6, MULTI: the layer's own channel */
     if (midi_in_ch && !mpe_mode && ch + 1u != midi_in_ch)
         return 0;                                     /* (1.0, GLO > MIDI > IN CH: another channel; MPE uses them all) */
-    return &trk[0];                                   /* SynthMaven: the instrument, on every channel (OMNI) or its own */
+    return program_mode ? TSEL : &trk[0];              /* SynthMaven: the instrument, on every channel (OMNI) or its own */
 #endif
     if (song.g[G_DRCH] && ch + 1u == (uint32_t)song.g[G_DRCH])
         return TDRUM;
@@ -2689,9 +2689,7 @@ static uint8_t midi_sel_on[16][128];                  /* per channel and note: t
 static track_t *midi_route(uint32_t ch, uint32_t note, int on)
 {
     track_t *t = midi_track(ch);
-    if (SYNTHMAVEN_SYNTH)
-        return t;
-    if (ch < NPART || (song.g[G_DRCH] && ch + 1u == (uint32_t)song.g[G_DRCH]))
+    if (!SYNTHMAVEN_SYNTH && (ch < NPART || (song.g[G_DRCH] && ch + 1u == (uint32_t)song.g[G_DRCH])))
         return t;                                     /* a part's own channel, or the drum channel */
     if (on)
         midi_sel_on[ch & 15u][note & 127u] = (uint8_t)(song.sel + 1u);
@@ -3215,7 +3213,7 @@ static void events_block(uint32_t n)
 #if SYNTHMAVEN_SYNTH
         /* Pedal actions have their own PATCH route, before KEY IN rejects BLE CCs. */
         if(!song.g[G_ROUTE] && !midi_pc_off &&
-           sm_pedal_receive(st,ch,d1,d2,port,midi_track(ch)==&trk[0]))continue;
+           sm_pedal_receive(st,ch,d1,d2,port,(program_mode ? midi_track(ch)!=0 : midi_track(ch)==&trk[0])))continue;
 #endif
 /* Performance controls follow KEY IN, just like note-ons. Bank selection
          * and Program Change keep their independent PATCH MIDI route. Release
@@ -3257,7 +3255,7 @@ static void events_block(uint32_t n)
             continue;
         }
         if (st == 0xC0u) {                            /* (1.0) program change: the UI loads the sound (ui.c pc_poll) */
-            if (!song.g[G_ROUTE] && !midi_pc_off && sm_patch_accept(port) && midi_track(ch) == &trk[0])
+            if (!song.g[G_ROUTE] && !midi_pc_off && sm_patch_accept(port) && (program_mode ? midi_track(ch)!=0 : midi_track(ch) == &trk[0]))
                 midi_pc_req = (uint16_t)(1u + ((uint32_t)midi_bank[port < 3u ? port : 0u][ch & 15u] << 7 | d1));
             continue;
         }
@@ -3275,7 +3273,7 @@ static void events_block(uint32_t n)
             if (st == 0x90u && d2)
                 drum_input(lane_of_note(d1), vel_lvl(d2), 0, 1);
 #if SYNTHMAVEN_SYNTH
-        } else if (t == &trk[1]) {                    /* 0.6, MULTI: the layer's channel plays it, nothing else */
+        } else if (!program_mode && t == &trk[1]) {                    /* 0.6, MULTI: the layer's channel plays it, nothing else */
             if (st == 0x90u && d2)
                 trk_note_on1(t, d1, d2);
             else

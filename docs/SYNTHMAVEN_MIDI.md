@@ -1,41 +1,19 @@
-# SynthMaven 1.0 MIDI settings protocol
+# SynthMaven 1.4 MIDI settings — protocol 18
 
-The editor protocol is v16; the settings commands below were introduced in v15
-and retain their encoding. See [the v16 preset encoding](../web/EDITOR_PROTOCOL.md).
+USB is the only pedal-message source. Keyboard input may be USB, TRS or BOTH. The USB host role is independent of MIDI source filtering.
 
-The existing editor envelope is unchanged: `F0 7D 46 4C command ... F7`. See web/EDITOR_PROTOCOL.md. New commands use 7-bit payload bytes.
+Commands 100/101/106 reply with ten bytes: `rc, 2, caps, patchEnabled, 0, keyPort, 0, 0, usbRole, hostConnected`. Caps: USB device 1, TRS 2, USB host 8; Bluetooth bit 4 is never set. KeyPort: USB 0, TRS 1, BOTH 2. Role: COMPUTER/device 0, PEDAL/host 1.
 
-- 100 GET: no arguments.
-- 101 SET: enabled (0/1), patch source (USB=0, BLE=1, ANY=2), keyboard source (USB=0, TRS=1, BOTH=2), Bluetooth enabled (0/1).
-- 102 SCAN: no arguments; queues a 15-second discovery scan when Bluetooth is enabled.
-- 103 DEVICES: no arguments; reply `rc, count`, then `index, name` (NUL-terminated, max 31 bytes), `RSSI+127` for each of at most eight peers.
-- 104 CONNECT: one device index from DEVICES; explicit selection, no automatic first-peer connection.
-- 105 DISCONNECT: no arguments.
+- 100: no arguments, read routing/status.
+- 101: `patchEnabled, patchPort, keyPort, bluetooth`. Send patchPort=0 and bluetooth=0. Bluetooth requests return unavailable. Legacy ANY normalizes to USB.
+- 102–105: removed Bluetooth operations; return unavailable. 103 retains its empty-list error shape for old clients.
+- 106: `usbRole` 0/1. Switching to host disconnects the computer editor. Select COMPUTER on the FM1 to reconnect.
+- 107: custom scale. Read with `slot` 0–3; write with `slot, step[12]`. Each step is 0–3 for 0/−25/−50/−75 cents relative to ROOT. Reply `rc, slot, step[12]` on success. Writes schedule settings persistence.
 
-GET, SET, SCAN, CONNECT and DISCONNECT reply: rc, schema=1, capability bits, enabled, patch source, keyboard source, Bluetooth enabled, BLE state.
+Existing pedal mapping commands retain TYPE OFF/CC/PC, NUMBER, VALUE and channel IN CH/1–16. Configure these on GLO → PATCH UP/DOWN and BANK UP/DOWN. Patch changes wrap within the focused engine; bank changes cycle engines. PROG OFF blocks them.
 
-rc=0 success; 1 malformed/range error; 4 unavailable. SET validates all fields before changing any. No unavailable Bluetooth configuration is saved. Capability bits: USB device input=1, TRS input=2, BLE central=4, USB host=8. Native BLE development builds advertise capabilities=7. Non-radio builds advertise 3 and refuse radio actions. BLE states: 0 off, 1 starting, 2 idle, 3 scanning, 4 connecting, 5 discovering/subscribing, 6 MIDI ready, 7 startup failure. Only state 6 indicates a usable central MIDI link.
+INFO now reports five runtime tracks: four synth sounds and the hidden legacy drum track. Synth editor operations accept parts 0–3. Tuning IDs 0–57 retain their prior meanings; CUSTOM 1–4 use 58–61. Scala USER remains 13.
 
-Input packet cable tags: USB=0, TRS=1, BLE=2. The BLE runtime uses its own 64-packet ring. Program changes are filtered by patch source and PROG. Note-ons are filtered by keyboard source; note-offs remain accepted on either old/new port to release previously held notes. Bank Select state is independent for every input port and channel. MIDI IN channel selection still applies.
+Backups use PRG1 records for the working program and saved program slots. These contain all four parts, patches, tuning and custom-scale definitions. Older firmware must reject them. Legacy FUN project records remain readable.
 
-New preference record: magic 0x314D5353, patch source, keyboard source, Bluetooth enabled, reserved=0, CRC32. Existing settings record offsets and CRCs are unchanged. PROG remains in the original persistent MIDI flags.
-
-## Native runtime and remaining validation
-
-The native BLE build integrates fm1-base's task/timer shims and BLE MIDI central/peripheral runtime with the JieLi SDK. It scans for MIDI peers, explicitly connects/subscribes and reports actual central state. Radio syscfg is journalled in the previously unused 0xFB000 sector; musical data and existing settings addresses remain unchanged. Writes wait until playback and active voices stop. A power loss during sector rollover can forget radio bonds.
-
-Chocolate original/Plus pairing, reconnection, latency and audio stability still require real hardware validation. Native USB-host operation is not implemented: USB keyboard/pedal connections require an external USB MIDI host. A power bank does not provide that host.
-
-## 1.1 relative pedal assignments
-
-Hardware GLO pages PATCH UP/DOWN and BANK UP/DOWN each store four bytes:
-TYPE (OFF=0, CC=1, PC=2), NUMBER (0–127), VALUE (0–127, exact CC match; PC ignores),
-CHANNEL (0 follows IN CH, 1–16 explicit). PATCH MIDI PORT and PROG apply before
-KEY IN filtering. An explicit channel bypasses keyboard channel selection.
-Only the first matching action fires; mapped PC does not also perform an
-absolute program selection. Events use a bounded 16-entry audio-to-UI queue.
-Patch actions wrap inside the current category bank; bank actions match ALGORITHM.
-
-Assignments are stored in an appended 24-byte side record: magic 0x31444C50,
-16 map bytes and CRC32. Legacy routing/tuning records retain their offsets.
-No new editor SysEx command is added; configure these mappings on the FM1.
+USB host mode supports class-compliant full-speed USB MIDI 1.0 and one hub; it does not supply VBUS. See [USB status](USB_MIDI_STATUS.md).

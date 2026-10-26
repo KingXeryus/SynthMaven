@@ -1,4 +1,4 @@
-# Arabic maqam reference tunings — SynthMaven 1.3
+# Arabic maqam reference tunings — SynthMaven 1.4
 
 The firmware includes **46 named maqam settings**, selected with **GLO → TUNING →
 TUNE**, alongside **ROOT C–B** and **A4 400–480 Hz**. The editor exposes the same
@@ -111,5 +111,4 @@ and editor data. The host regression compares all 46 settings at all 12 roots
 across all 128 MIDI notes with the catalogue, including unaltered keys, octave
 repeat, tonic, A4 addition, hardware controls and legacy Scala selection.
 
-Bluetooth remains experimental. The prior FM1 crash during 1.1 pedal testing
-is unresolved; this tuning release does not fix or validate Bluetooth stability.
+Version 1.4 removes Bluetooth and adds four custom chromatic tunings. See the [manual](USER_MANUAL.md).

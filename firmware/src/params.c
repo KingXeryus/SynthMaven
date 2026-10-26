@@ -551,8 +551,8 @@ static const page_t PAGES[] = {
     {"VOICE 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_ALLOC, P_DETUNE, P_PAN, P_VINT}},   /* (0.9: VINTAGE) */
     {"VOICE 3", FAM_EDIT, SC_TRACK, GR_NONE, {P_SPREAD, 0xFF, 0xFF, 0xFF}},      /* (1.0: SPREAD) */
     {"MACROS", FAM_EDIT, SC_TRACK, GR_NONE, {P_MAC1, P_MAC2, P_MAC3, P_MAC4}},   /* (1.0) */
-    {"LAYER", FAM_EDIT, SC_SYN, GR_LAYER, {0, 1, 2, 3}},         /* X_LYMODE X_LYSOUND X_LYSPLIT X_LYLEVEL */
-    {"LAYER 2", FAM_EDIT, SC_SYN, GR_LAYER, {4, 5, 6, 7}},       /* X_LYOCT X_LYPAN X_LYFILT X_LYSWAP */
+    {"LAYER", FAM_EDIT, SC_SYN, GR_NONE, {68, 0xFF, 0xFF, 0xFF}},         /* X_LYMODE X_LYSOUND X_LYSPLIT X_LYLEVEL */
+       /* X_LYOCT X_LYPAN X_LYFILT X_LYSWAP */
     {"MORPH", FAM_EDIT, SC_SYN, GR_MORPH, {8, 9, 10, 0xFF}},     /* X_MORPH X_SETA X_SETB */
     {"RANDOM", FAM_EDIT, SC_SYN, GR_NONE, {11, 12, 13, 14}},     /* X_RNDAMT X_RNDWHAT X_RNDGO X_RNDBACK */
     {"UNDO", FAM_EDIT, SC_SYN, GR_HIST, {41, 42, 0xFF, 0xFF}},   /* (0.7) X_HPOS X_HCMP: the sound's history, COMPARE */
@@ -572,11 +572,15 @@ static const page_t PAGES[] = {
     {"PATCH DOWN", FAM_GLO, SC_SYN, GR_NONE, {63, 64, 65, 66}},
     {"BANK UP", FAM_GLO, SC_SYN, GR_NONE, {63, 64, 65, 66}},
     {"BANK DOWN", FAM_GLO, SC_SYN, GR_NONE, {63, 64, 65, 66}},
-    {"BLUETOOTH", FAM_GLO, SC_SYN, GR_NONE, {59, 60, 61, 62}},    /* (1.0) X_MPROG X_MCCO X_MBRTH */
+    {"USB ROLE", FAM_GLO, SC_SYN, GR_NONE, {67, 0xFF, 0xFF, 0xFF}},    /* (1.0) X_MPROG X_MCCO X_MBRTH */
 #else
     {"MASTER", FAM_GLO, SC_GLOBAL, GR_NONE, {G_DUST, G_DUCK, G_FILT, G_ROLL}},
     {"SYSTEM", FAM_GLO, SC_GLOBAL, GR_NONE, {G_MIDI, G_SYNC, G_ROUTE, G_INFO}},
     {"DRUMS", FAM_GLO, SC_GLOBAL, GR_NONE, {G_DRCH, G_DRLVL, G_DRREV, G_DRDLY}},   /* GM kit on MIDI ch 10 */
+#endif
+#if SYNTHMAVEN_SYNTH
+    {"PROGRAM", FAM_SAVE, SC_GLOBAL, GR_SLOTS, {G_SLOT, 0xFF, G_LOAD, G_SAVE}},
+    {"PROGRAM MODE", FAM_SAVE, SC_SYN, GR_NONE, {68, 0xFF, 0xFF, 0xFF}},
 #endif
     {"PRESETS", FAM_SAVE, SC_GLOBAL, GR_BROWSE, {0xFF, 0xFF, 0xFF, 0xFF}},   /* browser: PRESETS knob / KNOB 1 */
     {"USER", FAM_SAVE, SC_GLOBAL, GR_USER, {0xFF, 0xFF, 0xFF, 0xFF}},       /* user presets: SLOT LOAD ERASE SAVE */

@@ -1,130 +1,19 @@
 # SynthMaven for M-VAVE FM-1
 
-Version 1.3 adds 46 Arabic maqam settings with selectable ROOT C–B,
-12 chromatic-key microtuning and a full-name/cent-offset hardware view.
-All 23 engines, 537 presets, HOME preset navigation and pedal assignments remain.
-[Release notes](docs/release-1.3.md).
+SynthMaven 1.4 provides 23 synthesis engines and 537 factory presets, including 88 Oriental/Middle Eastern sounds and nine XD compatibility sounds. HOME holds a four-sound program: ALGORITHM cycles engines, PRESET cycles presets within the engine, and SELECT selects sound 1–4. Programs can be saved/loaded with layering ON or OFF.
 
+Tap SEL to cycle scales. Hold it three seconds for a latched custom-scale editor with four saved chromatic tunings, selectable root and 0/−25/−50/−75-cent key offsets. The 46 built-in Arabic maqam reference tunings remain available.
 
-![SynthMaven](assets/logo/synthmaven-logo.svg)
+Bluetooth is removed. GLO → USB ROLE → PEDAL enables direct class-compliant USB MIDI host operation using a powered adapter or hub. COMPUTER mode serves the editor, audio and updates. Direct Chocolate Plus operation and audio timing still require hardware validation. Hold OCT− at power-on for USB recovery.
 
-SynthMaven is an open-source firmware based on [Clipper](https://github.com/isod89/clipper-fm1), with the SLOOP and Felucca foundations credited in the retained licence notices. It adds a four-patch hardware browser, explicit Load/Edit actions and MIDI input routing. The supplied SynthMaven artwork is used on the device splash and web editor/installer. Original copyright holders and licences are retained.
+[Installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [User manual](docs/USER_MANUAL.md) · [Quick start](QUICKSTART.md) · [Release notes](docs/release-1.4.md) · [Maqam catalogue](docs/MAQAM_SCALES.md)
 
-[Web installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Web editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [Build status](https://github.com/KingXeryus/SynthMaven/actions)
-
-[1.0 release notes and melodic preset catalog](docs/release-1.0.md)
-
-## Version 1.3 status
-
-**SynthMaven 1.3: 23 engines and 537 factory presets. Hardware validation is outstanding.** Native BLE builds include MIDI pedal discovery, explicit device selection, connection and disconnect controls. Original Chocolate and Chocolate Plus pairing, reconnect and audio timing still need testing on the FM1. Version 0.2 predates this integration.
-
-Native USB host support is not implemented. Selecting USB input means device-mode MIDI from a host; a USB keyboard or USB pedal cannot connect directly using a power bank alone. TRS keyboard plus BLE pedal is the intended computer-free combination.
-
-CI must build a real SynthMaven target package and pass the enforced memory bounds before deploying the installer. It never substitutes an upstream binary.
-
-## Stock DX7 sounds
-
-The supplied ROM1A bank (32 voices) and ARABESC voice are built into FM6 as F9–F41, alongside the original eight sounds. Select FM6 in the four-patch PRESETS browser, highlight a voice, then Load or Edit. The editor lists the same read-only factory sounds. Existing B1–B27 slots and saved references retain their original parameter IDs. See [stock data](assets/fm6/README.md).
-
-## Default Korg compatibility sounds
-
-Nine supplied minilogue xd programs append to the HYBRID factory list as XD presets, identified by XD names in the browser. In the editor, select HYBRID and choose an XD sound from the main preset list to load its patch and amplitude envelope together. The Minilogue XD panel imports `.mnlgxdprog` and selects individual `.mnlgxdlib` programs. Custom `.mnlgxdunit` files are inspected only; their ARM binaries cannot run on the FM1. These are native approximations, with digital oscillator substitutions and compatibility notes. See [the preset list and mappings](docs/KORG.md).
-
-All 23 synth engines remain. Lossless wavetable compression and memory reuse make room for the BLE runtime. See [Bluetooth integration status](docs/BLUETOOTH_STATUS.md) for validation limits.
-
-## Hardware controls
-
-Tap SAVE to PRESETS. Four names are visible per page (fewer in a short final page).
-
-| Control | Action |
-|---|---|
-| KNOB 1 / PRESETS | Move highlight without loading |
-| KNOB 2 / ALGORITHM | Filter by engine, USER or ORIENTAL |
-| KNOB 3 clockwise | Load highlighted patch |
-| KNOB 4 clockwise | Load patch and open EDIT macro pages |
-
-This replaces the synth browser's FAV knob action; existing favourites are retained. HOME shows four patches; SELECT and PRESET load sounds and wrap within the bank and ALGORITHM changes category banks. The web editor provides a matching four-patch user-preset browser with Load/Edit actions. Full DX7 operator editing remains in the web FM6 panel.
-
-## Oriental / Middle Eastern collection (1.0)
-
-The melodic collection adds 88 virtual factory presets: 44 original modeled
-instrument recipes, each with Dry and Expressive variations.
-It covers oud, qanun, saz/baglama, santur, ney/kawala, duduk/mizmar/zurna,
-regional strings and leads. Percussion is excluded. Chorus, delay and reverb
-sends and SPACE are off; add effects using the FM1 FX controls. These are SynthMaven synthesis
-recipes, not commercial Yamaha ESP or TAQS.IM samples.
-
-Tap SAVE for PRESETS, then use KNOB 2 to select ORIENTAL. KNOB 1 highlights;
-KNOB 3 loads; KNOB 4 loads and edits. D/E in the short OLED names identifies
-the variation. The engine filters also include their Oriental sounds. The web
-editor has a full-name Oriental/Middle Eastern selector. Save as a user preset
-to keep edits, and use CC0=127 with Program Change for existing user-slot access.
-
-Original factory IDs and favourite keys are unchanged. New preset IDs append
-within their native engine; projects and user presets retain the patch settings.
-Use the matching protocol-17 web editor. Host tests compare all 126 track
-parameters of all 88 loaded patches to the selected software recipes, with the
-three effect sends and the SPACE macro explicitly disabled.
-See [bank provenance and limits](assets/oriental/README.md). The BLE-enabled target passed all enforced memory bounds; see the
-[1.0 validation results](docs/BLUETOOTH_STATUS.md#native-10-target-validation).
-Hardware listening and radio validation remain outstanding.
-
-[User manual](docs/USER_MANUAL.md) · [Quick-start guide](QUICKSTART.md)
-
-## Web editor
-
-Open the [SynthMaven 1.3 editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/)
-in Chrome or Edge and connect the FM1 over USB. Browse factory/user sounds,
-load or edit patches, import DX7 SysEx and Korg-compatible programs, set tuning,
-and save backups. The full-name Oriental selector matches the 88 melodic
-presets in the firmware. The editor identifies version 1.3, 23 engines and
-537 factory presets; device connection reports the installed firmware version.
-
-## MIDI settings
-
-GLO > PATCH MIDI: PROG enables/disables patch switching. PORT depends on PROG. USB selects USB input; BLE selects the native BLE pedal input when the radio runtime is present; ANY preserves legacy routing.
-
-GLO > KEY MIDI: KEY IN selects USB, TRS or BOTH. USB in this build needs an external host. Keyboard performance controls (modulation, expression, bend, pressure and MPE) follow KEY IN too. Note-offs, sustain-up and safety resets from the previous input are still processed after changing source, to avoid hanging notes. Bank/program switching uses the independent PATCH MIDI route.
-
-GLO > BLUETOOTH: enable BT MIDI, start SCAN, select PEDAL, then use LINK to connect. A connected link can be disconnected with LINK. Only MIDI READY means service discovery/subscription has completed. The editor provides the same discovery, selection and link status. Original Chocolate and Chocolate Plus remain untested; non-radio builds disable unavailable controls.
-
-Routing preferences persist in a separately checksummed extension of the existing settings side record. Existing compatible settings keep their existing layout. Firmware protocol v15 commands are documented in [MIDI protocol](docs/SYNTHMAVEN_MIDI.md). Editor settings require SynthMaven v15 and refuse older firmware.
-
-For stable pedal addressing, send Bank Select MSB (CC0) 127 and Program Change data 0 for U01, 1 for U02, etc. Empty/out-of-range slots do not change the sound. Each input port and MIDI channel holds independent bank selection. Factory-list bank mappings remain supported. Saved FM6 bank patches need user presets referencing them to use this user-slot addressing.
+Back up before installing. See [USB MIDI status](docs/USB_MIDI_STATUS.md) for compatibility limits and [preset catalogue](docs/release-1.0.md) for the sound library.
 
 ## Building and verification
 
-See [BUILDING.md](BUILDING.md) for the JieLi pi32v2 toolchain and AC79 SDK. Linux x86-64 runs the target compiler directly; macOS requires Docker. Native BLE target builds use `SYNTHMAVEN_BLE=1 sh build.sh`; the internal package remains `build/felucca.fwsc` for loader compatibility. The product name reported to USB and the UI is SynthMaven.
-
-```
-pip install Pillow
-sh tools/test_synthmaven.sh
-python3 tools/make_synthmaven_site.py
-# After a successful target build:
-python3 tools/make_synthmaven_site.py --package build/felucca.fwsc
-```
-
-Serve `build/synthmaven-site` with `python3 -m http.server --directory build/synthmaven-site 8767`. Web MIDI requires Chrome/Edge and HTTPS or localhost. `?mock=1` is a simulated editor device, not a hardware connection.
-
-Host validation covers the browser, separate Load/Edit actions, keyboard source filtering, pedal source filtering, patch switching off, settings round-trip/CRC/legacy handling, USB/TRS MIDI parsing, editor protocol and installer mock transfers. Real radio pairing, direct USB-host operation, timing and audio under wireless load are unverified. Back up the current device before any firmware installation.
+See [BUILDING.md](BUILDING.md). Linux x86-64 runs the JieLi toolchain directly; macOS requires Docker. Run `sh tools/test_synthmaven.sh`, then `sh build.sh --release 1.4`. The build enables USB host support and excludes Bluetooth. Source and licence notices are published alongside the installer.
 
 ## Credits and licence
 
-GPL-3.0-only unless stated otherwise in the retained notices. Upstream work by isod89/3dSam, SLOOP, and Felucca by Leo Kuroshita / Hügelton Instruments provides the foundation. See [LICENSE](LICENSE), [LICENSING.md](LICENSING.md). M-VAVE/FM-1 are their respective owners' trademarks. The supplied SynthMaven logo is branding, separate from third-party code notices.
-
-## Known Bluetooth crash — experimental release
-
-During 1.1 Bluetooth/Chocolate Plus testing, the FM1 crashed and entered USB
-rescue; the user restored the original firmware. The cause remains unresolved.
-Version 1.3 fixes discovery and link-status reporting, but has not been shown
-to fix that crash. Hardware stability and pedal MIDI remain unverified.
-
-
-## Arabic maqam selection
-
-Choose **GLO → TUNING → TUNE**, select one of **46 maqam settings**, then choose
-**ROOT C–B**. The 12-note grid shows each chromatic key’s offset in cents.
-Only the displayed nonzero offsets retune keys; all other chromatic notes stay
-available. A4 remains adjustable from 400 to 480 Hz. The editor has the same
-list and root control. See the [full maqam catalogue](docs/MAQAM_SCALES.md) for every
-setting, variant, reference degrees and tuning limitations.
+GPL-3.0-only; see [LICENSING.md](LICENSING.md). USB host additions retain their MPL-2.0 notices in firmware/vendor/fm1-usb-host. Original firmware work and engine attributions are retained in source.

@@ -39,10 +39,11 @@ _Static_assert(G_DRDLY == PROJ_NG && G_COUNT == PROJ_NG + 1u + (SYNTHMAVEN_SYNTH
  * and val bytes (marked SYNTHMAVEN_PROJ_MARK: proj_capture, proj_apply). The format and its size do not change: SLOOP
  * reads a SynthMaven project as before, tracks 3 and 4 as they are. (SynthMaven 0.4's first build, SYNTHMAVEN_PROJ_MARK_04,
  * put them in tracks 3 and 4's p[], where SLOOP took them for their sounds: read too) */
+#define PROJ_TRACKS 4u
 #define PROJ_NP 61u
 #define PROJ_E0 53u
 #define PROJ_NX (P_E0 - PROJ_E0)
-_Static_assert(P_COUNT == PROJ_NP || (SYNTHMAVEN_SYNTH && P_COUNT == PROJ_NP + PROJ_NX && P_COUNT < 128 && NTRK == 4),
+_Static_assert(P_COUNT == PROJ_NP || (SYNTHMAVEN_SYNTH && P_COUNT == PROJ_NP + PROJ_NX && P_COUNT < 128 && NTRK == (SYNTHMAVEN_SYNTH ? 5 : 4)),
                "a track's parameters as stored (SynthMaven: track 3's lock slots hold the rest: PROJ_XM3 below)");
 #if SYNTHMAVEN_SYNTH
 /* tracks 1 and 2's LFO 2, ENV 2 and matrix (0.4: PROJ_XA values each) and INSERT (0.6: PROJ_XI each) <-> bytes in the
@@ -235,7 +236,7 @@ typedef struct {
     uint32_t magic, size;
     int16_t g[PROJ_NG];
     uint8_t sel, drdly, rsv[2];                /* the selected track; 2.5: G_DRDLY */
-    proj_trk_t t[NTRK];
+    proj_trk_t t[PROJ_TRACKS];
     uint32_t sum;
 } project_t;
 typedef struct {                               /* a track of format 4 (SLOOP 2.0 .. 2.3), read only */
@@ -250,7 +251,7 @@ typedef struct {                               /* format 4, read only */
     uint32_t magic, size;
     int16_t g[PROJ_NG];
     uint8_t sel, rsv[3];
-    proj_trk_v4_t t[NTRK];
+    proj_trk_v4_t t[PROJ_TRACKS];
     uint32_t sum;
 } project_v4_t;
 typedef struct { uint8_t note[4], n, time, flags, vel; } step8_t;   /* the steps of formats 1..3 */
@@ -263,7 +264,7 @@ typedef struct {                               /* format 3 (SLOOP 1.x), read onl
     uint32_t magic, size;
     int16_t g[PROJ_NG_V3];
     uint8_t sel, rsv[3];
-    proj_trk_v3_t t[NTRK];
+    proj_trk_v3_t t[PROJ_TRACKS];
     uint32_t sum;
 } project_v3_t;
 typedef struct {                               /* a track of formats 1 and 2, read only */
@@ -275,7 +276,7 @@ typedef struct {                               /* format 2 (until 0.9), read onl
     uint32_t magic, size;
     int16_t g[PROJ_NG_V2];
     uint8_t sel, rsv[3];
-    proj_trk_v2_t t[NTRK];
+    proj_trk_v2_t t[PROJ_TRACKS];
     uint32_t sum;
 } project_v2_t;
 typedef struct {                               /* format 1 (until 0.5 beta), read only */
@@ -306,7 +307,7 @@ typedef struct {
     uint32_t magic, size;
     int16_t g[PROJ_NG];
     uint8_t sel, drdly, rsv[2];
-    proj_trk_v6_t t[NTRK];
+    proj_trk_v6_t t[PROJ_TRACKS];
     uint32_t sum;
 } project_v6_t;
 _Static_assert(sizeof(project_v6_t) == 3816u, "format 6 as SLOOP 2.6 stores it");
@@ -417,7 +418,7 @@ static int proj_from_v4(project_t *q, const project_v4_t *v4, int n)
     q->size = sizeof *q;
     memcpy(q->g, v4->g, sizeof q->g);
     q->sel = v4->sel;
-    for (i = 0; i < NTRK; i++) {
+    for (i = 0; i < PROJ_TRACKS; i++) {
         uint32_t k;
         for (k = 0; k < PROJ_E0; k++)                  /* by id up to P_CHORD, the parameters added since: */
             q->t[i].p[k] = k < PROJ_NP_V4 - 8u ? v4->t[i].p[k] : TP[k].def;   /* their defaults; P_E0.. moved */
@@ -461,7 +462,7 @@ static int proj_from_v6(project_t *q, const project_v6_t *v6, int n)
     memcpy(q->g, v6->g, sizeof q->g);
     q->sel = v6->sel;
     q->drdly = v6->drdly;
-    for (i = 0; i < NTRK; i++) {
+    for (i = 0; i < PROJ_TRACKS; i++) {
         const proj_trk_v6_t *s = &v6->t[i];
         proj_trk_t *d = &q->t[i];
         for (k = 0; k < PROJ_E0; k++)
@@ -502,7 +503,7 @@ static void proj_from_v3_ok(project_t *q, const project_v3_t *v3)
     q->size = sizeof *q;
     proj_g_from_old(q->g, v3->g);
     q->sel = v3->sel;
-    for (i = 0; i < NTRK; i++)
+    for (i = 0; i < PROJ_TRACKS; i++)
         proj_trk_from_v3(&q->t[i], &v3->t[i], i == TRK_DRUM);
     q->sum = proj_sum(q);
 }
@@ -527,7 +528,7 @@ static int proj_from_v2(project_t *q, const project_v2_t *v2, int n)
     memset(v3, 0, sizeof *v3);
     memcpy(v3->g, v2->g, sizeof v3->g);
     v3->sel = v2->sel;
-    for (i = 0; i < NTRK; i++)
+    for (i = 0; i < PROJ_TRACKS; i++)
         proj_trk_v2_to_v3(&v3->t[i], &v2->t[i], i == TRK_DRUM);
     proj_from_v3_ok(q, v3);
     return 1;
@@ -587,27 +588,27 @@ static void proj_capture(project_t *p)        /* what is playing now, as a proje
     p->sel = song.sel;
     p->drdly = (uint8_t)song.g[G_DRDLY];
     p->rsv[0] = SYNTHMAVEN_SYNTH ? SYNTHMAVEN_PROJ_MARK : 0u;   /* (SynthMaven 0.3: its bus, layer and modulation are set) */
-    for (i = 0; i < NTRK; i++) {
+    for (i = 0; i < PROJ_TRACKS; i++) {
         uint32_t k;
         for (k = 0; k < PROJ_E0; k++)
-            p->t[i].p[k] = trk[i].p[k];
+            p->t[i].p[k] = trk[(SYNTHMAVEN_SYNTH && i==3u)?TRK_DRUM:i].p[k];
         for (k = 0; k < 8u; k++)
-            p->t[i].p[PROJ_E0 + k] = trk[i].p[P_E0 + k];
-        memcpy(p->t[i].lock, trk[i].lock, sizeof trk[i].lock);
+            p->t[i].p[PROJ_E0 + k] = trk[(SYNTHMAVEN_SYNTH && i==3u)?TRK_DRUM:i].p[P_E0 + k];
+        memcpy(p->t[i].lock, trk[(SYNTHMAVEN_SYNTH && i==3u)?TRK_DRUM:i].lock, sizeof trk[(SYNTHMAVEN_SYNTH && i==3u)?TRK_DRUM:i].lock);
 #if SYNTHMAVEN_SYNTH
         for (k = 0; k < NLOCK; k++)                    /* (the locks' EDIT ids as stored) */
-            if (trk[i].lock[k].param >= P_E0)
-                p->t[i].lock[k].param = (uint8_t)(trk[i].lock[k].param - PROJ_NX);
+            if (trk[(SYNTHMAVEN_SYNTH && i==3u)?TRK_DRUM:i].lock[k].param >= P_E0)
+                p->t[i].lock[k].param = (uint8_t)(trk[(SYNTHMAVEN_SYNTH && i==3u)?TRK_DRUM:i].lock[k].param - PROJ_NX);
         if (i == 2u)                                   /* (SynthMaven 0.4: tracks 1 and 2's LFO 2, ENV 2, matrix) */
             proj_ext_put(p->t[2].lock);
         if (i == 3u)                                   /* (0.8: their MOD SEQ's steps) */
             proj_ms_put(p->t[3].lock);
 #endif
-        p->t[i].engine = trk[i].eng_req;
-        p->t[i].preset = trk[i].preset;
-        memcpy(p->t[i].step, trk[i].step, sizeof trk[i].step);
-        memcpy(p->t[i].micro, trk[i].micro, sizeof trk[i].micro);
-        memcpy(p->t[i].fill, trk[i].fill, sizeof trk[i].fill);
+        p->t[i].engine = trk[(SYNTHMAVEN_SYNTH && i==3u)?TRK_DRUM:i].eng_req;
+        p->t[i].preset = trk[(SYNTHMAVEN_SYNTH && i==3u)?TRK_DRUM:i].preset;
+        memcpy(p->t[i].step, trk[(SYNTHMAVEN_SYNTH && i==3u)?TRK_DRUM:i].step, sizeof trk[(SYNTHMAVEN_SYNTH && i==3u)?TRK_DRUM:i].step);
+        memcpy(p->t[i].micro, trk[(SYNTHMAVEN_SYNTH && i==3u)?TRK_DRUM:i].micro, sizeof trk[(SYNTHMAVEN_SYNTH && i==3u)?TRK_DRUM:i].micro);
+        memcpy(p->t[i].fill, trk[(SYNTHMAVEN_SYNTH && i==3u)?TRK_DRUM:i].fill, sizeof trk[(SYNTHMAVEN_SYNTH && i==3u)?TRK_DRUM:i].fill);
 #if SYNTHMAVEN_SYNTH
         if (i == 2u)                                   /* (1.0: tracks 1 and 2's SPREAD .. slot 12, G_DMODE) */
             proj_x10_put(&p->t[2], trk[2].step);
@@ -628,15 +629,15 @@ static void proj_apply(const project_t *p, int all)
             song.g[i] = (int16_t)clamp(p->g[i], GP[i].min, GP[i].max);
     if (all || !SYNTHMAVEN_SYNTH)
         song.g[G_DRDLY] = (int16_t)clamp(p->drdly, GP[G_DRDLY].min, GP[G_DRDLY].max);   /* (a load and a section, as REV) */
-    for (k = 0; k < NTRK; k++) {
-        track_t *t = &trk[k];
+    for (k = 0; k < PROJ_TRACKS; k++) {
+        track_t *t = &trk[(SYNTHMAVEN_SYNTH && k==3u)?TRK_DRUM:k];
         const proj_trk_t *s = &p->t[k];
-        uint32_t e = k < NPART ? s->engine % NENGINES : 0u;
+        uint32_t e = k < 3u ? s->engine % NENGINES : 0u;
         t->eng_req = (uint8_t)e;
         t->user = 0;                                    /* (no user preset slot is saved) */
         t->lk_n = 0;                                    /* (the locks in force: the values come from the project) */
         for (i = 0; i < P_COUNT; i++) {                 /* every value back inside its range */
-            const param_desc_t *d = k == TRK_DRUM && i == P_E0 ? &DRUM_KIT_DESC :   /* the drum kit */
+            const param_desc_t *d = k == 3u && i == P_E0 ? &DRUM_KIT_DESC :   /* the drum kit */
                                     i >= P_E0 && i <= P_E7 ? &ENGINES[e]->edit[i - P_E0] : &TP[i];
             int32_t v = i < PROJ_E0 ? s->p[i] : i >= P_E0 ? s->p[PROJ_E0 + i - P_E0] : d->def;
 #if SYNTHMAVEN_SYNTH
@@ -685,7 +686,7 @@ static void proj_apply(const project_t *p, int all)
             const plock_t *l = &s->lock[i];
             uint32_t id = l->param >= PROJ_E0 ? l->param - PROJ_E0 + P_E0 : l->param;   /* (EDIT ids as stored) */
             if (l->step < NSTEP && id < P_COUNT && p_lockable(id)) {
-                const param_desc_t *d = k == TRK_DRUM && id == P_E0 ? &DRUM_KIT_DESC :
+                const param_desc_t *d = k == 3u && id == P_E0 ? &DRUM_KIT_DESC :
                                         id >= P_E0 && id <= P_E7 ? &ENGINES[e]->edit[id - P_E0] : &TP[id];
                 t->lock[i].step = l->step;
                 t->lock[i].param = (uint8_t)id;
@@ -696,7 +697,7 @@ static void proj_apply(const project_t *p, int all)
                 t->lock[i].val = 0;
             }
         }
-        if (k != TRK_DRUM)
+        if (k != 3u)
             for (i = 0; i < NSTEP; i++) {
                 step_t *st = &t->step[i];
                 uint32_t j;
@@ -728,6 +729,9 @@ static uint8_t sec_dirty, song_dirty;           /* live sections / the song: in 
 /* slot from flash into RAM (format 5, or an old one converted) */
 static union {
     project_t v5;
+#if SYNTHMAVEN_SYNTH
+    program_t pg;
+#endif
     project_v6_t v6;
     project_v4_t v4;
     project_v3_t v3;
@@ -738,17 +742,35 @@ static void proj_fetch(uint32_t slot)
 {
     project_t *q = &proj_slot[slot & 3u];
     int n = st_load(OBJ_PROJECT0 + (slot & 3u), &proj_tmp, sizeof proj_tmp);
+#if SYNTHMAVEN_SYNTH
+    if(n==(int)sizeof(program_t) && program_valid(&proj_tmp.pg)) {
+        memset(q,0,sizeof *q);memcpy(q,&proj_tmp.pg,sizeof(program_t));return;
+    }
+#endif
     if (!proj_import(q, &proj_tmp, n))
         q->magic = 0;
 }
 #include "fm6_bank.c"                           /* the FM6 patch bank (eng_fm6.c PTCH B1..B27): staged in proj_tmp */
 #endif
 
+static int audio_quiet(void);
 static void project_save(uint32_t slot)
 {
     project_t *p = &proj_slot[slot & 3u];
 #if FELUCCA_ARRANGER
     if (song.playing || transport_req) { ui_message("STOP BEFORE SAVE"); return; }
+#endif
+#if SYNTHMAVEN_SYNTH
+    if(song.playing || transport_req || !audio_quiet()) {ui_message("RELEASE NOTES FIRST");return;}
+#if FELUCCA_FLASH
+    if(flash_ok) {
+        program_capture(&proj_tmp.pg);
+        if(st_save(OBJ_PROJECT0+(slot&3u),&proj_tmp.pg,sizeof(program_t))){ui_message("SAVE ERROR");return;}
+        memset(p,0,sizeof *p);memcpy(p,&proj_tmp.pg,sizeof(program_t));ui_message("PROGRAM SAVED");return;
+    }
+#endif
+    program_capture((program_t *)p);
+    ui_message("PROGRAM SAVED RAM");return;
 #endif
     proj_capture(p);
 #if FELUCCA_FLASH
@@ -771,7 +793,7 @@ static void project_apply(const project_t *p)
     part_ctl_reset();                                   /* (the wheels back to the middle, the pedal up) */
     song.sel = (uint8_t)(p->sel < NTRK && !SYNTHMAVEN_SYNTH ? p->sel : 0u);
     fm1_irq_on();
-    for (k = 0; k < NPART; k++)                         /* a format 1 project: the default sounds of tracks 2, 3 */
+    for (k = 0; k < 3u; k++)                         /* a format 1 project: the default sounds of tracks 2, 3 */
         if (p->t[k].preset == 0xFFu) {
             apply_preset_to(&trk[k], TRK_DEF[k][1]);
             steps_clear(&trk[k]);
@@ -790,6 +812,9 @@ static void project_load(uint32_t slot)
     if (flash_ok && !proj_ok(p))
         proj_fetch(slot);
 #endif
+#if SYNTHMAVEN_SYNTH
+    if(program_valid((const program_t *)p)) {program_apply((const program_t *)p);ui_message("PROGRAM LOADED");return;}
+#endif
     if (!proj_ok(p)) {
         ui_message("EMPTY SLOT");
         return;
@@ -803,7 +828,18 @@ static void project_load(uint32_t slot)
  * ~50 ms: never while something plays); loaded at power-on (autosave_resume) */
 #define AUTOSAVE_IDLE 2500u                    /* ms without input */
 #define AUTOSAVE_GAP 20000u                    /* ms between two saves at least */
-static project_t autosave_buf __attribute__((section(".pool")));
+static union {
+ project_t legacy;
+#if SYNTHMAVEN_SYNTH
+ program_t program;
+#endif
+} autosave_work __attribute__((section(".pool")));
+#define autosave_buf autosave_work.legacy
+#if SYNTHMAVEN_SYNTH
+#define AUTOSAVE_SIZE sizeof(program_t)
+#else
+#define AUTOSAVE_SIZE sizeof(project_t)
+#endif
 static uint32_t autosave_hash, autosave_ms, autosave_checked;
 
 static int audio_quiet(void)
@@ -827,11 +863,14 @@ static void autosave_tick(void)                /* main loop */
         now - ui_input_ms < AUTOSAVE_IDLE || now - autosave_ms < AUTOSAVE_GAP || now - autosave_checked < 1000u)
         return;
     autosave_checked = now;
-    proj_capture(&autosave_buf);
-    h = autosave_buf.sum;
+#if SYNTHMAVEN_SYNTH
+    program_capture(&autosave_work.program);h=autosave_work.program.sum;
+#else
+    proj_capture(&autosave_buf);h=autosave_buf.sum;
+#endif
     if (h == autosave_hash || !audio_quiet())
         return;
-    if (st_save(OBJ_AUTOSAVE, &autosave_buf, sizeof autosave_buf) == 0)
+    if (st_save(OBJ_AUTOSAVE, &autosave_buf, AUTOSAVE_SIZE) == 0)
         autosave_hash = h;
     autosave_ms = fm1_ms;
 #endif
@@ -845,6 +884,12 @@ static void autosave_resume(void)              /* power-on: the project as it wa
     if (!flash_ok)
         return;
     n = st_load(OBJ_AUTOSAVE, &proj_tmp, sizeof proj_tmp);
+#if SYNTHMAVEN_SYNTH
+    if(n==(int)sizeof(program_t) && program_valid(&proj_tmp.pg)) {
+        program_apply(&proj_tmp.pg);transport_req=0;panic_req=0;
+        autosave_hash=proj_tmp.pg.sum;return;
+    }
+#endif
     if (!proj_import(q, &proj_tmp, n))
         return;
     autosave_hash = q->sum;
@@ -1028,7 +1073,10 @@ static void persist_boot(void)                    /* before settings_init / pane
          * still valid in RAM (a warm reset: an update, UPDATE MODE, a crash) may never have reached
          * flash (a live section stored while playing): marked to be written when quiet */
         uint32_t i;
-        for (i = 0; i < 4u; i++)
+        for (i = 0; i < 4u; i++) {
+#if SYNTHMAVEN_SYNTH
+            if(program_valid((const program_t *)&proj_slot[i])) {proj_fetch(i);continue;}
+#endif
             if (!proj_ok(&proj_slot[i])) {
                 proj_fetch(i);
             } else {
@@ -1037,13 +1085,19 @@ static void persist_boot(void)                    /* before settings_init / pane
                     sec_dirty |= (uint8_t)(1u << i);
             }
     }
+    }
     dsu_boot();                                    /* SLOOP 2.5: the SYN kits (after the settings) */
     up_boot();                                     /* user presets */
     fm6_bank_boot();                               /* the FM6 patch bank (fm6_bank.c) */
 #endif
 }
 
-static int project_used(uint32_t slot) { return proj_ok(&proj_slot[slot & 3u]); }
+static int project_used(uint32_t slot) {
+#if SYNTHMAVEN_SYNTH
+ if(program_valid((const program_t *)&proj_slot[slot&3u]))return 1;
+#endif
+ return proj_ok(&proj_slot[slot & 3u]);
+}
 
 #if FELUCCA_FLASH
 /* SLOOP 2.5: the settings object holds the SYN kits after persist_t (drum_synth.c dsu): firmware before 2.5 reads
@@ -1051,7 +1105,12 @@ static int project_used(uint32_t slot) { return proj_ok(&proj_slot[slot & 3u]); 
 /* what another firmware keeps in the settings object after the SYN kits (SLOOP 2.6: its MIDI LEARN map and GLO > MIDI
  * channels): read at power-on, written back as it was with every save, so going back to it finds them (it was dropped:
  * there they came back at their defaults, and a SLOOP 2.6 object without them reads as 2.5's) */
+#if SYNTHMAVEN_SYNTH
+#include "custom_scale_store.h"
+#define SET_TAIL_MAX 88u
+#else
 #define SET_TAIL_MAX 64u
+#endif
 static uint8_t set_tail[SET_TAIL_MAX];
 static uint32_t set_tail_n;
 _Static_assert(sizeof(persist_t) + sizeof(dsu_bank_t) + SET_TAIL_MAX <= ST_PAYLOAD_MAX, "the settings object");
@@ -1060,6 +1119,9 @@ static int settings_write(const persist_t *p)
     int rc;
     if (!dsu_valid(&dsu))
         dsu_defaults();
+#if SYNTHMAVEN_SYNTH
+    {custom_scale_record_t r;custom_scale_fill(&r);memcpy(set_tail+CUSTOM_SCALE_OFF,&r,sizeof r);set_tail_n=SET_TAIL_MAX;}
+#endif
     side_fill(&side_out);
     st_side = &side_out;
     st_side_len = sizeof side_out;
@@ -1068,6 +1130,10 @@ static int settings_write(const persist_t *p)
     if (rc)
         return -1;
     side_saved = side_out;
+#if SYNTHMAVEN_SYNTH
+    if(custom_scale_dirty)ui_message("SCALE SAVED");
+    custom_scale_dirty=0;
+#endif
     dsu_dirty = 0;
     return 0;
 }
@@ -1086,6 +1152,11 @@ static void dsu_boot(void)                          /* the SYN kits from the set
         set_tail_n = h.len - sizeof(persist_t) - sizeof(dsu_bank_t);   /* (SLOOP 2.6's MIDI part: kept) */
         memcpy(set_tail, st_buf + sizeof(persist_t) + sizeof(dsu_bank_t), set_tail_n);
     }
+#if SYNTHMAVEN_SYNTH
+    if(set_tail_n>=CUSTOM_SCALE_OFF+sizeof(custom_scale_record_t)) {
+        custom_scale_record_t r;memcpy(&r,set_tail+CUSTOM_SCALE_OFF,sizeof r);custom_scale_take(&r);tune_build();
+    }
+#endif
     dsu_dirty = 0;
 }
 #endif
@@ -1112,7 +1183,11 @@ static void settings_save(void)
         return;
     persist_fill(&p);
     side_fill(&side_out);
-    if (!memcmp(&p, &persist_saved, sizeof p) && !memcmp(&side_out, &side_saved, sizeof side_out))
+    if (
+#if SYNTHMAVEN_SYNTH
+        !custom_scale_dirty &&
+#endif
+        !memcmp(&p, &persist_saved, sizeof p) && !memcmp(&side_out, &side_saved, sizeof side_out))
         return;                                    /* unchanged: no erase cycle (0.7: the side record too) */
     if (settings_write(&p) == 0)
         persist_saved = p;
@@ -1189,6 +1264,15 @@ static uint32_t project_restore(uint32_t slot, const void *raw, uint32_t n)
         sec_dirty &= (uint8_t)~(1u << slot);
         return 0;
     }
+#if SYNTHMAVEN_SYNTH
+    if(n==sizeof(program_t) && program_valid((const program_t *)raw)) {
+        if(slot==4u){program_apply((const program_t *)raw);return 0;}
+        if(slot>3u)return 2;
+        if(!flash_ok || st_save(OBJ_PROJECT0+slot,raw,n))return 4;
+        memset(&proj_slot[slot],0,sizeof proj_slot[slot]);memcpy(&proj_slot[slot],raw,n);
+        sec_dirty&=(uint8_t)~(1u<<slot);return 0;
+    }
+#endif
     if (!proj_import(&autosave_buf, raw, (int)n))
         return 2;
     if (slot == 4u) {

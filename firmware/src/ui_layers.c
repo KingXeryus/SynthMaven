@@ -28,6 +28,9 @@ static uint8_t sec_armed;                               /* store over a used sec
 static uint32_t sec_armed_ms;
 static uint8_t chain_tap[CHAIN_MAX], chain_taps;        /* the section keys tapped in this SAVE hold (the first
                                                          * is asked for at once; two or more: a chain on release) */
+#if SYNTHMAVEN_SYNTH
+static uint8_t scale_edit;
+#endif
 #define TAP_MS 450u                                     /* a press shorter than this, untouched: a tap */
 #define SHOW_MS 140u                                    /* the layer shows after this (a tap does not flash it) */
 
@@ -35,6 +38,9 @@ static uint8_t chain_tap[CHAIN_MAX], chain_taps;        /* the section keys tapp
 static void layers_init(void)
 {
     uint32_t l;
+#if SYNTHMAVEN_SYNTH
+    program_mode=1;
+#endif
     for (l = LY_FX; l < LY_COUNT; l++)
         ly_bit[l] = 1u << panel.btn[LAYER_BTN[l]];
     dyn_bit[0] = 1u << panel.btn[B_OCTDN];
@@ -350,11 +356,19 @@ static void layer_key(uint32_t layer, uint32_t k, uint32_t down)
         ui.step_held |= (uint16_t)(1u << w);
         step_down((uint32_t)w);
         return;
-    case LY_SCALE: {                                    /* the key of the song: every synth part */
-        uint32_t i, root = (53u + k) % 12u;
-        for (i = 0; i < NPART; i++)
-            trk[i].p[P_ROOT] = (int16_t)root;
-        ui_say("KEY ", N_NOTE[root]);
+    case LY_SCALE: {
+#if SYNTHMAVEN_SYNTH
+        if(scale_edit && tune_cfg.sys>=TU_CUSTOM1 && tune_cfg.sys<TU_N) {
+            uint32_t pc=(53u+k+12u-tune_cfg.root)%12u,shift=2u*pc;
+            uint32_t *v=&custom_scale[tune_cfg.sys-TU_CUSTOM1];
+            *v=(*v&~(3u<<shift))|((((*v>>shift)+1u)&3u)<<shift);
+            tune_build();custom_scale_dirty=1;settings_later=1;ui.force=1;
+        }
+#else
+        uint32_t i,root=(53u+k)%12u;
+        for(i=0;i<NPART;i++)trk[i].p[P_ROOT]=(int16_t)root;
+        ui_say("KEY ",N_NOTE[root]);
+#endif
         return;
     }
     case LY_SONG: {                                     /* sections A..D: play, store; loop / song; SONG REC */
@@ -473,6 +487,19 @@ static void layer_knobs(uint32_t layer)
     uint32_t k;
     int32_t s;
     track_t *t = TSEL;
+#if SYNTHMAVEN_SYNTH
+    if(layer==LY_SCALE) {
+        for(k=0;k<4;k++)if((s=panel_enc(EN_K1+k))!=0) {
+            if(scale_edit) {
+                if(k==0)tune_cfg.sys=(uint8_t)(TU_CUSTOM1+((tune_cfg.sys-TU_CUSTOM1+s%4+4)%4));
+                if(k==1)tune_cfg.root=(uint8_t)((tune_cfg.root+s%12+12)%12);
+                if(k==2){custom_scale_dirty=1;ui_message("SCALE SAVE PENDING");}
+            } else if(k==0)tune_cfg.sys=(uint8_t)((tune_cfg.sys+s%TU_N+TU_N)%TU_N);
+            tune_build();settings_later=1;ui.force=1;
+        }
+        return;
+    }
+#endif
     if (layer == LY_STEP && ui.step_held) {              /* a step held: PRESETS the lock's value, ALGORITHM its parameter
                                                           * (neither browses a sound nor selects a track meanwhile) */
         if ((s = panel_enc(EN_PRESET)) != 0) {
@@ -657,6 +684,18 @@ static void layer_screen_draw(void)
         ui.force = 1;
         layer_shown = 1;
     }
+#if SYNTHMAVEN_SYNTH
+    if(layer==LY_SCALE) {
+        cv_begin(240,240,C_BLACK);cv_oy=0;
+        cv_text(4,4,&FONT_S,scale_edit?"CUSTOM SCALE EDIT":"SCALE",C_HI);
+        cv_oy=32;graph_tuning();cv_oy=0;
+        cv_text(4,156,&FONT_S,scale_edit?"KEY: -25 -50 -75 0":"HOLD SEL 3s TO EDIT",C_GRAY);
+        cv_text(4,178,&FONT_S,scale_edit?"SELECT: CUSTOM SLOT":"KNOB 1: SCALE",C_GRAY);
+        cv_text(4,200,&FONT_S,scale_edit?"PRESETS: ROOT":"",C_GRAY);
+        cv_text(4,222,&FONT_S,scale_edit?"SAVE: STORE  SEL: EXIT":"",C_GRAY);
+        cv_blit(0,0);return;
+    }
+#endif
     for (i = 0; i < 4u; i++)
         v[i][0] = 0;
     memset(tl, 0, sizeof tl);

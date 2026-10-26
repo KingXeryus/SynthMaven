@@ -249,6 +249,19 @@ static void fm1_main(void)
         sm_ble_poll();
 #endif
         fm1_wdt_feed();
+        #if FELUCCA_USB_HOST
+        usb_host_switch(sm_usb_host);
+        usb_host_task(fm1_ms);
+        if(midi_usb_lost) { fm1_irq_off();midi_usb_lost=0;mi_r=mi_w;memset(midi_sel_on,0,sizeof midi_sel_on);panic_req=(1u<<NTRK)-1u;fm1_irq_on(); }
+        switch(usb_host_message()) {
+        case UH_MSG_ON: ui_message("USB PEDAL HOST"); break;
+        case UH_MSG_OFF: ui_message("USB COMPUTER"); break;
+        case UH_MSG_MIDI: ui_message("USB MIDI CONNECTED"); break;
+        case UH_MSG_NOMIDI: ui_message("USB DEVICE NOT MIDI"); break;
+        case UH_MSG_LOW: ui_message("USB FULL SPEED ONLY"); break;
+        case UH_MSG_LOST: ui_message("USB MIDI LOST"); break;
+        }
+#endif
         usb_retry(fm1_ms);
         if ((uint32_t)(m - healthy_since) >= 30000u && bootguard.pending) {
             bootguard_clear(&bootguard);     /* 30 s of this boot, even if TIMER4 survived reset */

@@ -734,6 +734,9 @@ static uint32_t btn_hold(uint32_t *t0, uint32_t label, uint32_t now, int hold_ok
 }
 
 /* a layer button tapped (pressed and let go, nothing touched): its pages, as before the layers */
+#if SYNTHMAVEN_SYNTH
+static void scale_cycle(int32_t);
+#endif
 static void layer_tap(uint32_t layer)
 {
     switch (layer) {
@@ -769,7 +772,11 @@ static void layer_tap(uint32_t layer)
         open_family(FAM_ARP);
         break;
     case LY_SCALE:
+#if SYNTHMAVEN_SYNTH
+        scale_cycle(1);
+#else
         open_family(FAM_SCL);
+#endif
         break;
     case LY_MIX:
         open_family(FAM_GLO);
@@ -791,6 +798,17 @@ static void layer_tap(uint32_t layer)
     }
 }
 
+#if SYNTHMAVEN_SYNTH
+static void scale_cycle(int32_t steps) {
+    tune_cfg.sys=(uint8_t)(((int32_t)tune_cfg.sys+steps%TU_N+TU_N)%TU_N);
+    tune_build();settings_later=1;ui.force=1;ui_message(N_TUNE[tune_cfg.sys]);
+}
+static void scale_edit_open(void) {
+    if(tune_cfg.sys<TU_CUSTOM1)tune_cfg.sys=TU_CUSTOM1;
+    scale_edit=1;tune_build();settings_later=1;ui.force=1;
+    ui_message("CUSTOM: KEY -25");
+}
+#endif
 /* a layer locked open: a layer button held + HOME tapped. The layer stays with the button let go (both
  * hands free for the keys and the knobs); any other button but PLAY, REC and OCT- / OCT+ lets it go
  * (and does only that: its press is eaten) */
@@ -799,6 +817,9 @@ static void layer_unlock(void)
 {
     if (ly_lock != LY_PLAY) {
         ly_lock = LY_PLAY;
+#if SYNTHMAVEN_SYNTH
+        scale_edit=0;
+#endif
         ui.force = 1;
     }
 }
@@ -820,6 +841,11 @@ static int layers_input(uint32_t note_edges, uint32_t *pressed, uint32_t home)
     static uint8_t down[LY_COUNT], used[LY_COUNT];
     static uint32_t t0[LY_COUNT];
     uint32_t l, now = fm1_ms, held = LY_PLAY, eat = 0;
+#if SYNTHMAVEN_SYNTH
+    if(scale_edit && (*pressed & ly_bit[LY_SONG])) {
+        custom_scale_dirty=1;settings_later=1;*pressed&=~ly_bit[LY_SONG];ui_message("SCALE SAVE PENDING");
+    }
+#endif
     if (ly_lock != LY_PLAY) {
         uint32_t keep = 1u << panel.btn[B_PLAY] | 1u << panel.btn[B_REC] | 1u << panel.btn[B_OCTDN] | 1u << panel.btn[B_OCTUP];
         eat = *pressed & ~keep;
@@ -836,8 +862,19 @@ static int layers_input(uint32_t note_edges, uint32_t *pressed, uint32_t home)
             t0[l] = now;
             used[l] = (uint8_t)((eat & ly_bit[l]) != 0u);  /* (the press that unlocked: not a tap) */
         }
+        if(d && down[l] && now-t0[l]>=3000u && ly_lock!=l) {
+#if SYNTHMAVEN_SYNTH
+            if(l==LY_SCALE)scale_edit_open();
+#endif
+            if(ly_on(l)){ly_lock=(uint8_t)l;ui.layer=(uint8_t)l;ui.force=1;}
+            else if(!used[l])layer_tap(l);
+            used[l]=1;
+        }
         if (d && note_edges)
             used[l] = 1;                                  /* a key while held: not a tap */
+#if SYNTHMAVEN_SYNTH
+        if(scale_edit && l==LY_SONG)used[l]=1;
+#endif
         if (!d && down[l] && !used[l] && (now - t0[l] < TAP_MS || !ly_on(l)) && !ui.menu && !ui.confirm)
             layer_tap(l);                                 /* (SynthMaven: a button with no layer opens its pages
                                                            * on release however long it was held) */
@@ -1026,7 +1063,7 @@ static void ui_input(void)
     uint32_t home = btn_hold(&ui.home_t0, B_HOME, now, 1);
     int32_t s;
     int layered;
-    if (SYNTHMAVEN_SYNTH && song.sel)                      /* SynthMaven: one instrument (an editor, an old project) */
+    if (SYNTHMAVEN_SYNTH && song.sel>=4u)                      /* SynthMaven: one instrument (an editor, an old project) */
         song.sel = 0;
 #if SYNTHMAVEN_SYNTH
     syn_tick();                                         /* MIDI CC 20: MORPH */
@@ -1068,6 +1105,13 @@ static void ui_input(void)
     holds_input(pressed, fm1_ms);
     pressed &= ~((on_song_page() ? 0u : 1u << panel.btn[B_REC]) | (1u << panel.btn[B_SAVE]));
     if (layered || ui.hold_kind) {                      /* a layer / a hold: the rest waits */
+#if SYNTHMAVEN_SYNTH
+        if(scale_edit) {
+            if((s=panel_enc(EN_SELECT))!=0)tune_cfg.sys=(uint8_t)(TU_CUSTOM1+((tune_cfg.sys-TU_CUSTOM1+s%4+4)%4));
+            if((s=panel_enc(EN_PRESET))!=0)tune_cfg.root=(uint8_t)((tune_cfg.root+s%12+12)%12);
+            panel_enc(EN_ALGO);tune_build();settings_later=1;ui.force=1;return;
+        }
+#endif
         if ((s = panel_enc(EN_SELECT)) != 0) {           /* (the tempo always) */
             song.g[G_BPM] = (int16_t)clamp(song.g[G_BPM] + accel(EN_SELECT, s, 200), GP[G_BPM].min, GP[G_BPM].max);
             ui.bpm_t = 40;
@@ -1192,7 +1236,7 @@ static void ui_input(void)
         if (!ui.home && cur_page()->graph == GR_BROWSE)
             br_filter_step(s > 0 ? 1 : -1);
         else
-            preset_kind_jump(s);
+            home_engine_step(s);
     }
 #else
     if ((s = panel_enc(EN_ALGO)) != 0 && !ft_on)     /* ALGORITHM: the selected track, on every page (not in a take) */
@@ -1207,7 +1251,7 @@ static void ui_input(void)
     }
     if ((s = panel_enc(EN_SELECT)) != 0) {
         if (SYNTHMAVEN_SYNTH && ui.home && !rec_wait && !ft_on)
-            home_preset_step(s);                    /* HOME: select and load within the current bank */
+            track_select((uint32_t)(((int32_t)song.sel+s%4+4)%4)); /* HOME: select one loaded program sound */
         else if (rec_wait || ft_on || !page_walk(s)) {
             song.g[G_BPM] = (int16_t)clamp(song.g[G_BPM] + accel(EN_SELECT, s, 200), GP[G_BPM].min, GP[G_BPM].max);
             ui.bpm_t = 40;                          /* pages / recording retain their existing SELECT behavior */

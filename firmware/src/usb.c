@@ -19,6 +19,13 @@
  * setting). The engines stay at 44.1 kHz; at 48 kHz uac_tap48 resamples (a polyphase FIR 160 / 147, uac_fir.h:
  * 12 taps a phase, Q15, Felucca's 24 x Q30 made smaller) into the ring. 44.1 kHz, the rate until a host asks
  * for another, sends the samples as before, bit for bit. */
+#ifndef FELUCCA_USB_HOST
+#define FELUCCA_USB_HOST 0
+#endif
+#ifdef FELUCCA_LOADER
+#undef FELUCCA_USB_HOST
+#define FELUCCA_USB_HOST 0
+#endif
 #include "../hal/fm1_usb.h"   /* registers; relative, so the loader and the host tests find it too */
 #ifndef FELUCCA_CDC
 #define FELUCCA_CDC 0
@@ -160,14 +167,17 @@ static volatile uint32_t so_w, so_r;
 #define MQ 64u
 static uint32_t midi_in_q[MQ], midi_out_q[MQ];
 static volatile uint32_t mi_w, mi_r, mo_w, mo_r;
-static void midi_out_event(uint32_t pkt)            /* from the audio ISR */
-{
-    if (usb.config && mo_w - mo_r < MQ) {
-        midi_out_q[mo_w % MQ] = pkt;
-        RING_PUBLISH();
-        mo_w++;
-    }
+static volatile uint8_t midi_usb_lost;
+static volatile uint32_t midi_links;
+static uint32_t usb_retry_ms;
+static int usb_midi_out_ready(void);
+static int midi_out_try(uint32_t pkt) {
+    if(!usb_midi_out_ready() || mo_w-mo_r>=MQ)return 0;
+    midi_out_q[mo_w%MQ]=pkt;RING_PUBLISH();mo_w++;return 1;
 }
+static void midi_out_event(uint32_t pkt) {(void)midi_out_try(pkt);}
+static uint32_t midi_out_room(void){return usb_midi_out_ready()?MQ-(mo_w-mo_r):0u;}
+static uint32_t midi_out_link(void){return midi_links;}
 
 /* ------------------------------------------------------- descriptors --- */
 /* interfaces: 0 audio control, 1 MIDI streaming, 2 audio streaming (FELUCCA_UAC), then CDC's two.
@@ -610,8 +620,9 @@ static void ep0_service(void)
         if (s[2] > 1u)
             goto stall;
         usb.config = s[2];
-        if (usb.config == 1u)
-            ep1_config();
+        if (usb.config == 1u) {
+            midi_links++; ep1_config();
+        }
         else
             sie_wr(S_INTRRX1E, 0);
 #if FELUCCA_UAC
@@ -844,6 +855,14 @@ static int ep1_take(const uint8_t *b, uint32_t n)
     for (i = 0; i + 3u < n; i += 4u)
         midi_in_event((uint32_t)b[i] | (uint32_t)b[i + 1] << 8 | (uint32_t)b[i + 2] << 16 | (uint32_t)b[i + 3] << 24);
     return 1;
+}
+
+#include "../vendor/fm1-usb-host/usb_host.c"
+static int usb_midi_out_ready(void) {
+#if FELUCCA_USB_HOST
+    if(uh.on)return uh.run && uh.out_mps;
+#endif
+    return usb.config;
 }
 
 static void ep1_rx(void)                                /* leaves the packet (NAK) while the ring is too full */
@@ -1224,6 +1243,9 @@ static void uac_service(void)
 static void usb_poll(void)                              /* TIMER5 ISR, 2 kHz */
 {
     uint32_t iu, it, ir;
+#if FELUCCA_USB_HOST
+    if(uh.on){if(uh.run)uh_poll();return;}
+#endif
     if (!usb.up)
         return;
     if (fm1_usb_sof_take()) {                           /* SOF pending: not a reliable "host is there", */
@@ -1336,10 +1358,12 @@ static void usb_start(void)                             /* boot, or main-loop re
  * later still enumerates. */
 static void usb_retry(uint32_t now_ms)
 {
-    static uint32_t t;
-    if (usb.up || usb.detached || now_ms - t < 1000u)
+#if FELUCCA_USB_HOST
+    if(uh.on)return;
+#endif
+    if (usb.up || usb.detached || now_ms - usb_retry_ms < 1000u)
         return;
-    t = now_ms;
+    usb_retry_ms = now_ms;
     usb.retries++;
     usb_start();
 }
@@ -1348,5 +1372,20 @@ static void usb_detach(void)
 {
     usb.detached = 1;
     usb.up = 0;
+#if FELUCCA_USB_HOST
+    if(uh.on)uh_session_end();uh.want=uh.on=0;RING_PUBLISH();
+#endif
     fm1_usb_off();
 }
+
+#if FELUCCA_CDC
+/* Main-loop only: leave the host endpoint DMA untouched. */
+static void usb_cdc_switch(uint32_t on)
+{
+    on = on != 0;
+    if (on == usb_cdc_on) return;
+    if (usb.up) { usb.up = 0; RING_PUBLISH(); fm1_usb_off(); }
+    usb.config = 0; cdc.dtr = 0; cdc.rx_pend = 0;
+    usb_cdc_on = (uint8_t)on;
+}
+#endif

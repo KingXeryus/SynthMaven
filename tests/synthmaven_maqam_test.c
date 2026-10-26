@@ -5,7 +5,7 @@ int main(void) {
  uint32_t sys,root,key;int16_t *vp;FILE *out=fopen("build/host/maqam-pitches.json","w");int comma=0;
  assert(out);fputs("[",out);
  outdir="build/host";bank_resolve();panel=PANEL_DEFAULT;layers_init();host_tracks_init();palette_set(4);go_home();frames(2);
- check(TU_RAST==6 && TU_BAYATI==7 && TU_USER==13 && TU_N==58,"old tuning IDs preserved; 46 maqam settings");
+ check(TU_RAST==6 && TU_BAYATI==7 && TU_USER==13 && TU_N==62,"old tuning IDs preserved; 46 maqam settings");
  for(sys=0;sys<TU_N;sys++)if(tune_is_maqam(sys))for(root=0;root<12;root++) {
   tune_cfg.sys=sys;tune_cfg.root=root;tune_cfg.a4=0;tune_build();
   fprintf(out,"%s{\"sys\":%u,\"root\":%u,\"pitches\":[",comma++?",":"",sys,root);

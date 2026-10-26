@@ -19,7 +19,7 @@ for macro,rs in [('MAQAM_EXISTING',rows[:2]),('MAQAM_ADDED',rows[2:])]:
  text+='#define '+macro+'(X) \\\n'+' \\\n'.join(f' X({r["id"]}, "{r["name"].upper()}", {r["profile"]})' for r in rs)+'\n'
 text+='static const uint16_t MAQAM_MASKS[][3] = { /* down 50, up 50, down 25 cents */\n'
 text+=''.join('    {'+','.join(hex(v) for v in row)+'},\n' for row in profiles)+'};\n'
-names=['EQUAL','JUST','PYTHAG','MEANTONE','WERCK III','KIRNB III','RAST','BAYATI','SLENDRO','PELOG','19-EDO','24-EDO','31-EDO','USER']+[r['name'].upper() for r in rows[2:]]
+names=['EQUAL','JUST','PYTHAG','MEANTONE','WERCK III','KIRNB III','RAST','BAYATI','SLENDRO','PELOG','19-EDO','24-EDO','31-EDO','USER']+[r['name'].upper() for r in rows[2:]]+['CUSTOM1','CUSTOM2','CUSTOM3','CUSTOM4']
 cat=[dict(sys=(6+i if i<2 else 12+i),name=r['name'],offsets=r['offsets'],note=r['note']) for i,r in enumerate(rows)]
 constants='const TU_NAMES = '+json.dumps(names)+';\nconst TU_USER = 13;\nconst TU_MAQAM = '+json.dumps(cat,separators=(',',':'))+';\n'
 h=root/'firmware/src/maqam_scales.h';web=root/'web/editor.html';html=web.read_text();a=html.index('const TU_NAMES = [');b=html.index('let tuv = null;',a)
