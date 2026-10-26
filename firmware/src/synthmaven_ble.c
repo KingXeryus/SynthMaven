@@ -8,6 +8,8 @@ extern void lib_make_ble_address(uint8_t *, uint8_t *);
 extern int le_controller_set_mac(void *);
 extern void ble_midi_enable(int), ble_midi_poll(void), ble_midi_scan(int), ble_midi_disconnect(void);
 extern int ble_midi_found(int, char *, int *), ble_midi_connect(int), ble_midi_central_state(void);
+extern int ble_midi_peripheral_connected(void), ble_midi_peripheral_linked(void);
+extern void ble_midi_disconnect_peripheral(void);
 extern int syscfg_read(uint16_t, void *, uint16_t), syscfg_write(uint16_t, void *, uint16_t);
 volatile uint32_t shim_isr_blocks; /* upstream shim counts refused waits in IRQ context */
 static uint8_t sm_ble_up, sm_ble_started, sm_ble_on, sm_ble_failed, sm_scan_requested;
@@ -136,6 +138,8 @@ static uint32_t sm_ble_state(void)
     if(!sm_bluetooth)return 0;
     if(sm_ble_failed)return 7;
     if(!sm_ble_up)return 1;
+    if(ble_midi_peripheral_connected())return 6;
+    if(ble_midi_peripheral_linked() && !ble_midi_central_state())return 5;
     return 2u+(uint32_t)ble_midi_central_state(); /* idle, scan, connect, discover, ready */
 }
 static uint32_t sm_ble_scan_start(void)
@@ -151,7 +155,7 @@ static uint32_t sm_ble_connect_device(uint32_t i)
 {
     return sm_ble_up && sm_bluetooth && i<8u && !ble_midi_connect((int)i) ? 0u:4u;
 }
-static void sm_ble_disconnect_device(void) { if(sm_ble_up)ble_midi_disconnect(); }
+static void sm_ble_disconnect_device(void) { if(sm_ble_up){ble_midi_disconnect();ble_midi_disconnect_peripheral();} }
 static void sm_ble_poll(void)
 {
     if(sm_bluetooth && !sm_ble_started) {

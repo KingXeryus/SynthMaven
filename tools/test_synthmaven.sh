@@ -21,6 +21,9 @@ $CC -o build/host/wt_rom_test tests/wt_rom_test.c firmware/vendor/tinf/tinflate.
 build/host/wt_rom_test
 node web/test_korg.mjs
 
+$CC -o build/host/synthmaven_ble_discovery_test tests/synthmaven_ble_discovery_test.c
+build/host/synthmaven_ble_discovery_test
+
 $CC -o build/host/synthmaven_ble_test tests/synthmaven_ble_test.c
 build/host/synthmaven_ble_test
 

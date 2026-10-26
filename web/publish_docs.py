@@ -9,7 +9,8 @@ ROOT = Path(__file__).resolve().parents[1]
 PAGES = {
     'docs/USER_MANUAL.md': 'user-manual.html',
     'QUICKSTART.md': 'quick-start.html',
-    'docs/release-1.1.md': 'release-notes.html',
+    'docs/release-1.2.md': 'release-notes.html',
+    'docs/release-1.1.md': 'release-1.1.html',
     'docs/release-1.0.md': 'preset-catalog.html',
     'docs/BLUETOOTH_STATUS.md': 'bluetooth-status.html',
     'docs/USB_MIDI_STATUS.md': 'usb-midi-status.html',

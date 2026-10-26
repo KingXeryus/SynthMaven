@@ -77,3 +77,22 @@ navigation on HOME. The firmware uses 580552/581564 bytes of app flash;
 static RAM, low SRAM and pool remain 91220/98304, 24832/25672 and 329008/344064.
 All enforced target bounds pass. Host tests verify forward/reverse wrap,
 every detent, unchanged HOME tempo and retained editing-page navigation.
+
+## 1.2 Chocolate Plus discovery
+
+Live Mac observation found FootCtrlPlus advertising name FootCtrlPlus, HID
+service 1812 and manufacturer data beginning with ASCII sinco. No standard
+MIDI service UUID was advertised. The old filter discarded such peers.
+Version 1.2 admits recognized FootCtrl/Chocolate names as candidates and keeps
+the existing GATT MIDI-characteristic requirement for readiness. Discovery
+keys include address type. The client accepts enhanced connection-complete
+events as well as legacy events. Host tests run the actual advertisement parser
+with the observed name/service combination under ASan and UBSan.
+Physical connection/subscription and MIDI on the updated FM1 remain pending.
+
+Read-only Mac GATT inspection subsequently connected to FootCtrlPlus and verified
+the standard MIDI service 03B80E5A-EDE8-4B33-A751-6CE34EC4C700 and characteristic
+7772E5DB-3868-4112-A1A9-F2669D106BF3 (properties 22). Physical FM1 subscription
+and pedal events remain unverified. Status now also recognizes incoming links:
+an incoming link without notification subscription shows discovery; a subscribed
+link shows MIDI READY. DISCONNECT handles both link directions.

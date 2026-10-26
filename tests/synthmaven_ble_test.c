@@ -43,7 +43,11 @@ void ble_midi_enable(int on){if(!on)fake_state=0;} void ble_midi_poll(void){}
 void ble_midi_scan(int on){fake_state=on?1:0;} void ble_midi_disconnect(void){fake_state=0;}
 int ble_midi_found(int i,char*n,int*r){if(i<0||i>1)return 0;str_cpy(n,i?"Chocolate Plus":"Chocolate",32);*r=-50;return 1;}
 int ble_midi_connect(int i){if(i<0||i>1)return -1;connected_index=i;fake_state=2;return 0;}
+static int peripheral_linked,peripheral_ready;
 int ble_midi_central_state(void){return fake_state;}
+int ble_midi_peripheral_connected(void){return peripheral_ready;}
+int ble_midi_peripheral_linked(void){return peripheral_linked;}
+void ble_midi_disconnect_peripheral(void){peripheral_linked=peripheral_ready=0;}
 int main(void){
  uint8_t one[20],two[24],out[1536];uint32_t packet;struct sm_bt_event ready={3,{0},0};
  memset(nor,0xA5,sizeof nor);memset(nor+0xFB000,255,4096);memset(one,3,sizeof one);memset(two,5,sizeof two);
@@ -64,6 +68,10 @@ int main(void){
  assert(sm_ble_scan_start()==0 && connected_index==-1);sm_ble_poll();assert(sm_ble_state()==3);
  assert(sm_ble_connect_device(1)==0 && connected_index==1 && sm_ble_state()==4);
  fake_state=4;assert(sm_ble_state()==6);
+ fake_state=0;peripheral_linked=1;assert(sm_ble_state()==5);
+ peripheral_ready=1;assert(sm_ble_state()==6);
+ sm_ble_disconnect_device();assert(sm_ble_state()==2);
+ fake_state=4;
  ble_midi_receive(0x0011C01Cu,123);assert(sm_ble_read(&packet));assert(((packet>>4)&15)==2 && sm_patch_accept(2) && !sm_patch_accept(0));
  assert(!sm_key_accept(2));
  ble_midi_receive(0x0011C01Cu,124);sm_bluetooth=0;sm_ble_poll();assert(!sm_ble_pending() && sm_ble_state()==0);

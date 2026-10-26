@@ -1,8 +1,9 @@
 # SynthMaven for M-VAVE FM-1
 
-Version 1.1 fixes Bluetooth startup, adds saved pedal navigation assignments,
-and shows four patches on HOME with preset wrapping inside the bank.
-[Release notes](docs/release-1.1.md).
+Version 1.2 recognizes Chocolate Plus HID-only advertisements as connection
+candidates, retaining MIDI service validation. HOME SELECT loads presets within
+the selected bank. Pedal navigation assignments and the four-patch HOME remain.
+[Release notes](docs/release-1.2.md).
 
 
 ![SynthMaven](assets/logo/synthmaven-logo.svg)
@@ -13,9 +14,9 @@ SynthMaven is an open-source firmware based on [Clipper](https://github.com/isod
 
 [1.0 release notes and melodic preset catalog](docs/release-1.0.md)
 
-## Version 1.1 status
+## Version 1.2 status
 
-**SynthMaven 1.1: 23 engines and 537 factory presets. Hardware validation is outstanding.** Native BLE builds include MIDI pedal discovery, explicit device selection, connection and disconnect controls. Original Chocolate and Chocolate Plus pairing, reconnect and audio timing still need testing on the FM1. Version 0.2 predates this integration.
+**SynthMaven 1.2: 23 engines and 537 factory presets. Hardware validation is outstanding.** Native BLE builds include MIDI pedal discovery, explicit device selection, connection and disconnect controls. Original Chocolate and Chocolate Plus pairing, reconnect and audio timing still need testing on the FM1. Version 0.2 predates this integration.
 
 Native USB host support is not implemented. Selecting USB input means device-mode MIDI from a host; a USB keyboard or USB pedal cannot connect directly using a power bank alone. TRS keyboard plus BLE pedal is the intended computer-free combination.
 
@@ -72,11 +73,11 @@ Hardware listening and radio validation remain outstanding.
 
 ## Web editor
 
-Open the [SynthMaven 1.1 editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/)
+Open the [SynthMaven 1.2 editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/)
 in Chrome or Edge and connect the FM1 over USB. Browse factory/user sounds,
 load or edit patches, import DX7 SysEx and Korg-compatible programs, set tuning,
 and save backups. The full-name Oriental selector matches the 88 melodic
-presets in the firmware. The editor identifies version 1.1, 23 engines and
+presets in the firmware. The editor identifies version 1.2, 23 engines and
 537 factory presets; device connection reports the installed firmware version.
 
 ## MIDI settings

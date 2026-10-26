@@ -215,6 +215,7 @@ static int mc_ready(void) { return 0; }
 static int periph_ready(void) { return con_handle && CCC_GET(con_handle, H_CCC); }
 int ble_midi_connected(int link) { return link ? mc_ready() : periph_ready(); }
 int ble_midi_peripheral_connected(void) { return periph_ready(); }
+void ble_midi_disconnect_peripheral(void) { if(con_handle)ble_op_disconnect(con_handle); }
 int ble_midi_peripheral_linked(void) { return con_handle != 0; }   /* listening or not yet */
 static u16 send_mtu = 20;                        /* ATT payload: 23 - 3 until the exchange says more */
 int ble_midi_send_many(int link, const uint32_t *pkts, const uint16_t *ms, int n)
@@ -334,10 +335,6 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
 #if BLE_MIDI_CENTRAL
 /* ---- the central: MIDI devices around, one connected (after the SDK's le_multi_client.c) */
 enum { BLE_MC_OFF, BLE_MC_SCANNING, BLE_MC_CONNECTING, BLE_MC_SEARCHING, BLE_MC_READY };   /* mc_state */
-#define MC_MAX 8
-typedef struct { char name[21]; u8 addr[6], addr_type; s8 rssi; } mc_dev_t;
-static mc_dev_t mc_dev[MC_MAX];
-static volatile u8 mc_n;
 static u8 search_ram_buffer[512] __attribute__((aligned(4)));
 static struct create_conn_param_t mc_conn;
 static u8 mc_tries;                              /* connection attempts left (0x3E: the device never answered) */
@@ -352,57 +349,7 @@ static void mc_create(void)                      /* advertising paused meanwhile
 }
 static const u8 midi_svc_le[16] = {MIDI_SVC_UUID}, midi_chr_le[16] = {MIDI_CHR_UUID};
 
-static int uuid_is(const u8 *u, const u8 *le)    /* a 128-bit uuid as the stack reports it, either order */
-{
-    int i, fwd = 1, rev = 1;
-    for (i = 0; i < 16; i++) {
-        fwd &= u[i] == le[i];
-        rev &= u[i] == le[15 - i];
-    }
-    return fwd || rev;
-}
-
-/* an advertising report: a device advertising the MIDI service goes in the list (its name from this report or
- * its scan response; the strongest reading kept) */
-static void mc_adv(const adv_report_t *r)
-{
-    const u8 *d = r->data;
-    u8 len = r->length, i = 0, midi = 0, nl = 0, k;
-    const u8 *name = 0;
-    while (i + 1u < len) {
-        u8 l = d[i], t = d[i + 1];
-        if (!l || i + 1u + l > len)
-            break;
-        if ((t == 0x06 || t == 0x07) && l >= 17)                 /* 128-bit service uuids */
-            for (k = 0; k + 16u <= (u8)(l - 1); k += 16)
-                midi |= (u8)uuid_is(&d[i + 2 + k], midi_svc_le);
-        if (t == 0x08 || t == 0x09) {                            /* the name */
-            name = &d[i + 2];
-            nl = (u8)(l - 1);
-        }
-        i = (u8)(i + 1 + l);
-    }
-    for (k = 0; k < mc_n; k++)
-        if (!memcmp(mc_dev[k].addr, r->address, 6))
-            break;
-    if (k == mc_n) {
-        if (!midi || mc_n >= MC_MAX)
-            return;                                              /* (a scan response alone does not add one) */
-        memset(&mc_dev[k], 0, sizeof mc_dev[k]);
-        memcpy(mc_dev[k].addr, r->address, 6);
-        mc_dev[k].addr_type = r->address_type;
-        mc_dev[k].rssi = r->rssi;
-        mc_n++;
-    }
-    if (name) {
-        if (nl > 20)
-            nl = 20;
-        memcpy(mc_dev[k].name, name, nl);
-        mc_dev[k].name[nl] = 0;
-    }
-    if (r->rssi > mc_dev[k].rssi)
-        mc_dev[k].rssi = r->rssi;
-}
+#include "ble_midi_discovery.h"
 
 void ble_midi_scan(int on)                       /* main loop: start (the list starts empty) or stop scanning */
 {
@@ -510,6 +457,7 @@ static void client_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t
     case HCI_EVENT_LE_META:
         switch (hci_event_le_meta_get_subevent_code(packet)) {
         case HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
             if (hci_subevent_le_connection_complete_get_role(packet))
                 break;                           /* a central connected to us: the server's */
             if (packet[3]) {
