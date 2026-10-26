@@ -1,16 +1,46 @@
 # SynthMaven for M-VAVE FM-1
 
-SynthMaven 2.0 provides 23 synthesis engines and 537 factory presets, including 88 Oriental/Middle Eastern sounds and nine XD compatibility sounds. HOME holds a four-sound program: ALGORITHM cycles engines, PRESET cycles presets within the engine, and SELECT selects sound 1–4. Programs can be saved/loaded with layering ON or OFF.
+SynthMaven 2.0 builds on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1) with four-part programs, a layer/split mixer, learned USB pedal controls and an instrument-style visual editor. Its 23 synthesis engines provide 537 factory entries: 536 level-matched sounds and an intentionally empty USER WT slot, including 88 Oriental/Middle Eastern sounds and nine XD compatibility sounds.
 
-Tap SEL to open the scale browser, then turn SELECT to cycle scales. Hold it three seconds for a latched custom-scale editor with four saved chromatic tunings, selectable root and 0/−25/−50/−75-cent key offsets. The 46 built-in Arabic maqam reference tunings remain available.
+[Installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [User manual](docs/USER_MANUAL.md) · [Quick start](QUICKSTART.md) · [Release notes](docs/release-2.0.md)
 
-Bluetooth is removed. GLO → USB ROLE → PEDAL enables direct class-compliant USB MIDI host operation using a powered adapter or hub. COMPUTER mode serves the editor, audio and updates. Direct Chocolate Plus operation and audio timing still require hardware validation. Hold OCT− at power-on for USB recovery.
+## What SynthMaven adds
 
-[Installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [User manual](docs/USER_MANUAL.md) · [Quick start](QUICKSTART.md) · [Release notes](docs/release-2.0.md) · [Maqam catalogue](docs/MAQAM_SCALES.md)
+- **Four-sound layering, keyboard splits and mixing.** Layer enabled parts together or play only the selected part. Each part has its own split zone and point, octave shift, volume, pan, mute and solo. Eight named program slots store four sounds together with their routing, mix and tuning; names can contain up to 12 characters.
+- **USB pedal MIDI Learn and switching.** Choose Patch Up/Down, Bank Up/Down, Program Next/Previous, Scene Next/Previous or Setlist Next/Previous; choose Learn, press the pedal, review the captured CC/PC and accept it. Diagnostics distinguish USB device detection from a MIDI interface and show COMPUTER/PEDAL role, the last message, assignment matches and trigger feedback. Configurable duplicate suppression defaults OFF; a CC release immediately re-arms intentional taps. Identical PC taps inside an enabled suppression window are also suppressed, so keep the window shorter than your fastest tap.
+- **Compact scenes and setlists.** Four scenes per program capture levels, mutes, effect sends, four macros per part and selected tuning settings, including master-tuning and compensation switches. Save the program to retain its scenes. A global setlist orders up to 32 references to the eight saved programs, including repeated entries, for pedal navigation. Scenes change the current program; setlists load saved programs.
+- **Visual editor with the standalone instrument’s look and feel.** Shared controls and graphics include oscillator, envelope, filter and EQ visual previews, a four-part layer mixer, split routing, sound libraries and backups. The editor and installer share the SynthMaven logo palette, matching fonts and Dark, Light or System appearance.
+- **Engine-aware filter access and output control.** Model, cutoff, resonance and envelope amount are grouped together; unavailable controls are disabled or omitted. HYBRID retains its own two-filter architecture. Optional estimated output compensation attenuates resonance/drive level changes, up to 12 dB, and defaults OFF; it is not measured loudness normalization. Output trim uses half-decibel steps. See the [filter capability map](docs/FILTER_CAPABILITIES.md).
+- **Ready-to-use modulation templates.** Start with velocity-to-brightness, pressure-to-vibrato, wheel-to-vibrato or envelope swell. HYBRID pressure/wheel templates use a free matrix slot and set LFO1 to sine, rate 64; a full matrix is left unchanged.
+- **Maqam, custom scales and tuning control.** Select among 46 Arabic maqam reference tunings with any root, four saved custom chromatic scales and Scala imports. Custom scales keep the chromatic keyboard mapping and adjust only the selected pitch classes. Each key press cycles 0 → −25 → −50 → −75 → 0 cents. QNT ALL applies the chosen scale/root to all four parts and incoming MIDI. Apply master tuning is enabled by default and can be bypassed independently per part.
+- **Calibrated factory levels.** The 536 audible presets pass the reference audit within ±0.5 LU; USER WT stays silent until a user wavetable is uploaded. The reference measurement method and its limits are documented in the [release notes](docs/release-1.5.md).
 
-Back up before installing. See [USB MIDI status](docs/USB_MIDI_STATUS.md) for compatibility limits and [preset catalogue](docs/release-1.0.md) for the sound library.
+These performance, tuning, editor and workflow additions build on the inherited synthesis foundation. JUNO, VECTOR, FMX, WSEQ, MACRO, the filter models, TURNG and SPICE / DICE remain credited to Clipper; their design inspirations do not establish SynthMaven authorship.
 
-Version 2.0 adds staged pedal Learn/Accept, configurable duplicate suppression, USB device/interface diagnostics, four compact scenes per program, a 32-entry setlist and engine-aware filter editing. See the [filter capability map](docs/FILTER_CAPABILITIES.md). The release shares eight synth voices across the four parts.
+## Device navigation and shortcuts
+
+| Control | Function |
+|---|---|
+| HOME → ALGORITHM | Cycle synthesis engines for the selected part. |
+| HOME → PRESET | Cycle presets within the selected engine. |
+| HOME → SELECT | Select one of the four program parts. |
+| Hold GLO for 2 seconds | Toggle layering once; show **Layered ON** or **Layered OFF**. Release to return. GLO does not latch. Layering also remains available in GLO. |
+| Hold EDIT for 2 seconds / 3 seconds | Preview / latch the four-part mixer. KNOBS 1–4 control part volumes; SELECT chooses the part, ALGORITHM sets its split point from A1 to A6, and PRESET adjusts its pan. Tap EDIT or HOME to exit. Choose Lower/Upper or full-keyboard routing in GLO or the editor. |
+| Tap SEL | Open the scale browser; SELECT cycles scales, PRESET or KNOB 1 changes ROOT. |
+| Hold SEL for 3 seconds | Latch custom-scale editing: SELECT chooses CUSTOM 1–4, PRESET chooses ROOT, keys cycle detuning, SAVE stores the scale. Press SEL to leave. |
+| SAVE → SELECT | Browse eight saved program slots. ALGORITHM selects a name character; PRESET or KNOB 2 edits it. |
+| GLO → PEDAL LEARN / SCENES / SETLIST | Learn and accept a pedal assignment, capture/recall scenes or edit the program order. |
+| Hold OCT− at power-on | Enter USB recovery. |
+
+Short taps do not flash long-press screens. The mixer preview appears after two seconds and latches at three; other function buttons retain their three-second hold behavior. Save a program to keep its mix and scenes.
+
+## Voice budget and USB connections
+
+The four parts share **eight synth voices total**, not eight voices per part. A note played by four layered parts normally consumes four voices, so two such notes fill the budget before unison or release tails. Extra notes can steal existing voices.
+
+Bluetooth is removed. GLO → USB ROLE → **PEDAL** enables direct class-compliant USB MIDI host operation using a powered adapter or hub. Learn a directly connected pedal on the FM1 itself. Return to **COMPUTER** for the web editor, USB audio, backups and firmware updates; the USB port has one role at a time. Direct Chocolate Plus operation and audio timing still require physical hardware validation.
+
+Back up before installing. See [USB MIDI status](docs/USB_MIDI_STATUS.md), the [maqam catalogue](docs/MAQAM_SCALES.md) and the [preset catalogue](docs/release-1.0.md) for details and limits.
 
 ## Building and verification
 
@@ -18,25 +48,6 @@ See [BUILDING.md](BUILDING.md). Linux x86-64 runs the JieLi toolchain directly; 
 
 ## Credits and licence
 
-SynthMaven is based on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1), which builds on SLOOP and Felucca. JUNO, VECTOR, FMX, WSEQ, MACRO, the filter models, TURNG and SPICE / DICE are inherited from Clipper; their hardware and synthesis inspirations do not establish SynthMaven authorship.
+SynthMaven is based on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1), which builds on SLOOP and Felucca. Original firmware work, engine attributions and licence notices are retained in source.
 
-GPL-3.0-only; see [LICENSING.md](LICENSING.md). USB host additions retain their MPL-2.0 notices in firmware/vendor/fm1-usb-host. Original firmware work and engine attributions are retained in source.
-
-Version 1.5 introduced calibrated factory levels (536 audible sounds; USER WT stays empty) and a shared instrument-style editor/installer design with the logo palette and Dark, Light or System appearance. See the release notes for the reference measurement method and limits.
-
-The four-sound layer mixer includes independent split zones, octave shift, pan, level, mute and solo, adapted from the standalone instrument. Programs preserve the complete mix and upgrade existing PRG1 saves.
-
-Version 1.6 added QNT ALL and default-on per-sound master tuning switches. Version 1.7 provides a dedicated layering screen and a two-second GLO layering toggle. See the current release notes for details.
-
-At two seconds of holding GLO, layering toggles once and the display shows **Layered ON** or **Layered OFF**. Short taps open GLO without flashing this screen. Release GLO to return to the previous screen. Other function buttons retain their three-second hold behavior.
-
-Version 1.7 provides eight named saved programs, SELECT slot browsing, 12-character names edited with ALGORITHM plus PRESET/KNOB 2, and a streamlined device SAVE menu. Layering ON/OFF remains in GLO and on its two-second hold.
-
-
-### Scale browsing and four-sound mixer (1.8)
-
-Tap SEL to open the scale browser without changing the scale. SELECT cycles the tuning list; PRESET or KNOB 1 changes ROOT, KNOB 2 also browses scales, and KNOBS 3/4 retain QNT/CHORD. Hold SEL for three seconds for custom-scale editing.
-
-EDIT now has four standard pages: EDIT 1, EDIT 2, VOICE and CHARACTER. FMX keeps its operator/routing pages; OP ENV is under ENV. Macros, morph, randomize, undo and FMX STORE remain accessible in the editor. Layer ON/OFF stays in GLO and on its two-second hold.
-
-Hold EDIT for two seconds to preview the four-sound mixer. KNOBS 1–4 control the volumes of sounds 1–4. SELECT cycles the selected part; ALGORITHM sets that part’s split point from A1 to A6 (shown as note and octave), and PRESET/parameter controls its pan. Editing a split point enables the selected part’s existing Lower/Upper zone. GLO → LAYER ROUTE or the editor can choose the zone or restore full-keyboard layering. At three seconds the mixer latches and stays open after release. Tap EDIT or HOME to exit; save a program to keep the mix. The keyboard still plays and EDIT no longer erases sequence notes. Short presses never show a held-layer screen. HOME opens its menu after three seconds.
+GPL-3.0-only; see [LICENSING.md](LICENSING.md). USB host additions retain their MPL-2.0 notices in firmware/vendor/fm1-usb-host.
