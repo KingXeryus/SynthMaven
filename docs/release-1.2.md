@@ -3,6 +3,14 @@
 Version 1.2 retains all **23 engines and 537 factory presets**, pedal CC/PC
 assignments, the English editor and linked manuals.
 
+
+## Known Bluetooth crash — experimental release
+
+During 1.1 Bluetooth/Chocolate Plus testing, the FM1 crashed and entered USB
+rescue; the user restored the original firmware. The cause remains unresolved.
+Version 1.2 fixes discovery and link-status reporting, but has not been shown
+to fix that crash. Hardware stability and pedal MIDI remain unverified.
+
 ## Changes
 
 - Accept recognized FootCtrl/Chocolate names as BLE connection candidates when
@@ -48,3 +56,11 @@ the standard MIDI service 03B80E5A-EDE8-4B33-A751-6CE34EC4C700 and characteristi
 and pedal events remain unverified. Status now also recognizes incoming links:
 an incoming link without notification subscription shows discovery; a subscribed
 link shows MIDI READY. DISCONNECT handles both link directions.
+
+## Target build
+
+The [native build and host checks](https://github.com/KingXeryus/SynthMaven/actions/runs/40250689342)
+passed: flash 580760/581564 bytes, static RAM 91220/98304, low SRAM 24832/25672,
+pool 329008/344064. The package is 610045 bytes with identity FM-1_912.
+The existing -Oz fallback retains all engines. These checks do not validate
+physical Bluetooth stability.

@@ -82,3 +82,11 @@ Use the editor Tuning panel to load Scala `.scl` files or set tuning, root and A
 A preset does not automatically select a maqam. FX adjusts sends and effect
 parameters; Edit opens the engine and modulation controls. Save edited sounds
 under USER, and keep full backups before firmware updates.
+
+## Known Bluetooth crash — experimental release
+
+During 1.1 Bluetooth/Chocolate Plus testing, the FM1 crashed and entered USB
+rescue; the user restored the original firmware. The cause remains unresolved.
+Version 1.2 fixes discovery and link-status reporting, but has not been shown
+to fix that crash. Hardware stability and pedal MIDI remain unverified.
+

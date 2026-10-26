@@ -434,3 +434,11 @@ and the actual pedal/keyboard messages where possible. Do not send private
 account credentials. Source and retained licences are available in the repository
 and alongside the installer. See [1.2 release notes](release-1.2.md), [preset catalog](release-1.0.md),
 [Bluetooth status](BLUETOOTH_STATUS.md) and [USB status](USB_MIDI_STATUS.md).
+
+## Known Bluetooth crash — experimental release
+
+During 1.1 Bluetooth/Chocolate Plus testing, the FM1 crashed and entered USB
+rescue; the user restored the original firmware. The cause remains unresolved.
+Version 1.2 fixes discovery and link-status reporting, but has not been shown
+to fix that crash. Hardware stability and pedal MIDI remain unverified.
+

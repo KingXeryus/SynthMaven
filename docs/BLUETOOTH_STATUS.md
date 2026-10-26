@@ -96,3 +96,11 @@ the standard MIDI service 03B80E5A-EDE8-4B33-A751-6CE34EC4C700 and characteristi
 and pedal events remain unverified. Status now also recognizes incoming links:
 an incoming link without notification subscription shows discovery; a subscribed
 link shows MIDI READY. DISCONNECT handles both link directions.
+
+## Known Bluetooth crash — experimental release
+
+During 1.1 Bluetooth/Chocolate Plus testing, the FM1 crashed and entered USB
+rescue; the user restored the original firmware. The cause remains unresolved.
+Version 1.2 fixes discovery and link-status reporting, but has not been shown
+to fix that crash. Hardware stability and pedal MIDI remain unverified.
+

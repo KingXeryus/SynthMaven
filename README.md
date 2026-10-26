@@ -111,3 +111,11 @@ Host validation covers the browser, separate Load/Edit actions, keyboard source 
 ## Credits and licence
 
 GPL-3.0-only unless stated otherwise in the retained notices. Upstream work by isod89/3dSam, SLOOP, and Felucca by Leo Kuroshita / Hügelton Instruments provides the foundation. See [LICENSE](LICENSE), [LICENSING.md](LICENSING.md). M-VAVE/FM-1 are their respective owners' trademarks. The supplied SynthMaven logo is branding, separate from third-party code notices.
+
+## Known Bluetooth crash — experimental release
+
+During 1.1 Bluetooth/Chocolate Plus testing, the FM1 crashed and entered USB
+rescue; the user restored the original firmware. The cause remains unresolved.
+Version 1.2 fixes discovery and link-status reporting, but has not been shown
+to fix that crash. Hardware stability and pedal MIDI remain unverified.
+
