@@ -34,7 +34,11 @@ jobs:
         continue-on-error: true
         run: |
           sh tools/get_toolchain.sh "$RUNNER_TEMP/jieli"
-          git clone --depth 1 --branch AC79NN_SDK_V1.2.1_2023-12-13 https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git "$RUNNER_TEMP/ac79"
+          for attempt in 1 2 3; do
+            if timeout 180 git -c http.lowSpeedLimit=1024 -c http.lowSpeedTime=45 clone --depth 1 --branch AC79NN_SDK_V1.2.1_2023-12-13 https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git "$RUNNER_TEMP/ac79"; then break; fi
+            rm -rf "$RUNNER_TEMP/ac79"
+          done
+          test -d "$RUNNER_TEMP/ac79/.git"
       - name: Build actual SynthMaven firmware
         id: target
         if: steps.deps.outcome == 'success'
