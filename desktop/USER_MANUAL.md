@@ -1,4 +1,4 @@
-# SynthMaven software 0.3 — mixer and sampler guide
+# SynthMaven software 0.4 — instrument guide
 
 These controls are shared by Mac standalone, VST3, Audio Unit and the iOS
 app/AUv3 targets. This guide covers the software instrument, not FM1 hardware.
@@ -91,3 +91,11 @@ status](IOS.md); simulator/unsigned builds do not prove physical radio performan
 
 ### Structured parameter browser
 All Parameters groups controls by Engine, Amplitude, Filter, Voices, LFOs, Modulation Envelope, Routing, Arpeggiator, Sequencing, Effects and Macros. Use the section selector at the top to focus on one section or show all sections. Controls use descriptive labels and wrap to suit the available width. Split points are selected by musical note name (including A0–A6); C4 is middle C.
+
+### Parameter graphics
+Envelope diagrams show normalized ADSR shape; drag the attack, decay/sustain or release handles to edit the same parameters as the knobs. LFO panels preview the selected waveform and rate (random shapes are illustrative). Filter panels show an illustrative response, not an exact DSP measurement; drag horizontally for cutoff and vertically for resonance when these controls are exposed by the engine. Effect-send bars adjust chorus, delay and reverb sends. Live Output displays actual mixed audio from all layers. These displays follow MIDI and host automation.
+
+### Three-source oscillator section (software 0.4)
+Each layer offers OSC 1 (the selected original synth engine or sampler), plus OSC 2 and OSC 3 as independent pitched oscillators. The original engines keep their internal architectures. Extra oscillators support sine, band-limited saw/square, and triangle, octave shift, fine tuning, level and pan. OSC 2/3 share their own ADSR and 16-voice pool per layer. They follow incoming notes, velocity, sustain, pitch bend, layer splits, transpose and scale tuning. They are mixed after the original source's internal filter/effects, before the layer mixer; the original source filter and portamento do not process the extra oscillators. Both are off by default for preset compatibility.
+
+The Effects page adds a stereo chorus and a flanger after the combined source mix. Chorus has Mix, Rate and Depth; Flanger adds bipolar Feedback. Existing engine chorus sends remain independent. New effect Mix controls default to zero. The new controls are stored in patches, exposed to DAW automation and assignable from MIDI Map.

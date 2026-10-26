@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 #pragma once
+#include "OscillatorRack.h"
 #include <juce_audio_utils/juce_audio_utils.h>
 #include <juce_dsp/juce_dsp.h>
 #include "SynthMavenDSP.h"
@@ -51,7 +52,7 @@ private:
   std::vector<std::atomic<float>*> values;std::vector<juce::RangedAudioParameter*> params;std::vector<float>applied;
   std::atomic<int>patchKind{0},patchVersion{0};std::array<std::atomic<uint8_t>,128>patchBytes{};int appliedPatch=-1;
   std::atomic<float>*enabled=nullptr,*gain=nullptr,*pan=nullptr,*transpose=nullptr,*channel=nullptr,*portamento=nullptr,*mute=nullptr,*solo=nullptr,*split=nullptr,*splitPoint=nullptr,*splitSide=nullptr,*sampleOn=nullptr;
-  std::array<std::atomic<float>*,19> sampleValues{};MavenSampler sampler;std::shared_ptr<const MavenSample> sampleData;float blockPeak=0;int activeSample=-1,activeSplit=-1,activePoint=-1,activeSide=-1;
+  std::array<std::atomic<float>*,19> sampleValues{};MavenSampler sampler;std::unique_ptr<OscillatorRack>rack;std::array<std::atomic<float>*,24>rackValues{};std::shared_ptr<const MavenSample> sampleData;float blockPeak=0;int activeSample=-1,activeSplit=-1,activePoint=-1,activeSide=-1;
   int tuningTarget=-1;unsigned tuningRevision=~0u;int portamentoIndex=-1;bool wasEnabled=false;int activeTranspose=0,activeChannel=0;float leftGain=0,rightGain=0;
  };
  std::array<Layer,layerCount> layers;

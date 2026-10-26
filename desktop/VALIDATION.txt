@@ -1,4 +1,4 @@
-SynthMaven software instrument 0.3.0 — validation
+SynthMaven software instrument 0.4.0 — validation
 
 Mac: universal arm64/x86_64 Standalone, VST3 and Audio Unit built. Deployment
 minimum is macOS 11.0 (verified in Mach-O load commands, not just CMake labels).
@@ -12,7 +12,7 @@ Seven CTest checks pass:
   boundaries, sampler chromatic pitch/tuning, reverse/loop bounds, sample playback
   across 5 host rates and 3 block sizes, and embedded audio recall after deleting
   the original imported file.
-- Actual built AU bundle registration/instantiation, 1572 parameters, MIDI input
+- Actual built AU bundle registration/instantiation, 1764 parameters, MIDI input
   and finite stereo audio render. No existing installed plug-in was overwritten.
 VST3 factory/module metadata generated successfully. No claim is made that every
 DAW/version has been tested interactively.
@@ -35,3 +35,5 @@ No valid Developer ID signing identity is installed on the development Mac.
 Mac artifacts are ad-hoc signed Local-Test builds, not notarized. iOS device
 bundles are unsigned and cannot be installed as a normal signed IPA. Signing,
 provisioning and TestFlight/App Store distribution remain separate steps.
+
+0.4 additions: graphics share host parameter state; extra-oscillator A4 pitch, note-off release and stereo chorus/flanger impulse tail are covered by MixerSampler tests. Filter diagrams are illustrative, not measured transfer functions.

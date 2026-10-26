@@ -149,3 +149,6 @@ and scrollable editor panels. The iOS standalone automatically opens newly
 available Core MIDI devices after pairing; AUv3 receives MIDI routed by its host.
 Simulator/unsigned device builds do not establish Bluetooth radio performance.
 Signed iOS installation/distribution requires valid Apple provisioning.
+
+## Software 0.4 visuals and oscillator rack
+The shared UI adds live output, interactive ADSR diagrams, LFO waveform previews, an illustrative filter response, and effect-send bars. Each layer combines the original engine/sample source with two optional waveform oscillators. The post-source stereo chorus and flanger have independent controls. New oscillator and effect parameters support saved state, DAW automation and MIDI Map assignment. See USER_MANUAL.md for signal routing and preview limitations.
