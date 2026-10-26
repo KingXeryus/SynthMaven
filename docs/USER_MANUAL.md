@@ -53,7 +53,7 @@ The FM1 port cannot act as host and computer device at the same time. This host 
    click **Connect**, grant MIDI/SysEx access when prompted and choose the FM1.
 
 Use the matching online editor after updating. The firmware/editor wire protocol
-is version **18**; that protocol number is independent of product version 1.5.
+is version **19**; that protocol number is independent of product version 1.5.
 A URL ending in `?mock=1` uses a simulated device for previewing the editor.
 It does not communicate with or validate a physical FM1.
 
@@ -163,7 +163,7 @@ whole output, including a layered part.
 
 ## Layer, split and performance
 
-The four program sounds replace the previous two-part layer workflow. Use SAVE → PROGRAM MODE → LAYER. OFF plays the SELECT-focused sound; ON plays all four sounds. Selecting a different slot changes editing focus. Note releases follow the sounds that received the note-on. Release notes before saving a program. Layers share eight voices; four sounds consume up to four voices per played note.
+The four program sounds replace the previous two-part layer workflow. Use SAVE → PROGRAM MODE → LAYER. OFF plays the SELECT-focused sound; ON plays all four sounds. Selecting a different slot changes editing focus. Note releases follow the sounds that received the note-on. Release held keys before saving a program. Layering increases processing load.
 
 ## Tuning and Scala scales
 
@@ -282,11 +282,11 @@ files outside browser storage, which can be cleared by the browser.
 
 ## Saving, projects and backups
 
-SAVE → PROGRAM provides four persistent program slots. Choose SLOT 1–4; turn SAVE twice to store the current four sounds, or LOAD twice to restore a saved program. Release notes and stop the transport first. An empty slot reports EMPTY SLOT.
+SAVE → PROGRAM provides four persistent program slots. Choose SLOT 1–4; turn SAVE twice to store the current four sounds, or LOAD twice to restore a saved program. Release held keys and stop the transport first. An empty slot reports EMPTY SLOT.
 
 Programs contain each sound’s engine, preset identity, edited parameters, modulation sequence and HYBRID/FMX/FM6 patch, plus selected sound, tuning configuration and layer mode. The working program autosaves after an idle period when stopped and quiet. Custom-scale definitions persist in settings and are also included in programs and working-program backups. Loading a program restores its custom scales.
 
-USER presets store individual sounds. Export user banks and backups before updates. Older four-track project records remain readable; new PRG1 records require this release. Do not overwrite valuable slots while testing custom firmware.
+USER presets store individual sounds. Export user banks and backups before updates. Older four-track project records remain readable; PRG1 programs from 1.4 upgrade automatically; new PRG2 records require firmware 1.5 or later. Do not overwrite valuable slots while testing custom firmware.
 
 ## Troubleshooting
 
@@ -310,7 +310,7 @@ For recovery tooling, see the [build/install guide](../BUILDING.md#install).
 
 ## Version, validation and support
 
-Version 1.5 uses editor protocol 18. See [release notes](release-1.5.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
+Version 1.5 uses editor protocol 19. See [release notes](release-1.5.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
 
 
 
@@ -332,3 +332,15 @@ Tap SEL to cycle scales. Hold SEL for three seconds to enter the latched editor.
 Use **Appearance** in the editor or installer to choose Dark, Light or System. The browser remembers this choice. The editor uses the standalone instrument’s system sans-serif font, rounded panels, rotary controls and gridded parameter previews, with the logo’s red accent. Under Sound, choose Sound, Modulation, Effects, Layers, Tuning or All parameters. Drag a knob vertically, use Shift for fine pointer adjustment, use arrow keys when focused, or double-click to reset. Envelope graph handles edit attack, decay, sustain and release. Parameter diagrams are previews rather than live audio measurements.
 
 The 537-entry catalogue has **536 audible, level-matched factory sounds plus USER WT**. USER WT deliberately stays silent until a wavetable is uploaded. Factory matching uses the complete stereo firmware mix and a −29 LUFS reference target on role-appropriate phrases. Playing different notes, changing velocity/effects or layering sounds changes loudness. Saved sounds keep their stored trim; reload the factory preset to use the new calibration.
+
+The Tuning page includes a chromatic keyboard with the selected root and each key’s cents offset. Altered keys use the logo accent. In CUSTOM1–4, click a key or its note button to cycle 0 / −25 / −50 / −75 cents and save the change on the FM1.
+
+## Four-sound layers, splits and mixer (1.5)
+
+Open **Sound → Layers** in the editor. The four mixer strips adapt the standalone instrument’s controls to the FM1’s four loaded sounds. L1–L4 selects the sound to edit; Edit sound opens its Sound controls. **On** enables a slot; **M** mutes it; **S** solos it. Multiple solos can play together. The Pan knob places a sound left, centre or right, and the vertical Level fader balances its volume without changing its calibrated factory trim. Double-click Pan for centre or Level for its factory mixer level.
+
+Turn **Layer program sounds** on to combine the enabled slots. Choose **Layer · entire keyboard** for a full-range sound, or **Split · selected zone** for a Lower or Upper zone. Lower includes the split-point note; Upper starts one semitone above it. Different slots can use different split points, so zones can overlap. Disable unused slots for a two- or three-sound combination. The octave −/+ buttons move a slot by 12 semitones; the numeric field allows −24 to +24 semitones. Out-of-range notes stay silent. Changing routing releases the edited layer; live level and pan changes preserve held notes.
+
+With Layer off, SELECT chooses one enabled sound; mute and solo still apply. On the FM1, first SELECT a sound on HOME, then use **GLO → LAYER ROUTE** (On, Split, Upper, Point), **LAYER MIX** (Level, Pan, Mute, Solo) and **LAYER PITCH** (Transpose, Layer on/off). The split point is shown as MIDI note number: 60 is C4. Turn Upper off for Lower.
+
+Save the program to retain all four sounds’ enable states, zones, transpositions, levels, pans, mutes and solos. Working-program autosave retains them too. Firmware 1.5 imports PRG1 programs from 1.4 with every sound enabled across the keyboard, preserving their existing sounds, levels, pans and layer mode. New PRG2 programs cannot be loaded by firmware 1.4.

@@ -19,3 +19,5 @@ See [BUILDING.md](BUILDING.md). Linux x86-64 runs the JieLi toolchain directly; 
 GPL-3.0-only; see [LICENSING.md](LICENSING.md). USB host additions retain their MPL-2.0 notices in firmware/vendor/fm1-usb-host. Original firmware work and engine attributions are retained in source.
 
 Version 1.5 adds calibrated factory levels (536 audible sounds; USER WT stays empty) and a shared instrument-style editor/installer design with the logo palette and Dark, Light or System appearance. See the release notes for the reference measurement method and limits.
+
+The four-sound layer mixer includes independent split zones, octave shift, pan, level, mute and solo, adapted from the standalone instrument. Programs preserve the complete mix and upgrade existing PRG1 saves.

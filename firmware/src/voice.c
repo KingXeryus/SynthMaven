@@ -645,7 +645,8 @@ static void trk_all_off1(track_t *t)
  * arpeggiator never run, the keys, MIDI and track 1's sequencer and arpeggiator all come through here */
 #if SYNTHMAVEN_SYNTH
 static volatile int16_t syn_morph_req = -1;      /* MIDI CC 20 (seq.c): MORPH, applied by the UI (ui_synth.c) */
-static uint8_t ly_route[128], ly_note[128];           /* per note: bit 0 track 1, bit 1 track 2; track 2's note */
+static uint8_t ly_route[128], ly_note[128];
+static uint8_t program_note[4][128];           /* per note: bit 0 track 1, bit 1 track 2; track 2's note */
 static uint32_t layer_mode(void)
 {
     int32_t m = trk[1].p[P_LYMODE];
@@ -655,9 +656,15 @@ static void trk_note_on(track_t *t, uint32_t note, uint32_t vel)
 {
     if(program_mode && !is_drum(t) && note<128u) {
         uint32_t i,mask=program_layer?15u:1u<<(song.sel%4u);
-        for(i=0;i<4;i++)if(ly_route[note]&(1u<<i))trk_note_off1(&trk[i],note);
-        ly_route[note]=(uint8_t)mask;
-        for(i=0;i<4;i++)if(mask&(1u<<i))trk_note_on1(&trk[i],note,vel);
+        for(i=0;i<4;i++)if(ly_route[note]&(1u<<i))trk_note_off1(&trk[i],program_note[i][note]);
+        ly_route[note]=0;
+        for(i=0;i<4;i++)if(mask&(1u<<i)) {
+            const program_route_t *r=&program_route[i];
+            int32_t pitch=(int32_t)note+r->transpose;
+            if(!r->enabled || (r->split && (r->upper ? note<=r->point : note>r->point)) || pitch<0 || pitch>127)continue;
+            program_note[i][note]=(uint8_t)pitch;ly_route[note]|=(uint8_t)(1u<<i);
+            trk_note_on1(&trk[i],(uint32_t)pitch,vel);
+        }
         return;
     }
     uint32_t m, r = 1;
@@ -684,7 +691,7 @@ static void trk_note_off(track_t *t, uint32_t note)
 {
     if(program_mode && !is_drum(t) && note<128u) {
         uint32_t i,mask=ly_route[note];ly_route[note]=0;
-        for(i=0;i<4;i++)if(mask&(1u<<i))trk_note_off1(&trk[i],note);
+        for(i=0;i<4;i++)if(mask&(1u<<i))trk_note_off1(&trk[i],program_note[i][note]);
         return;
     }
     uint32_t r;

@@ -1,4 +1,4 @@
-# SynthMaven 1.5 MIDI settings — protocol 18
+# SynthMaven 1.5 MIDI settings — protocol 19
 
 USB is the only pedal-message source. Keyboard input may be USB, TRS or BOTH. The USB host role is independent of MIDI source filtering.
 
@@ -16,6 +16,8 @@ Existing pedal mapping commands retain TYPE OFF/CC/PC, NUMBER, VALUE and channel
 
 INFO now reports five runtime tracks: four synth sounds and the hidden legacy drum track. Synth editor operations accept parts 0–3. Tuning IDs 0–57 retain their prior meanings; CUSTOM 1–4 use 58–61. Scala USER remains 13.
 
-Backups use PRG1 records for the working program and saved program slots. These contain all four parts, patches, tuning and custom-scale definitions. Older firmware must reject them. Legacy FUN project records remain readable.
+Backups use PRG2 records (PRG1 imports from 1.4 remain supported) for the working program and saved program slots. These contain all four parts, patches, tuning, custom-scale definitions, per-part split/transpose/enable state and the solo mask. Older firmware must reject them. Legacy FUN project records remain readable.
 
 USB host mode supports class-compliant full-speed USB MIDI 1.0 and one hub; it does not supply VBUS. See [USB status](USB_MIDI_STATUS.md).
+
+Command **109** (protocol ≥19): read with `part` 0–3; write with `part, enabled, split, upper, splitPoint, transpose+24, level, pan+64, mute, solo`. Boolean values are 0/1; splitPoint is 0–127; transpose+24 is 0–48; level and pan+64 are 0–127. Reply is `rc, part` followed by the same nine fields on success. Invalid requests change nothing. Focus stays unchanged. Lower includes the split point; Upper begins above it. Routing changes release the edited part, while level/pan changes use the existing mixer glide. All keyboard channels continue to follow the global MIDI input setting.

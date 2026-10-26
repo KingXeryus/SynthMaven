@@ -724,14 +724,14 @@ async function editorV5() {
     && names.indexOf("ED_MICRO_GET") + 1 === C.MICRO_GET && names.indexOf("ED_MICRO_SET") + 1 === C.MICRO_SET
     && names.indexOf("ED_FILL_GET") + 1 === C.FILL_GET && names.indexOf("ED_FILL_SET") + 1 === C.FILL_SET
     && /ED_FM6_GET = 68, ED_FM6_PUT, ED_FM6_LIST, ED_FM6_ERASE/.test(ec) && C.FM6_GET === 68 && C.FM6_ERASE === 71
-    && /#define ED_PROTO \(SYNTHMAVEN_SYNTH \? 18u : 11u\)/.test(ec) && /ed_b\(ED_PROTO\);/.test(ec)
+    && /#define ED_PROTO \(SYNTHMAVEN_SYNTH \? 19u : 11u\)/.test(ec) && /ed_b\(ED_PROTO\);/.test(ec)
     && /enum \{ ED_FMX_GET = 90, ED_FMX_PUT, ED_FMX_STORE \};/.test(readFileSync(join(HERE, "../firmware/src/editor_fmx.c"), "utf8"))
     && C.FMX_GET === 90 && C.FMX_STORE === 92
     && /enum \{ ED_MSEQ_GET = 93, ED_MSEQ_PUT, ED_TUNE_GET, ED_TUNE_PUT \};/.test(readFileSync(join(HERE, "../firmware/src/editor_fmx.c"), "utf8"))
     && C.MSEQ_GET === 93 && C.MSEQ_PUT === 94 && C.TUNE_GET === 95 && C.TUNE_PUT === 96
     && /enum \{ ED_HY_GET = 77, ED_HY_PUT \};/.test(readFileSync(join(HERE, "../firmware/src/editor_hybrid.c"), "utf8")) && C.HY_GET === 77 && C.HY_PUT === 78
     && /enum \{ ED_DSYN_LIST = 72, ED_DSYN_GET, ED_DSYN_PUT, ED_DSYN_STORE, ED_DSYN_PLAY \};/.test(readFileSync(join(HERE, "../firmware/src/editor_dsyn.c"), "utf8"))
-    && C.DSYN_LIST === 72 && C.DSYN_PLAY === 76, "v5..v17: command numbers and INFO == editor.c / editor_dsyn.c / editor_hybrid.c / editor_fmx.c");
+    && C.DSYN_LIST === 72 && C.DSYN_PLAY === 76, "v5..v19: command numbers and INFO == editor.c / editor_dsyn.c / editor_hybrid.c / editor_fmx.c");
   const enumNames = (id) => (new RegExp(`${id}\\[\\] = \\{([^}]*)\\}`).exec(pc) || [])[1].split(",").map((x) => x.trim().replace(/"/g, ""));
   const chord = E.parse[C.DESC](await rq(E.req.desc(0, 49)));
   const gd = [];

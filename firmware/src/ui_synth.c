@@ -23,7 +23,7 @@ enum { X_LYMODE, X_LYSOUND, X_LYSPLIT, X_LYLEVEL, X_LYOCT, X_LYPAN, X_LYFILT, X_
        X_MIN, X_MOUT,                                  /* 1.0: GLO > MIDI, the instrument's channels (seq.c midi_in_ch) */
        X_MBEND, X_MLOCAL, X_MPROG, X_MCCO,             /* 1.0: the bend range (voice.c midi_bend), LOCAL, PROG, CC OUT */
        X_MBRTH,                                        /* 1.0: EWI (seq.c midi_breath) */
-       X_SMPORT, X_SMKEY, X_SMBT, X_SMPAIR, X_SMDEV, X_SMCON, X_PTYPE, X_PNUM, X_PVAL, X_PCH, X_USBROLE, X_PGLAYER, X_COUNT };
+       X_SMPORT, X_SMKEY, X_SMBT, X_SMPAIR, X_SMDEV, X_SMCON, X_PTYPE, X_PNUM, X_PVAL, X_PCH, X_USBROLE, X_PGLAYER, X_PGENABLE, X_PGSPLIT, X_PGSIDE, X_PGPOINT, X_PGLEVEL, X_PGPAN, X_PGMUTE, X_PGSOLO, X_PGTRANS, X_COUNT };
 static void mseq_fill(struct track *t, uint32_t l, uint32_t f);
 static const char *const N_QFILL[] = {"--", "RAMP+", "RAMP-", "TRI", "SINE", "SQR", "RND", "FLAT", "INVRT", "SHIFT"};
 enum { QF_NONE, QF_UP, QF_DOWN, QF_TRI, QF_SINE, QF_SQR, QF_RND, QF_FLAT, QF_INV, QF_SHIFT, QF_N };
@@ -103,6 +103,15 @@ static const param_desc_t XD[X_COUNT] = {
     [X_MPROG] = PE("PROG", N_ONOFF, 1),
     [X_SMPORT] = PE("PORT", N_SM_PATCH, 0),
     [X_PGLAYER] = PE("LAYER", N_ONOFF, 0),
+    [X_PGENABLE] = PE("ON", N_ONOFF, 1),
+    [X_PGSPLIT] = PE("SPLIT", N_ONOFF, 0),
+    [X_PGSIDE] = PE("UPPER", N_ONOFF, 0),
+    [X_PGPOINT] = PD("POINT", F_INT, 0, 127, 60),
+    [X_PGLEVEL] = PD("LEVEL", F_DB, 0, 127, 104),
+    [X_PGPAN] = PD("PAN", F_BIPCT, -64, 63, 0),
+    [X_PGMUTE] = PE("MUTE", N_ONOFF, 0),
+    [X_PGSOLO] = PE("SOLO", N_ONOFF, 0),
+    [X_PGTRANS] = PD("TRANS", F_SEMI, -24, 24, 0),
     [X_USBROLE] = PE("USB ROLE", N_USBROLE, 0),
     [X_SMKEY] = PE("KEY IN", N_SM_KEY, 2),
     [X_SMBT] = PE("BT MIDI", N_ONOFF, 0),
@@ -621,6 +630,15 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
         return &d;
     }
     case X_PGLAYER: xv[id]=program_layer; *valp=&xv[id]; break;
+    case X_PGENABLE: xv[id]=program_route[song.sel%4u].enabled;*valp=&xv[id];break;
+    case X_PGSPLIT: xv[id]=program_route[song.sel%4u].split;*valp=&xv[id];break;
+    case X_PGSIDE: xv[id]=program_route[song.sel%4u].upper;*valp=&xv[id];break;
+    case X_PGPOINT: xv[id]=program_route[song.sel%4u].point;*valp=&xv[id];break;
+    case X_PGTRANS: xv[id]=program_route[song.sel%4u].transpose;*valp=&xv[id];break;
+    case X_PGLEVEL: *valp=&TSEL->p[P_LEVEL];break;
+    case X_PGPAN: *valp=&TSEL->p[P_PAN];break;
+    case X_PGMUTE: *valp=&TSEL->p[P_MUTE];break;
+    case X_PGSOLO: xv[id]=(song.solo>>(song.sel%4u))&1u;*valp=&xv[id];break;
     case X_USBROLE: xv[id]=sm_usb_host; *valp=&xv[id]; break;
     case X_SMKEY: xv[X_SMKEY] = sm_key_port; *valp = &xv[X_SMKEY]; break;
     case X_SMDEV: {
@@ -803,6 +821,16 @@ static void syn_changed(uint32_t id, int16_t *vp)
         sm_pedal[action][id-X_PTYPE]=(uint8_t)*vp; settings_later=1; break;
     }
     case X_PGLAYER: program_layer_set((uint32_t)*vp);break;
+    case X_PGENABLE: case X_PGSPLIT: case X_PGSIDE: case X_PGPOINT: case X_PGTRANS: {
+        program_route_t *r=&program_route[song.sel%4u];
+        if(id==X_PGENABLE)r->enabled=(uint8_t)*vp;
+        if(id==X_PGSPLIT)r->split=(uint8_t)*vp;
+        if(id==X_PGSIDE)r->upper=(uint8_t)*vp;
+        if(id==X_PGPOINT)r->point=(uint8_t)*vp;
+        if(id==X_PGTRANS)r->transpose=(int8_t)*vp;
+        panic_req|=1u<<(song.sel%4u);break;
+    }
+    case X_PGSOLO: song.solo=(uint8_t)((song.solo&~(1u<<(song.sel%4u)))|((uint32_t)*vp<<(song.sel%4u)));break;
     case X_USBROLE: sm_usb_host=(uint8_t)*vp; settings_later=1;
         ui_message(*vp ? "POWERED USB ADAPTER" : "CONNECT TO COMPUTER"); break;
     case X_SMPORT:

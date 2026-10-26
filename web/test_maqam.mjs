@@ -20,13 +20,13 @@ for(const p of pitches){const row=ctx.maqams.find(x=>x.sys===p.sys);assert(row);
 assert.equal(ctx.systems().length,62);ctx.dev.info.proto=16;assert.equal(ctx.systems().length,14);ctx.dev.info.proto=14;assert.equal(ctx.systems().length,14);
 assert(html.includes('sys: TU_USER, deg: sc.deg'));
 const source=html.slice(html.indexOf('/*PROTO-BEGIN*/'),html.indexOf('/*PROTO-END*/'));
-const E=vm.runInNewContext(defs+'\n'+source+';({makeMockDevice,Link,req,parse,CMD})',{setTimeout,clearTimeout,setInterval,clearInterval,console,TextEncoder,TextDecoder,Blob,Response,DecompressionStream});
+const E=vm.runInNewContext(source+';({makeMockDevice,Link,req,parse,CMD})',{setTimeout,clearTimeout,setInterval,clearInterval,console,TextEncoder,TextDecoder,Blob,Response,DecompressionStream});
 for(const modern of [false,true]){
- const mock=E.makeMockDevice({synthmaven:true,oriental:true,maqam:modern,auto:false});
+ const mock=E.makeMockDevice({synthmaven:true,oriental:true,modern,maqam:modern,auto:false});
  const input=[...mock.access.inputs.values()][0],output=[...mock.access.outputs.values()][0];
  const link=new E.Link(d=>output.send(d),{timeout:500});input.onmidimessage=e=>link.receive(e.data);const rq=r=>link.request(r);
  try{
-  const info=E.parse[E.CMD.INFO](await rq(E.req.info()));assert.equal(info.proto,modern?18:16);
+  const info=E.parse[E.CMD.INFO](await rq(E.req.info()));assert.equal(info.proto,modern?19:16);
   for(const sys of [6,7,13,14,57,58,61,62]){
    const rc=E.parse[E.CMD.TUNE_PUT](await rq(E.req.tunePut(sys,11,[0,1600,3200],19200,432))).rc;
    assert.equal(rc,sys<(modern?62:14)?0:1);

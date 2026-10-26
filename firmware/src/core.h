@@ -490,6 +490,8 @@ static track_t trk[NTRK];        /* the instrument: three parts and the drum tra
 static song_t song;
 #if SYNTHMAVEN_SYNTH
 static uint8_t program_mode, program_layer;
+typedef struct { uint8_t enabled,split,upper,point; int8_t transpose; } program_route_t;
+static program_route_t program_route[4] = {{1,0,0,60,0},{1,0,0,60,0},{1,0,0,60,0},{1,0,0,60,0}};
 /* SynthMaven 0.6: the layer in MULTI (the two sounds two parts: the layer on its own MIDI channel, its own controls) */
 static inline int layer_multi(void) { return !program_mode && trk[1].p[P_LYMODE] == LY_MULTI; }
 /* the part whose performance controls (bend, mod wheel, pressure, pedal: part_ctl) a track follows: the instrument's,
@@ -538,7 +540,7 @@ static int trk_silent(const track_t *t)
 {
     uint32_t i = (uint32_t)(t - trk);
 #if SYNTHMAVEN_SYNTH
-    if(program_mode)return i>=4u || (!program_layer && i!=song.sel) || t->p[P_MUTE];
+    if(program_mode)return i>=4u || !program_route[i].enabled || (!program_layer && i!=song.sel) || t->p[P_MUTE] || (song.solo && !(song.solo&(1u<<i)));
 #endif
     if (SYNTHMAVEN_SYNTH && i)      /* SynthMaven: only the instrument (track 1) sounds, and its layer (track 2) when on */
         return i != 1u || (trk[1].p[P_LYMODE] != LY_LAYER && trk[1].p[P_LYMODE] != LY_SPLIT && trk[1].p[P_LYMODE] != LY_MULTI);

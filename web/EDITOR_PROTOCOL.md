@@ -565,3 +565,7 @@ on protocol >=17 and always chooses USER ID 13 after Scala import. See
 ## SynthMaven 1.4 / protocol 18
 
 Four synth parts (0–3), PRG1 program backups, CUSTOM 1–4 tuning IDs 58–61, USB-only pedal routing and USB host role/status replace the previous Bluetooth extension. The hidden drum runtime track is index 4. See [current MIDI extension](../docs/SYNTHMAVEN_MIDI.md). Earlier Bluetooth commands are unavailable.
+
+## SynthMaven 1.5 / protocol 19
+
+Command 109 reads/writes each of four program sounds’ enable, split mode/side/point, transpose, level, pan, mute and solo state without selecting that part. PRG2 adds routing; PRG1 is upgraded on load. Backup format 8 is gated to protocol ≥19; the editor refuses restoring it to protocol 18. See [MIDI settings](../docs/SYNTHMAVEN_MIDI.md) for the complete payload.

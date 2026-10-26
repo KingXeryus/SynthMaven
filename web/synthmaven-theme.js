@@ -31,9 +31,10 @@
  function category(title){title=title.replace(/[\uE000-\uF8FF]/g,'').trim();return /^(LFO|MOD|MATRIX)/.test(title)?'modulation':/^(FX|SPACE|MASTER)/.test(title)?'effects':/^(SEL|TUN)/.test(title)?'tuning':/^LAYER/.test(title)?'layers':'sound';}
  function filterSections(){
   for(const group of document.querySelectorAll('#groups>.group')){const title=group.dataset.smTitle||group.querySelector('h2')?.textContent||'';group.dataset.smSectionHidden=String(section!=='all'&&category(title)!==section);}
-  const special={hypanel:'sound',fm6panel:'sound',fxpanel:'sound',mspanel:'modulation',lypanel:'layers',tupanel:'tuning','sm-patches':'sound'};
+  const special={hypanel:'sound',fm6panel:'sound',fxpanel:'sound',mspanel:'modulation',lypanel:'layers',tupanel:'tuning','sm-patches':'sound','sm-layer-mixer':'layers'};
   for(const[id,cat]of Object.entries(special)){const e=document.getElementById(id);if(e)e.dataset.smSectionHidden=String(section!=='all'&&cat!==section);}
   for(const b of document.querySelectorAll('[data-sm-section]'))b.setAttribute('aria-pressed',String(b.dataset.smSection===section));
+  const tools=document.getElementById('sndtools');if(tools)tools.dataset.smSectionHidden=String(section==='layers'||section==='tuning');
   const layer=document.getElementById('sm-program-mode-card');if(layer)layer.dataset.smSectionHidden=String(section!=='all'&&section!=='layers');
  }
  function text(g,x,y,value){const e=svg('text',{x,y});e.textContent=value;g.append(e);return e;}
@@ -85,7 +86,7 @@
    const sound=document.getElementById('p-sound'),stage=document.createElement('div');stage.className='sm-instrument-stage';if(sound){sound.classList.add('sm-instrument-layout');const first=sound.firstElementChild;first?.classList.add('sm-factory-library');for(const child of Array.from(sound.children).slice(1))stage.append(child);sound.append(stage);}
    const nav=document.createElement('nav');nav.className='sm-sections';nav.setAttribute('aria-label','Instrument pages');
    for(const [id,label]of [['sound','Sound'],['modulation','Modulation'],['effects','Effects'],['layers','Layers'],['tuning','Tuning'],['all','All parameters']]){const b=document.createElement('button');b.type='button';b.textContent=label;b.dataset.smSection=id;b.addEventListener('click',()=>{section=id;filterSections();});nav.append(b);}document.getElementById('groups')?.before(nav);
-   const mode=document.createElement('div');mode.className='card';mode.id='sm-program-mode-card';const h=document.createElement('h2');h.textContent='PROGRAM / FOUR SOUNDS';mode.append(h);const check=document.getElementById('sm-program-layer');if(check?.closest('p'))mode.append(check.closest('p'));const p=document.createElement('p');p.className='dim';p.textContent='Layer on: play the four loaded sounds together. Layer off: play the selected sound. Select a sound above to edit it.';mode.append(p);document.getElementById('groups')?.after(mode);
+   const mode=document.createElement('div');mode.className='card';mode.id='sm-program-mode-card';const h=document.createElement('h2');h.textContent='PROGRAM / FOUR SOUNDS';mode.append(h);const check=document.getElementById('sm-program-layer');if(check?.closest('p'))mode.append(check.closest('p'));const p=document.createElement('p');p.className='dim';p.textContent='Layer on: play enabled sounds in their keyboard zones. Layer off: play the selected sound with its mixer settings. Select a sound above to edit it.';mode.append(p);document.getElementById('groups')?.after(mode);
    scan();new MutationObserver(()=>{if(!scanQueued){scanQueued=true;requestAnimationFrame(scan);}}).observe(document.getElementById('p-sound'),{childList:true,subtree:true});
    setInterval(()=>{if(document.hidden)return;for(const [i]of dials)if(!i.isConnected)dials.delete(i);else if(i.getClientRects().length)paintDial(i);for(const [group,s]of graphics)if(!group.isConnected)graphics.delete(group);else if(group.getClientRects().length)drawGraphic(s);},100);
   }

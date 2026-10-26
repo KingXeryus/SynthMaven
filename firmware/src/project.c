@@ -743,7 +743,7 @@ static void proj_fetch(uint32_t slot)
     project_t *q = &proj_slot[slot & 3u];
     int n = st_load(OBJ_PROJECT0 + (slot & 3u), &proj_tmp, sizeof proj_tmp);
 #if SYNTHMAVEN_SYNTH
-    if(n==(int)sizeof(program_t) && program_valid(&proj_tmp.pg)) {
+    if(n>0 && program_import(&proj_tmp.pg,&proj_tmp,(uint32_t)n)) {
         memset(q,0,sizeof *q);memcpy(q,&proj_tmp.pg,sizeof(program_t));return;
     }
 #endif
@@ -885,7 +885,7 @@ static void autosave_resume(void)              /* power-on: the project as it wa
         return;
     n = st_load(OBJ_AUTOSAVE, &proj_tmp, sizeof proj_tmp);
 #if SYNTHMAVEN_SYNTH
-    if(n==(int)sizeof(program_t) && program_valid(&proj_tmp.pg)) {
+    if(n>0 && program_import(&proj_tmp.pg,&proj_tmp,(uint32_t)n)) {
         program_apply(&proj_tmp.pg);transport_req=0;panic_req=0;
         autosave_hash=proj_tmp.pg.sum;return;
     }
@@ -1265,8 +1265,9 @@ static uint32_t project_restore(uint32_t slot, const void *raw, uint32_t n)
         return 0;
     }
 #if SYNTHMAVEN_SYNTH
-    if(n==sizeof(program_t) && program_valid((const program_t *)raw)) {
-        if(slot==4u){program_apply((const program_t *)raw);return 0;}
+    if(program_import(&proj_tmp.pg,raw,n)) {
+        raw=&proj_tmp.pg;n=sizeof(program_t);
+        if(slot==4u){program_apply(&proj_tmp.pg);return 0;}
         if(slot>3u)return 2;
         if(!flash_ok || st_save(OBJ_PROJECT0+slot,raw,n))return 4;
         memset(&proj_slot[slot],0,sizeof proj_slot[slot]);memcpy(&proj_slot[slot],raw,n);
