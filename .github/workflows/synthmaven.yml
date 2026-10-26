@@ -1,7 +1,7 @@
 name: SynthMaven build and website
 on:
   push:
-    branches: [main, synthmaven-korg-ble, usb-midi-performance, oriental-factory-bank, fm1-control-fixes]
+    branches: [main, synthmaven-korg-ble, usb-midi-performance, oriental-factory-bank, fm1-control-fixes, vital-preset-import]
   workflow_dispatch:
 permissions:
   contents: read
@@ -27,7 +27,7 @@ jobs:
         env:
           SM_SKIP_FULL_WEB: ${{ github.ref == 'refs/heads/main' && '0' || '1' }}
         run: sh tools/test_synthmaven.sh
-      - name: Audit all 537 factory entries
+      - name: Audit all 493 factory entries
         run: sh tools/audit_factory_levels.sh
       - name: Build development website
         run: python3 tools/make_synthmaven_site.py

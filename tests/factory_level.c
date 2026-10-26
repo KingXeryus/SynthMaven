@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* Render all 537 factory entries through the real UI loader and stereo mix.
+/* Render all 493 factory entries through the real UI loader and stereo mix.
  * argv: WAV path, catalogue path, stereo interleaved int32 raw path.
  * Roles use velocity 100 (bass/melody), 90 (held chords), 95 (comping).
  * Build: see tools/audit_factory_levels.sh. USER WT intentionally has no user data. */

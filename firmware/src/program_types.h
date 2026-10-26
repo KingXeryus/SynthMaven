@@ -53,7 +53,7 @@ static int program_valid(const program_t *p) {
         const program_route_t *r=&p->route[i];
         const program_sound_t *v=&p->sound[i];
         if(r->enabled>1u || r->split>1u || r->upper>1u || r->point>127u || r->transpose< -24 || r->transpose>24)return 0;
-        if(v->engine>=NENGINES || v->user>UP_SLOTS || v->preset>=sm_factory_count(v->engine))return 0;
+        if(v->engine>=NENGINES || v->user>UP_SLOTS || v->preset>=((v->reserved&2u)?sm_factory_count(v->engine):sm_factory_legacy_count(v->engine)))return 0;
         for(k=0;k<8u;k++){const param_desc_t *d=&ENGINES[v->engine]->edit[k];if(v->p[P_E0+k]<d->min || v->p[P_E0+k]>d->max)return 0;}
         for(k=0;k<P_E0;k++)if(v->p[k]<TP[k].min || v->p[k]>TP[k].max)return 0;
         for(k=0;k<64;k++)if(((const int8_t *)v->ms)[k]<-8 || ((const int8_t *)v->ms)[k]>7)return 0;

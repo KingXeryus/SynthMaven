@@ -55,6 +55,15 @@ int main(void){
  memset(&bank,0,sizeof bank);bank.magic=PROGRAM_BANK_MAGIC;check(program_pack(&bank.slot[0],&a,"ORIGINAL")&&program_pack(&bank.slot[1],&a,"ADDED SLOT"),"first migration preserves the original program alongside its added pair");
  check(!st_save(OBJ_PROJECT0,&bank,sizeof bank),"migration uses the existing atomic A/B commit");st_hdr_t head;int current=st_current(OBJ_PROJECT0,&head);nor[st_sector(OBJ_PROJECT0,(uint32_t)current)+ST_PAYLOAD_OFF]^=1u;
  memset(&b,0,sizeof b);check(st_load(OBJ_PROJECT0,&b,sizeof b)==sizeof b&&program_valid(&b)&&!memcmp(&a,&b,sizeof a),"interrupted/corrupt migration falls back to the intact original PRG2 record");
+ /* Both old D/E IDs retain their full saved sound while receiving the compact catalogue ID. */
+ for(uint32_t w=0;w<SM_OR_WORLDS;w++)for(uint32_t style=0;style<2;style++){
+  uint32_t pi,e=sm_or_at(w,&pi),base=ENGINES[e]->npresets;set_engine_of(&trk[0],e);apply_preset_to(&trk[0],pi);trk[0].p[P_MAC1]=(int16_t)(style?12:-6);program_capture(&a);
+  uint32_t old=base+2u*(pi-base)+style;a.sound[0].preset=(uint8_t)old;a.sound[0].reserved&=(uint8_t)~2u;a.sum=program_hash(&a,sizeof a-4u);
+  check(program_valid(&a),"legacy regional preset ID remains valid");program_apply(&a);check(trk[0].preset==pi&&!memcmp(trk[0].p,a.sound[0].p,sizeof trk[0].p),"old D/E program preserves complete sound with consolidated ID");
+  program_capture(&b);check((b.sound[0].reserved&2u)&&b.sound[0].preset==pi&&program_valid(&b),"saving migrated program marks compact catalogue IDs");
+ }
+ for(uint32_t i=0;i<FAV_N;i++)fav[i]=FAV_NONE;fav[0]=NBASE;fav[1]=NBASE+1;fav[2]=NBASE+86;fav[3]=NBASE+87;uint32_t favorites[FAV_N];check(fav_list(favorites)==2&&favorites[0]==NBASE&&favorites[1]==NBASE+43,"old D/E favourites map to consolidated recipes and deduplicate");
+ {uint32_t pi,e=sm_or_at(0,&pi);set_engine_of(TSEL,e);apply_preset_to(TSEL,pi);check(fav_has(fav_key()),"legacy expressive favourite is recognized");fav_toggle(0);check(fav_list(favorites)==1&&favorites[0]==NBASE+43,"removing a consolidated favourite removes both legacy variants");}
  printf("Named program bank size %zu bytes; original project addresses and sample regions unchanged\n",sizeof bank);
  return fails?1:0;
 }

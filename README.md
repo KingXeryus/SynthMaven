@@ -1,6 +1,6 @@
 # SynthMaven for M-VAVE FM-1
 
-SynthMaven 2.0 builds on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1) with four-part programs, a layer/split mixer, learned USB pedal controls and an instrument-style visual editor. Its 23 synthesis engines provide 537 factory entries: 536 level-matched sounds and an intentionally empty USER WT slot, including 88 Oriental/Middle Eastern sounds and nine XD compatibility sounds.
+SynthMaven 2.0 builds on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1) with four-part programs, a layer/split mixer, learned USB pedal controls and an instrument-style visual editor. Its 23 synthesis engines provide 493 factory entries: 492 level-matched sounds and an intentionally empty USER WT slot, including 44 Oriental/Middle Eastern sounds and nine XD compatibility sounds.
 
 [Installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [User manual](docs/USER_MANUAL.md) · [Quick start](QUICKSTART.md) · [Release notes](docs/release-2.0.md)
 
@@ -13,7 +13,7 @@ SynthMaven 2.0 builds on [Clipper by 3dSam](https://github.com/isod89/clipper-fm
 - **Engine-aware filter access and output control.** Model, cutoff, resonance and envelope amount are grouped together; unavailable controls are disabled or omitted. HYBRID retains its own two-filter architecture. Optional estimated output compensation attenuates resonance/drive level changes, up to 12 dB, and defaults OFF; it is not measured loudness normalization. Output trim uses half-decibel steps. See the [filter capability map](docs/FILTER_CAPABILITIES.md).
 - **Ready-to-use modulation templates.** Start with velocity-to-brightness, pressure-to-vibrato, wheel-to-vibrato or envelope swell. HYBRID pressure/wheel templates use a free matrix slot and set LFO1 to sine, rate 64; a full matrix is left unchanged.
 - **Maqam, custom scales and tuning control.** Select among 46 Arabic maqam reference tunings with any root, four saved custom chromatic scales and Scala imports. Custom scales keep the chromatic keyboard mapping and adjust only the selected pitch classes. Each key press cycles 0 → −25 → −50 → −75 → 0 cents. QNT ALL applies the chosen scale/root to all four parts and incoming MIDI. Apply master tuning is enabled by default and can be bypassed independently per part.
-- **Calibrated factory levels.** The 536 audible presets pass the reference audit within ±0.5 LU; USER WT stays silent until a user wavetable is uploaded. The reference measurement method and its limits are documented in the [release notes](docs/release-1.5.md).
+- **Calibrated factory levels.** The 492 audible presets pass the reference audit within ±0.5 LU; USER WT stays silent until a user wavetable is uploaded. The reference measurement method and its limits are documented in the [release notes](docs/release-1.5.md).
 
 These performance, tuning, editor and workflow additions build on the inherited synthesis foundation. JUNO, VECTOR, FMX, WSEQ, MACRO, the filter models, TURNG and SPICE / DICE remain credited to Clipper; their design inspirations do not establish SynthMaven authorship.
 
@@ -51,3 +51,9 @@ See [BUILDING.md](BUILDING.md). Linux x86-64 runs the JieLi toolchain directly; 
 SynthMaven is based on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1), which builds on SLOOP and Felucca. Original firmware work, engine attributions and licence notices are retained in source.
 
 GPL-3.0-only; see [LICENSING.md](LICENSING.md). USB host additions retain their MPL-2.0 notices in firmware/vendor/fm1-usb-host.
+
+### Vital import and consolidated regional sounds
+
+The development catalogue contains 493 entries: 492 calibrated audible sounds and the intentionally empty USER WT. Regional Dry/Expressive pairs now share 44 factory entries; choose the variation in the editor. Older programs retain their saved parameters, and D/E favourites map to the consolidated sound.
+
+The editor can inspect and approximately translate individual `.vital` files, retain complete custom HYBRID patches in its library, and explicitly send them to a program part. Compatible raw Wave Source keyframes can be extracted as WAV for the existing WAVE importer. Unsupported warping, custom routing and effects are reported. This is not Vital playback. [Import details and limits](docs/VITAL_IMPORT.md). No Vital-derived factory presets are bundled yet; user-supplied presets will be reviewed, converted and level-matched separately.

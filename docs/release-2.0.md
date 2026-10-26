@@ -1,6 +1,6 @@
 # SynthMaven 2.0
 
-Protocol 22 adds pedal learning, compact scenes, a global setlist and engine-aware filter editing. The release retains 23 engines and 537 sound presets. Eight voices are shared across all four program parts; four layered parts consume four voices per played note. Unison and release tails also consume that budget.
+Protocol 22 adds pedal learning, compact scenes, a global setlist and engine-aware filter editing. The release retains 23 engines and 493 sound presets. Eight voices are shared across all four program parts; four layered parts consume four voices per played note. Unison and release tails also consume that budget.
 
 ## Pedals
 
@@ -31,3 +31,9 @@ Velocity→brightness, pressure→vibrato, wheel→vibrato and envelope-swell te
 ## Validation and limits
 
 Host tests exercise MIDI learning/deduplication, scene persistence, setlist ordering, migration, capability descriptors and backup downgrade guards. Target build and memory checks remain required release gates. Hardware pedal enumeration, USB power compatibility and real-time operation still require physical FM1 testing; do not treat simulated diagnostics as hardware certification.
+
+### Development update: catalogue and Vital import
+
+Regional D/E pairs consolidate from 88 entries into 44 selectable sounds with editor variations. The catalogue is now 493 entries (492 audible plus USER WT); existing programs preserve all sound parameters and migrate regional IDs, and favourites deduplicate D/E references.
+
+Vital import is a staged editor translation into HYBRID, with explicit approximation warnings, library persistence, exported translations and raw Wave Source keyframe extraction. Custom translated patches can be saved in four-part programs, not parameter-only user slots. No Vital preset content is included; factory additions await supplied files and a fresh loudness audit.

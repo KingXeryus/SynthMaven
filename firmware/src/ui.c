@@ -799,7 +799,7 @@ static uint32_t base_pos(uint32_t *total)            /* list index of the select
     for (i = 0; i < NBASE; i++)
         if (BANK[i].e == TSEL->eng_req && bank_pi[i] == TSEL->preset)
             cur = i;
-    {uint32_t w,v;if(sm_or_find(TSEL->eng_req,TSEL->preset,&w,&v))cur=NBASE+w*2u+v;}
+    {uint32_t w,v;if(sm_or_find(TSEL->eng_req,TSEL->preset,&w,&v))cur=NBASE+w;}
     if (user_of(TSEL) < UP_SLOTS)
         cur = NBANK + up_rank(user_of(TSEL));
     *total = NBANK + up_count();
@@ -842,8 +842,9 @@ static uint32_t fav_list(uint32_t *b)                /* the favourites as base l
             if (!up_used(f & 0xFFu))
                 continue;
             b[n++] = NBANK + up_rank(f & 0xFFu);
-        } else if (f < NBANK) {
-            b[n++] = f;
+        } else if (f < NBASE+2u*SM_OR_COUNT) {
+            uint32_t mapped=f<NBASE?f:NBASE+(f-NBASE)/2u;
+            uint32_t j;for(j=0;j<n && b[j]!=mapped;j++);if(j==n)b[n++] = mapped;
         }
     }
     return n;
@@ -861,11 +862,12 @@ static uint32_t fav_key(void)                        /* the selected part's soun
             return i;
     return FAV_NONE;
 }
+static uint32_t fav_canonical(uint32_t key){return key>=NBASE && key<NBASE+2u*SM_OR_COUNT ? NBASE+2u*((key-NBASE)/2u):key;}
 static int fav_has(uint32_t key)
 {
     uint32_t i;
     for (i = 0; i < FAV_N; i++)
-        if (key != FAV_NONE && fav[i] == key)
+        if (key != FAV_NONE && fav_canonical(fav[i]) == key)
             return 1;
     return 0;
 }
@@ -888,13 +890,9 @@ static void fav_toggle(int add)                      /* KNOB 4 on the PRESETS pa
         fav[i] = (uint16_t)key;
         ui_message("FAV ADDED");
     } else {
-        for (i = 0; i < FAV_N && fav[i] != key; i++)
-            ;
-        if (i == FAV_N)
-            return;
-        for (; i + 1u < FAV_N; i++)                  /* (the order kept) */
-            fav[i] = fav[i + 1u];
-        fav[FAV_N - 1u] = FAV_NONE;
+        uint32_t n=0;int found=0;
+        for(i=0;i<FAV_N;i++){if(fav_canonical(fav[i])==key){found=1;continue;}if(fav[i]!=FAV_NONE)fav[n++]=fav[i];}
+        if(!found)return;while(n<FAV_N)fav[n++]=FAV_NONE;
         fav_at = -1;
         ui_message("FAV REMOVED");
     }

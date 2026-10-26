@@ -13,6 +13,7 @@ PAGES = {
     'docs/release-'+json.loads((ROOT/'release.json').read_text())['version']+'.md': 'release-notes.html',
     'docs/release-1.9.md': 'release-1.9.html',
     'docs/FILTER_CAPABILITIES.md': 'filter-capabilities.html',
+    'docs/VITAL_IMPORT.md': 'vital-import.html',
     'docs/EDITOR_PROTOCOL.md': 'editor-protocol.html',
     'docs/release-1.8.md': 'release-1.8.html',
     'docs/release-1.7.md': 'release-1.7.html',

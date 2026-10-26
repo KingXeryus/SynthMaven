@@ -5,12 +5,12 @@
 #include "../firmware/src/project.c"
 int main(int argc,char**argv){
  outdir="build/host";bank_resolve();panel=PANEL_DEFAULT;layers_init();host_tracks_init();go_home();frames(2);midi_in_ch=0;
- check(SM_OR_COUNT==88u&&SM_OR_WORLDS==44u,"all 88 world articulations are present");
- {uint32_t e,count=0;for(e=0;e<NENGINES;e++)count+=sm_factory_count(e);check(NENGINES==23u&&count==537u,"SynthMaven 1.0 contains 23 engines and 537 factory presets");}
+ check(SM_OR_COUNT==44u&&SM_OR_WORLDS==44u,"all 44 consolidated world sounds are present");
+ {uint32_t e,count=0;for(e=0;e<NENGINES;e++)count+=sm_factory_count(e);check(NENGINES==23u&&count==493u,"SynthMaven 1.0 contains 23 engines and 493 factory presets");}
  FILE*out=fopen(argc>1?argv[1]:"build/host/oriental-loaded.json","w");fprintf(out,"[");
  for(uint32_t n=0;n<SM_OR_COUNT;n++){
   uint32_t p,e=base_at(NBASE+n,&p),w,v,total;set_engine(e);apply_preset(p);
-  check(sm_or_find(e,p,&w,&v)&&w*2u+v==n,"world engine/preset ID resolves reversibly");
+  check(sm_or_find(e,p,&w,&v)&&w==n&&v==0,"world engine/preset ID resolves reversibly");
   check(TSEL->preset==p&&base_pos(&total)==NBASE+n,"hardware browser highlights loaded world patch");
   check(!TSEL->p[P_CHOR]&&!TSEL->p[P_DLY]&&!TSEL->p[P_REV]&&!TSEL->p[P_MAC4],"melodic preset starts with no chorus/delay/reverb sends or SPACE boost");
   check(total==NBANK+up_count()&&str_eq(base_kind(NBASE+n),"ORIENTAL"),"world bank and user slots counted correctly");
@@ -23,6 +23,6 @@ int main(int argc,char**argv){
  }
  fprintf(out,"]\n");fclose(out);
  if(argc>2){out=fopen(argv[2],"w");fprintf(out,"[");for(uint32_t e=0;e<NENGINES;e++){fprintf(out,"%s[",e?",":"");for(uint32_t p=0;p<ENGINES[e]->npresets;p++)fprintf(out,"%s\"%s\"",p?",":"",ENGINES[e]->presets[p].name);fprintf(out,"]");}fprintf(out,"]\n");fclose(out);}
- br_eng=BR_ORIENTAL;{uint32_t pos;check(br_count(&pos)==SM_OR_COUNT,"ORIENTAL filter contains all 88 sounds");}
+ br_eng=BR_ORIENTAL;{uint32_t pos;check(br_count(&pos)==SM_OR_COUNT,"ORIENTAL filter contains all 44 sounds");}
  printf("Oriental collection: %s\n",fails?"FAIL":"PASS");return fails!=0;
 }

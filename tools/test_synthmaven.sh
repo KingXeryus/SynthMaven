@@ -26,6 +26,7 @@ python3 tools/check_oriental.py
 $CC -o build/host/wt_rom_test tests/wt_rom_test.c firmware/vendor/tinf/tinflate.c
 build/host/wt_rom_test
 node web/test_korg.mjs
+node web/test_vital.mjs
 
 for mode in host audio device loader; do
  flags="";case "$mode" in audio) flags="-DTEST_UAC=1";;device) flags="-DTEST_HOST=0";;loader) flags="-DFELUCCA_LOADER=1";;esac

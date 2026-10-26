@@ -18,7 +18,7 @@ static void program_capture(program_t *p) {
     for(i=0;i<4;i++) {
         const track_t *t=&trk[i];program_sound_t *s=&p->sound[i];
         memcpy(s->p,t->p,sizeof s->p);memcpy(s->ms,t->ms,sizeof s->ms);
-        s->engine=t->eng_req;s->preset=t->preset;s->user=t->user;s->reserved=(uint8_t)((sm_filter_comp_mask>>i)&1u);
+        s->engine=t->eng_req;s->preset=t->preset;s->user=t->user;s->reserved=(uint8_t)(((sm_filter_comp_mask>>i)&1u)|2u);
         if(program_patch_pending&(1u<<i))memcpy(s->patch,program_patch[i],sizeof s->patch);
         else if(s->engine==ENGI_HYBRID)memcpy(s->patch,hy_gen[i]!=hy_gen_seen[i]?&hy_in[i]:&hy_cur[i],sizeof(hy_patch_t));
         else if(s->engine==ENGI_FMX)memcpy(s->patch,&fmx_cur[i],sizeof(fmx_patch_t));
@@ -31,7 +31,7 @@ static void program_apply(const program_t *p) {
     fm1_irq_off();program_mode=1;program_layer=p->layer;song.sel=p->active;song.solo=p->reserved[0]&15u;master_tuning_bypass=p->reserved[1]&15u;memcpy(program_route,p->route,sizeof program_route);tune_cfg=p->tuning;memcpy(custom_scale,p->custom,sizeof custom_scale);custom_scale_dirty=1;sm_filter_comp_mask=0;memcpy(sm_scenes,p->scenes,sizeof sm_scenes);sm_scene_index=255;
     for(i=0;i<4;i++) {
         track_t *t=&trk[i];const program_sound_t *s=&p->sound[i];sound_fade_begin(t);
-        t->eng_req=s->engine;t->preset=s->preset;t->user=s->user;sm_filter_comp_mask|=(s->reserved&1u)<<i;
+        t->eng_req=s->engine;t->preset=(uint8_t)((s->reserved&2u)?s->preset:sm_factory_from_legacy(s->engine,s->preset));t->user=s->user;sm_filter_comp_mask|=(s->reserved&1u)<<i;
         memcpy(t->p,s->p,sizeof s->p);memcpy(t->ms,s->ms,sizeof s->ms);
         memcpy(program_patch[i],s->patch,sizeof s->patch);
         fm6_slot[i]=(uint8_t)t->p[P_E7];fm6_pend&=(uint8_t)~(1u<<i);fmx_reload&=(uint8_t)~(1u<<i);

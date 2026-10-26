@@ -42,3 +42,9 @@ Hold EDIT for two seconds to preview the four-sound mixer. KNOBS 1–4 control t
 In GLO → PEDAL LEARN choose an action, arm Learn, press a pedal, then Accept the displayed message. Duplicate suppression defaults OFF; CC release re-arms immediately. Direct pedal learning uses the device in PEDAL mode; return to COMPUTER for the editor, audio, backup or installation. GLO SCENES captures/recalls four compact scenes within the current program; save the program afterward. GLO SETLIST orders up to 32 references to the eight saved programs. The editor supports scene Capture/Recall/Clear and setlist reordering. EDIT FILTER groups only controls supported by the engine; optional compensation is estimated attenuation and defaults OFF.
 
 Eight voices are shared across all four parts. A four-part layered note uses four voices, leaving two such notes before release tails or unison. A sound preset, four-part program and editor library entry are separate kinds of storage. See the [user manual](docs/USER_MANUAL.md) for details.
+
+### Vital files and regional variations
+
+Use **Sound → Vital preset import** to read a `.vital` file locally, inspect the compatibility report and explicitly send an approximate HYBRID sound. Save the full custom sound in the editor library or a four-part program; parameter-only user slots cannot keep arbitrary HYBRID bytes. [Supported conversions](docs/VITAL_IMPORT.md).
+
+The regional bank has 44 selectable sounds, with Dry/Expressive variations in the editor instead of duplicate factory entries. The catalogue has 493 entries: 492 audible sounds plus the intentionally empty USER WT.
