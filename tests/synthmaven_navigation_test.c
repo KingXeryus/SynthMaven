@@ -63,7 +63,7 @@ int main(void) {
  for(i=0;i<4;i++)check(trk[i].p[P_PAN]==pan[i]+1 && trk[i].p[P_LEVEL]==lv[i]-1,"four mixer knobs adjust their own pan without changing volume");ppm("synthmaven-layer-pan");
  frames(65);release(B_EDIT);check(ly_lock==LY_ERASE && ui.layer==LY_ERASE,"EDIT mixer latches at three seconds and remains after release");
  uint8_t bpm_before=(uint8_t)song.g[G_BPM];encs[panel.enc[EN_SELECT]]=1;frames(2);check(!layer_mixer_pan && song.g[G_BPM]==bpm_before,"latched mixer SELECT toggles back without changing tempo");press(B_SCL);frames(8);check(ly_lock==LY_PLAY && ui.layer==LY_PLAY,"switching from a latched mixer never flashes the next hold screen");release(B_SCL);frames(2);
- press(B_EDIT);frames(190);release(B_EDIT);tap(B_EDIT);check(ly_lock==LY_PLAY,"EDIT tap exits latched mixer");
+ layer_mixer_pan=1;press(B_EDIT);frames(190);release(B_EDIT);check(!layer_mixer_pan,"a new EDIT hold always opens the volume mixer");tap(B_EDIT);check(ly_lock==LY_PLAY,"EDIT tap exits latched mixer");
  set_engine(0);open_family(FAM_EDIT);uint32_t edit_pages=0;for(i=0;i<NPAGES;i++)if(PAGES[i].fam==FAM_EDIT&&!page_hidden(i))edit_pages++;check(edit_pages==4,"normal EDIT has four focused sound pages");
  go_home();frames(110);ppm("synthmaven-four-program-sounds");
  open_family(FAM_SAVE);check(!strcmp(cur_page()->title,"PROGRAM"),"SAVE opens program save/load page");

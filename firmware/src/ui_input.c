@@ -862,6 +862,9 @@ static int layers_input(uint32_t note_edges, uint32_t *pressed, uint32_t home)
         if(l==LY_MIX)long_ms=2000u;
 #endif
         if (d && !down[l]) {
+#if SYNTHMAVEN_SYNTH
+            if(l==LY_ERASE)layer_mixer_pan=0; /* Every new EDIT hold starts with the four volumes. */
+#endif
             t0[l] = now;
             used[l] = (uint8_t)((eat & ly_bit[l]) != 0u);  /* (the press that unlocked: not a tap) */
         }
