@@ -33,7 +33,6 @@ jobs:
         run: python3 tools/make_synthmaven_site.py
       - name: Download target toolchain and SDK
         id: deps
-        continue-on-error: true
         run: |
           sh tools/get_toolchain.sh "$RUNNER_TEMP/jieli"
           for attempt in 1 2 3; do
@@ -44,7 +43,6 @@ jobs:
       - name: Build actual SynthMaven firmware
         id: target
         if: steps.deps.outcome == 'success'
-        continue-on-error: true
         run: |
           JIELI_TOOLCHAIN="$RUNNER_TEMP/jieli/toolchain" AC79_SDK="$RUNNER_TEMP/ac79" sh build.sh --release "$(python3 -c 'import json; print(json.load(open("release.json"))["version"])')"
           python3 tools/make_synthmaven_site.py --package "build/felucca-$(python3 -c 'import json; print(json.load(open("release.json"))["version"])').fwsc"
