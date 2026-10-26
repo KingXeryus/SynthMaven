@@ -1169,6 +1169,19 @@ static uint8_t vis_on, vis_shown_last, vis_name_t;   /* the visualiser (ui_vis.c
 static void ui_draw(void)
 {
     ui.frame++;
+#if SYNTHMAVEN_SYNTH
+    /* GLO's dedicated screen takes priority over HOME, pages, menus and held layers. */
+    if(program_mode && (fm1_in.buttons & ly_bit[LY_MIX])) {
+        const char *label=glo_layer_label();
+        if(!glo_screen_shown){lcd_fill(0,0,240,240,C_BLACK);glo_screen_shown=1;}
+        cv_begin(240,124,C_BLACK);
+        cv_text((240-text_w(&FONT_S,"LAYERING"))/2,8,&FONT_S,"LAYERING",C_GRAY);
+        cv_text((240-text_w(&FONT_L,label))/2,46,&FONT_L,label,program_layer?C_HI:C_WHITE);
+        cv_text((240-text_w(&FONT_S,glo_hold_done?"RELEASE GLO TO RETURN":"HOLD GLO 2s TO TOGGLE"))/2,100,&FONT_S,glo_hold_done?"RELEASE GLO TO RETURN":"HOLD GLO 2s TO TOGGLE",C_GRAY);
+        cv_blit(0,58);ui_timers();ui.force=0;return;
+    }
+    if(glo_screen_shown){glo_screen_shown=0;lcd_fill(0,0,240,240,C_BLACK);ui.force=1;}
+#endif
     if (!ui.home && page_hidden(ui.page)) {            /* (0.6: the sound left FMX on one of its pages) */
         ui.page = (uint8_t)page_first(PAGES[ui.page].fam);
         page_entered();

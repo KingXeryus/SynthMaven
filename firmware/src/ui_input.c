@@ -842,9 +842,6 @@ static int layers_input(uint32_t note_edges, uint32_t *pressed, uint32_t home)
     static uint32_t t0[LY_COUNT];
     uint32_t l, now = fm1_ms, held = LY_PLAY, eat = 0;
 #if SYNTHMAVEN_SYNTH
-    static uint8_t glo_toggled;
-#endif
-#if SYNTHMAVEN_SYNTH
     if(scale_edit && (*pressed & ly_bit[LY_SONG])) {
         custom_scale_dirty=1;settings_later=1;*pressed&=~ly_bit[LY_SONG];ui_message("SCALE SAVE PENDING");
     }
@@ -860,18 +857,17 @@ static int layers_input(uint32_t note_edges, uint32_t *pressed, uint32_t home)
         }
     }
     for (l = LY_FX; l < LY_COUNT; l++) {
-        uint32_t d = (fm1_in.buttons & ly_bit[l]) != 0u;
+        uint32_t d = (fm1_in.buttons & ly_bit[l]) != 0u, long_ms=3000u;
+#if SYNTHMAVEN_SYNTH
+        if(l==LY_MIX)long_ms=2000u;
+#endif
         if (d && !down[l]) {
             t0[l] = now;
-#if SYNTHMAVEN_SYNTH
-            if(l==LY_MIX)glo_toggled=0;
-#endif
             used[l] = (uint8_t)((eat & ly_bit[l]) != 0u);  /* (the press that unlocked: not a tap) */
         }
-        if(d && down[l] && now-t0[l]>=3000u && ly_lock!=l) {
+        if(d && down[l] && now-t0[l]>=long_ms && ly_lock!=l) {
 #if SYNTHMAVEN_SYNTH
             if(l==LY_MIX){
-                if(!glo_toggled){program_layer_set(!program_layer);glo_toggled=1;ui_message(program_layer?"LAYERING ON":"LAYERING OFF");}
                 used[l]=1;down[l]=(uint8_t)d;continue; /* GLO never latches and toggles once per hold. */
             }
 #endif
@@ -1069,6 +1065,16 @@ static void holds_input(uint32_t pressed, uint32_t now_ms)
     (void)sb, (void)save_down, (void)save_on, (void)save_t0;   /* (SAVE is a layer now: ui_layers.c) */
 }
 
+#if SYNTHMAVEN_SYNTH
+/* Poll before menu handling so the same hold works over any screen. */
+static void glo_layer_input(void) {
+    static uint32_t start;static uint8_t was_down;
+    uint32_t down=(fm1_in.buttons & ly_bit[LY_MIX])!=0u;
+    if(down && !was_down){start=fm1_ms;glo_hold_done=0;}
+    if(down && !glo_hold_done && fm1_ms-start>=2000u){program_layer_set(!program_layer);glo_hold_done=1;ui.force=1;}
+    was_down=(uint8_t)down;
+}
+#endif
 static void ui_input(void)
 {
     uint32_t pressed = fm1_input_edges(0), notes = fm1_input_note_edges(), now = fm1_ticks(), id, b, k;
@@ -1079,6 +1085,7 @@ static void ui_input(void)
         song.sel = 0;
 #if SYNTHMAVEN_SYNTH
     syn_tick();                                         /* MIDI CC 20: MORPH */
+    glo_layer_input();
 #endif
     enc_hold = 0;                                       /* (panel.c: every knob readable again this pass) */
     if (pressed || notes)

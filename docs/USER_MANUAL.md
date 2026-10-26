@@ -1,4 +1,4 @@
-# SynthMaven 1.6 — FM1 user manual
+# SynthMaven 1.7 — FM1 user manual
 
 SynthMaven is an open-source firmware based on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1).
 This manual covers the **M-VAVE FM1 hardware firmware**, its web installer and
@@ -70,7 +70,7 @@ HOME displays the four sounds loaded in the working program. The outline marks t
 | SEL tap | Cycle tuning scales |
 | SEL hold 3 seconds | Latch the custom-scale editor |
 | SAVE | Open PROGRAM save/load settings |
-| GLO hold 3 seconds | Toggle layering ON/OFF once; GLO does not latch |
+| GLO hold 2 seconds | Toggle layering ON/OFF once; GLO does not latch |
 
 SAVE → PROGRAM selects a slot, loads or saves it. Turn LOAD or SAVE twice to confirm. PROGRAM MODE → LAYER chooses focused sound alone (OFF) or all four sounds together (ON). Each sound has an eight-voice budget.
 
@@ -311,7 +311,7 @@ For recovery tooling, see the [build/install guide](../BUILDING.md#install).
 
 ## Version, validation and support
 
-Version 1.6 uses editor protocol 20. See [release notes](release-1.6.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
+Version 1.7 uses editor protocol 20. See [release notes](release-1.7.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
 
 
 
@@ -352,8 +352,10 @@ In SEL, choose ROOT and SCL, then set QNT to **ALL**. The focused sound supplies
 
 The Layers editor has **Apply master tuning** for each sound, enabled by default. GLO → TUNING → MASTER changes this switch for the HOME-selected sound. Disable it to bypass the master maqam/temperament, custom/Scala tuning and reference A4 for that sound. Pitch quantization, transpose and the global fine-tune control remain independent. Programs save these four switches; settings preserve them across power cycles. Existing programs default to all four enabled. Firmware before 1.6 cannot load a saved program using QNT ALL; export backups before upgrading or downgrading.
 
-Hold GLO for three seconds to toggle layering once, then release. Holding longer does not toggle again. GLO never latches from a long press; other function buttons keep their existing three-second latch behavior.
+Hold GLO for two seconds to toggle layering once, then release. Holding longer does not toggle again. GLO never latches from a long press; other function buttons keep their existing three-second latch behavior.
 
 ## Upstream code credits
 
 JUNO, VECTOR, FMX, WSEQ, MACRO, the filter models, TURNG and SPICE / DICE are inherited from **Clipper by 3dSam**. Their instrument and synthesis design inspirations are separate from code authorship. SynthMaven is a derivative of Clipper, which builds on SLOOP and Felucca. Existing copyright and third-party notices are retained; see [licensing and upstream notices](../LICENSING.md).
+
+Holding GLO replaces the current display with **Layered ON** or **Layered OFF**. At two seconds, layering toggles once and the label updates. Release GLO to return to the previous screen. Other function buttons retain their three-second hold behavior.

@@ -3,7 +3,7 @@
 /* Felucca user interface. Four columns map to KNOB 1..4. Rendering is lazy:
  * every element remembers what it last drew and is redrawn only on change. */
 #ifndef FELUCCA_VERSION
-#define FELUCCA_VERSION "SYNTHMAVEN 1.6"  /* (experimental) the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
+#define FELUCCA_VERSION "SYNTHMAVEN 1.7"  /* (experimental) the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
 #endif
 static void project_save(uint32_t slot);
 static void program_layer_set(uint32_t on);
@@ -93,6 +93,10 @@ static struct {
     uint32_t graph_sig, head_sig, foot_sig, frame;
     uint8_t graph_top;           /* the graph strip's top G_OY rows hold something */
 } ui;
+#if SYNTHMAVEN_SYNTH
+static uint8_t glo_hold_done, glo_screen_shown;
+static const char *glo_layer_label(void) { return program_layer ? "Layered ON" : "Layered OFF"; }
+#endif
 
 static const page_t *cur_page(void) { return &PAGES[ui.page]; }
 static int32_t accel(uint32_t role, int32_t s, int32_t range);   /* ui_input.c */
