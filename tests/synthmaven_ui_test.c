@@ -163,51 +163,12 @@ int main(int argc, char **argv)
         set_engine_of(TSEL, ENGI_HYBRID); apply_preset_to(TSEL, 0); frames(3);
         check(n > 300u && !wet, "every factory sound loads with DLY 0 and REV 0 (dry by default)");
     }
-    /* 1.0 (a comment): the PRESETS page's KNOB 2 filters the list by engine; KNOB 1 and PRESETS stay inside it */
+    /* Native SAVE now contains programs/tools; editor retains preset and user-library browsing. */
     {
-        uint32_t total, k, e, ok = 1, pos, c, n, seen = 0, prev = 0xFFFFu;
-        go_home(); frames(2);
-        to_page(FAM_SAVE,"PRESETS"); frames(2);
-        check(cur_page()->graph == GR_BROWSE && br_eng == BR_ALL, "SAVE: the PRESETS page, the filter on ALL");
-        encs[panel.enc[EN_K2]] = 1; frames(2);
-        e = br_eng;
-        ok = e < NENGINES;
-        c = br_count(&pos);
-        for (n = 0; n < c + 2u; n++) {                /* KNOB 1 round the engine's sounds (and once more) */
-            uint32_t p = br_current(), pk;
-            ok &= preset_at(p, &pk) == e;
-            seen += p != prev;
-            prev = p;
-            encs[panel.enc[EN_K1]] = 1; frames(1);
-        }
-        encs[panel.enc[EN_PRESET]] = -1; frames(1);
-        { uint32_t pk; ok &= preset_at(br_current(), &pk) == e; }
-        ui.force = 1; frame(); ppm("synthmaven-presets-filter");
-        check(ok && c >= 2u && seen >= c, "PRESETS page: KNOB 2 filters by engine (the first one with sounds); KNOB 1 and PRESETS go through its sounds only");
-        for (k = 0; k < NENGINES + 3u && br_eng != BR_ALL; k++) {
-            encs[panel.enc[EN_K2]] = 1; frames(1);
-        }
-        check(br_eng == BR_ALL, "KNOB 2 round the engines (and USER when there are user presets) back to ALL");
-        encs[panel.enc[EN_K2]] = -1; frames(1);
-        ok = br_eng == BR_ORIENTAL || br_eng == NENGINES || (br_eng < NENGINES);   /* (the harness's user presets: names only) */
-        check(ok, "KNOB 2 left from ALL: the last filter (USER, or the last engine and its first sound)");
-        while (br_eng != BR_ALL) { encs[panel.enc[EN_K2]] = 1; frames(1); }
-        {
-            uint32_t before = preset_pos(&total), chosen;
-            encs[panel.enc[EN_K1]] = 1; frame(); chosen = br_current();
-            check(preset_pos(&total) == before && chosen != before,
-                  "four-patch browser: selection does not change the playing sound");
-            encs[panel.enc[EN_K3]] = 1; frames(2);
-            check(preset_pos(&total) == chosen && cur_page()->graph == GR_BROWSE,
-                  "LOAD plays the highlighted sound and stays in browser");
-            encs[panel.enc[EN_K1]] = 1; frame(); chosen = br_current();
-            encs[panel.enc[EN_K4]] = 1; frames(2);
-            check(preset_pos(&total) == chosen && cur_fam() == FAM_EDIT,
-                  "EDIT loads the highlighted sound and opens engine editing");
-        }
-        while (br_eng != BR_ALL) { encs[panel.enc[EN_K2]] = 1; frames(1); }
-        go_home(); frames(2);
-        set_engine_of(TSEL, ENGI_HYBRID); apply_preset_to(TSEL, 0); frames(3);
+        uint32_t n=0;
+        for(uint32_t i=0;i<NPAGES;i++)if(PAGES[i].fam==FAM_SAVE){n++;check(strcmp(PAGES[i].title,"PRESETS")&&strcmp(PAGES[i].title,"USER")&&strcmp(PAGES[i].title,"PROGRAM MODE"),"SAVE omits redundant preset, user and layer pages");}
+        check(n==2u,"SAVE retains PROGRAM and TOOLS only");
+        go_home();set_engine_of(TSEL,ENGI_HYBRID);apply_preset_to(TSEL,0);frames(3);
     }
     /* 1.0 (a comment from a KeyStep Pro user): GLO > MIDI, IN CH (OMNI or one channel) and OUT CH */
     {

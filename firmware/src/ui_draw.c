@@ -453,8 +453,11 @@ static uint32_t graph_signature(void)
     if (pg->graph == GR_SLCR && t->p[P_SLCR])        /* the SLICER's step playing */
         h ^= (sl[song.sel].idx + 1u) * 2654435761u;
     if (pg->graph == GR_SLOTS)                       /* (a checksum over each slot) */
-        for (i = 0; i < 4u; i++)
+        for (i = 0; i < (SYNTHMAVEN_SYNTH?8u:4u); i++)
             h ^= (uint32_t)project_used(i) << (20u + i);
+#if SYNTHMAVEN_SYNTH
+    if(pg->graph==GR_SLOTS){program_name_focus((uint32_t)song.g[G_SLOT]-1u);for(i=0;i<12;i++)h=h*33u+(uint8_t)program_name_draft[i];h^=program_name_cursor;}
+#endif
     if (pg->graph == GR_STEPS || pg->graph == GR_ROLL) {
         uint32_t ph = song.playing ? t->seq_idx : 0xFFFFu;
         if (pg->graph == GR_ROLL)                    /* (1.0 NOTES: the note under edit, the zoom, the sheet) */
@@ -548,16 +551,31 @@ static void graph_slots(void)
 {
     uint32_t i;
     for (i = 0; i < 4u; i++) {
+#if SYNTHMAVEN_SYNTH
+        uint32_t slot=((uint32_t)song.g[G_SLOT]-1u)/4u*4u+i;
+#else
+        uint32_t slot=i;
+#endif
         int32_t y = 8 + (int32_t)i * 26;
         char b[4];
-        int sel = (int32_t)i + 1 == song.g[G_SLOT];
-        b[0] = (char)('1' + i);
+        int sel = (int32_t)slot + 1 == song.g[G_SLOT];
+        b[0] = (char)('1' + slot);
         b[1] = 0;
         if (sel)
             cv_rect(4, y + 6, 3, 3, C_WHITE);
         cv_text(14, y, &FONT_S, b, sel ? C_WHITE : C_GRAY);
+#if SYNTHMAVEN_SYNTH
+        program_name_focus((uint32_t)song.g[G_SLOT]-1u);
+        cv_text(40,y,&FONT_S,sel?program_name_draft:program_names[slot],sel?C_WHITE:C_GRAY);
+        cv_text(164,y,&FONT_S,project_used(slot)?"USED":"EMPTY",project_used(slot)?C_HI:C_DIM);
+        if(sel)cv_rect(40+(int32_t)program_name_cursor*8,y+16,8,2,C_WHITE);
+#else
         cv_text(40, y, &FONT_S, project_used(i) ? "USED" : "EMPTY", project_used(i) ? (sel ? C_WHITE : C_HI) : C_DIM);
+#endif
     }
+#if SYNTHMAVEN_SYNTH
+    cv_text(4,112,&FONT_S,"ALGO:POS PRESET/K2:CHAR",C_DIM);
+#endif
 }
 
 /* TRACKS page: four channel strips (mixer style), one under each column: number +
@@ -1137,6 +1155,9 @@ static void draw_columns(void)
             draw_column(c, "USB", val, unit, C_HI, -1, ICON_AUTO);
             continue;
         }
+#if SYNTHMAVEN_SYNTH
+        if(cur_page()->fam==FAM_SAVE && cur_page()->graph==GR_SLOTS && c==1u){char letter[2],pos[8];program_name_focus((uint32_t)song.g[G_SLOT]-1u);letter[0]=program_name_draft[program_name_cursor]?program_name_draft[program_name_cursor]:' ';letter[1]=0;pos[0]='#';fmt_int(pos+1,program_name_cursor+1u);draw_column(c,"NAME",letter,pos,C_WHITE,-1,ICON_AUTO);continue;}
+#endif
         if (cur_page()->id[c] == G_INFO && cur_page()->scope == SC_GLOBAL) {
             fmt_int(val, (int32_t)(song.cpu_q8 * 100u / 256u));
             unit = "%";

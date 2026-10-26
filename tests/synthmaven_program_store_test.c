@@ -31,5 +31,26 @@ int main(void){
  master_tuning_bypass=0;memset(&mt,0,sizeof mt);check(st_load(OBJ_SETTINGS,&mt,sizeof mt)==sizeof mt&&!master_tuning_take(&mt)&&master_tuning_bypass==5,"master tuning switches restore after a settings reload");
  mt.crc^=1;master_tuning_bypass=0;check(master_tuning_take(&mt)&&!master_tuning_bypass,"corrupt switch settings retain default enabled tuning");
  memset(&mt,255,sizeof mt);check(master_tuning_take(&mt)&&!master_tuning_bypass,"erased legacy settings retain default enabled tuning");
+ program_bank_t bank,loaded;memset(&bank,0,sizeof bank);bank.magic=PROGRAM_BANK_MAGIC;
+ for(uint32_t e=0;e<NENGINES;e++)for(uint32_t k=0;k<8;k++){const param_desc_t *d=&ENGINES[e]->edit[k];check(d->min>=-128&&d->max<=127,"engine parameter range fits lossless packed program storage");}
+ for(uint32_t k=0;k<P_E0;k++)check(TP[k].min>=-128&&TP[k].max<=127,"shared parameter range fits lossless packed program storage");
+ for(uint32_t pair=0;pair<4;pair++){
+  char name1[13]="NAMED LOW",name2[13]="NAMED HIGH";name1[9]=(char)('1'+pair);name2[10]=(char)('5'+pair);
+  memset(&bank,0,sizeof bank);bank.magic=PROGRAM_BANK_MAGIC;
+  check(program_pack(&bank.slot[0],&a,name1)&&program_pack(&bank.slot[1],&a,name2)&&program_bank_valid(&bank,&b),"two named programs validate in one existing flash object");
+  check(!st_save(OBJ_PROJECT0+pair,&bank,sizeof bank),"named pair commits through existing A/B sectors");memset(&loaded,0,sizeof loaded);
+  check(st_load(OBJ_PROJECT0+pair,&loaded,sizeof loaded)==sizeof loaded && program_bank_valid(&loaded,&b),"all eight named programs survive flash reload");
+  check(program_unpack(&b,&loaded.slot[0])&&!memcmp(&a,&b,sizeof a)&&!strcmp(loaded.slot[0].name,name1),"lower named program round trips every parameter, patch and tuning bit");
+  check(program_unpack(&b,&loaded.slot[1])&&!memcmp(&a,&b,sizeof a)&&!strcmp(loaded.slot[1].name,name2),"upper named program round trips every parameter, patch and tuning bit");
+  b.sound[0].p[P_PAN]=17;b.sum=program_hash(&b,sizeof b-4u);check(program_pack(&loaded.slot[1],&b,"NEW UPPER")&&!st_save(OBJ_PROJECT0+pair,&loaded,sizeof loaded),"updating a paired upper program succeeds atomically");
+  check(st_load(OBJ_PROJECT0+pair,&bank,sizeof bank)==sizeof bank&&program_unpack(&b,&bank.slot[0])&&!memcmp(&a,&b,sizeof a)&&!strcmp(bank.slot[0].name,name1),"saving upper slot preserves paired original slot and its name");
+ }
+ bank.slot[1].name[0]=1;check(!program_bank_valid(&bank,&b),"invalid program name rejects the bank before writing");
+ check(!program_pack(&bank.slot[1],&a,"TOO LONG NAME!"),"overlength program names are rejected");
+ check(!st_save(OBJ_PROJECT0,&a,sizeof a),"legacy PRG2 program remains writable at its original address");
+ memset(&bank,0,sizeof bank);bank.magic=PROGRAM_BANK_MAGIC;check(program_pack(&bank.slot[0],&a,"ORIGINAL")&&program_pack(&bank.slot[1],&a,"ADDED SLOT"),"first migration preserves the original program alongside its added pair");
+ check(!st_save(OBJ_PROJECT0,&bank,sizeof bank),"migration uses the existing atomic A/B commit");st_hdr_t head;int current=st_current(OBJ_PROJECT0,&head);nor[st_sector(OBJ_PROJECT0,(uint32_t)current)+ST_PAYLOAD_OFF]^=1u;
+ memset(&b,0,sizeof b);check(st_load(OBJ_PROJECT0,&b,sizeof b)==sizeof b&&program_valid(&b)&&!memcmp(&a,&b,sizeof a),"interrupted/corrupt migration falls back to the intact original PRG2 record");
+ printf("Named program bank size %zu bytes; original project addresses and sample regions unchanged\n",sizeof bank);
  return fails?1:0;
 }

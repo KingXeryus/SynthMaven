@@ -569,3 +569,9 @@ Four synth parts (0–3), PRG1 program backups, CUSTOM 1–4 tuning IDs 58–61,
 ## SynthMaven 1.5 / protocol 19
 
 Command 109 reads/writes each of four program sounds’ enable, split mode/side/point, transpose, level, pan, mute and solo state without selecting that part. PRG2 adds routing; PRG1 is upgraded on load. Backup format 8 is gated to protocol ≥19; the editor refuses restoring it to protocol 18. See [MIDI settings](../docs/SYNTHMAVEN_MIDI.md) for the complete payload.
+
+## SynthMaven 1.7 / protocol 21: eight named programs
+
+PROJECT accepts slots 0–7; names use command 111. Read `[slot]`; stage a save name using `[slot, 12 zero-padded printable ASCII bytes]`; success replies `[0, slot, used, 12 name bytes]`, failure `[rc, slot]`. Name staging is independent per slot and does not write flash. PROJECT SAVE commits that slot’s pending name with its four sounds. An optional PROJECT status byte is 0 success, 1 busy, 2 invalid, or 4 flash error. Slots wrap in the hardware Save screen and names are edited on the same page.
+
+PBK1 (bytes 50 42 4b 31) is backup project format 9. Objects 2–5 retain their IDs and physical A/B addresses, but each holds two losslessly packed named programs: 1+5, 2+6, 3+7, 4+8. The pair record is 3116 bytes. All 8 programs/names are included without adding objects or changing sample storage. Protocol 20 and earlier must reject format 9 before restoring any object. Working-program object 0 remains PRG2 (format 8). Older PRG1/PRG2 saved programs remain importable.

@@ -1236,7 +1236,7 @@ static void ui_input(void)
         ui.force = 1;
     }
 
-    if ((s = panel_enc(EN_PRESET)) != 0 && (ui.home || cur_page()->graph == GR_BROWSE || cur_fam() == FAM_TRK)) {
+    if ((s = panel_enc(EN_PRESET)) != 0 && (ui.home || cur_page()->graph == GR_BROWSE || cur_fam() == FAM_TRK || (SYNTHMAVEN_SYNTH && cur_page()->fam==FAM_SAVE && cur_page()->graph==GR_SLOTS))) {
         /* PRESETS browses the selected part's presets (all engines, then user presets) on HOME, the PRESETS
          * page and TRACKS only (the drum track: its kits); elsewhere a stray turn would throw away the sound
          * being edited. Every detent counts */
@@ -1245,14 +1245,17 @@ static void ui_input(void)
             TDRUM->p[P_E0] = (int16_t)clamp(TDRUM->p[P_E0] + s, 0, DRUM_KITS - 1);
         else if (!ui.home && cur_page()->graph == GR_BROWSE)
             br_step(s);                                 /* (1.0: the PRESETS page: its engine filter) */
+        else if(SYNTHMAVEN_SYNTH && !ui.home && cur_page()->fam==FAM_SAVE && cur_page()->graph==GR_SLOTS)
+            program_name_edit(s);
         else if (SYNTHMAVEN_SYNTH && ui.home)
             home_preset_step(s);
         else if (total)
             preset_go((uint32_t)(((int32_t)cur + s % (int32_t)total + (int32_t)total) % (int32_t)total));
     }
 #if SYNTHMAVEN_SYNTH
-    if ((s = panel_enc(EN_ALGO)) != 0 && (ui.home || cur_page()->graph == GR_BROWSE)) {
-        if (!ui.home && cur_page()->graph == GR_BROWSE)
+    if ((s = panel_enc(EN_ALGO)) != 0 && (ui.home || cur_page()->graph == GR_BROWSE || (cur_page()->fam==FAM_SAVE && cur_page()->graph==GR_SLOTS))) {
+        if(!ui.home && cur_page()->fam==FAM_SAVE && cur_page()->graph==GR_SLOTS){program_name_focus((uint32_t)song.g[G_SLOT]-1u);program_name_cursor=(uint8_t)((program_name_cursor+s%12+12)%12);ui.force=1;}
+        else if (!ui.home && cur_page()->graph == GR_BROWSE)
             br_filter_step(s > 0 ? 1 : -1);
         else
             home_engine_step(s);
@@ -1286,6 +1289,9 @@ static void ui_input(void)
         int16_t *hv;
         if ((s = panel_enc(EN_K1 + k)) == 0)
             continue;
+#if SYNTHMAVEN_SYNTH
+        if(!ui.home && pg->fam==FAM_SAVE && pg->graph==GR_SLOTS && k==1u){program_name_edit(s);continue;}
+#endif
         if (ui.home || pg->scope == SC_STEP || pg->scope == SC_TRK || page_desc(pg, k, &hv) ||
             (pg->graph == GR_USER && k == 0u)) {     /* (not an empty column, nor "DRUM TRACK") */
             ui.hot_col = (uint8_t)k;

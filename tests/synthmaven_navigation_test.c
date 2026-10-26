@@ -58,5 +58,13 @@ int main(void) {
  encs[panel.enc[EN_SELECT]]=-1;frames(2);check(song.g[G_SLOT]==GP[G_SLOT].max && !ui.arm && !ui.arm_t,"SAVE SELECT wraps backwards through slots and cancels pending confirmation");
  encs[panel.enc[EN_SELECT]]=1;frames(2);check(song.g[G_SLOT]==GP[G_SLOT].min && song.g[G_BPM]==old_bpm && ui.page==save_page && song.sel==old_focus && !saves && !loads,"SAVE SELECT wraps forwards without loading, saving, changing focus, page or tempo");
 
+ check(GP[G_SLOT].max==8,"SAVE offers eight program slots");
+ for(uint32_t i=0;i<NELEM(PAGES);i++)if(PAGES[i].fam==FAM_SAVE)check(strcmp(PAGES[i].title,"PROGRAM MODE")&&strcmp(PAGES[i].title,"PRESETS")&&strcmp(PAGES[i].title,"USER"),"redundant layer, preset and user pages are absent from SAVE");
+ int glo_layer=0;for(uint32_t i=0;i<NELEM(PAGES);i++)if(PAGES[i].fam==FAM_GLO)for(uint32_t k=0;k<4;k++)if(PAGES[i].scope==SC_SYN&&PAGES[i].id[k]==X_PGLAYER)glo_layer=1;check(glo_layer,"GLO menu still provides layering ON/OFF");
+ ui.page=(uint8_t)page_first(FAM_SAVE);ui.home=0;page_entered();song.g[G_SLOT]=8;frames(2);uint8_t eng=TSEL->eng_req,preset=TSEL->preset;
+ encs[panel.enc[EN_ALGO]]=1;frames(2);check(program_name_cursor==1,"SAVE ALGORITHM selects the name character position");
+ encs[panel.enc[EN_PRESET]]=1;frames(2);check(TSEL->eng_req==eng&&TSEL->preset==preset&&strcmp(program_name_draft,program_names[7]),"SAVE PRESET edits the name without replacing the sound");
+ encs[panel.enc[EN_K2]]=1;frames(2);check(program_name_cursor==1,"SAVE knob 2 edits the selected character");ppm("synthmaven-eight-program-names");
+ uint8_t msg[13]={7,'M','Y',' ','P','R','O','G','R','A','M',0,0},reply[15];check(program_name_request(msg,13,reply)==15&&!reply[0]&&!strcmp(program_name_draft,"MY PROGRAM"),"editor stages a twelve-character slot name for saving");msg[1]=1;check(program_name_request(msg,13,reply)==2&&reply[0]&&!strcmp(program_name_draft,"MY PROGRAM"),"invalid editor name leaves the pending save name unchanged");
  return fails?1:0;
 }

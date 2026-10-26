@@ -72,9 +72,9 @@ HOME displays the four sounds loaded in the working program. The outline marks t
 | SAVE | Open PROGRAM save/load settings |
 | GLO hold 2 seconds | Toggle layering ON/OFF once; GLO does not latch |
 
-SAVE → PROGRAM selects a slot, loads or saves it. Turn LOAD or SAVE twice to confirm. PROGRAM MODE → LAYER chooses focused sound alone (OFF) or all four sounds together (ON). Each sound has an eight-voice budget.
+SAVE → PROGRAM provides **eight named program slots**. SELECT cycles slots 1–8, wrapping at either end; KNOB 1 also selects a slot. ALGORITHM chooses a name character (1–12); PRESET or KNOB 2 changes that character. The complete pending name appears next to the selected slot. Turn LOAD or SAVE twice to confirm. Editing a name does not overwrite the saved program until SAVE completes. Slots 1–4 and 5–8 appear in groups of four on screen.
 
-Other SAVE pages include PRESETS and USER. On PRESETS, KNOB 1 highlights a candidate, KNOB 2 filters ALL/engine/USER/ORIENTAL, KNOB 3 loads it and KNOB 4 loads and opens Edit. Loading replaces the focused sound only. Factory presets load dry; add effects afterward.
+The redundant PROGRAM MODE, PRESETS and USER pages have been removed from SAVE. Layering ON/OFF remains in **GLO → LAYER PITCH**, on GLO’s two-second hold, and in the editor. Use HOME for engine/preset browsing and the editor for library and layer editing. The SAVE → TOOLS page remains for initialization/clearing operations. Each sound has an eight-voice budget.
 
 Except GLO, function layers remain open after holding their button for three seconds. Release the button and continue editing. Tap the same function button or HOME to exit. REC’s clear action still requires its confirmation hold.
 
@@ -311,7 +311,7 @@ For recovery tooling, see the [build/install guide](../BUILDING.md#install).
 
 ## Version, validation and support
 
-Version 1.7 uses editor protocol 20. See [release notes](release-1.7.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
+Version 1.7 uses editor protocol 21. See [release notes](release-1.7.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
 
 
 
@@ -361,3 +361,11 @@ JUNO, VECTOR, FMX, WSEQ, MACRO, the filter models, TURNG and SPICE / DICE are in
 Holding GLO replaces the current display with **Layered ON** or **Layered OFF**. At two seconds, layering toggles once and the label updates. Release GLO to return to the previous screen. Other function buttons retain their three-second hold behavior.
 
 On **SAVE → PROGRAM**, the SELECT knob cycles the saved-program slots, wrapping at either end. Browsing does not load or overwrite a program; use LOAD or SAVE to confirm the action.
+
+## Eight named programs and backups
+
+Program names allow up to 12 printable ASCII characters. The editor’s Backup/Programs page exposes all eight name fields, LOAD and SAVE. Type a name and press SAVE to store it with the current four-sound program. A name edit alone does not write flash.
+
+Two losslessly packed programs share each of the four existing program A/B records: slots 1+5, 2+6, 3+7 and 4+8. Existing PRG1/PRG2 programs in slots 1–4 are imported without moving them; the paired slot starts empty. No sample or wavetable storage is reclaimed. Old groovebox project records must be loaded and saved as a four-sound program before their paired new slot can be used. Corrupt or unknown records are not overwritten by that conversion.
+
+Backups include both programs and their names in each PBK1 object. PBK1 backups require firmware 1.7/protocol 21 or later; the editor refuses to restore them into older firmware. Legacy PRG1/PRG2 backups remain importable. Before downgrading, export a backup and individual sounds; older firmware cannot read PBK1 banks.

@@ -738,9 +738,30 @@ static union {
     project_v2_t v2;
     project_v1_t v1;
 } proj_tmp;
+#if SYNTHMAVEN_SYNTH
+static program_bank_t program_bank_work __attribute__((section(".pool")));
+static void program_bank_sync(uint32_t bank){
+ uint32_t i;for(i=0;i<2;i++){uint32_t slot=bank+4u*i;const program_packed_t *p=&program_bank_work.slot[i];
+ if(i)program_extra_used=(uint8_t)((program_extra_used&~(1u<<bank))|((p->used!=0u)<<bank));
+ if(p->used)memcpy(program_names[slot],p->name,13);else{memset(program_names[slot],0,13);memcpy(program_names[slot],"PROGRAM ",8);program_names[slot][8]=(char)('1'+slot);}
+ if(!i){memset(&proj_slot[bank],0,sizeof proj_slot[bank]);if(p->used&&program_unpack(&proj_tmp.pg,p))memcpy(&proj_slot[bank],&proj_tmp.pg,sizeof(program_t));}
+ }
+}
+static int program_bank_read(uint32_t bank){
+ int n=st_load(OBJ_PROJECT0+bank,&proj_tmp,sizeof proj_tmp);
+ memset(&program_bank_work,0,sizeof program_bank_work);program_bank_work.magic=PROGRAM_BANK_MAGIC;
+ if(n<=0)return 1;
+ if(n==(int)sizeof(program_bank_t) && ((const program_bank_t *)&proj_tmp)->magic==PROGRAM_BANK_MAGIC){memcpy(&program_bank_work,&proj_tmp,sizeof program_bank_work);return program_bank_valid(&program_bank_work,&proj_tmp.pg);}
+ if(program_import(&proj_tmp.pg,&proj_tmp,(uint32_t)n))return program_pack(&program_bank_work.slot[0],&proj_tmp.pg,program_names[bank]);
+ return 0; /* A legacy groovebox project must be loaded/resaved before adding its paired program. */
+}
+#endif
 static void proj_fetch(uint32_t slot)
 {
     project_t *q = &proj_slot[slot & 3u];
+#if SYNTHMAVEN_SYNTH
+    if(program_bank_read(slot&3u)){program_bank_sync(slot&3u);return;}
+#endif
     int n = st_load(OBJ_PROJECT0 + (slot & 3u), &proj_tmp, sizeof proj_tmp);
 #if SYNTHMAVEN_SYNTH
     if(n>0 && program_import(&proj_tmp.pg,&proj_tmp,(uint32_t)n)) {
@@ -756,19 +777,29 @@ static void proj_fetch(uint32_t slot)
 static int audio_quiet(void);
 static void project_save(uint32_t slot)
 {
+#if SYNTHMAVEN_SYNTH
+    program_io_rc=0;
+#endif
     project_t *p = &proj_slot[slot & 3u];
 #if FELUCCA_ARRANGER
-    if (song.playing || transport_req) { ui_message("STOP BEFORE SAVE"); return; }
+    if (song.playing || transport_req) {
+#if SYNTHMAVEN_SYNTH
+ program_io_rc=1;
+#endif
+ ui_message("STOP BEFORE SAVE"); return; }
 #endif
 #if SYNTHMAVEN_SYNTH
-    if(song.playing || transport_req || !audio_quiet()) {ui_message("RELEASE NOTES FIRST");return;}
+    if(song.playing || transport_req || !audio_quiet()) {program_io_rc=1;ui_message("RELEASE NOTES FIRST");return;}
 #if FELUCCA_FLASH
     if(flash_ok) {
-        program_capture(&proj_tmp.pg);
-        if(st_save(OBJ_PROJECT0+(slot&3u),&proj_tmp.pg,sizeof(program_t))){ui_message("SAVE ERROR");return;}
-        memset(p,0,sizeof *p);memcpy(p,&proj_tmp.pg,sizeof(program_t));ui_message("PROGRAM SAVED");return;
+        if(slot>=8u || !program_bank_read(slot&3u)){program_io_rc=2;ui_message("LOAD/SAVE OLD SLOT FIRST");return;}
+        program_name_focus(slot);program_capture(&proj_tmp.pg);
+        if(!program_pack(&program_bank_work.slot[slot/4u],&proj_tmp.pg,(program_editor_name_mask&(1u<<slot))?program_editor_names[slot]:program_name_draft)){program_io_rc=2;ui_message("PROGRAM INVALID");return;}
+        if(st_save(OBJ_PROJECT0+(slot&3u),&program_bank_work,sizeof program_bank_work)){program_io_rc=4;ui_message("SAVE ERROR");return;}
+        program_bank_sync(slot&3u);program_editor_name_mask&=(uint8_t)~(1u<<slot);program_draft_slot=255;ui_message("PROGRAM SAVED");return;
     }
 #endif
+    if(slot>=4u){program_io_rc=4;ui_message("FLASH REQUIRED");return;}
     program_capture((program_t *)p);
     ui_message("PROGRAM SAVED RAM");return;
 #endif
@@ -804,11 +835,26 @@ static void project_apply(const project_t *p)
 
 static void project_load(uint32_t slot)
 {
+#if SYNTHMAVEN_SYNTH
+    program_io_rc=0;
+#endif
     project_t *p = &proj_slot[slot & 3u];
 #if FELUCCA_ARRANGER
-    if (song.playing || transport_req) { ui_message("STOP BEFORE LOAD"); return; }
+    if (song.playing || transport_req) {
+#if SYNTHMAVEN_SYNTH
+ program_io_rc=1;
+#endif
+ ui_message("STOP BEFORE LOAD"); return; }
 #endif
 #if FELUCCA_FLASH
+#if SYNTHMAVEN_SYNTH
+    if(flash_ok && slot<8u && program_bank_read(slot&3u)){
+        program_bank_sync(slot&3u);
+        if(program_unpack(&proj_tmp.pg,&program_bank_work.slot[slot/4u])){program_apply(&proj_tmp.pg);program_editor_name_mask&=(uint8_t)~(1u<<slot);program_draft_slot=255;song.g[G_SLOT]=(int16_t)(slot+1u);ui_message("PROGRAM LOADED");return;}
+        ui_message("EMPTY SLOT");return;
+    }
+    if(slot>=4u){ui_message("EMPTY SLOT");return;}
+#endif
     if (flash_ok && !proj_ok(p))
         proj_fetch(slot);
 #endif
@@ -1094,6 +1140,8 @@ static void persist_boot(void)                    /* before settings_init / pane
 
 static int project_used(uint32_t slot) {
 #if SYNTHMAVEN_SYNTH
+ if(slot>=8u)return 0;
+ if(slot>=4u)return (program_extra_used>>(slot-4u))&1u;
  if(program_valid((const program_t *)&proj_slot[slot&3u]))return 1;
 #endif
  return proj_ok(&proj_slot[slot & 3u]);
@@ -1262,6 +1310,18 @@ static uint32_t project_restore(uint32_t slot, const void *raw, uint32_t n)
 {
     if (song.playing || transport_req)
         return 3;
+#if SYNTHMAVEN_SYNTH
+    if(slot<4u && n==sizeof(program_bank_t) && ((const program_bank_t *)raw)->magic==PROGRAM_BANK_MAGIC){
+        memcpy(&program_bank_work,raw,n);if(!program_bank_valid(&program_bank_work,&proj_tmp.pg))return 2;
+        if(!flash_ok || st_save(OBJ_PROJECT0+slot,&program_bank_work,sizeof program_bank_work))return 4;
+        program_bank_sync(slot);program_editor_name_mask&=(uint8_t)~((1u<<slot)|(1u<<(slot+4u)));program_draft_slot=255;return 0;
+    }
+    if(slot<4u && !n){
+        if(!program_bank_read(slot))return 2;memset(&program_bank_work.slot[0],0,sizeof program_bank_work.slot[0]);
+        if(!flash_ok || st_save(OBJ_PROJECT0+slot,&program_bank_work,sizeof program_bank_work))return 4;
+        program_bank_sync(slot);program_editor_name_mask&=(uint8_t)~(1u<<slot);program_draft_slot=255;return 0;
+    }
+#endif
     if (slot < 4u && !n) {
         if (!flash_ok || st_save(OBJ_PROJECT0 + slot, raw, 0))
             return 4;
@@ -1274,10 +1334,14 @@ static uint32_t project_restore(uint32_t slot, const void *raw, uint32_t n)
         raw=&proj_tmp.pg;n=sizeof(program_t);
         if(slot==4u){program_apply(&proj_tmp.pg);return 0;}
         if(slot>3u)return 2;
-        if(!flash_ok || st_save(OBJ_PROJECT0+slot,raw,n))return 4;
-        memset(&proj_slot[slot],0,sizeof proj_slot[slot]);memcpy(&proj_slot[slot],raw,n);
-        sec_dirty&=(uint8_t)~(1u<<slot);return 0;
+        memcpy(&autosave_work.program,raw,n);
+        if(!program_bank_read(slot) || !program_pack(&program_bank_work.slot[0],&autosave_work.program,program_names[slot]))return 2;
+        if(!flash_ok || st_save(OBJ_PROJECT0+slot,&program_bank_work,sizeof program_bank_work))return 4;
+        program_bank_sync(slot);program_editor_name_mask&=(uint8_t)~(1u<<slot);program_draft_slot=255;sec_dirty&=(uint8_t)~(1u<<slot);return 0;
     }
+#endif
+#if SYNTHMAVEN_SYNTH
+    if(slot<4u && (program_extra_used&(1u<<slot)))return 2;
 #endif
     if (!proj_import(&autosave_buf, raw, (int)n))
         return 2;
@@ -1297,7 +1361,11 @@ static uint32_t project_restore(uint32_t slot, const void *raw, uint32_t n)
 #if FELUCCA_ARRANGER
 static void arrangement_save(void)
 {
-    if (song.playing || transport_req) { ui_message("STOP BEFORE SAVE"); return; }
+    if (song.playing || transport_req) {
+#if SYNTHMAVEN_SYNTH
+ program_io_rc=1;
+#endif
+ ui_message("STOP BEFORE SAVE"); return; }
     settings_save();
 #if FELUCCA_FLASH
     if (flash_ok) {

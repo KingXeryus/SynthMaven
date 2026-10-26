@@ -1,4 +1,16 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
+static char program_names[8][13]={"PROGRAM 1","PROGRAM 2","PROGRAM 3","PROGRAM 4","PROGRAM 5","PROGRAM 6","PROGRAM 7","PROGRAM 8"};
+static uint8_t program_io_rc,program_editor_name_mask;
+static char program_editor_names[8][13];
+static uint8_t program_extra_used,program_draft_slot=255,program_name_cursor;
+static char program_name_draft[13];
+static void program_name_focus(uint32_t slot){slot%=8u;if(program_draft_slot!=slot){memcpy(program_name_draft,(program_editor_name_mask&(1u<<slot))?program_editor_names[slot]:program_names[slot],13);program_draft_slot=(uint8_t)slot;program_name_cursor=0;}}
+static void program_name_edit(int32_t delta){
+ static const char letters[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";uint32_t n=sizeof letters-1u,k;program_name_focus((uint32_t)song.g[G_SLOT]-1u);
+ for(k=0;k<program_name_cursor;k++)if(!program_name_draft[k])program_name_draft[k]=' ';
+ char c=program_name_draft[program_name_cursor];for(k=0;k<n && letters[k]!=c;k++);if(k==n)k=0;
+ program_name_draft[program_name_cursor]=letters[((int32_t)k+delta%(int32_t)n+(int32_t)n)%(int32_t)n];program_name_draft[12]=0;program_editor_name_mask&=(uint8_t)~(1u<<program_draft_slot);ui.arm=ui.arm_t=0;ui.force=1;
+}
 /* Four loaded synth parts are the working program; the selected part is UI focus. */
 static void program_capture(program_t *p) {
     uint32_t i;memset(p,0,sizeof *p);p->magic=PROGRAM_MAGIC;p->size=sizeof *p;
@@ -57,4 +69,14 @@ static uint32_t program_mix_request(const uint8_t *a,uint32_t na,uint8_t reply[1
     reply[2]=r->enabled;reply[3]=r->split;reply[4]=r->upper;reply[5]=r->point;reply[6]=(uint8_t)(r->transpose+24);
     reply[7]=(uint8_t)trk[i].p[P_LEVEL];reply[8]=(uint8_t)(trk[i].p[P_PAN]+64);reply[9]=(uint8_t)trk[i].p[P_MUTE];reply[10]=(uint8_t)((song.solo>>i)&1u);
     fm1_irq_on();return 11;
+}
+
+/* Protocol 21: twelve printable ASCII name bytes, staged until that slot is saved. */
+static uint32_t program_name_request(const uint8_t *a,uint32_t n,uint8_t reply[15]){
+ uint32_t slot=n?a[0]:8u,k,ended=0;int bad=slot>=8u || (n!=1u && n!=13u);
+ if(!bad && n==13u)for(k=1;k<13;k++){if(!a[k])ended=1;else if(ended || a[k]<32u || a[k]>126u)bad=1;}
+ reply[0]=(uint8_t)bad;reply[1]=(uint8_t)slot;if(bad)return 2;
+ if(n==13u){memcpy(program_editor_names[slot],a+1,12);program_editor_names[slot][12]=0;program_editor_name_mask|=(uint8_t)(1u<<slot);program_draft_slot=255;if((uint32_t)song.g[G_SLOT]==slot+1u)program_name_focus(slot);ui.arm=ui.arm_t=0;ui.force=1;}
+ reply[2]=(uint8_t)project_used(slot);const char *name=(program_editor_name_mask&(1u<<slot))?program_editor_names[slot]:program_draft_slot==slot?program_name_draft:program_names[slot];
+ for(k=0;k<12;k++)reply[3+k]=(uint8_t)name[k];return 15;
 }

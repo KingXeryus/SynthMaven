@@ -30,7 +30,7 @@ enum { ED_INFO = 1, ED_GET, ED_SET, ED_DUMP, ED_DESC, ED_STEP_GET, ED_STEP_SET, 
        ED_FM6_GET = 68, ED_FM6_PUT, ED_FM6_LIST, ED_FM6_ERASE };                /* v9: FM6 patches (Felucca's numbers) */
 /* v10 (SLOOP 2.5): DSYN_LIST .. DSYN_PLAY = 72..76, editor_dsyn.c; backup object 9 = the SYN kits */
 /* v11 (SynthMaven): HY_GET, HY_PUT = 77, 78, editor_hybrid.c */
-#define ED_PROTO (SYNTHMAVEN_SYNTH ? 20u : 11u)           /* the protocol version INFO ends with (12: SynthMaven's FMX, 13: its
+#define ED_PROTO (SYNTHMAVEN_SYNTH ? 21u : 11u)           /* the protocol version INFO ends with (12: SynthMaven's FMX, 13: its
                                                         * MOD SEQ, JUNO, VECTOR, 14: the TUNING, 17: 46 maqam tunings) */
 
 /* Extended PHYS list: 140 entries need up to 1828 wire bytes. */
@@ -449,6 +449,10 @@ static const uint8_t *ed_bk_obj(uint32_t id, uint32_t *len)   /* 0 = no such obj
         return (const uint8_t *)&ed_bk_set;
     }
     if (id >= 2u && id <= 5u) {
+#if SYNTHMAVEN_SYNTH
+        int bank_n=st_load(OBJ_PROJECT0+id-2u,&program_bank_work,sizeof program_bank_work);
+        if(bank_n==(int)sizeof program_bank_work && program_bank_work.magic==PROGRAM_BANK_MAGIC){*len=sizeof program_bank_work;return (const uint8_t *)&program_bank_work;}
+#endif
         if (project_used(id - 2u))
             *len = sizeof proj_slot[0];
 #if SYNTHMAVEN_SYNTH
@@ -741,6 +745,7 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
 #endif
         ed_send(); return;
     }
+    if(cmd==111u) {uint8_t reply[15];uint32_t n=program_name_request(a,na,reply),k;ed_begin(cmd);for(k=0;k<n;k++)ed_b(reply[k]);ed_send();return;}
     if(cmd==110u) {
         uint8_t reply[3];uint32_t n=program_tuning_request(a,na,reply),k;
         ed_begin(cmd);for(k=0;k<n;k++)ed_b(reply[k]);ed_send();return;
@@ -848,20 +853,27 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
     case ED_PROJECT:                                       /* 0 = load, 1 = save, 2 = query; slot 0..3 */
         if (na < 2u || a[0] > 2u)
             return;
+        if(a[1]>=(SYNTHMAVEN_SYNTH?8u:4u)){ed_b(a[0]);ed_b(a[1]);ed_b(0);ed_b(2);break;}
 #if FELUCCA_ARRANGER
         if (a[0] < 2u && (song.playing || transport_req)) {
-            ed_b(a[0]); ed_b(a[1] & 3u); ed_b(project_used(a[1] & 3u));
+            ed_b(a[0]); ed_b(a[1] & (SYNTHMAVEN_SYNTH?7u:3u)); ed_b(project_used(a[1] & (SYNTHMAVEN_SYNTH?7u:3u)));
             ed_b(1);                                  /* optional status: transport busy */
             break;
         }
 #endif
+#if SYNTHMAVEN_SYNTH
+        program_io_rc=0;
+#endif
         if (a[0] == 1u)
-            project_save(a[1] & 3u);
+            project_save(a[1] & (SYNTHMAVEN_SYNTH?7u:3u));
         else if (a[0] == 0u)
-            project_load(a[1] & 3u);
+            project_load(a[1] & (SYNTHMAVEN_SYNTH?7u:3u));
         ed_b(a[0]);
-        ed_b(a[1] & 3u);
-        ed_b(project_used(a[1] & 3u));
+        ed_b(a[1] & (SYNTHMAVEN_SYNTH?7u:3u));
+        ed_b(project_used(a[1] & (SYNTHMAVEN_SYNTH?7u:3u)));
+#if SYNTHMAVEN_SYNTH
+        ed_b(program_io_rc);
+#endif
         break;
     case ED_NAMES:                                         /* preset names of an engine */
         if (na < 1u || a[0] >= NENGINES)

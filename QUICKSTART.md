@@ -25,3 +25,5 @@ Set SEL → QNT to ALL to quantize the four program sounds and incoming MIDI usi
 Holding GLO replaces the current display with **Layered ON** or **Layered OFF**. At two seconds, layering toggles once and the label updates. Release GLO to return to the previous screen. Other function buttons retain their three-second hold behavior.
 
 On **SAVE → PROGRAM**, the SELECT knob cycles the saved-program slots, wrapping at either end. Browsing does not load or overwrite a program; use LOAD or SAVE to confirm the action.
+
+Eight program slots are available. On SAVE → PROGRAM, SELECT chooses a slot, ALGORITHM selects a name character, and PRESET or KNOB 2 changes it. Names are up to 12 characters and are committed with SAVE. The editor provides eight name fields and LOAD/SAVE buttons. Layering ON/OFF remains in GLO → LAYER PITCH and on GLO’s two-second hold. PROGRAM MODE, PRESETS and USER are removed from SAVE.

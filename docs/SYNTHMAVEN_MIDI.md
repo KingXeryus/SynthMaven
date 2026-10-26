@@ -1,4 +1,4 @@
-# SynthMaven 1.6 MIDI settings — protocol 20
+# SynthMaven 1.7 MIDI settings — protocol 21
 
 USB is the only pedal-message source. Keyboard input may be USB, TRS or BOTH. The USB host role is independent of MIDI source filtering.
 
@@ -27,3 +27,7 @@ Command **109** (protocol ≥19): read with `part` 0–3; write with `part, enab
 Command **110** (protocol ≥20): read `[part]`, write `[part, applyMasterTuning]`; reply `[rc, part, applyMasterTuning]` on success and `[rc, part]` on failure. Part is 0–3 and switch is 0/1. Every sound defaults to 1. Invalid writes change nothing. Programs and settings persist these switches. Command 109 remains unchanged.
 
 SEL QNT value 3 (**ALL**) snaps keyboard, incoming USB/TRS MIDI, arp and sequencer notes across the four program sounds into the focused sound’s ROOT/SCL, following per-part transpose. Original notes determine split routing and note-off ownership. Master tuning bypass independently controls maqam/temperament/Scala offsets and reference A4.
+
+## Eight named program slots (protocol 21)
+
+PROJECT addresses slots 0–7. Command 111 reads `[slot]` or stages a name with `[slot, twelve zero-padded printable ASCII bytes]`. Success returns `[0, slot, used, twelve name bytes]`. Staging does not write flash; PROJECT SAVE commits the name with the sound program. PROJECT status 0 is success, 1 busy, 2 invalid, 4 flash error. PBK1 backup objects 2–5 each contain a pair of programs (1+5, 2+6, 3+7, 4+8); format 9 requires protocol 21. Existing object IDs and sample regions remain unchanged.

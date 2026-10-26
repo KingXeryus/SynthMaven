@@ -27,3 +27,5 @@ The four-sound layer mixer includes independent split zones, octave shift, pan, 
 Version 1.6 added QNT ALL and default-on per-sound master tuning switches. Version 1.7 provides a dedicated layering screen and a two-second GLO layering toggle. See the current release notes for details.
 
 Holding GLO replaces the current display with **Layered ON** or **Layered OFF**. At two seconds, layering toggles once and the label updates. Release GLO to return to the previous screen. Other function buttons retain their three-second hold behavior.
+
+Version 1.7 provides eight named saved programs, SELECT slot browsing, 12-character names edited with ALGORITHM plus PRESET/KNOB 2, and a streamlined device SAVE menu. Layering ON/OFF remains in GLO and on its two-second hold.
