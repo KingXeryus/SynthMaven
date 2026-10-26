@@ -568,6 +568,10 @@ static const page_t PAGES[] = {
     {"MIDI 2", FAM_GLO, SC_SYN, GR_NONE, {54, 55, 56, 0xFF}},
     {"PATCH MIDI", FAM_GLO, SC_SYN, GR_NONE, {54, 57, 0xFF, 0xFF}},
     {"KEY MIDI", FAM_GLO, SC_SYN, GR_NONE, {58, 50, 0xFF, 0xFF}},
+    {"PATCH UP", FAM_GLO, SC_SYN, GR_NONE, {63, 64, 65, 66}},
+    {"PATCH DOWN", FAM_GLO, SC_SYN, GR_NONE, {63, 64, 65, 66}},
+    {"BANK UP", FAM_GLO, SC_SYN, GR_NONE, {63, 64, 65, 66}},
+    {"BANK DOWN", FAM_GLO, SC_SYN, GR_NONE, {63, 64, 65, 66}},
     {"BLUETOOTH", FAM_GLO, SC_SYN, GR_NONE, {59, 60, 61, 62}},    /* (1.0) X_MPROG X_MCCO X_MBRTH */
 #else
     {"MASTER", FAM_GLO, SC_GLOBAL, GR_NONE, {G_DUST, G_DUCK, G_FILT, G_ROLL}},

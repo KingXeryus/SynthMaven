@@ -1,8 +1,8 @@
-# SynthMaven 1.0 — FM1 user manual
+# SynthMaven 1.1 — FM1 user manual
 
 SynthMaven is an open-source firmware based on [Clipper](https://github.com/isod89/clipper-fm1).
 This manual covers the **M-VAVE FM1 hardware firmware**, its web installer and
-web editor. Version 1.0 provides **23 engines and 537 factory presets**. The Mac
+web editor. Version 1.1 provides **23 engines and 537 factory presets**. The Mac
 software instrument has a separate feature set; its eight-layer interface and
 DAW formats are not features of this hardware firmware.
 
@@ -35,8 +35,8 @@ matching editor to save a full backup, and keep a copy outside the browser.
 Use reliable power during installation. Start listening with the output volume
 low: envelope, resonance and modulation edits can change perceived loudness.
 
-Version 1.0 passes host tests and compiles with native Bluetooth and all engines
-within the FM1 memory limits. Listening tests, pairing/reconnect with both
+Version 1.1 includes native Bluetooth and all 23 engines. Consult the release
+validation section for target build and memory-limit results. Listening tests, pairing/reconnect with both
 Chocolate models and audio timing under wireless load remain outstanding.
 
 ### Connection options
@@ -60,18 +60,21 @@ check the MIDI wiring requirements of the devices being connected.
    in Chrome or Edge with the FM1 connected over USB.
 2. Close other programs using the FM1 MIDI ports if connection fails.
 3. Follow the installer prompts and keep power connected until it finishes.
-4. Check the splash/About screen for **SYNTHMAVEN 1.0**.
+4. Check the splash/About screen for **SYNTHMAVEN 1.1**.
 5. Open the [editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/),
    click **Connect**, grant MIDI/SysEx access when prompted and choose the FM1.
 
 Use the matching online editor after updating. The firmware/editor wire protocol
-is version **16**; that protocol number is independent of product version 1.0.
+is version **16**; that protocol number is independent of product version 1.1.
 A URL ending in `?mock=1` uses a simulated device for previewing the editor.
 It does not communicate with or validate a physical FM1.
 
 ## Hardware controls and preset browsing
 
-HOME displays the current sound and its engine. Tap the labelled page buttons
+HOME displays four patches from the current category bank. The loaded patch is
+highlighted, with its engine below. PRESET moves through that bank and wraps in
+either direction; ALGORITHM switches category banks. The displayed page follows
+the current patch, with fewer entries on a partially filled final page. Tap the labelled page buttons
 such as EDIT, FX, ARP, GLO and SAVE to reach their settings. Some buttons also
 have held sequencer functions; tap when the intention is page navigation.
 
@@ -271,6 +274,45 @@ working MIDI link: discovery/subscription must finish. The editor provides the
 same controls and actual link status. Original Chocolate and Chocolate Plus
 pairing, reconnect and sustained performance are still hardware-validation items.
 
+### Assign pedal messages to relative navigation
+
+GLO has separate **PATCH UP**, **PATCH DOWN**, **BANK UP** and **BANK DOWN** pages.
+Each page has the following saved settings:
+
+| Control | Meaning |
+|---|---|
+| TYPE | OFF (default), CC or PC |
+| NUMBER | Raw controller/program number, 0–127 |
+| VALUE | Exact CC value that triggers; ignored for PC |
+| CH | IN CH follows MIDI input channel; 1–16 selects an independent pedal channel |
+
+For a pedal that sends CC80=127 on press and CC80=0 on release, assign PATCH UP
+with TYPE CC, NUMBER 80, VALUE 127 and the pedal's channel. Release then does not
+trigger a second patch change. Assign different messages to the other actions.
+A mapped PC performs the relative action instead of loading its absolute program.
+Avoid assigning the same message to more than one action: the first matching
+action wins in patch-up, patch-down, bank-up, bank-down order.
+
+These incoming assignments use PATCH MIDI PORT and PROG, independently of KEY IN.
+An explicit pedal channel also works independently of the keyboard's MIDI IN
+channel. Patch up/down wrap within the current category bank; bank up/down select
+the previous/next category. Settings are saved automatically and survive restart.
+The web editor currently provides BLE connection controls; use the hardware GLO
+pages for the new message assignments. This does not reprogram the pedal itself.
+
+### Bluetooth startup status
+
+Version 1.1 accepts the SDK's ready notification with length zero, fixing a 1.0
+callback mismatch that prevented BLE initialization. SCAN says ENABLE BT FIRST
+only when BT MIDI is off. BT STARTING means initialization is pending;
+BT START TIMEOUT means no ready event arrived within 15 seconds. A later ready
+event clears the failure and runs the queued scan. If it never arrives, restart
+the FM1 and report the firmware version and pedal model. MIDI READY still means
+GATT discovery and notification subscription have finished; SCANNING alone does
+not establish a link.
+
+### Absolute user-slot selection
+
 For stable user-slot addressing, program the pedal to send **Bank Select MSB
 CC0=127**, followed by **Program Change 0 for U01, 1 for U02**, and so on. Some
 pedal applications display program numbers starting at 1 although MIDI data
@@ -357,7 +399,7 @@ forget bonds, requiring another connection attempt.
 |---|---|
 | Editor does not connect | Chrome/Edge, USB data cable, MIDI/SysEx permission, correct port; close competing MIDI applications |
 | Only highlight changes | Use KNOB 3 to load or KNOB 4 to load and edit |
-| Oriental collection missing | Verify SYNTHMAVEN 1.0, refresh the matching editor, select ORIENTAL on the hardware |
+| Oriental collection missing | Verify SYNTHMAVEN 1.1, refresh the matching editor, select ORIENTAL on the hardware |
 | USB keyboard is silent | Confirm a MIDI host exists; separate power alone is insufficient; check KEY IN and channel |
 | TRS keyboard is silent | Check MIDI direction, compatible cable/adapter, channel and KEY IN |
 | Pedal scans but does not switch | Wait for MIDI READY; enable PROG; check PORT, channel and actual Program Change/CC0 data |
@@ -373,7 +415,7 @@ For recovery tooling, see the [build/install guide](../BUILDING.md#install).
 
 ## Version, validation and support
 
-The release uses 23 engines and 537 factory presets. The product version **1.0**
+The release uses 23 engines and 537 factory presets. The product version **1.1**
 is separate from editor protocol **16** and retained hardware-loader identifiers.
 The automated checks cover preset values, browser indexing, MIDI response,
 project recall, input routing, storage, editor transfers and target memory bounds.
@@ -383,5 +425,5 @@ Report issues at [SynthMaven Issues](https://github.com/KingXeryus/SynthMaven/is
 Include firmware version, engine/preset, connection route, steps to reproduce,
 and the actual pedal/keyboard messages where possible. Do not send private
 account credentials. Source and retained licences are available in the repository
-and alongside the installer. See [release notes](release-1.0.md),
+and alongside the installer. See [1.1 release notes](release-1.1.md), [preset catalog](release-1.0.md),
 [Bluetooth status](BLUETOOTH_STATUS.md) and [USB status](USB_MIDI_STATUS.md).

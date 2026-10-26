@@ -23,7 +23,7 @@ enum { X_LYMODE, X_LYSOUND, X_LYSPLIT, X_LYLEVEL, X_LYOCT, X_LYPAN, X_LYFILT, X_
        X_MIN, X_MOUT,                                  /* 1.0: GLO > MIDI, the instrument's channels (seq.c midi_in_ch) */
        X_MBEND, X_MLOCAL, X_MPROG, X_MCCO,             /* 1.0: the bend range (voice.c midi_bend), LOCAL, PROG, CC OUT */
        X_MBRTH,                                        /* 1.0: EWI (seq.c midi_breath) */
-       X_SMPORT, X_SMKEY, X_SMBT, X_SMPAIR, X_SMDEV, X_SMCON, X_COUNT };
+       X_SMPORT, X_SMKEY, X_SMBT, X_SMPAIR, X_SMDEV, X_SMCON, X_PTYPE, X_PNUM, X_PVAL, X_PCH, X_COUNT };
 static void mseq_fill(struct track *t, uint32_t l, uint32_t f);
 static const char *const N_QFILL[] = {"--", "RAMP+", "RAMP-", "TRI", "SINE", "SQR", "RND", "FLAT", "INVRT", "SHIFT"};
 enum { QF_NONE, QF_UP, QF_DOWN, QF_TRI, QF_SINE, QF_SQR, QF_RND, QF_FLAT, QF_INV, QF_SHIFT, QF_N };
@@ -41,6 +41,8 @@ _Static_assert(X_FOP == 19 && X_FSTORE == 40 && X_HPOS == 41 && X_QLANE == 43 &&
 static const char *const N_CMP[] = {"EDIT", "ORIG"};
 static const char *const N_MIN_CH[17] = {"OMNI", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
                                          "15", "16"};
+static const char *const N_PEDAL_CH[] = {"IN CH","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"};
+static const char *const N_PEDAL_TYPE[] = {"OFF", "CC", "PC"};
 static const char *const N_SM_PATCH[] = {"USB", "BLE", "ANY"};
 static const char *const N_SM_KEY[] = {"USB", "TRS", "BOTH"};
 static const char *const N_MBEND[25] = {"AUTO", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13",
@@ -104,6 +106,10 @@ static const param_desc_t XD[X_COUNT] = {
     [X_SMPAIR] = PE("SCAN", N_GO, 0),
     [X_SMDEV] = PD("PEDAL", F_INT, 0, 7, 0),
     [X_SMCON] = PE("LINK", N_GO, 0),
+    [X_PTYPE] = PE("TYPE", N_PEDAL_TYPE, 0),
+    [X_PNUM] = PD("NUMBER", F_INT, 0, 127, 0),
+    [X_PVAL] = PD("VALUE", F_INT, 0, 127, 127),
+    [X_PCH] = PE("CH", N_PEDAL_CH, 0),
     [X_MCCO] = PE("SEND", N_MCCO, 0),
     [X_MBRTH] = PE("EWI", N_MBRTH, 0),       /* (a breath controller, CC 2) */
     [X_FSTORE] = PE("STORE", N_GO, 0),
@@ -621,6 +627,11 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
 #endif
         break;
     }
+    case X_PTYPE: case X_PNUM: case X_PVAL: case X_PCH: {
+        const char *title=cur_page()->title;
+        uint32_t action=!strcmp(title,"PATCH UP")?0u:!strcmp(title,"PATCH DOWN")?1u:!strcmp(title,"BANK UP")?2u:3u;
+        xv[id]=sm_pedal[action][id-X_PTYPE]; *valp=&xv[id]; break;
+    }
     case X_SMBT: xv[X_SMBT] = sm_bluetooth; *valp = &xv[X_SMBT]; break;
     case X_MCCO: xv[X_MCCO] = midi_cc_out != 0u; *valp = &xv[X_MCCO]; break;
     case X_MBRTH: xv[X_MBRTH] = (int16_t)(midi_breath % 3u); *valp = &xv[X_MBRTH]; break;
@@ -781,6 +792,11 @@ static void syn_changed(uint32_t id, int16_t *vp)
         panic_req |= 1u;                              /* (a key held: none stuck) */
         settings_later = 1;
         break;
+    case X_PTYPE: case X_PNUM: case X_PVAL: case X_PCH: {
+        const char *title=cur_page()->title;
+        uint32_t action=!strcmp(title,"PATCH UP")?0u:!strcmp(title,"PATCH DOWN")?1u:!strcmp(title,"BANK UP")?2u:3u;
+        sm_pedal[action][id-X_PTYPE]=(uint8_t)*vp; settings_later=1; break;
+    }
     case X_SMPORT:
         if (midi_pc_off) { ui_message("ENABLE PROG FIRST"); break; }
         if (sm_set(*vp, sm_key_port, sm_bluetooth)) ui_message("BLE NOT AVAILABLE");
@@ -797,7 +813,9 @@ static void syn_changed(uint32_t id, int16_t *vp)
     case X_SMPAIR:
         *vp = 0;
 #if SM_BLE
-        ui_message(sm_ble_scan_start()?"ENABLE BT FIRST":"SCANNING MIDI");
+        if(!sm_bluetooth)ui_message("ENABLE BT FIRST");
+        else if(sm_ble_scan_start())ui_message("BT START TIMEOUT");
+        else ui_message(sm_ble_state()==1u?"BT STARTING":"SCANNING MIDI");
 #else
         ui_message("BLE NOT AVAILABLE");
 #endif
@@ -931,6 +949,11 @@ static void syn_changed(uint32_t id, int16_t *vp)
 static void syn_tick(void)
 {
     hist_poll();                                      /* (0.7) the sound's history */
+    while(sm_action_r!=sm_action_w) {
+        uint32_t a=sm_actions[sm_action_r%16u];RING_PUBLISH();sm_action_r++;
+        if(a<2u)home_preset_step(a? -1:1);
+        else preset_kind_jump(a==2u?1:-1);
+    }
     int16_t r = syn_morph_req;
     uint32_t pc = midi_pc_req, total, b[FAV_N];
     if (pc) {                                         /* (1.0) a MIDI program change (bank: CC 0): the sound at that

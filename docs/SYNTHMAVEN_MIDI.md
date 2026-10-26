@@ -25,3 +25,17 @@ New preference record: magic 0x314D5353, patch source, keyboard source, Bluetoot
 The native BLE build integrates fm1-base's task/timer shims and BLE MIDI central/peripheral runtime with the JieLi SDK. It scans for MIDI peers, explicitly connects/subscribes and reports actual central state. Radio syscfg is journalled in the previously unused 0xFB000 sector; musical data and existing settings addresses remain unchanged. Writes wait until playback and active voices stop. A power loss during sector rollover can forget radio bonds.
 
 Chocolate original/Plus pairing, reconnection, latency and audio stability still require real hardware validation. Native USB-host operation is not implemented: USB keyboard/pedal connections require an external USB MIDI host. A power bank does not provide that host.
+
+## 1.1 relative pedal assignments
+
+Hardware GLO pages PATCH UP/DOWN and BANK UP/DOWN each store four bytes:
+TYPE (OFF=0, CC=1, PC=2), NUMBER (0–127), VALUE (0–127, exact CC match; PC ignores),
+CHANNEL (0 follows IN CH, 1–16 explicit). PATCH MIDI PORT and PROG apply before
+KEY IN filtering. An explicit channel bypasses keyboard channel selection.
+Only the first matching action fires; mapped PC does not also perform an
+absolute program selection. Events use a bounded 16-entry audio-to-UI queue.
+Patch actions wrap inside the current category bank; bank actions match ALGORITHM.
+
+Assignments are stored in an appended 24-byte side record: magic 0x31444C50,
+16 map bytes and CRC32. Legacy routing/tuning records retain their offsets.
+No new editor SysEx command is added; configure these mappings on the FM1.

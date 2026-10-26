@@ -21,7 +21,7 @@ SLOOP folder next to this one (`..\sloop-fm1`, `..\SLOOP`) or from `SYNTHMAVEN_S
 
 ## Prerequisites (macOS)
 
-- Python 3 with Pillow: `pip3 install Pillow`
+- Python 3 with Pillow and the documentation renderer: `pip3 install Pillow Markdown==3.7`
 - Docker Desktop. The JieLi toolchain is Linux x86-64 only; the build runs each tool in a
   `linux/amd64` `debian:bookworm-slim` container (Rosetta on Apple silicon). Keep the source
   tree in a folder Docker can share, e.g. under `/Users`.
@@ -135,3 +135,21 @@ For a local matching site after a successful build:
 ```
 python3 tools/make_synthmaven_site.py --package build/felucca.fwsc
 ```
+
+## SynthMaven 1.1 native BLE release
+
+Install the pinned AC79NN_SDK_V1.2.1_2023-12-13 SDK and the JieLi toolchain as
+above. The hardware release requires the complete SDK (Bluetooth headers,
+configuration sources and static libraries), not just the three packaging files.
+On macOS the compiler needs a Linux x86-64 runtime such as Docker. CI uses Ubuntu.
+
+```
+SYNTHMAVEN_BLE=1 ./build.sh --release 1.1
+python3 tools/make_synthmaven_site.py --package build/felucca-1.1.fwsc
+```
+
+The output site includes readable, linked manuals in `docs/` and the matching
+source archive. The installer package metadata contains the 1.1 version and
+SHA256, and the device reports SYNTHMAVEN 1.1 / FM-1_911. The build checks flash,
+static RAM, pool and low-SRAM bounds before making a package; it retains all
+23 engines. See `.github/workflows/synthmaven.yml` for the release build.

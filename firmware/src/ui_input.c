@@ -1182,6 +1182,8 @@ static void ui_input(void)
             TDRUM->p[P_E0] = (int16_t)clamp(TDRUM->p[P_E0] + s, 0, DRUM_KITS - 1);
         else if (!ui.home && cur_page()->graph == GR_BROWSE)
             br_step(s);                                 /* (1.0: the PRESETS page: its engine filter) */
+        else if (SYNTHMAVEN_SYNTH && ui.home)
+            home_preset_step(s);
         else if (total)
             preset_go((uint32_t)(((int32_t)cur + s % (int32_t)total + (int32_t)total) % (int32_t)total));
     }

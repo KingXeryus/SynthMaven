@@ -33,3 +33,10 @@ assert.equal((await context.request(102)).state,3);
 await context.request(104,[2]);assert.equal(sent[1][0],2);
 await context.request(105);assert.equal(sent[0],105);
 console.log('SynthMaven BLE web: bounded peer decoding, scan/connect/disconnect wire commands PASS');
+
+const installer=readFileSync(new URL('./index_pkg.html',import.meta.url),'utf8');
+assert(!html.includes('id="lang"'));
+assert(html.includes('const lang = "en";'));
+for(const path of ['user-manual.html','quick-start.html','release-notes.html'])assert(installer.includes('../../docs/'+path));
+assert(installer.includes('SynthMaven 1.1'));
+console.log('1.1 website: English editor, no language switch, direct documentation links PASS');

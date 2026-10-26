@@ -7,18 +7,19 @@ import make_site
 p=argparse.ArgumentParser();p.add_argument("--out",default="build/synthmaven-site");p.add_argument("--package");a=p.parse_args()
 out=Path(a.out);web=Path(make_site.HERE);root=web.parent
 if a.package:
- make_site.main(a.package,"1.0",out)
+ make_site.main(a.package,"1.1",out)
 else:
  inst=out/"webapp/installer";ed=out/"webapp/editor"
  inst.mkdir(parents=True,exist_ok=True);ed.mkdir(parents=True,exist_ok=True)
  lib="\n".join(make_site.strip_module((web/f).read_text()) for f in ("fm1pkg.js","fm1ota.js"))
- html=(web/"index_pkg.html").read_text().replace("/*LIB*/",lib).replace("/*META*/",json.dumps({"version":"1.0","pkg":None,"product":None}))
+ html=(web/"index_pkg.html").read_text().replace("/*LIB*/",lib).replace("/*META*/",json.dumps({"version":"1.1","pkg":None,"product":None}))
  html=html.replace("<!--LOGO-->",(root/"assets/logo/synthmaven-logo.svg").read_text()).replace("<!--BANNER-->","<p><strong>Development preview: no firmware binary published.</strong></p>").replace("<!--STUDIO_GUIDE-->","")
  (inst/"index.html").write_text(html)
  shutil.copy(web/"editor.html",ed/"index.html")
  for f in ("fukiai.ttf","FUKIAI-LICENSE.txt"): shutil.copy(web/f,ed/f)
  shutil.copy(root/"assets/logo/synthmaven-logo.svg",ed/"synthmaven-logo.svg")
  (out/"index.html").write_text('<!doctype html><meta charset="utf-8"><title>SynthMaven</title><meta http-equiv="refresh" content="0;url=webapp/installer/">')
+make_site.publish_docs(out)
 # corresponding source and licence notices, for every published site
 src=out/"source";src.mkdir(exist_ok=True)
 import zipfile

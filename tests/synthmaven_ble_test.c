@@ -55,12 +55,17 @@ int main(void){
  fail_write=0;sm_radio_flush();assert(shim_store_load(out,sizeof out)==sizeof two && !memcmp(out,two,sizeof two));
  assert(nor[0xFAFFF]==0xA5 && nor[0xFC000]==0xA5);
  assert(sm_set(1,1,1)==0);sm_ble_poll();assert(starts==1 && sm_ble_state()==1 && sm_radio_quiet);
- shim_bt_event(3,&ready,sizeof ready);sm_ble_poll();assert(sm_ble_state()==2 && !sm_radio_quiet);
+ shim_bt_event(2,&ready,0);assert(!sm_ble_up);
+ shim_bt_event(3,0,0);assert(!sm_ble_up);
+ fm1_ms=16001;sm_ble_poll();assert(sm_ble_state()==7);
+ assert(sm_ble_scan_start()==4 && sm_bluetooth); /* enabled but initialization timed out */
+ shim_bt_event(3,&ready,0);sm_ble_poll();assert(sm_ble_state()==2 && !sm_radio_quiet);
+ assert(!sm_ble_failed); /* late completion must recover, rather than report BT disabled */
  assert(sm_ble_scan_start()==0 && connected_index==-1);sm_ble_poll();assert(sm_ble_state()==3);
  assert(sm_ble_connect_device(1)==0 && connected_index==1 && sm_ble_state()==4);
  fake_state=4;assert(sm_ble_state()==6);
  ble_midi_receive(0x0011C01Cu,123);assert(sm_ble_read(&packet));assert(((packet>>4)&15)==2 && sm_patch_accept(2) && !sm_patch_accept(0));
  assert(!sm_key_accept(2));
  ble_midi_receive(0x0011C01Cu,124);sm_bluetooth=0;sm_ble_poll();assert(!sm_ble_pending() && sm_ble_state()==0);
- puts("BLE adapter: journal/power interruption, musical-data bounds, deferred writes, explicit selection, real-state reporting and cable-2 routing PASS");return 0;
+ puts("BLE adapter: journal/power interruption, musical-data bounds, deferred writes, explicit selection, zero-length SDK ready callback, late startup recovery, real-state reporting and cable-2 routing PASS");return 0;
 }

@@ -124,8 +124,11 @@ struct sm_bt_event {uint8_t event,args[7];uint32_t value;};
 void shim_bt_event(int from,const void *event,int len)
 {
     const struct sm_bt_event *e=event;
-    if(from==3 && len>=1 && e && e->event==3 && !sm_ble_up) {
-        bt_ble_init();sm_ble_up=1;sm_radio_quiet=0;
+    /* SDK bt_event_notify(from,event) has no length argument. The bridge
+     * forwards len=0; event is a typed SDK object, not a received byte buffer. */
+    (void)len;
+    if(from==3 && e && e->event==3 && !sm_ble_up) {
+        bt_ble_init();sm_ble_up=1;sm_ble_failed=0;sm_radio_quiet=0;
     }
 }
 static uint32_t sm_ble_state(void)
@@ -162,10 +165,10 @@ static void sm_ble_poll(void)
     if(sm_ble_up) {
         if(sm_ble_on!=sm_bluetooth){ble_midi_enable(sm_bluetooth);sm_ble_on=sm_bluetooth;if(!sm_ble_on){sm_ble_r=sm_ble_w;sm_scan_requested=0;}}
         ble_midi_poll();
-        if(sm_scan_requested){ble_midi_scan(1);sm_scan_t0=shim_ms();sm_scan_requested=0;}
+        if(sm_ble_on && sm_scan_requested){ble_midi_scan(1);sm_scan_t0=shim_ms();sm_scan_requested=0;}
         if(ble_midi_central_state()==1 && shim_ms()-sm_scan_t0>15000u)ble_midi_scan(0);
     }
     if(!sm_ble_up && shim_ms()-sm_ble_t0>15000u){sm_ble_failed=1;sm_radio_quiet=0;}
     sm_radio_flush();
-    {static uint32_t seen;uint32_t state=sm_ble_state();if(state!=seen){seen=state;ui.force=1;if(state==6u)ui_message("BLE MIDI READY");}}
+    {static uint32_t seen;uint32_t state=sm_ble_state();if(state!=seen){seen=state;ui.force=1;if(state==6u)ui_message("BLE MIDI READY");else if(state==7u)ui_message("BT START TIMEOUT");}}
 }

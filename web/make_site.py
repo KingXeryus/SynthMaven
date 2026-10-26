@@ -20,6 +20,7 @@ import json
 import re
 import shutil
 import sys
+from publish_docs import publish_docs
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -83,6 +84,7 @@ def main(pkg, version, out):
         '<!doctype html><meta charset="utf-8"><title>SynthMaven</title>'
         '<meta http-equiv="refresh" content="0; url=webapp/installer/">'
         '<a href="webapp/installer/">SynthMaven installer</a>\n', encoding="utf-8")
+    publish_docs(out)
     print(f"site: {out}: webapp/installer ({len(html)} B), webapp/editor, firmware/{name} ({len(raw)} B, {product})")
 
 

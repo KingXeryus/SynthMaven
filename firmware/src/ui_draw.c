@@ -749,51 +749,27 @@ static uint32_t preset_pos(uint32_t *total);
 static const char *preset_kind(uint32_t n);
 static void graph_home(uint16_t c)
 {
-    static int16_t snap[SCOPE_N];
-    char name[24], b[24];
-    uint32_t total = 0, cur = preset_pos(&total), w = scope_w, i, trig = 0;
-    const engine_t *e = ENGINES[TSEL->eng_req % NENGINES];
-    const felucca_font_t *f = &FONT_L;
-    int32_t x, py = 90, peak = 1500;
-    name[0] = 0;
-    if (user_of(TSEL) < UP_SLOTS)
-        up_name(user_of(TSEL), name);
-    else if (e->npresets)
-        str_cpy(name, sm_factory_name(TSEL->eng_req,TSEL->preset), sizeof name);
-    if (text_w(f, name) > 236)
-        f = &FONT_S;
-    cv_text((240 - text_w(f, name)) / 2, f == &FONT_L ? 0 : 8, f, name, C_WHITE);
-    x = cv_text(4, 36, &FONT_S, preset_kind(cur), c);
-    fmt_int(b, (int32_t)cur + 1);
-    str_cpy(b + str_len(b), "/", 4);
-    fmt_int(b + str_len(b), (int32_t)total);
-    x = cv_text(x + 8, 36, &FONT_S, b, C_GRAY);
-#if SYNTHMAVEN_SYNTH
-    if (hist_cmp_on)                                 /* (0.7) COMPARE: the sound as loaded; else edited since */
-        cv_text(x + 8, 36, &FONT_S, "ORIG", C_AMB);
-    else if (hist_edited)
-        cv_text(x + 8, 36, &FONT_S, "EDITED", C_AMB);
-#endif
-    cv_text(236 - text_w(&FONT_S, e->name), 36, &FONT_S, e->name, C_HI);
-    for (i = 0; i < SCOPE_N; i++) {                  /* the scope, auto-scaled, triggered on a rising zero */
-        snap[i] = scope_buf[(w + i) & (SCOPE_N - 1u)];
-        if (snap[i] > peak)
-            peak = snap[i];
-        else if (-snap[i] > peak)
-            peak = -snap[i];
+    uint32_t total,cur=preset_pos(&total),first=cur,i,k=kind_at(cur),count=0,pos=0,n;
+    char b[24],name[24];
+    (void)c;
+    for(n=0;n<total;n++)if(kind_at(n)==k){if(n<cur)pos++;count++;}
+    /* Four consecutive bank entries; page follows selection. */
+    first=home_preset_next(cur,-(int32_t)(pos%4u));
+    cv_text(4,0,&FONT_S,preset_kind(cur),C_HI);
+    fmt_int(b,(int32_t)pos+1);str_cpy(b+str_len(b),"/",2);fmt_int(b+str_len(b),(int32_t)count);
+    cv_text(236-text_w(&FONT_S,b),0,&FONT_S,b,C_GRAY);
+    for(i=0;i<4u && pos-pos%4u+i<count;i++) {
+        uint32_t p=home_preset_next(first,(int32_t)i),preset,engine=preset_at(p,&preset);
+        int32_t x=(i%2u)*120+4,y=26+(i/2u)*43;
+        uint16_t color=p==cur?C_WHITE:C_GRAY;
+        if(engine<NENGINES)str_cpy(name,sm_factory_name(engine,preset),sizeof name);
+        else up_name(preset,name);
+        while(text_w(&FONT_S,name)>110 && str_len(name))name[str_len(name)-1u]=0;
+        if(p==cur)cv_rect(x-2,y-3,116,38,C_LINE);
+        cv_text(x,y,&FONT_S,name,color);
+        cv_text(x,y+17,&FONT_S,engine<NENGINES?ENGINES[engine]->name:"USER",p==cur?C_HI:C_GRAY);
     }
-    for (i = 1; i < SCOPE_N - 240u; i++)
-        if (snap[i - 1] < 0 && snap[i] >= 0) {
-            trig = i;
-            break;
-        }
-    cv_line(0, 90, 239, 90, C_LINE);
-    for (x = 0; x < 240; x++) {
-        int32_t y = 90 - snap[trig + (uint32_t)x] * 30 / peak;
-        if (x)
-            cv_line(x - 1, py, x, y, c);
-        py = y;
-    }
+
 }
 
 /* SLOOP 2.4: a page without a graph (EDIT, VOICE, the DEST pages, GLOBAL, MASTER, SYSTEM...): its values
@@ -916,7 +892,7 @@ static void draw_graph(void)
     top = (ui.home && SYNTHMAVEN_SYNTH) || (!ui.home && !drum_note && (pg->graph == GR_BROWSE || pg->graph == GR_SLOTS || pg->graph == GR_USER ||
                                      pg->graph == GR_ROLL || big_page(pg)));   /* these draw from the top */
     cv_oy = 0;
-    if (ui.hot_t && settings.zoom && !(top && (big_page(pg) || pg->graph == GR_ROLL) && !drum_note)) {   /* (the big values show it already) */                 /* focus (menu ZOOM): the touched value, large and white */
+    if (ui.hot_t && settings.zoom && !(ui.home && SYNTHMAVEN_SYNTH) && !(top && (big_page(pg) || pg->graph == GR_ROLL) && !drum_note)) {   /* (the big values show it already) */                 /* focus (menu ZOOM): the touched value, large and white */
         int32_t x;
         top = 1;
         cv_rect(0, 0, 150, 50, C_BLACK);

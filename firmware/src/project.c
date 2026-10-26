@@ -883,6 +883,7 @@ typedef struct {
 #if SYNTHMAVEN_SYNTH
     tune_side_t tu;
     sm_record_t sm;
+    sm_pedal_record_t pedal;
 #endif
 } side2_t;
 _Static_assert(sizeof(clip_side_t) == 44u && sizeof(side2_t) <= ST_SIDE_MAX, "the side record");
@@ -902,6 +903,7 @@ static void side_fill(side2_t *s)                    /* what the side record hol
     r->crc = st_crc32(r, sizeof *r - 4u);
 #if SYNTHMAVEN_SYNTH
     sm_record_fill(&s->sm);
+    sm_pedal_fill(&s->pedal);
     s->tu.magic = TUNE_SIDE_MAGIC;
     s->tu.t = tune_cfg;
     s->tu.crc = st_crc32(&s->tu, sizeof s->tu - 4u);
@@ -925,6 +927,7 @@ static void side_take(const side2_t *s)              /* a side record read back:
     }
 #if SYNTHMAVEN_SYNTH
     sm_record_take(&s->sm);
+    sm_pedal_take(&s->pedal);
     if (s->tu.magic == TUNE_SIDE_MAGIC && s->tu.crc == st_crc32(&s->tu, sizeof s->tu - 4u)) {
         tune_cfg = s->tu.t;
         tune_build();

@@ -42,3 +42,13 @@ flash (1060 bytes spare), 92132/98304 bytes of static RAM, 24832/25672 bytes of
 low SRAM, and 329008/344064 bytes of pool. The package is 610045 bytes. All
 enforced bounds and host/editor checks pass. The full web regression also
 passes locally. Physical pairing and audio validation remain outstanding.
+
+## Version 1.1 startup fix
+
+The radio shim's `bt_event_notify(from,event)` forwards `len=0` because the SDK
+API has no length argument. The 1.0 adapter required `len>=1` and discarded all
+ready notifications. Version 1.1 uses the typed event's source and event ID,
+matching the upstream adapter. The host test now uses the actual `len=0` call,
+including wrong-source/null rejection and a ready event after the 15-second
+timeout. This corrects a deterministic startup blocker. Physical pairing,
+reconnect and radio/audio performance still require hardware checks.

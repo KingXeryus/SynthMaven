@@ -3,7 +3,7 @@
 /* Felucca user interface. Four columns map to KNOB 1..4. Rendering is lazy:
  * every element remembers what it last drew and is redrawn only on change. */
 #ifndef FELUCCA_VERSION
-#define FELUCCA_VERSION "SYNTHMAVEN 1.0"  /* (experimental) the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
+#define FELUCCA_VERSION "SYNTHMAVEN 1.1"  /* (experimental) the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
 #endif
 static void project_save(uint32_t slot);
 static void arrangement_save(void);
@@ -1068,6 +1068,27 @@ static void preset_kind_jump(int32_t s)
     ui_message(preset_kind(n));
 }
 
+/* HOME and pedal patch actions wrap within the current bank. */
+static uint32_t home_preset_next(uint32_t cur,int32_t steps)
+{
+    uint32_t total,n=cur,k=kind_at(cur),guard;
+    preset_pos(&total);if(!total)return cur;
+    /* Reduce large encoder deltas without changing round-robin ordering. */
+    uint32_t count=0,i;for(i=0;i<total;i++)count+=kind_at(i)==k;
+    if(count)steps%=(int32_t)count;
+    while(steps) {
+        guard=total;
+        do n=steps>0?(n+1u)%total:(n+total-1u)%total;
+        while(--guard && kind_at(n)!=k);
+        steps+=steps>0?-1:1;
+    }
+    return n;
+}
+static void home_preset_step(int32_t steps)
+{
+    uint32_t total,cur=preset_pos(&total);
+    if(total)preset_go(home_preset_next(cur,steps));
+}
 /* HOME: what KNOB k edits: the engine's four main parameters; on the drum track
  * LEVEL and REV (GLO > DRUMS), PAN and LEN */
 static const param_desc_t *home_param(uint32_t k, int16_t **vp)

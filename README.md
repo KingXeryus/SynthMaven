@@ -1,5 +1,10 @@
 # SynthMaven for M-VAVE FM-1
 
+Version 1.1 fixes Bluetooth startup, adds saved pedal navigation assignments,
+and shows four patches on HOME with preset wrapping inside the bank.
+[Release notes](docs/release-1.1.md).
+
+
 ![SynthMaven](assets/logo/synthmaven-logo.svg)
 
 SynthMaven is an open-source firmware based on [Clipper](https://github.com/isod89/clipper-fm1), with the SLOOP and Felucca foundations credited in the retained licence notices. It adds a four-patch hardware browser, explicit Load/Edit actions and MIDI input routing. The supplied SynthMaven artwork is used on the device splash and web editor/installer. Original copyright holders and licences are retained.
@@ -8,9 +13,9 @@ SynthMaven is an open-source firmware based on [Clipper](https://github.com/isod
 
 [1.0 release notes and melodic preset catalog](docs/release-1.0.md)
 
-## Version 1.0 status
+## Version 1.1 status
 
-**SynthMaven 1.0: 23 engines and 537 factory presets. Hardware validation is outstanding.** Native BLE builds include MIDI pedal discovery, explicit device selection, connection and disconnect controls. Original Chocolate and Chocolate Plus pairing, reconnect and audio timing still need testing on the FM1. Version 0.2 predates this integration.
+**SynthMaven 1.1: 23 engines and 537 factory presets. Hardware validation is outstanding.** Native BLE builds include MIDI pedal discovery, explicit device selection, connection and disconnect controls. Original Chocolate and Chocolate Plus pairing, reconnect and audio timing still need testing on the FM1. Version 0.2 predates this integration.
 
 Native USB host support is not implemented. Selecting USB input means device-mode MIDI from a host; a USB keyboard or USB pedal cannot connect directly using a power bank alone. TRS keyboard plus BLE pedal is the intended computer-free combination.
 
@@ -37,7 +42,7 @@ Tap SAVE to PRESETS. Four names are visible per page (fewer in a short final pag
 | KNOB 3 clockwise | Load highlighted patch |
 | KNOB 4 clockwise | Load patch and open EDIT macro pages |
 
-This replaces the synth browser's FAV knob action; existing favourites are retained. HOME browsing remains available. The web editor provides a matching four-patch user-preset browser with Load/Edit actions. Full DX7 operator editing remains in the web FM6 panel.
+This replaces the synth browser's FAV knob action; existing favourites are retained. HOME shows four patches; PRESET wraps within the bank and ALGORITHM changes category banks. The web editor provides a matching four-patch user-preset browser with Load/Edit actions. Full DX7 operator editing remains in the web FM6 panel.
 
 ## Oriental / Middle Eastern collection (1.0)
 
@@ -67,11 +72,11 @@ Hardware listening and radio validation remain outstanding.
 
 ## Web editor
 
-Open the [SynthMaven 1.0 editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/)
+Open the [SynthMaven 1.1 editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/)
 in Chrome or Edge and connect the FM1 over USB. Browse factory/user sounds,
 load or edit patches, import DX7 SysEx and Korg-compatible programs, set tuning,
 and save backups. The full-name Oriental selector matches the 88 melodic
-presets in the firmware. The editor identifies version 1.0, 23 engines and
+presets in the firmware. The editor identifies version 1.1, 23 engines and
 537 factory presets; device connection reports the installed firmware version.
 
 ## MIDI settings

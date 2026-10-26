@@ -1,6 +1,6 @@
-# SynthMaven 1.0 — quick start
+# SynthMaven 1.1 — quick start
 
-SynthMaven 1.0 for the M-VAVE FM1 includes **23 engines and 537 factory presets**,
+SynthMaven 1.1 for the M-VAVE FM1 includes **23 engines and 537 factory presets**,
 including 41 FM6 voices, nine XD compatibility sounds and 88 melodic Oriental /
 Middle Eastern presets. Hardware listening, Bluetooth pedal pairing/reconnect
 and audio timing under wireless load remain to be validated.
@@ -10,12 +10,18 @@ and audio timing under wireless load remain to be validated.
 Use Chrome or Edge. Connect the FM1 to your computer by USB and save a full
 backup from the [web editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/).
 Open the [installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/)
-and follow its prompts. The splash and About screen identify **SynthMaven 1.0**.
+and follow its prompts. The splash and About screen identify **SynthMaven 1.1**.
+The installer links directly to this guide, the full manual and the 1.1 release notes.
 See [BUILDING.md](BUILDING.md) to compile the firmware yourself.
 
 ## Find, load and edit sounds
 
-Tap SAVE to open PRESETS. The browser shows four names per page.
+HOME now shows four patches from the current category bank, with the loaded
+patch highlighted. Turn ALGORITHM to change banks; turn PRESET to move within
+that bank. Both directions wrap around. The four visible names follow the
+current page. A final page can contain fewer than four patches.
+
+Tap SAVE to open PRESETS for engine filtering and editing. Its controls are:
 
 | Control | Action |
 |---|---|
@@ -47,7 +53,19 @@ Empty slots leave the sound unchanged.
 
 GLO → BLUETOOTH: enable BT MIDI, SCAN, select a PEDAL, then LINK. Only MIDI READY
 indicates completed service discovery/subscription. The web editor exposes the
-same controls. Both Chocolate models still require physical validation.
+same connection controls. Version 1.1 fixes the SDK-ready callback that blocked
+Bluetooth startup in 1.0. A zero-length SDK event is valid. OFF, STARTING and
+START TIMEOUT are now distinct; a late ready event recovers correctly.
+Both Chocolate models still require physical pairing/audio validation.
+
+For relative pedal controls, open GLO → PATCH UP, PATCH DOWN, BANK UP or BANK DOWN.
+Set TYPE to CC or PC, NUMBER to the raw MIDI number (0–127), VALUE to the exact
+CC press value, and CH to the pedal channel (1–16) or IN CH to follow MIDI IN.
+VALUE is ignored for PC. For a pedal that sends 127 on press and 0 on release,
+use VALUE 127 to avoid a second action on release. Each action defaults to OFF;
+assignments are saved automatically. PROG and PATCH MIDI PORT also apply.
+These assignments interpret messages; they do not change the pedal's firmware.
+Patch up/down use the same bank-limited wrap as PRESET; bank up/down match ALGORITHM.
 
 USB currently operates in **device mode** and needs a MIDI host. Direct USB
 keyboard host mode is not integrated; separately powering a keyboard does not
