@@ -13,12 +13,12 @@ static int on_drum_page(void) { return !ui.home && cur_page()->scope == SC_DRUM;
 /* ---------------------------------------------------------------- style --- */
 #define TE_G1 RGB(26, 26, 30)            /* tiles */
 #define TE_G2 RGB(54, 54, 60)            /* empty steps, dial tracks */
-#define TE_G3 RGB(118, 118, 126)         /* labels */
+#define TE_G3 RGB(170, 174, 186)         /* labels */
 #define TE_G4 RGB(196, 196, 204)         /* secondary text */
 #define TE_RED RGB(255, 44, 52)          /* recording, erasing */
-static const uint16_t TE_COL[4] = {RGB(40, 124, 255), RGB(30, 204, 112), RGB(255, 198, 24), RGB(255, 98, 26)};
-static const uint16_t TE_MID[4] = {RGB(26, 82, 170), RGB(20, 136, 76), RGB(170, 132, 16), RGB(170, 66, 18)};
-static const uint16_t TE_DIM[4] = {RGB(14, 40, 86), RGB(10, 66, 38), RGB(86, 66, 8), RGB(86, 32, 8)};
+static const uint16_t TE_COL[4] = {RGB(255,120,128),RGB(104,180,255),RGB(240,240,246),RGB(180,186,200)};
+static const uint16_t TE_MID[4] = {RGB(170,42,48),RGB(40,94,170),RGB(160,160,164),RGB(106,110,122)};
+static const uint16_t TE_DIM[4] = {RGB(76,20,24),RGB(18,42,76),RGB(66,66,72),RGB(44,48,56)};
 #define TE_DRUM TE_COL[3]
 
 static void te_disc(int32_t cx, int32_t cy, int32_t r, uint16_t c)     /* filled circle */

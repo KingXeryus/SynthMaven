@@ -121,13 +121,12 @@ static void draw_frame(void)
         lcd_fill(i * 60u, Y_LABEL, 4, Y_SEP_END - Y_LABEL, C_BLACK);
     lcd_fill(0, H_HEAD, 240, 1, C_LINE);
     lcd_fill(0, Y_FOOT - 2, 240, 1, C_LINE);
-    for (i = 1; i < 4u; i++)
-        lcd_fill(i * 60u - 1u, H_HEAD + 4, 1, Y_SEP_END - H_HEAD - 4, C_LINE);
+    /* Spacing separates knob cards; navigation and page geometry are unchanged. */
 }
 
 /* one column: [icon] LABEL / value unit / gauge, redrawn only when it changed.
  * ratio: 0..1000 for the gauge, -1 = no gauge. icon: ICON_* (icons.c), ICON_AUTO = by label */
-#define LABEL_X (FELUCCA_ICONS ? ICON_CELL + ICON_GAP : 0)
+#define LABEL_X 0  /* full-width type on compact knob cards */
 static void draw_column(uint32_t c, const char *label, const char *val, const char *unit, uint16_t vc,
                         int32_t ratio, uint32_t icon)
 {
@@ -135,7 +134,7 @@ static void draw_column(uint32_t c, const char *label, const char *val, const ch
     int32_t x, gw = 52, fx;
     if (icon == ICON_AUTO)
         icon = icon_for_label(label);
-    fit(l, label, &FONT_S, 54 - LABEL_X);
+    fit(l, str_eq(label,"CHORD")?"CHRD":label, &FONT_S, 54 - LABEL_X);
     fit(v, val, &FONT_S, is_eng_name(val) ? 56 : 40);   /* engine names whole */
     fit(u, unit, &FONT_S, 54 - text_w(&FONT_S, v) - 3);
     str_cpy(key, l, 8);                                 /* cache key: texts + colour + gauge */
@@ -164,9 +163,9 @@ static void draw_column(uint32_t c, const char *label, const char *val, const ch
     if (!ui.force && str_eq(key, ui.col[c]))
         return;
     str_cpy(ui.col[c], key, sizeof ui.col[c]);
-    cv_begin(55, Y_SEP_END - Y_LABEL, C_BLACK);         /* x 4..58: the rule at 59 stays */
-    if (FELUCCA_ICONS && icon != ICON_NONE && l[0])
-        cv_icon(0, 1, icon, TE_COL[c & 3u]);            /* icon rows 1..10 = the label's cap height */
+    cv_begin(55, Y_SEP_END - Y_LABEL, C_BLACK);
+    cv_card(0,0,55,Y_SEP_END-Y_LABEL,C_SURFACE);         /* x 4..58: the rule at 59 stays */
+
     cv_text(l[0] ? LABEL_X : 0, 0, &FONT_S, l, C_GRAY);
     x = cv_text(0, Y_VALUE - Y_LABEL, &FONT_S, v, vc);
     cv_text(x + 3, Y_VALUE - Y_LABEL, &FONT_S, u, C_DIM);
@@ -354,16 +353,24 @@ static void graph_roll(const track_t *t, uint16_t c)
         sheet_draw(112, 6, SHEET_N, val, ui.sheet - 1u, TE_DIM[song.sel & 3u]);
     }
 }
+/* Chord display uses frozen played notes; rendering never changes AUTO history. */
 static void graph_scale(const track_t *t, uint16_t c)
 {
-    static const uint8_t BLACK[12] = {0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0};
-    uint32_t i, mask = scale_mask(t);
-    for (i = 0; i < 12u; i++) {
-        uint32_t deg = (i + 12u - (uint32_t)t->p[P_ROOT]) % 12u;
-        int32_t x = 6 + (int32_t)i * 19;
-        uint16_t col = (mask >> deg) & 1u ? (deg == 0u ? C_WHITE : c) : C_DIM;
-        cv_rect(x, BLACK[i] ? 10 : 40, 16, 1, col);
-        cv_rect(x + 7, BLACK[i] ? 10 : 40, 1, 40, col);
+    static const uint8_t BLACK[12]={0,1,0,1,0,0,1,0,1,0,1,0};
+    uint32_t part=trk_index(t)%NPART,mask=scale_mask(t),pcs=0;char title[24],notes[32];notes[0]=0;
+    if(t->p[P_CHORD] && sm_chord_view[part].n) {
+        chord_auto_name(title,sm_chord_view[part].root,sm_chord_view[part].mask);
+        for(uint32_t i=0;i<sm_chord_view[part].n;i++) {char b[8];uint32_t n=sm_chord_view[part].note[i];pcs|=1u<<(n%12u);note_name(b,n);
+            if(str_len(notes)+str_len(b)+2<sizeof notes){str_cpy(notes+str_len(notes),b,sizeof notes-str_len(notes));str_cpy(notes+str_len(notes)," ",sizeof notes-str_len(notes));}}
+    } else {str_cpy(title,t->p[P_CHORD]?"PLAY A CHORD":N_SCALE[t->p[P_SCALE]%NSCALES],sizeof title);}
+    cv_card(3,1,234,94,C_SURFACE);
+    cv_text(8,0,t->p[P_CHORD] && sm_chord_view[part].n?&FONT_L:&FONT_S,title,C_WHITE);while(text_w(&FONT_S,notes)>140 && str_len(notes))notes[str_len(notes)-1]=0;
+    cv_text(232-text_w(&FONT_S,notes),2,&FONT_S,notes,c);
+    for(uint32_t i=0;i<12u;i++) {
+        int32_t x=8+(int32_t)i*19;uint32_t deg=(i+12u-(uint32_t)t->p[P_ROOT])%12u;
+        uint16_t col=t->p[P_CHORD]?(pcs&(1u<<i)?c:C_RAISED):((mask>>deg)&1u?c:C_RAISED);
+        cv_card(x,29,16,BLACK[i]?33:55,col);
+        if(deg==0u)cv_rect(x+3,BLACK[i]?56:78,10,2,C_WHITE);
     }
 }
 
@@ -429,6 +436,7 @@ static uint32_t graph_signature(void)
     const page_t *pg = cur_page();
     const track_t *t = TSEL;
     uint32_t h = 2166136261u, i;
+    if(pg->graph==GR_SCALE)h^=sm_chord_view[song.sel%NPART].gen*7919u;
 #if SYNTHMAVEN_SYNTH
     if(!ui.home && pg->graph==GR_PEDAL)h^=sm_last_at+sm_last_result*137u+sm_last_match*7919u+sm_learn_state*333u+sm_trigger_count+((fm1_ms-sm_trigger_at)<1000u?0x777u:0);
     if(!ui.home && pg->graph==GR_SETLIST)h^=sm_setlist_active*7919u+sm_setlist_pos*137u+sm_setlist_len+sm_pending_program*333u;
@@ -777,15 +785,19 @@ static void graph_home(uint16_t c)
 {
     uint32_t i;char b[24],name[24];(void)c;
     str_cpy(b,"PROGRAM ",sizeof b);fmt_int(b+8,song.g[G_SLOT]);
-    cv_text(4,0,&FONT_S,b,C_HI);
+    cv_text(4,0,&FONT_S,b,C_WHITE);
     cv_text(236-text_w(&FONT_S,program_layer?"LAYER":"SOLO"),0,&FONT_S,program_layer?"LAYER":"SOLO",C_GRAY);
     for(i=0;i<4;i++) {
         const track_t *t=&trk[i];uint32_t e=t->eng_req%NENGINES;
-        int32_t x=(i%2u)*120+4,y=26+(i/2u)*43;uint16_t color=i==song.sel?C_WHITE:C_GRAY;
+        int32_t x=(i%2u)*120+3,y=26+(i/2u)*46;
+        uint16_t col=TE_COL[i];
+        cv_card(x,y,114,43,i==song.sel?C_RAISED:C_SURFACE);
+        cv_rect(x+3,y+6,2,31,col);
+        if(i==song.sel){cv_rect(x+8,y+39,99,2,col);}
         if(user_of(t)<UP_SLOTS)up_name(user_of(t),name);else str_cpy(name,sm_factory_name(e,t->preset),sizeof name);
-        while(text_w(&FONT_S,name)>110 && str_len(name))name[str_len(name)-1u]=0;
-        if(i==song.sel)cv_rect(x-2,y-3,116,38,C_LINE);
-        cv_text(x,y,&FONT_S,name,color);cv_text(x,y+17,&FONT_S,ENGINES[e]->name,i==song.sel?C_HI:C_GRAY);
+        while(text_w(&FONT_S,name)>98 && str_len(name))name[str_len(name)-1u]=0;
+        cv_text(x+9,y+1,&FONT_S,name,i==song.sel?C_WHITE:C_AMB);
+        cv_text(x+9,y+21,&FONT_S,ENGINES[e]->name,col);
     }
 }
 
@@ -797,10 +809,7 @@ static void graph_big(void)
     uint32_t c, n = 0;
     for (c = 0; c < 4u; c++)
         n += ui.big_l[c][0] != 0;
-    if (n > 1u) {
-        cv_rect(119, 6, 1, 112, C_LINE);
-        cv_rect(6, 62, 228, 1, C_LINE);
-    }
+
     for (c = 0; c < 4u; c++) {
         int32_t x0 = c & 1u ? 126 : 6, y0 = c & 2u ? 64 : 2, x;
         if (!ui.big_l[c][0])
@@ -809,7 +818,8 @@ static void graph_big(void)
             x0 = (240 - text_w(&FONT_L, ui.big_v[c]) - (ui.big_u[c][0] ? text_w(&FONT_S, ui.big_u[c]) + 4 : 0)) / 2;
             y0 = 30;
         }
-        cv_text(x0, y0 + 2, &FONT_S, ui.big_l[c], TE_COL[c & 3u]);
+        cv_card(n==1u?4:x0-2,y0,n==1u?228:110,58,C_SURFACE);
+        cv_text(x0+2, y0 + 2, &FONT_S, ui.big_l[c], TE_COL[c & 3u]);
         x = cv_text(x0, y0 + 20, &FONT_L, ui.big_v[c], ui.big_c[c] == C_DIM ? C_DIM : ui.big_c[c] == C_WHITE ? C_WHITE : C_HI);
         if (ui.big_u[c][0])
             cv_text(x + 4, y0 + 34, &FONT_S, ui.big_u[c], C_GRAY);
@@ -821,14 +831,25 @@ static int tuning_page(const page_t *p) { return !ui.home && p->scope==SC_SYN &&
 static void graph_tuning(void)
 {
     uint32_t i,sys=tune_cfg.sys<TU_N?tune_cfg.sys:0;
-    cv_text(4,0,&FONT_S,N_TUNE[sys],C_HI);
+    char label[32];str_cpy(label,N_TUNE[sys],sizeof label);
+    while(text_w(&FONT_S,label)>228 && str_len(label))label[str_len(label)-1]=0;
+    cv_card(3,0,234,23,C_SURFACE);cv_text(8,1,&FONT_S,label,C_HI);
+    /* A chromatic octave: each cell remains its original physical note.
+     * Height marks detuning, never a replacement scale-degree mapping. */
     for(i=0;i<12;i++) {
-        char b[12];int32_t x=(i%6u)*40,y=28+(i/6u)*44;
-        cv_text(x,y,&FONT_S,N_NOTE[(i+tune_cfg.root)%12u],C_GRAY);
-        fmt_int(b,tune_is_chromatic(sys)?tuning_cents(sys,i):0);
-        cv_text(x,y+17,&FONT_S,b,C_WHITE);
+        int32_t x=4+(int32_t)i*19,cent=tune_is_chromatic(sys)?tuning_cents(sys,i):0;
+        uint16_t col=cent?C_HI:C_GRAY;
+        cv_card(x,29,17,42,cent?C_RAISED:C_SURFACE);
+        cv_rect(x+3,48-cent/8,11,2,col);
+        char b[8];str_cpy(b,N_NOTE[(i+tune_cfg.root)%12u],8);
+        cv_text(x,73,&FONT_S,b,col);
     }
+    uint32_t note=(last_note+12u-tune_cfg.root)%12u;char b[24],v[12];
+    str_cpy(b,N_NOTE[last_note%12u],sizeof b);str_cpy(b+str_len(b),"  ",sizeof b-str_len(b));
+    fmt_int(v,tune_is_chromatic(sys)?tuning_cents(sys,note):0);str_cpy(b+str_len(b),v,sizeof b-str_len(b));
+    str_cpy(b+str_len(b)," cents",sizeof b-str_len(b));cv_text(8,99,&FONT_S,b,C_WHITE);
 }
+
 #endif
 static void draw_graph(void)
 {

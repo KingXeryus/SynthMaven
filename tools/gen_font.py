@@ -1,30 +1,20 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
-"""Render the bitmap fonts to a C header (assets/fonts/):
-  S  labels / units / status   Latin-1 32..255 at 1x
-  L  large values / titles     32..95 (digits, signs, capitals), the same glyphs at 2x
-Terminus 8x16 (BDF, SIL OFL 1.1). TTF fonts also work through render()
-(anti-aliased, tabular figures via the OpenType `tnum` feature).
-
-Glyph format: per glyph an advance width, a bitmap width and an offset; the
-bitmap starts FONT_PAD pixels left of the pen position (room for side
-bearings); rows top to bottom. A font whose pixels are all on or off (the
-Terminus pixel font) is stored at 1 bit a pixel (5376 bytes
-instead of 21504), the glyph's rows one after the other, high bit first, each
-glyph from a whole byte, and marked bits = 1; an anti-aliased one (TTF) stays at
-2 pixels per byte (high nibble first), alpha 0..15, bits = 0 (gfx.c cv_text).
+"""Rasterise Rubik Medium (SIL OFL 1.1) for the existing FM1 layout.
+S: 16 px Latin-1 labels/text; L: 28 px capital values. Both use lossless
+run-length 4-bit alpha storage. BDF and uncompressed formats remain supported.
 """
 import sys
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, features
 
 FONTS = Path(__file__).resolve().parents[1] / "assets" / "fonts"
 # (name, file, px, scale, pixel, first, last): pixel fonts are rendered without
 # anti-aliasing at their design size and enlarged by an integer factor
-SIZES = [("S", "ter-u16n.bdf", 16, 1, True, 32, 255),   # Latin-1 (Hügelton needs the umlaut)
-         ("L", "ter-u16n.bdf", 16, 2, True, 32, 95)]   # values / titles: digits, signs, capitals
+SIZES = [("S", "Rubik.ttf", 16, 1, False, 32, 255),   # Latin-1 (Hügelton needs the umlaut)
+         ("L", "Rubik.ttf", 28, 1, False, 32, 95)]   # values / titles: digits, signs, capitals
 PAD = 2
 
 
@@ -103,7 +93,10 @@ def render(ttf, px, scale, pixel, first, last):
     if ttf.endswith(".bdf"):
         return render_bdf(FONTS / ttf, scale, first, last)
     font = ImageFont.truetype(str(FONTS / ttf), px)
-    feats = None if pixel else ["tnum"]
+    if hasattr(font,"get_variation_axes"):
+        try:font.set_variation_by_axes([500])  # Melodee Rubik medium, no synthetic bold
+        except (OSError, ValueError):pass
+    feats = None if pixel or not features.check("raqm") else ["tnum"]
     asc, desc = font.getmetrics()
     top = max(0, font.getbbox("A8|(", features=feats)[1] - 1)
     h = asc + desc - top
@@ -157,6 +150,14 @@ def main(out):
                 unp = [15 if data[offs[-1] + i // 8] >> (7 - i % 8) & 1 else 0 for i in range(len(g))]
                 assert unp == g, "1-bit packing must give the glyph back"
                 continue
+            # RLE alpha: high nibble stores run length minus one, low nibble coverage.
+            # This retains smooth Rubik edges within the FM1 flash budget.
+            at=0
+            while at<len(g):
+                end=at+1
+                while end<len(g) and end-at<16 and g[end]==g[at]:end+=1
+                data.append(((end-at-1)<<4)|g[at]);at=end
+            continue
             for y in range(h):
                 row = g[y * bw:(y + 1) * bw] + [0]
                 for x in range(0, bw, 2):
@@ -172,7 +173,7 @@ def main(out):
         lines.append(f"static const uint8_t FONT_{name}_BW[{len(glyphs)}] = {{" +
                      ", ".join(str(b) for _, b, _ in glyphs) + "};")
         lines.append(f"static const felucca_font_t FONT_{name} = {{ {h}, {PAD * scale}, {first}, {last}, 0, "
-                     f"FONT_{name}_ADV, FONT_{name}_BW, FONT_{name}_OFF, FONT_{name}_DATA, {1 if one else 0} }};")
+                     f"FONT_{name}_ADV, FONT_{name}_BW, FONT_{name}_OFF, FONT_{name}_DATA, {1 if one else 2} }};")
         lines.append("")
         if scale == 1:
             base = (name, first, h, glyphs, one)

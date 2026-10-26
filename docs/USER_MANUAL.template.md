@@ -425,3 +425,9 @@ The development bank adds **64 native HYBRID translations** selected from 68 sup
 On a fresh start or reset, the four program parts contain **V01 STROBE, V02 DARK, V03 REESE and V04 PLUCK**, with the first part selected and layering off. Existing autosaved work takes precedence. HOME navigation is unchanged: ALGORITHM selects the engine, PRESET cycles its sounds, and SELECT chooses one of the four parts. Within HYBRID, the 64 new sounds come first, followed by the existing HYBRID sounds in the same cycle. Existing preset IDs remain stable.
 
 Selection uses compatibility checks and native waveform spectral fitting, with no duplicate translated parameter sets. Listening comparison and device validation remain pending. See the [selection record](../assets/vital/README.md) for source attribution and conversion limits.
+
+## Device graphics and chords in {{version}}
+
+The device uses Rubik typography and compact cards with a black/white/red palette and blue/grey accents. Its menu/page structure and existing shortcuts are retained. The twelve chromatic tuning cells visualize the current offsets without changing the microtuning mapping.
+
+SEL retains its CHORD control; SEL 2 retains STRUM and replaces the VLEAD label with VOIC. CLOSE/SMOOTH preserve the old OFF/ON IDs, followed by OPEN, INV1, INV2 and +OCT. The six legacy chord IDs remain unchanged; new choices are MAJ, MIN, DOM7, MAJ7, MIN7, SUS2, DIM, AUG, AUTO and AUTO2. AUTO uses prior harmony; AUTO2 keeps the mapped melody highest. Both bypass master microtuning when it applies to the sound. Incoming MIDI chords freeze their generated notes through release and share ownership of overlapping tones. Signed millisecond strum settings remain available, with additional D8/U8/A8, D16/U16/A16 and D32/U32/A32 tempo divisions. See [the full 2.1 chord reference and limitations](release-2.1.md).

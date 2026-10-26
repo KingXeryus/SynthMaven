@@ -1,8 +1,8 @@
 # SynthMaven for M-VAVE FM-1
 
-SynthMaven 2.0 builds on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1) with four-part programs, a layer/split mixer, learned USB pedal controls and an instrument-style visual editor. Its 23 synthesis engines provide 557 factory entries: 556 level-matched sounds and an intentionally empty USER WT slot, including 64 Vital-derived translations, 44 Oriental/Middle Eastern sounds and nine XD compatibility sounds.
+SynthMaven 2.1 builds on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1) with four-part programs, a layer/split mixer, learned USB pedal controls and an instrument-style visual editor. Its 23 synthesis engines provide 557 factory entries: 556 level-matched sounds and an intentionally empty USER WT slot, including 64 Vital-derived translations, 44 Oriental/Middle Eastern sounds and nine XD compatibility sounds.
 
-[Installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [User manual](docs/USER_MANUAL.md) · [Quick start](QUICKSTART.md) · [Release notes](docs/release-2.0.md)
+[Installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [User manual](docs/USER_MANUAL.md) · [Quick start](QUICKSTART.md) · [Release notes](docs/release-2.1.md)
 
 ## What SynthMaven adds
 
@@ -44,7 +44,7 @@ Back up before installing. See [USB MIDI status](docs/USB_MIDI_STATUS.md), the [
 
 ## Building and verification
 
-See [BUILDING.md](BUILDING.md). Linux x86-64 runs the JieLi toolchain directly; macOS requires Docker. Run `sh tools/test_synthmaven.sh`, then `sh build.sh --release 2.0`. The build enables USB host support and excludes Bluetooth. Source and licence notices are published alongside the installer.
+See [BUILDING.md](BUILDING.md). Linux x86-64 runs the JieLi toolchain directly; macOS requires Docker. Run `sh tools/test_synthmaven.sh`, then `sh build.sh --release 2.1`. The build enables USB host support and excludes Bluetooth. Source and licence notices are published alongside the installer.
 
 ## Credits and licence
 
@@ -57,6 +57,10 @@ GPL-3.0-only; see [LICENSING.md](LICENSING.md). USB host additions retain their 
 The development catalogue contains 557 entries: 556 calibrated audible sounds and the intentionally empty USER WT. Regional Dry/Expressive pairs now share 44 factory entries; choose the variation in the editor. Older programs retain their saved parameters, and D/E favourites map to the consolidated sound.
 
 The editor can inspect and approximately translate individual `.vital` files, retain complete custom HYBRID patches in its library, and explicitly send them to a program part. Compatible raw Wave Source keyframes can be extracted as WAV for the existing WAVE importer. Unsupported warping, custom routing and effects are reported. This is not Vital playback. [Import details and limits](docs/VITAL_IMPORT.md). No Vital-derived factory presets are bundled yet; user-supplied presets will be reviewed, converted and level-matched separately.
+
+## Release 2.1: device graphics and chords
+
+Rubik typography, parameter cards, chord keyboards and chromatic tuning visuals refresh the device while retaining its menus, HOME controls and shortcuts. The color scheme is black/white/red with blue and grey accents. Existing SEL controls add fixed chord shapes, AUTO/AUTO2 harmony, six voicings and tempo strums, with MIDI chord ownership and unchanged maqam tuning. See [2.1 release notes](docs/release-2.1.md).
 
 ## Vital-derived factory sounds
 

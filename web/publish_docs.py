@@ -1,5 +1,6 @@
 """Publish readable, version-matched documentation alongside the installer."""
 import html
+import os
 import json
 import posixpath
 import re
@@ -7,6 +8,7 @@ from pathlib import Path
 import markdown
 
 ROOT = Path(__file__).resolve().parents[1]
+SOURCE_REF = os.environ.get('GITHUB_REF_NAME', 'release-'+json.loads((ROOT/'release.json').read_text())['version'])
 PAGES = {
     'docs/USER_MANUAL.md': 'user-manual.html',
     'QUICKSTART.md': 'quick-start.html',
@@ -42,7 +44,7 @@ def publish_docs(out):
             resolved = posixpath.normpath(posixpath.join(posixpath.dirname(source), path))
             url = PAGES.get(resolved)
             if not url:
-                url = 'https://github.com/KingXeryus/SynthMaven/blob/main/' + resolved
+                url = 'https://github.com/KingXeryus/SynthMaven/blob/'+SOURCE_REF+'/' + resolved
             return '](' + url + (sep + fragment if sep else '') + ')'
         text = re.sub(r'\]\(([^)]+)\)', link, text)
         body = markdown.markdown(text, extensions=['tables', 'fenced_code', 'toc'])

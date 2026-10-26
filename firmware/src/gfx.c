@@ -12,7 +12,7 @@ typedef struct {               /* proportional, see tools/gen_font.py */
     const uint8_t *bw;         /* bitmap width per glyph (starts FONT_PAD left of the pen) */
     const uint16_t *off;       /* byte offset of each glyph */
     const uint8_t *data;
-    uint8_t bits;              /* 1 = 1 bit a pixel (a pixel font: glyph rows one after the other, high
+    uint8_t bits;              /* 2 = RLE 4-bit alpha; 1 = 1 bit a pixel (a pixel font: glyph rows one after the other, high
                                 * bit first, each glyph from a whole byte); 0 = 2 pixels a byte, alpha 0..15 */
 } felucca_font_t;
 #include "felucca_font.h"
@@ -24,6 +24,8 @@ static int32_t cv_oy;            /* y offset for graph drawing */
 
 #define RGB(r, g, b) ((uint16_t)((((r) >> 3) << 11) | (((g) >> 2) << 5) | ((b) >> 3)))
 #define C_BLACK 0x0000u
+#define C_SURFACE RGB(26, 26, 30)
+#define C_RAISED RGB(54, 54, 60)
 #define C_WHITE 0xFFFFu              /* accent only: what is being touched / where we are */
 /* The screen is five steps of one colour, darkest to brightest, plus white.
  * Palettes are picked in the HOME-hold menu (COLOR). */
@@ -32,11 +34,11 @@ typedef struct {
     uint16_t c[5];
 } palette_t;
 static const palette_t PALETTES[] = {
-    {"GREEN", {RGB(0, 40, 12), RGB(0, 84, 30), RGB(16, 140, 54), RGB(56, 200, 92), RGB(120, 255, 146)}},
-    {"AMBER", {RGB(60, 26, 0), RGB(110, 50, 0), RGB(170, 82, 0), RGB(225, 120, 8), RGB(255, 166, 40)}},
-    {"CYAN", {RGB(0, 30, 50), RGB(0, 62, 96), RGB(16, 112, 160), RGB(56, 172, 222), RGB(140, 222, 255)}},
-    {"RED", {RGB(52, 8, 8), RGB(100, 18, 14), RGB(170, 36, 26), RGB(226, 64, 48), RGB(255, 112, 92)}},
-    {"MONO", {RGB(40, 40, 40), RGB(80, 80, 80), RGB(130, 130, 130), RGB(186, 186, 186), RGB(226, 226, 226)}},
+    {"RED",  {RGB(42,42,48),RGB(165,165,176),RGB(195,195,208),RGB(220,220,228),RGB(255,120,128)}},
+    {"WHITE",{RGB(42,42,48),RGB(165,165,176),RGB(195,195,208),RGB(210,210,222),RGB(245,245,250)}},
+    {"BLUE", {RGB(32,38,50),RGB(165,175,190),RGB(195,205,220),RGB(215,220,235),RGB(104,180,255)}},
+    {"COOL", {RGB(34,34,40),RGB(165,175,190),RGB(195,205,220),RGB(200,215,235),RGB(225,235,255)}},
+    {"GREY", {RGB(40,40,44),RGB(165,165,176),RGB(195,195,208),RGB(205,205,214),RGB(240,240,245)}},
 };
 #define NPALETTES (sizeof(PALETTES) / sizeof(PALETTES[0]))
 static uint16_t pal[5];
@@ -135,6 +137,11 @@ static uint32_t glyph(const felucca_font_t *f, uint32_t ch)
 }
 
 /* text, alpha-blended onto black with colour c; returns the end x */
+/* Flat panel cards, inspired by Melodee's device UI. */
+static void cv_card(int32_t x,int32_t y,int32_t w,int32_t h,uint16_t c) {
+    cv_rect(x+3,y,w-6,h,c);cv_rect(x,y+3,w,h-6,c);
+    cv_rect(x+1,y+1,w-2,h-2,c);
+}
 static int32_t cv_text(int32_t x, int32_t y, const felucca_font_t *f, const char *s, uint16_t c)
 {
     uint16_t ramp[16];
@@ -156,6 +163,15 @@ static int32_t cv_text(int32_t x, int32_t y, const felucca_font_t *f, const char
                 }
             x += f->adv[gi];
             continue;
+        }
+        if(f->bits==2u) { /* Run-length alpha glyphs, exactly the same coverage as 4-bit. */
+            uint32_t pos=0,total=w*f->h;
+            while(pos<total) {uint32_t code=*gd++,run=(code>>4)+1u,v=code&15u;
+                if(run>total-pos)run=total-pos;
+                if(v)for(uint32_t z=0;z<run;z++)cv_pset(x-f->pad+(int32_t)((pos+z)%w),y+(int32_t)((pos+z)/w),ramp[v]);
+                pos+=run;
+            }
+            x+=f->adv[gi];continue;
         }
         bpr = ((w >> f->sh) + 1u) / 2u;
         for (gy = 0; gy < f->h; gy++)

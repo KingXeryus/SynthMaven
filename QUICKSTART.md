@@ -1,4 +1,4 @@
-# SynthMaven 2.0 — quick start
+# SynthMaven 2.1 — quick start
 
 Back up before installing. Open the [installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) in Chrome or Edge. Connect the FM1 by USB in COMPUTER mode and follow the prompts. For rescue, hold OCT− while powering on.
 
@@ -14,7 +14,7 @@ Set GLO → PATCH MIDI → PROG ON, then configure PATCH UP/DOWN and BANK UP/DOW
 
 Choose USB ROLE → COMPUTER before reconnecting the web editor or installer. The USB port supports one role at a time.
 
-Read the [user manual](docs/USER_MANUAL.md), [release notes](docs/release-2.0.md), and [maqam catalogue](docs/MAQAM_SCALES.md).
+Read the [user manual](docs/USER_MANUAL.md), [release notes](docs/release-2.1.md), and [maqam catalogue](docs/MAQAM_SCALES.md).
 
 Choose **Appearance → Dark / Light / System** in the installer or editor. In the editor’s Sound page, use the instrument tabs and rotary controls; drag an envelope handle to edit its shape. The 557-entry bank contains 556 level-matched audible sounds and USER WT, which stays silent until you upload a wavetable.
 
@@ -56,3 +56,7 @@ The development bank adds **64 native HYBRID translations** selected from 68 sup
 On a fresh start or reset, the four program parts contain **V01 STROBE, V02 DARK, V03 REESE and V04 PLUCK**, with the first part selected and layering off. Existing autosaved work takes precedence. HOME navigation is unchanged: ALGORITHM selects the engine, PRESET cycles its sounds, and SELECT chooses one of the four parts. Within HYBRID, the 64 new sounds come first, followed by the existing HYBRID sounds in the same cycle. Existing preset IDs remain stable.
 
 Selection uses compatibility checks and native waveform spectral fitting, with no duplicate translated parameter sets. Listening comparison and device validation remain pending. See the [selection record](assets/vital/README.md) for source attribution and conversion limits.
+
+## Chord controls in 2.1
+
+Use the existing SEL page CHORD control to choose a legacy or new chord mode. SEL 2 provides VOIC and STRUM. AUTO follows in-scale harmony; AUTO2 places harmony below your melody. AUTO modes bypass master microtuning rather than changing its note mapping. See [the complete mode/strum reference](docs/release-2.1.md). HOME navigation, menus and long-press shortcuts are unchanged.

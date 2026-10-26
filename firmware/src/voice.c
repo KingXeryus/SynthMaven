@@ -734,11 +734,18 @@ static void trk_all_off(track_t *t)
 #define trk_all_off trk_all_off1
 #endif
 
+static uint8_t sm_strum_alt[NPART];
 /* note i of a chord of n (notes[]): at once, or strummed (rank: its place from the lowest, or the highest) */
 static void trk_note_chord(track_t *t, const uint8_t *notes, uint32_t n, uint32_t i, uint32_t vel)
 {
     int32_t s = t->p[P_STRUM];
-    uint32_t rank = 0, j, q;
+    uint32_t rank = 0, j, q, beat_delay=0;
+    if(s>=61 && s<=69) {
+        uint32_t mode=(uint32_t)s-61u,part=(uint32_t)(t-trk)%NPART;
+        if(!i && mode%3u==2u)sm_strum_alt[part]^=1u;
+        beat_delay=FS*60u/(uint32_t)clamp(song.g[G_BPM],30,300)/(2u<<(mode/3u));
+        s=mode%3u==1u || (mode%3u==2u && sm_strum_alt[part])?-1:1;
+    }
     if (!s || n < 2u || is_drum(t)) {
         trk_note_on(t, notes[i], vel);
         return;
@@ -747,6 +754,10 @@ static void trk_note_chord(track_t *t, const uint8_t *notes, uint32_t n, uint32_
         if (j != i && (s > 0 ? notes[j] < notes[i] || (notes[j] == notes[i] && j < i)
                              : notes[j] > notes[i] || (notes[j] == notes[i] && j < i)))
             rank++;
+    if(t->p[P_CHORD]==15 && n>1u) { /* AUTO2: melody immediately, strum accompaniment beneath it. */
+        uint32_t top=0;for(j=1;j<n;j++)if(notes[j]>notes[top])top=j;
+        if(i==top)rank=0;else {rank=1;for(j=0;j<n;j++)if(j!=i && j!=top && (s>0?notes[j]<notes[i]:notes[j]>notes[i]))rank++;}
+    }
     if (!rank) {
         trk_note_on(t, notes[i], vel);
         return;
@@ -761,7 +772,7 @@ static void trk_note_chord(track_t *t, const uint8_t *notes, uint32_t n, uint32_
     stq[q].trk = (uint8_t)(t - trk);
     stq[q].note = (uint8_t)notes[i];
     stq[q].vel = (uint8_t)vel;
-    stq[q].left = rank * (uint32_t)(s < 0 ? -s : s) * (uint32_t)FS / 1000u;
+    stq[q].left = rank * (beat_delay?beat_delay:(uint32_t)(s < 0 ? -s : s) * (uint32_t)FS / 1000u);
     stq[q].on = 1;
 }
 /* each audio block: the strummed notes due */

@@ -1,9 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* The screen font (gfx.c cv_text, tools/gen_font.py): every glyph of FONT_S (1x, Latin-1) and FONT_L (2x) drawn in
- * several colours, at several offsets (clipped at every edge of the canvas, and with a graph y offset), hashed.
- * The firmware stores the Terminus bitmaps at 1 bit a pixel (5376 bytes instead of 21504): the expected hashes are
- * those of the 4-bit renderer before, so the screen shows exactly the same pixels. Also checked: the advance and
- * bitmap widths (text_w, the layout), and the data size. Exit status: the number of failed checks. */
+/* Verify Rubik glyph bounds and lossless run-length rendering against the
+ * uncompressed alpha path, including offscreen clipping. */
 #include <stdint.h>
 #define FONT_S_HASH 0xca4fe04eu         /* the renderer before (4-bit data) */
 #define FONT_L_HASH 0xd0230e39u
@@ -12,6 +9,9 @@
 #include <string.h>
 static void lcd_sync(void) {}
 static void lcd_blit(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint16_t *p) { (void)x; (void)y; (void)w; (void)h; (void)p; }
+#ifdef __APPLE__
+#define __attribute__(x)
+#endif
 #include "../firmware/src/gfx.c"
 static int bad;
 static void check(int ok, const char *what) { printf("font: %-70s %s\n", what, ok ? "ok" : "FAIL"); bad += !ok; }
@@ -52,30 +52,26 @@ int main(int argc, char **argv)
         printf("%08x %08x %08x %u\n", hs, hl, wsum, (unsigned)sizeof FONT_S_DATA);
         return 0;
     }
-    check(hs == FONT_S_HASH, "FONT_S: every glyph, 4 colours, 6 places (clipped): the same pixels as before");
-    check(hl == FONT_L_HASH, "FONT_L (2x): every glyph, 4 colours, 6 places (clipped): the same pixels as before");
-    check(wsum == FONT_W_HASH, "advance and bitmap widths unchanged (the layout)");
-    {   /* the 4-bit path (anti-aliased fonts) still draws: FONT_S unpacked to 2 pixels a byte, the same pixels */
-        static uint8_t d4[21504];
-        static uint16_t off4[224];
-        felucca_font_t s4 = FONT_S, l4 = FONT_L;
-        uint32_t g, n = 0, y, xx;
-        for (g = 0; g < 224u; g++) {
-            uint32_t w = FONT_S.bw[g], bpr = (w + 1u) / 2u;
-            off4[g] = (uint16_t)n;
-            for (y = 0; y < FONT_S.h; y++)
-                for (xx = 0; xx < w; xx++) {
-                    uint32_t i = y * w + xx, on = (FONT_S_DATA[FONT_S_OFF[g] + i / 8u] >> (7u - i % 8u)) & 1u;
-                    if (on)
-                        d4[n + y * bpr + xx / 2u] |= (uint8_t)(xx & 1u ? 15u : 15u << 4);
-                }
-            n += FONT_S.h * bpr;
+    check(FONT_S.bits==2 && FONT_L.bits==2, "Rubik uses lossless run-length alpha storage");
+    check(FONT_S.h<=20 && FONT_L.h<=36, "font metrics fit the existing header and value regions");
+    check(sizeof FONT_S_DATA+sizeof FONT_L_DATA<26000, "both anti-aliased faces fit the firmware font budget");
+    const felucca_font_t *faces[]={&FONT_S,&FONT_L};
+    for(uint32_t f=0;f<2;f++) {
+        const felucca_font_t *face=faces[f];uint32_t count=face->last-face->first+1;
+        for(uint32_t g=0;g<count;g++) {
+            static uint8_t raw[4096];static uint16_t off[224];uint32_t total=face->bw[g]*face->h,pos=0,at=face->off[g],limit=g+1<count?face->off[g+1]:(f?sizeof FONT_L_DATA:sizeof FONT_S_DATA);
+            while(pos<total && at<limit){uint32_t code=face->data[at++],run=(code>>4)+1;for(uint32_t j=0;j<run && pos<total;j++)raw[pos++]=code&15;}
+            if(pos!=total || at!=limit){printf("decode f%u g%u pos%u/%u at%u/%u\n",f,g,pos,total,at,limit);bad++;}
+            /* Decode independently into the legacy nibble renderer, then compare
+             * actual colored pixels including clipping and the graph offset. */
+            static uint8_t unpacked[4096];memset(unpacked,0,sizeof unpacked);uint32_t w=face->bw[g],bpr=(w+1)/2;
+            for(uint32_t y=0;y<face->h;y++)for(uint32_t x=0;x<w;x++)unpacked[y*bpr+x/2]|=raw[y*w+x]<<(x&1?0:4);
+            if(glyph(face,face->first+g)!=g)continue;
+            off[g]=0;felucca_font_t plain=*face;plain.bits=0;plain.data=unpacked;plain.off=off;char text[2]={(char)(face->first+g),0};
+            cv_begin(64,48,0);cv_oy=-3;cv_text(-2,1,face,text,0xF81F);uint32_t expected=hash_cv(0);
+            cv_begin(64,48,0);cv_oy=-3;cv_text(-2,1,&plain,text,0xF81F);if(hash_cv(0)!=expected){printf("raster f%u g%u\n",f,g);bad++;}
         }
-        s4.data = l4.data = d4; s4.off = l4.off = off4; s4.bits = l4.bits = 0;
-        check(n == 21504u && render_all(&s4, 255u) == FONT_S_HASH && render_all(&l4, 95u) == FONT_L_HASH,
-              "the 4-bit format (anti-aliased fonts) still draws the same pixels");
     }
-    check(sizeof FONT_S_DATA == 5376u && FONT_S.bits == 1u, "the Terminus bitmaps at 1 bit a pixel: 5376 bytes (21504 at 4 bits)");
-    printf("%s\n", bad ? "FONT TEST FAILED" : "font test passed");
-    return bad;
+    check(!bad, "every compressed glyph matches legacy alpha rendering pixel for pixel");
+    return bad?1:0;
 }

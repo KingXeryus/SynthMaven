@@ -47,7 +47,8 @@ assets, is entirely governed by the GPL.
 | What | Licence | Where |
 | --- | --- | --- |
 | Instrument and drum samples (Versilian Studios VSCO-2 CE, VCSL; Sonic Pi: SCRCH) | CC0 1.0 | `assets/samples-cc0/`, provenance in `ATTRIBUTION.txt` there |
-| Terminus font 8x16 (ter-u16n): the FM-1's screen, and the web editor's font (`tools/gen_webfont.py` makes it a TrueType font inlined in `web/editor.html`) | SIL OFL 1.1 | `assets/fonts/ter-u16n.bdf`, `assets/fonts/Terminus-LICENSE.txt` |
+| Rubik Medium device font (The Rubik Project Authors), lossless rasterization | SIL OFL 1.1 | `assets/fonts/Rubik.ttf`, `assets/fonts/Rubik-OFL.txt` |
+| Terminus font 8x16 (ter-u16n): retained legacy screen/web font assets (`tools/gen_webfont.py` creates the legacy inlined web font) | SIL OFL 1.1 | `assets/fonts/ter-u16n.bdf`, `assets/fonts/Terminus-LICENSE.txt` |
 | Fukiai icon font (Hügelton Instruments), web editor only | MIT | `web/fukiai.ttf`, `web/FUKIAI-LICENSE.txt` |
 | CrispyZebra by Leo Kuroshita (<https://github.com/hugelton/CrispyZebra>): the PHASE engine's waveforms are a C port of its oscillator | GPL-3.0 | `firmware/src/eng_phase.c` |
 | klattsch by Tony Gies (<https://github.com/tgies/klattsch>): design reference for the VOICE (formant) engine; no code copied. Formant data from Klatt (1980) / Hillenbrand et al. (1995) | MIT (klattsch) | credit only |
@@ -87,3 +88,5 @@ See `assets/oriental/README.md` for the frozen software reference and generator.
 ## USB host additions (1.4)
 
 The AC791 USB host module and descriptor parser are MPL-2.0. Their source, full licence and upstream notices are preserved in `firmware/vendor/fm1-usb-host/`. Host PHY additions retain attribution in `firmware/hal/fm1_usb.h`. The app’s surrounding code remains GPL-3.0-only.
+
+The AUTO/AUTO2 chord algorithms in `firmware/src/chord_auto.c` and `chord_melody.c` are adapted from [Melodee](https://github.com/keremimo/melodee), reference commit c14912ba911d4f4fefaa07120eb068a91d7ccb78, Copyright 2026 Kerem Kilic (Ellic Studio), GPL-3.0-only. SynthMaven adapts the code to its existing chord IDs, tuning and program architecture. Device UI elements take visual cues from Melodee; branding and navigation remain SynthMaven.

@@ -285,10 +285,27 @@ static const int8_t CHORD_DEG[6][4] = {
     {0, 3, 4, -1},                       /* SUS4: 1 4 5 */
     {0, -1, -1, -1},                     /* POWER: 1 5 8 (semitones, below) */
 };
+#include "chord_auto.c"
+#include "chord_melody.c"
+static struct {uint8_t n,note[4],root;uint16_t mask;uint32_t gen;} sm_chord_view[NPART];
+static void sm_chord_view_set(const track_t *t,uint32_t root,const uint8_t *notes,uint32_t n) {
+    uint32_t p=trk_index(t);if(p>=NPART)return;
+    sm_chord_view[p].n=(uint8_t)n;sm_chord_view[p].root=(uint8_t)root;sm_chord_view[p].mask=0;
+    for(uint32_t i=0;i<n;i++){sm_chord_view[p].note[i]=notes[i];sm_chord_view[p].mask|=(uint16_t)(1u<<((notes[i]+120u-root)%12u));}sm_chord_view[p].gen++;
+}
 static uint32_t chord_notes(const track_t *t, uint32_t n, uint8_t *c)
 {
-    uint32_t type = (uint32_t)clamp(t->p[P_CHORD], 0, 5), mask = t->p[P_SCALE] ? scale_mask(t) : SCALE_MASK[2];
+    uint32_t type = (uint32_t)clamp(t->p[P_CHORD], 0, 15), mask = t->p[P_SCALE] ? scale_mask(t) : SCALE_MASK[2];
     uint32_t k = 0, j;
+    if(type>=CH_AUTO) { int32_t root;uint16_t mask;
+        if(chord_kit(t)||sm_chord_micro(t)){c[0]=(uint8_t)n;return 1;}
+        return type==CH_AUTO?chord_auto_make(t,n,c,&root,&mask):chord_melody_make(t,n,c,&root,&mask);
+    }
+    if(type>=6u) {
+        if(!voice_poly(t->p[P_VOICE]) || chord_kit(t)){c[0]=(uint8_t)n;return 1;}
+        static const int8_t shapes[8][4]={{0,4,7,-1},{0,3,7,-1},{0,4,7,10},{0,4,7,11},{0,3,7,10},{0,2,7,-1},{0,3,6,-1},{0,4,8,-1}};
+        for(j=0;j<4u && shapes[type-6u][j]>=0;j++)if(n+(uint32_t)shapes[type-6u][j]<128u)c[k++]=(uint8_t)(n+shapes[type-6u][j]);return k;
+    }
     if (type == 5u) {
         static const uint8_t PW[3] = {0, 7, 12};
         for (j = 0; j < 3u; j++)
@@ -348,7 +365,16 @@ static void sort_notes(uint8_t *c, uint32_t n)
 /* the chord of white key n with the modifiers held, voiced (VLEAD); its notes (<= 4) into c[] */
 static uint32_t chord_play_notes(track_t *t, uint32_t n, uint32_t mods, uint8_t *c)
 {
-    uint32_t k = chord_notes(t, n, c), j, type = (uint32_t)clamp(t->p[P_CHORD], 0, 5), part = trk_index(t);
+    uint32_t k = chord_notes(t, n, c), j, type = (uint32_t)clamp(t->p[P_CHORD], 0, 15), part = trk_index(t);
+    if(type>=CH_AUTO) {
+        if(type==CH_AUTO && !sm_chord_micro(t) && !chord_kit(t)) {
+            int32_t root;uint16_t mask;k=chord_auto_make(t,n,c,&root,&mask);chord_auto_remember(t,root,mask,c,k);
+        }
+        int32_t vr=(int32_t)n;uint16_t vm=1;
+        if(!sm_chord_micro(t) && !chord_kit(t)) {if(type==CH_AUTO)chord_auto_make(t,n,c,&vr,&vm);else chord_melody_make(t,n,c,&vr,&vm);}
+        sm_chord_view_set(t,(uint32_t)vr,c,k);
+        return k;
+    }
     if (type != 5u && k >= 2u && mods) {                /* (POWER: the inversion only) */
         uint32_t third = scale_up(t, n, 2u);
         for (j = 0; j < k; j++) {
@@ -380,7 +406,7 @@ static uint32_t chord_play_notes(track_t *t, uint32_t n, uint32_t mods, uint8_t 
         }
     }
     sort_notes(c, k);
-    if (t->p[P_VLEAD] && part < NPART && vl_n[part] && k) {   /* the inversion and octave nearest the last chord */
+    if (t->p[P_VLEAD] == VC_SMOOTH && part < NPART && vl_n[part] && k) {   /* the inversion and octave nearest the last chord */
         uint8_t best[4], cand[4];
         int32_t bcost = 0x7FFFFFFF, inv, oct;
         for (inv = 0; inv < (int32_t)k; inv++)
@@ -407,6 +433,13 @@ static uint32_t chord_play_notes(track_t *t, uint32_t n, uint32_t mods, uint8_t 
         if (bcost != 0x7FFFFFFF)
             memcpy(c, best, k);
     }
+    if(t->p[P_VLEAD]>=VC_OPEN && k>=2u) {
+        uint32_t mode=t->p[P_VLEAD];
+        if(mode==VC_OPEN && k>=3u && c[1]+12u<128u)c[1]+=12;
+        else if(mode==VC_INV1 || mode==VC_INV2)for(uint32_t v=0;v<(mode==VC_INV2?2u:1u);v++){if(c[0]+12u<128u)c[0]+=12;sort_notes(c,k);}
+        else if(mode==VC_BASS && n>=12u){if(k==4u)k--;c[k++]=(uint8_t)(n-12u);}
+        sort_notes(c,k);
+    }
     if ((mods & CM_INV) && k >= 2u && c[0] + 12u < 128u) {   /* an inversion: the lowest an octave up */
         c[0] = (uint8_t)(c[0] + 12u);
         sort_notes(c, k);
@@ -415,6 +448,7 @@ static uint32_t chord_play_notes(track_t *t, uint32_t n, uint32_t mods, uint8_t 
         memcpy(vl_prev[part], c, k);
         vl_n[part] = (uint8_t)k;
     }
+    sm_chord_view_set(t,n,c,k);
     return k;
 }
 
@@ -1714,6 +1748,7 @@ static void input_on(track_t *t, uint32_t note, uint32_t vel)
         return;
     }
     last_note = (uint8_t)note;
+    chord_auto_observe(t,note);
     arm_start(t);
     if (kh_on(t)) {                               /* (0.7) KBD HOLD (before the free take's note: the held notes end
                                                    * there first, then this one starts) */
@@ -1761,6 +1796,8 @@ static void input_off(track_t *t, uint32_t note)
 
 /* a drum hit from a key, MIDI or a roll: lane, level; rat: its ratchet when recorded (rolls); rec: it
  * may be recorded (a roll records one hit a step) */
+#include "chord_midi.c"
+
 static void drum_input(uint32_t lane, uint32_t lvl, uint32_t rat, int rec)
 {
     track_t *t = TDRUM;
@@ -2391,6 +2428,7 @@ static void seq_stop(void)
     fill_arm = 0;
     fill_bar_on = 0;
     song.playing = 0;
+    for(i=0;i<NPART;i++)chord_auto_forget(i);
     for (i = 0; i < NTRK; i++) {
         seq_release(&trk[i]);
         locks_restore(&trk[i]);                    /* the parameters back to their base */
@@ -3080,6 +3118,7 @@ static void clkout_block(uint32_t n)
  * track at the clock, the click, the rolls and the arps; then the clock moves on by n samples */
 static void events_block(uint32_t n)
 {
+    chord_auto_tick(n);
     uint32_t i, pr, adv;
     if (mo_any && !song.g[G_MIDI]) {            /* MIDI = KEYS again: end what the sequencer had sent */
         seq_out_all_off();
@@ -3174,6 +3213,7 @@ static void events_block(uint32_t n)
         if ((pr >> i) & 1u) {
             kh_release(t);                            /* (0.7) KBD HOLD: what it held ends */
             trk_all_off(t);
+            sm_mch_forget(i);
             if (!((arp_keep_req >> i) & 1u)) {        /* (0.7, after SLOOP 2.7: a sound loaded under a running arp
                                                        * keeps its notes, ui.c apply_preset_to) */
                 t->nheld = 0;
@@ -3277,6 +3317,9 @@ static void events_block(uint32_t n)
                                                        * end what was held when it was set) */
         if (st == 0x90u && d2 && !sm_key_accept(port))
             continue;
+        if((st==0x80u || (st==0x90u && !d2)) && sm_mch_event(&trk[0],port,ch,d1,0)) {
+            mi_pen[d1>>5]&=~(1u<<(d1&31u));step_in_push(d1);continue;
+        }
         t = midi_route(ch, d1, st == 0x90u && d2);
         if (!t)
             continue;                                 /* (SynthMaven 1.0: a channel GLO > MIDI > IN CH does not take) */
@@ -3300,17 +3343,17 @@ static void events_block(uint32_t n)
             }
 #if SYNTHMAVEN_SYNTH
             mpe_cur_ch = (uint8_t)(mpe_mode ? ch : 0u);  /* (voice.c voice_start: the voice's channel) */
-            input_on(t, d1, d2);
+            if(!sm_mch_event(t,port,ch,d1,d2))input_on(t, d1, d2);
             mpe_cur_ch = 0;
 #else
-            input_on(t, d1, d2);
+            if(!sm_mch_event(t,port,ch,d1,d2))input_on(t, d1, d2);
 #endif
         } else {
             if (t == TSEL) {
                 mi_pen[d1 >> 5] &= ~(1u << (d1 & 31u));
                 step_in_push(d1);
             }
-            input_off(t, d1);
+            if(!sm_mch_event(t,port,ch,d1,0))input_off(t, d1);
         }
     }
     for (i = 0; i < (SYNTHMAVEN_SYNTH ? 1u : NTRK); i++)  /* (SynthMaven: the instrument's sequencer only) */

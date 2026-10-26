@@ -29,6 +29,7 @@ const installer=readFileSync(new URL('./index_pkg.html',import.meta.url),'utf8')
 assert(!html.includes('id="lang"'));
 assert(html.includes('const lang = "en";'));
 for(const path of ['user-manual.html','quick-start.html','release-notes.html'])assert(installer.includes('../../docs/'+path));
-assert(installer.includes('SynthMaven 2.0'));
-assert(html.includes('<title>SynthMaven 2.0 Editor</title>'));
-console.log('2.0 website: English editor, no language switch, direct documentation links PASS');
+const release=JSON.parse(readFileSync(new URL('../release.json',import.meta.url),'utf8'));
+assert(installer.includes('SynthMaven '+release.version));
+assert(html.includes('<title>SynthMaven '+release.version+' Editor</title>'));
+console.log('Website: metadata version, English editor, no language switch and direct documentation links PASS');

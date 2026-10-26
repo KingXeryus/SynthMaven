@@ -1,7 +1,7 @@
 name: SynthMaven build and website
 on:
   push:
-    branches: [main, synthmaven-korg-ble, usb-midi-performance, oriental-factory-bank, fm1-control-fixes, vital-preset-import]
+    branches: [main, synthmaven-korg-ble, usb-midi-performance, oriental-factory-bank, fm1-control-fixes, vital-preset-import, release-2.1]
   workflow_dispatch:
 permissions:
   contents: read
@@ -25,7 +25,7 @@ jobs:
       - run: pip install Pillow Markdown==3.7 numpy scipy
       - name: Host UI, routing, settings and editor tests
         env:
-          SM_SKIP_FULL_WEB: ${{ github.ref == 'refs/heads/main' && '0' || '1' }}
+          SM_SKIP_FULL_WEB: ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/release-2.1') && '0' || '1' }}
         run: sh tools/test_synthmaven.sh
       - name: Audit all 557 factory entries
         run: sh tools/audit_factory_levels.sh
@@ -65,9 +65,40 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/synthmaven-site
-  deploy:
-    if: github.ref == 'refs/heads/main'
+  publish_release:
+    if: github.ref == 'refs/heads/release-2.1'
     needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: SynthMaven-development-build
+          path: release-artifact
+      - name: Package release assets and checksums
+        run: |
+          mkdir -p release-files
+          cp release-artifact/felucca-2.1.fwsc release-files/synthmaven-2.1.fwsc
+          cp release-artifact/synthmaven-site/source/SynthMaven-source.zip release-files/SynthMaven-2.1-source.zip
+          cp docs/release-2.1.md release-files/RELEASE-NOTES.md
+          cp docs/USER_MANUAL.md release-files/USER-MANUAL.md
+          cp QUICKSTART.md release-files/INSTALL-AND-RECOVERY.md
+          cd release-files
+          sha256sum *.fwsc *.zip *.md > SHA256SUMS.txt
+      - name: Publish version 2.1 without replacing an existing release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v2.1 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo 'Release v2.1 already exists; refusing to replace immutable assets.'
+            exit 1
+          fi
+          gh release create v2.1 release-files/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "SynthMaven 2.1" --notes-file docs/release-2.1.md --latest
+  deploy:
+    if: always() && needs.build.result == 'success' && (github.ref == 'refs/heads/main' || (github.ref == 'refs/heads/release-2.1' && needs.publish_release.result == 'success'))
+    needs: [build, publish_release]
     runs-on: ubuntu-24.04
     environment:
       name: github-pages

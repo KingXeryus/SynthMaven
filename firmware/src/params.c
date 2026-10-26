@@ -35,7 +35,8 @@ static const char *const N_GO[] = {"--", "GO"};
 static const char *const N_SLCR[] = {"OFF", "GATE", "STUT"};             /* SL_OFF .. SL_STUT (slicer.c) */
 static const char *const N_FMODEL[] = {"SVF", "MOOG", "MS20", "DIODE", "SEM", "NOTCH", "BP", "HP"};   /* P_FMODEL: FM_* */
 static const char *const N_SLDIV[] = {"1/8", "1/16", "1/32", "8T", "16T", "32T"};   /* SL_DEN */
-static const char *const N_CHORD[] = {"OFF", "TRIAD", "7TH", "9TH", "SUS4", "POWER"};   /* seq.c CHORD_DEG */
+static const char *const N_VOICING[] = {"CLOSE", "SMOOTH", "OPEN", "INV1", "INV2", "+OCT"};
+static const char *const N_CHORD[] = {"OFF", "TRIAD", "7TH", "9TH", "SUS4", "POWER", "MAJ", "MIN", "DOM7", "MAJ7", "MIN7", "SUS2", "DIM", "AUG", "AUTO", "AUTO2"};   /* seq.c CHORD_DEG */
 static const char *const N_RTYPE[] = {"ROOM", "PLATE", "HALL", "SHIMR"};   /* (1.0: HALL, SHIMMER) */
 static const char *const N_DMODE[] = {"MONO", "PING", "TAPE"};          /* (1.0) G_DMODE */
 static const char *const N_E2LOOP[] = {"ONE", "LOOP"};
@@ -134,8 +135,8 @@ static const param_desc_t TP[P_COUNT] = {
 #endif
     [P_CHORD] = PE("CHORD", N_CHORD, 0),
     [P_TFLT] = PD("FILT", F_FILT, -64, 63, 0),
-    [P_STRUM] = PD("STRUM", F_INT, -60, 60, 0),   /* ms a note: > 0 low to high (down), < 0 high to low */
-    [P_VLEAD] = PE("VLEAD", N_ONOFF, 0),
+    [P_STRUM] = PD("STRUM", F_INT, -60, 69, 0),   /* ms a note: > 0 low to high (down), < 0 high to low */
+    [P_VLEAD] = PE("VOIC", N_VOICING, 0),
 #if SYNTHMAVEN_SYNTH                                  /* SynthMaven 0.4: LFO 2, ENV 2, the matrix (voice.c) */
     [P_L2RATE] = PD("RATE", F_LFOHZ, 0, 127, 60),
     [P_L2WAVE] = PE("WAVE", N_LWAVE, 0),
@@ -333,6 +334,7 @@ static const param_desc_t *track_desc(const track_t *t, uint32_t id)
 static void param_format(const param_desc_t *d, int32_t v, char *val, const char **unit)
 {
     *unit = "";
+    if(d==&TP[P_STRUM] && v>=61 && v<=69) {static const char *const names[]={"D8","U8","A8","D16","U16","A16","D32","U32","A32"};str_cpy(val,names[v-61],8);return;}
     switch (d->fmt) {
     case F_HALFDB: fmt_fix(val,v*5,1);*unit="dB";break;
     case F_PCT:                                       /* of the range: 0 .. 100 % */
