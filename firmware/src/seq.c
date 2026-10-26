@@ -210,13 +210,15 @@ static int kb_scaled(const track_t *t)
 }
 #if SYNTHMAVEN_SYNTH
 /* ALL uses the focused sound's scale for every program source and part. */
+static uint32_t chord_allowed(const track_t *t);
 static uint32_t program_quantize(uint32_t note) {
     const track_t *t=TSEL;
     if(!program_mode || t->p[P_QUANT]!=3)return note;
-    uint32_t mask=scale_mask(t);
-    while(note && !(mask&(1u<<((note+12u-(uint32_t)t->p[P_ROOT])%12u))))note--;
+    uint32_t mask=scale_mask(t),shift=(uint32_t)t->p[P_ROOT];
+    mask=t->p[P_CHORD]?chord_allowed(t):((mask<<shift)|(mask>>(12u-shift)))&0xFFFu;
+    while(note && !(mask&(1u<<(note%12u))))note--;
     /* At the bottom MIDI boundary round upwards if no legal lower note exists. */
-    while(note<127u && !(mask&(1u<<((note+12u-(uint32_t)t->p[P_ROOT])%12u))))note++;
+    while(note<127u && !(mask&(1u<<(note%12u))))note++;
     return note;
 }
 #endif

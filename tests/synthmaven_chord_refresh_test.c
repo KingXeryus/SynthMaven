@@ -65,6 +65,8 @@ int main(void){
  t->p[P_CHORD]=0;check(chord_mode_step(t,1)==16,"microtonal knob skips conflicting chord templates");t->p[P_CHORD]=17;check(chord_mode_step(t,-1)==16,"both neutral modes selectable in reverse");
  tune_cfg.sys=TU_19;tune_build();t->p[P_SCALE]=0;t->p[P_CHORD]=CH_OPEN5;rn=chord_notes(t,60,n);check(rn==3 && n[1]==71 && n[2]==79,"19 EDO open chord selects a tuned fifth and 19-key octave");
 
+ tune_cfg.sys=TU_BAYATI;tune_cfg.root=0;tune_build();t->p[P_SCALE]=1;t->p[P_ROOT]=0;t->p[P_QUANT]=3;
+ check(program_quantize(63)==63 && program_quantize(64)==63,"Quantize ALL preserves maqam chord degrees through four-part routing");t->p[P_QUANT]=0;
  tune_cfg.sys=TU_EQUAL;tune_cfg.root=0;tune_build();t->p[P_CHORD]=16;
  check(chord_mode_allowed(t,6) && chord_mode_allowed(t,17),"equal temperament restores all chord choices");
  tune_cfg.sys=TU_RAST;tune_build();master_tuning_bypass|=1u<<trk_index(t);
