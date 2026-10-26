@@ -3,6 +3,12 @@
 #include "ui_pages_test.c"
 int main(void){
  bank_resolve();palette_set(0);panel=PANEL_DEFAULT;layers_init();host_tracks_init();outdir="build/host";song.sel=0;program_mode=1;program_layer_set(0);go_home();
+ uint32_t env_start;press(B_ENV);env_start=fm1_ms-16u;
+ fm1_ms=env_start+2999u;frame();check(ui.home,"ENV does not open chord screen before three seconds");
+ fm1_ms=env_start+3000u;frame();check(!ui.home && cur_fam()==FAM_CHORD,"ENV opens dedicated CHORDS at three seconds");
+ uint32_t chord_page=ui.page;release(B_ENV);frames(3);check(ui.page==chord_page && cur_fam()==FAM_CHORD,"CHORDS persists after ENV release without envelope tap");
+ check(cur_page()->id[0]==P_CHORD && cur_page()->id[1]==P_VLEAD && cur_page()->id[2]==P_STRUM,"CHORDS groups mode voicing and strum");
+ tap(B_ENV);check(cur_fam()==FAM_ENV,"short ENV press still opens envelopes");go_home();
  track_t *t=TSEL;t->p[P_VOICE]=V_POLY;t->p[P_TRANS]=0;tune_cfg.sys=TU_EQUAL;t->p[P_SCALE]=1;t->p[P_ROOT]=0;
  check(TP[P_CHORD].max==15 && !strcmp(N_CHORD[1],"TRIAD") && !strcmp(N_CHORD[5],"POWER"),"chord modes append without changing six saved legacy IDs");
  check(TP[P_VLEAD].max==5 && !strcmp(N_VOICING[1],"SMOOTH"),"legacy voice-leading ON remains smooth voicing");

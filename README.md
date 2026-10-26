@@ -1,8 +1,8 @@
 # SynthMaven for M-VAVE FM-1
 
-SynthMaven 2.1 builds on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1) with four-part programs, a layer/split mixer, learned USB pedal controls and an instrument-style visual editor. Its 23 synthesis engines provide 557 factory entries: 556 level-matched sounds and an intentionally empty USER WT slot, including 64 Vital-derived translations, 44 Oriental/Middle Eastern sounds and nine XD compatibility sounds.
+SynthMaven 2.1.1 builds on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1) with four-part programs, a layer/split mixer, learned USB pedal controls and an instrument-style visual editor. Its 23 synthesis engines provide 557 factory entries: 556 level-matched sounds and an intentionally empty USER WT slot, including 64 Vital-derived translations, 44 Oriental/Middle Eastern sounds and nine XD compatibility sounds.
 
-[Installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [User manual](docs/USER_MANUAL.md) · [Quick start](QUICKSTART.md) · [Release notes](docs/release-2.1.md)
+[Installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [User manual](docs/USER_MANUAL.md) · [Quick start](QUICKSTART.md) · [Release notes](docs/release-2.1.1.md)
 
 ## What SynthMaven adds
 
@@ -44,7 +44,7 @@ Back up before installing. See [USB MIDI status](docs/USB_MIDI_STATUS.md), the [
 
 ## Building and verification
 
-See [BUILDING.md](BUILDING.md). Linux x86-64 runs the JieLi toolchain directly; macOS requires Docker. Run `sh tools/test_synthmaven.sh`, then `sh build.sh --release 2.1`. The build enables USB host support and excludes Bluetooth. Source and licence notices are published alongside the installer.
+See [BUILDING.md](BUILDING.md). Linux x86-64 runs the JieLi toolchain directly; macOS requires Docker. Run `sh tools/test_synthmaven.sh`, then `sh build.sh --release 2.1.1`. The build enables USB host support and excludes Bluetooth. Source and licence notices are published alongside the installer.
 
 ## Credits and licence
 
@@ -69,3 +69,7 @@ The development bank adds **64 native HYBRID translations** selected from 68 sup
 On a fresh start or reset, the four program parts contain **V01 STROBE, V02 DARK, V03 REESE and V04 PLUCK**, with the first part selected and layering off. Existing autosaved work takes precedence. HOME navigation is unchanged: ALGORITHM selects the engine, PRESET cycles its sounds, and SELECT chooses one of the four parts. Within HYBRID, the 64 new sounds come first, followed by the existing HYBRID sounds in the same cycle. Existing preset IDs remain stable.
 
 Selection uses compatibility checks and native waveform spectral fitting, with no duplicate translated parameter sets. Listening comparison and device validation remain pending. See the [selection record](assets/vital/README.md) for source attribution and conversion limits.
+
+## Release 2.1.1: ENV chord shortcut
+
+Hold ENV for three seconds to open CHORDS. Knobs 1–3 control chord mode, voicing and strum; the menu stays open after release. A short ENV press opens envelopes. Other navigation and shortcuts remain unchanged.

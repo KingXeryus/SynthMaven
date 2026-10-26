@@ -337,9 +337,9 @@ def main():
     if a.release and a.release != json.loads((Path(__file__).resolve().parents[1]/"release.json").read_text())["version"]:
         raise SystemExit("Release version must match release.json")
     if a.release:                   # one digit each: the identity has room for two
-        m = re.fullmatch(r"(\d)\.(\d)(-[A-Za-z0-9]+)?", a.release)
+        m = re.fullmatch(r"(\d)\.(\d)(?:\.\d+)?(-[A-Za-z0-9]+)?", a.release)
         if not m:
-            raise SystemExit(f"--release {a.release}: use X.Y or X.Y-suffix, one digit each")
+            raise SystemExit(f"--release {a.release}: use X.Y[.patch] or X.Y-suffix, major/minor one digit each")
         PRODUCT = "FM-1_9" + m[1] + m[2]
         VERSION = "SYNTHMAVEN " + a.release.upper()
         name = f"felucca-{a.release}.fwsc"

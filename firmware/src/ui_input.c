@@ -26,7 +26,7 @@ static void led_put(uint8_t *nl, uint32_t id, int on)
 }
 
 static const uint8_t FAM_BTN[FAM_COUNT] = {B_HOME, B_ENV, B_LFO, B_FX, B_SCL, B_EDIT, B_GLO, B_SAVE,
-                                           B_ARP, B_SEQ, B_HOME};   /* button of each page family (TRACKS: HOME) */
+                                           B_ARP, B_SEQ, B_HOME, B_ENV};   /* button of each page family (TRACKS: HOME) */
 
 static uint32_t cur_fam(void) { return ui.home ? FAM_HOME : cur_page()->fam; }
 static uint32_t cur_btn(void)                      /* the button of the screen shown */
@@ -1079,6 +1079,24 @@ static void glo_layer_input(void) {
     was_down=(uint8_t)down;
 }
 #endif
+#if SYNTHMAVEN_SYNTH
+/* ENV tap keeps its envelope pages; only a full three-second hold opens chords. */
+static void env_chord_input(uint32_t *pressed)
+{
+    static uint32_t started;
+    static uint8_t down, opened;
+    uint32_t mask=1u<<panel.btn[B_ENV], held=(fm1_in.buttons&mask)!=0u;
+    *pressed &= ~mask;
+    if(held && !down){started=fm1_ms;opened=0;}
+    if(held && !opened && fm1_ms-started>=3000u){
+        layer_unlock();ui.menu=0;ui.confirm=0;
+        ui.page=(uint8_t)page_first(FAM_CHORD);ui.home=0;scale_browser=0;
+        page_entered();ui.force=1;opened=1;
+    }
+    if(!held && down && !opened)*pressed|=mask;
+    down=(uint8_t)held;
+}
+#endif
 static void ui_input(void)
 {
     uint32_t pressed = fm1_input_edges(0), notes = fm1_input_note_edges(), now = fm1_ticks(), id, b, k;
@@ -1090,6 +1108,7 @@ static void ui_input(void)
 #if SYNTHMAVEN_SYNTH
     syn_tick();                                         /* MIDI CC 20: MORPH */
     glo_layer_input();
+    env_chord_input(&pressed);
 #endif
     enc_hold = 0;                                       /* (panel.c: every knob readable again this pass) */
     if (pressed || notes)

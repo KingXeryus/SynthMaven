@@ -1,6 +1,6 @@
-# SynthMaven 2.1 — FM1 user manual
+# SynthMaven 2.1.1 — FM1 user manual
 
-Generated from release metadata: firmware **2.1**, protocol **22**, shared synth voice limit **8**.
+Generated from release metadata: firmware **2.1.1**, protocol **22**, shared synth voice limit **8**.
 
 ## Sound presets, programs and library entries
 
@@ -11,7 +11,7 @@ Generated from release metadata: firmware **2.1**, protocol **22**, shared synth
 
 SynthMaven is an open-source firmware based on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1).
 This manual covers the **M-VAVE FM1 hardware firmware**, its web installer and
-web editor. Version 2.1 provides **23 engines and 557 factory presets**. The Mac
+web editor. Version 2.1.1 provides **23 engines and 557 factory presets**. The Mac
 software instrument has a separate feature set; its eight-layer interface and
 DAW formats are not features of this hardware firmware.
 
@@ -57,12 +57,12 @@ The FM1 port cannot act as host and computer device at the same time. This host 
    in Chrome or Edge with the FM1 connected over USB.
 2. Close other programs using the FM1 MIDI ports if connection fails.
 3. Follow the installer prompts and keep power connected until it finishes.
-4. Check the splash/About screen for **SYNTHMAVEN 2.1**.
+4. Check the splash/About screen for **SYNTHMAVEN 2.1.1**.
 5. Open the [editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/),
    click **Connect**, grant MIDI/SysEx access when prompted and choose the FM1.
 
 Use the matching online editor after updating. The firmware/editor wire protocol
-is version **22**; that protocol number is independent of product version 2.1.
+is version **22**; that protocol number is independent of product version 2.1.1.
 A URL ending in `?mock=1` uses a simulated device for previewing the editor.
 It does not communicate with or validate a physical FM1.
 
@@ -304,7 +304,7 @@ USER sound presets store individual sounds. Export user banks and backups before
 |---|---|
 | Editor does not connect | Chrome/Edge, USB data cable, MIDI/SysEx permission, correct port; close competing MIDI applications |
 | Only highlight changes | Use KNOB 3 to load or KNOB 4 to load and edit |
-| Oriental collection missing | Verify SYNTHMAVEN 2.1, refresh the matching editor, select ORIENTAL on the hardware |
+| Oriental collection missing | Verify SYNTHMAVEN 2.1.1, refresh the matching editor, select ORIENTAL on the hardware |
 | USB keyboard is silent | Confirm a MIDI host exists; separate power alone is insufficient; check KEY IN and channel |
 | TRS keyboard is silent | Check MIDI direction, compatible cable/adapter, channel and KEY IN |
 | Pedal scans but does not switch | Wait for MIDI READY; enable PROG; check PORT, channel and actual Program Change/CC0 data |
@@ -320,7 +320,7 @@ For recovery tooling, see the [build/install guide](../BUILDING.md#install).
 
 ## Version, validation and support
 
-Version 2.1 uses editor protocol 22. See [release notes](release-1.9.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
+Version 2.1.1 uses editor protocol 22. See [release notes](release-1.9.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
 
 
 
@@ -388,7 +388,7 @@ EDIT now has four standard pages: EDIT 1, EDIT 2, VOICE and CHARACTER. FMX keeps
 
 Hold EDIT for two seconds to preview the four-sound mixer. KNOBS 1–4 control the volumes of sounds 1–4. SELECT cycles the selected part; ALGORITHM sets that part’s split point from A1 to A6 (shown as note and octave), and PRESET/parameter controls its pan. Editing a split point enables the selected part’s existing Lower/Upper zone. GLO → LAYER ROUTE or the editor can choose the zone or restore full-keyboard layering. At three seconds the mixer latches and stays open after release. Tap EDIT or HOME to exit; save a program to keep the mix. The keyboard still plays and EDIT no longer erases sequence notes. Short presses never show a held-layer screen. HOME opens its menu after three seconds.
 
-### Performance workflow (2.1, protocol 22)
+### Performance workflow (2.1.1, protocol 22)
 
 A **sound preset** describes one engine sound. A **four-part program** stores four sounds with routing, mix, tuning and four scenes. An **editor library entry** is a computer-side sound record. These names are not interchangeable.
 
@@ -426,8 +426,8 @@ On a fresh start or reset, the four program parts contain **V01 STROBE, V02 DARK
 
 Selection uses compatibility checks and native waveform spectral fitting, with no duplicate translated parameter sets. Listening comparison and device validation remain pending. See the [selection record](../assets/vital/README.md) for source attribution and conversion limits.
 
-## Device graphics and chords in 2.1
+## Device graphics and chords in 2.1.1
 
-The device uses Rubik typography and compact cards with a black/white/red palette and blue/grey accents. Its menu/page structure and existing shortcuts are retained. The twelve chromatic tuning cells visualize the current offsets without changing the microtuning mapping.
+The device uses Rubik typography and compact cards with a black/white/red palette and blue/grey accents. Hold ENV for three seconds to open the persistent CHORDS menu: assignable knobs 1–3 control CHORD, VOIC and STRUM. Nothing opens before three seconds; releasing ENV keeps CHORDS open. A short ENV press opens the envelope pages, and HOME returns home. Other navigation and shortcuts are retained. The twelve chromatic tuning cells visualize the current offsets without changing the microtuning mapping.
 
 SEL retains its CHORD control; SEL 2 retains STRUM and replaces the VLEAD label with VOIC. CLOSE/SMOOTH preserve the old OFF/ON IDs, followed by OPEN, INV1, INV2 and +OCT. The six legacy chord IDs remain unchanged; new choices are MAJ, MIN, DOM7, MAJ7, MIN7, SUS2, DIM, AUG, AUTO and AUTO2. AUTO uses prior harmony; AUTO2 keeps the mapped melody highest. Both bypass master microtuning when it applies to the sound. Incoming MIDI chords freeze their generated notes through release and share ownership of overlapping tones. Signed millisecond strum settings remain available, with additional D8/U8/A8, D16/U16/A16 and D32/U32/A32 tempo divisions. See [the full 2.1 chord reference and limitations](release-2.1.md).

@@ -494,7 +494,7 @@ static void param_format(const param_desc_t *d, int32_t v, char *val, const char
 #include "filter_caps.h"
 #endif
 enum { FAM_HOME, FAM_ENV, FAM_LFO, FAM_FX, FAM_SCL, FAM_EDIT, FAM_GLO, FAM_SAVE, FAM_ARP, FAM_SEQ, FAM_TRK,
-       FAM_COUNT };
+       FAM_CHORD, FAM_COUNT };
 enum { SC_TRACK, SC_GLOBAL, SC_ENGINE, SC_STEP, SC_TRK, SC_SONG, SC_DRUM, SC_SYN };   /* SC_SYN: ui_synth.c */
 enum { GR_NONE, GR_ADSR, GR_LFO, GR_STEPS, GR_ARP, GR_SCALE, GR_FX, GR_ROLL, GR_BROWSE, GR_SLOTS, GR_USER, GR_TRK,
        GR_SLCR, GR_LAYER, GR_MORPH, GR_MATRIX, GR_FMX, GR_HIST, GR_MSEQ, GR_PEDAL, GR_SCENE, GR_SETLIST, GR_FILTER };
@@ -611,6 +611,9 @@ static const page_t PAGES[] = {
     {"SONG", SYNTHMAVEN_SYNTH ? FAM_TRK : FAM_SEQ, SC_SONG, GR_NONE, {0xFF, 0xFF, 0xFF, 0xFF}},   /* (SynthMaven: out of reach) */
     {"TRACKS", FAM_TRK, SC_TRK, GR_TRK, {0, 1, 2, 3}},   /* REC button; TRACK LEVEL LEN PAN */
     {"DRUMS", FAM_TRK, SC_DRUM, GR_NONE, {0xFF,0xFF,0xFF,0xFF}},
+#if SYNTHMAVEN_SYNTH
+    {"CHORDS", FAM_CHORD, SC_TRACK, GR_SCALE, {P_CHORD, P_VLEAD, P_STRUM, 0xFF}},
+#endif
 };
 #define NPAGES (sizeof(PAGES) / sizeof(PAGES[0]))
 /* a page not there for the sound selected (0.6: FMX's own pages on another engine): the page walks pass it */
