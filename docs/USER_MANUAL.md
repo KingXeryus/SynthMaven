@@ -1,8 +1,8 @@
-# SynthMaven 1.5 — FM1 user manual
+# SynthMaven 1.6 — FM1 user manual
 
 SynthMaven is an open-source firmware based on [Clipper](https://github.com/isod89/clipper-fm1).
 This manual covers the **M-VAVE FM1 hardware firmware**, its web installer and
-web editor. Version 1.5 provides **23 engines and 537 factory presets**. The Mac
+web editor. Version 1.6 provides **23 engines and 537 factory presets**. The Mac
 software instrument has a separate feature set; its eight-layer interface and
 DAW formats are not features of this hardware firmware.
 
@@ -30,7 +30,7 @@ DAW formats are not features of this hardware firmware.
 
 ## Before installation
 
-Back up the FM1 before installing custom firmware. Version 1.5 removes Bluetooth. Direct USB host mode has software test coverage but still needs Chocolate Plus hardware validation.
+Back up the FM1 before installing custom firmware. Version 1.6 removes Bluetooth. Direct USB host mode has software test coverage but still needs Chocolate Plus hardware validation.
 
 ### Connection options
 
@@ -48,12 +48,12 @@ The FM1 port cannot act as host and computer device at the same time. This host 
    in Chrome or Edge with the FM1 connected over USB.
 2. Close other programs using the FM1 MIDI ports if connection fails.
 3. Follow the installer prompts and keep power connected until it finishes.
-4. Check the splash/About screen for **SYNTHMAVEN 1.5**.
+4. Check the splash/About screen for **SYNTHMAVEN 1.6**.
 5. Open the [editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/),
    click **Connect**, grant MIDI/SysEx access when prompted and choose the FM1.
 
 Use the matching online editor after updating. The firmware/editor wire protocol
-is version **19**; that protocol number is independent of product version 1.5.
+is version **19**; that protocol number is independent of product version 1.6.
 A URL ending in `?mock=1` uses a simulated device for previewing the editor.
 It does not communicate with or validate a physical FM1.
 
@@ -70,12 +70,13 @@ HOME displays the four sounds loaded in the working program. The outline marks t
 | SEL tap | Cycle tuning scales |
 | SEL hold 3 seconds | Latch the custom-scale editor |
 | SAVE | Open PROGRAM save/load settings |
+| GLO hold 3 seconds | Toggle layering ON/OFF once; GLO does not latch |
 
-SAVE → PROGRAM selects a slot, loads or saves it. Turn LOAD or SAVE twice to confirm. PROGRAM MODE → LAYER chooses focused sound alone (OFF) or all four sounds together (ON). All layers share the eight-voice budget.
+SAVE → PROGRAM selects a slot, loads or saves it. Turn LOAD or SAVE twice to confirm. PROGRAM MODE → LAYER chooses focused sound alone (OFF) or all four sounds together (ON). Each sound has an eight-voice budget.
 
 Other SAVE pages include PRESETS and USER. On PRESETS, KNOB 1 highlights a candidate, KNOB 2 filters ALL/engine/USER/ORIENTAL, KNOB 3 loads it and KNOB 4 loads and opens Edit. Loading replaces the focused sound only. Factory presets load dry; add effects afterward.
 
-Function layers remain open after holding their button for three seconds. Release the button and continue editing. Tap the same function button or HOME to exit. REC’s clear action still requires its confirmation hold.
+Except GLO, function layers remain open after holding their button for three seconds. Release the button and continue editing. Tap the same function button or HOME to exit. REC’s clear action still requires its confirmation hold.
 
 ### Oriental / Middle Eastern sounds
 
@@ -286,7 +287,7 @@ SAVE → PROGRAM provides four persistent program slots. Choose SLOT 1–4; turn
 
 Programs contain each sound’s engine, preset identity, edited parameters, modulation sequence and HYBRID/FMX/FM6 patch, plus selected sound, tuning configuration and layer mode. The working program autosaves after an idle period when stopped and quiet. Custom-scale definitions persist in settings and are also included in programs and working-program backups. Loading a program restores its custom scales.
 
-USER presets store individual sounds. Export user banks and backups before updates. Older four-track project records remain readable; PRG1 programs from 1.4 upgrade automatically; new PRG2 records require firmware 1.5 or later. Do not overwrite valuable slots while testing custom firmware.
+USER presets store individual sounds. Export user banks and backups before updates. Older four-track project records remain readable; PRG1 programs from 1.4 upgrade automatically; new PRG2 records require firmware 1.6 or later. Do not overwrite valuable slots while testing custom firmware.
 
 ## Troubleshooting
 
@@ -294,7 +295,7 @@ USER presets store individual sounds. Export user banks and backups before updat
 |---|---|
 | Editor does not connect | Chrome/Edge, USB data cable, MIDI/SysEx permission, correct port; close competing MIDI applications |
 | Only highlight changes | Use KNOB 3 to load or KNOB 4 to load and edit |
-| Oriental collection missing | Verify SYNTHMAVEN 1.5, refresh the matching editor, select ORIENTAL on the hardware |
+| Oriental collection missing | Verify SYNTHMAVEN 1.6, refresh the matching editor, select ORIENTAL on the hardware |
 | USB keyboard is silent | Confirm a MIDI host exists; separate power alone is insufficient; check KEY IN and channel |
 | TRS keyboard is silent | Check MIDI direction, compatible cable/adapter, channel and KEY IN |
 | Pedal scans but does not switch | Wait for MIDI READY; enable PROG; check PORT, channel and actual Program Change/CC0 data |
@@ -310,7 +311,7 @@ For recovery tooling, see the [build/install guide](../BUILDING.md#install).
 
 ## Version, validation and support
 
-Version 1.5 uses editor protocol 19. See [release notes](release-1.5.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
+Version 1.6 uses editor protocol 20. See [release notes](release-1.6.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
 
 
 
@@ -327,7 +328,7 @@ setting, variant, reference degrees and tuning limitations.
 
 Tap SEL to cycle scales. Hold SEL for three seconds to enter the latched editor. SELECT chooses CUSTOM 1–4; PRESET selects ROOT C–B. Each chromatic key press cycles its offset through −25, −50, −75 and 0 cents. Other pitch classes stay unchanged. The offsets repeat across octaves relative to ROOT. Press SAVE and wait for SCALE SAVED; press SEL to leave. These custom scales appear in the tuning list alongside the 46 maqam reference tunings and Scala USER scale.
 
-## Appearance and factory levels (1.5)
+## Appearance and factory levels (1.6)
 
 Use **Appearance** in the editor or installer to choose Dark, Light or System. The browser remembers this choice. The editor uses the standalone instrument’s system sans-serif font, rounded panels, rotary controls and gridded parameter previews, with the logo’s red accent. Under Sound, choose Sound, Modulation, Effects, Layers, Tuning or All parameters. Drag a knob vertically, use Shift for fine pointer adjustment, use arrow keys when focused, or double-click to reset. Envelope graph handles edit attack, decay, sustain and release. Parameter diagrams are previews rather than live audio measurements.
 
@@ -335,7 +336,7 @@ The 537-entry catalogue has **536 audible, level-matched factory sounds plus USE
 
 The Tuning page includes a chromatic keyboard with the selected root and each key’s cents offset. Altered keys use the logo accent. In CUSTOM1–4, click a key or its note button to cycle 0 / −25 / −50 / −75 cents and save the change on the FM1.
 
-## Four-sound layers, splits and mixer (1.5)
+## Four-sound layers, splits and mixer (1.6)
 
 Open **Sound → Layers** in the editor. The four mixer strips adapt the standalone instrument’s controls to the FM1’s four loaded sounds. L1–L4 selects the sound to edit; Edit sound opens its Sound controls. **On** enables a slot; **M** mutes it; **S** solos it. Multiple solos can play together. The Pan knob places a sound left, centre or right, and the vertical Level fader balances its volume without changing its calibrated factory trim. Double-click Pan for centre or Level for its factory mixer level.
 
@@ -343,4 +344,12 @@ Turn **Layer program sounds** on to combine the enabled slots. Open a strip’s 
 
 With Layer off, SELECT chooses one enabled sound; mute and solo still apply. On the FM1, first SELECT a sound on HOME, then use **GLO → LAYER ROUTE** (On, Split, Upper, Point), **LAYER MIX** (Level, Pan, Mute, Solo) and **LAYER PITCH** (Transpose, Layer on/off). The split point is shown as MIDI note number: 60 is C4. Turn Upper off for Lower.
 
-Save the program to retain all four sounds’ enable states, zones, transpositions, levels, pans, mutes and solos. Working-program autosave retains them too. Firmware 1.5 imports PRG1 programs from 1.4 with every sound enabled across the keyboard, preserving their existing sounds, levels, pans and layer mode. New PRG2 programs cannot be loaded by firmware 1.4.
+Save the program to retain all four sounds’ enable states, zones, transpositions, levels, pans, mutes and solos. Working-program autosave retains them too. Firmware 1.6 imports PRG1 programs from 1.4 with every sound enabled across the keyboard, preserving their existing sounds, levels, pans and layer mode. New PRG2 programs cannot be loaded by firmware 1.4.
+
+## Quantize all and master tuning
+
+In SEL, choose ROOT and SCL, then set QNT to **ALL**. The focused sound supplies the scale and root for all four program sounds. Notes from the FM1 keys, USB/TRS MIDI, arpeggiator and sequencer snap down to the next allowed scale note, after each part’s transpose. At MIDI note 0, an unavailable lower pitch snaps upwards instead. Split zones use the original input note. OFF preserves incoming MIDI pitches; SNAP and WHITE keep their existing keyboard mapping. Keep the focus on the sound containing the desired common scale; changing focus selects that sound’s scale settings.
+
+The Layers editor has **Apply master tuning** for each sound, enabled by default. GLO → TUNING → MASTER changes this switch for the HOME-selected sound. Disable it to bypass the master maqam/temperament, custom/Scala tuning and reference A4 for that sound. Pitch quantization, transpose and the global fine-tune control remain independent. Programs save these four switches; settings preserve them across power cycles. Existing programs default to all four enabled. Firmware before 1.6 cannot load a saved program using QNT ALL; export backups before upgrading or downgrading.
+
+Hold GLO for three seconds to toggle layering once, then release. Holding longer does not toggle again. GLO never latches from a long press; other function buttons keep their existing three-second latch behavior.

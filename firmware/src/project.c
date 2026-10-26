@@ -1107,7 +1107,8 @@ static int project_used(uint32_t slot) {
  * there they came back at their defaults, and a SLOOP 2.6 object without them reads as 2.5's) */
 #if SYNTHMAVEN_SYNTH
 #include "custom_scale_store.h"
-#define SET_TAIL_MAX 88u
+#define SET_TAIL_MAX 100u
+#include "master_tuning_store.h"
 #else
 #define SET_TAIL_MAX 64u
 #endif
@@ -1121,6 +1122,7 @@ static int settings_write(const persist_t *p)
         dsu_defaults();
 #if SYNTHMAVEN_SYNTH
     {custom_scale_record_t r;custom_scale_fill(&r);memcpy(set_tail+CUSTOM_SCALE_OFF,&r,sizeof r);set_tail_n=SET_TAIL_MAX;}
+    {master_tuning_record_t r;master_tuning_fill(&r);memcpy(set_tail+88,&r,sizeof r);}
 #endif
     side_fill(&side_out);
     st_side = &side_out;
@@ -1157,6 +1159,9 @@ static void dsu_boot(void)                          /* the SYN kits from the set
         custom_scale_record_t r;memcpy(&r,set_tail+CUSTOM_SCALE_OFF,sizeof r);custom_scale_take(&r);tune_build();
     }
 #endif
+ #if SYNTHMAVEN_SYNTH
+    if(set_tail_n>=100u){master_tuning_record_t r;memcpy(&r,set_tail+88,sizeof r);master_tuning_take(&r);}
+ #endif
     dsu_dirty = 0;
 }
 #endif

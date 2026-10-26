@@ -662,6 +662,7 @@ static void trk_note_on(track_t *t, uint32_t note, uint32_t vel)
             const program_route_t *r=&program_route[i];
             int32_t pitch=(int32_t)note+r->transpose;
             if(!r->enabled || (r->split && (r->upper ? note<=r->point : note>r->point)) || pitch<0 || pitch>127)continue;
+            pitch=(int32_t)program_quantize((uint32_t)pitch);
             program_note[i][note]=(uint8_t)pitch;ly_route[note]|=(uint8_t)(1u<<i);
             trk_note_on1(&trk[i],(uint32_t)pitch,vel);
         }
@@ -691,7 +692,11 @@ static void trk_note_off(track_t *t, uint32_t note)
 {
     if(program_mode && !is_drum(t) && note<128u) {
         uint32_t i,mask=ly_route[note];ly_route[note]=0;
-        for(i=0;i<4;i++)if(mask&(1u<<i))trk_note_off1(&trk[i],program_note[i][note]);
+        for(i=0;i<4;i++)if(mask&(1u<<i)) {
+            uint32_t other,held=0;
+            for(other=0;other<128u;other++)if((ly_route[other]&(1u<<i)) && program_note[i][other]==program_note[i][note]){held=1;break;}
+            if(!held)trk_note_off1(&trk[i],program_note[i][note]);
+        }
         return;
     }
     uint32_t r;
@@ -1451,7 +1456,7 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
                     q += (vib * mac3) >> 12;
                 if (mpe)                                /* MPE: the note's own bend */
                     q += (mpe_bend[v->ch & 15u] * (int32_t)MPE_RANGE[mpe_mode % MPE_MODES]) >> 3;
-                if (tun_on)                             /* (0.9) the TUNING: the note's own pitch (glides too) */
+                if (tun_on && !(master_tuning_bypass & (1u << (uint32_t)(t-trk)))) /* (0.9) the TUNING: the note's own pitch (glides too) */
                     q += tun_at(v->pitch_cur);
                 if (vint)                               /* (0.9) VINTAGE: the voice's own tuning and drift */
                     q += vintage_pitch(v, (uint32_t)(t - trk) * NVOICE + i, vint);

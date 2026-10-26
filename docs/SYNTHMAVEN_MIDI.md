@@ -1,4 +1,4 @@
-# SynthMaven 1.5 MIDI settings — protocol 19
+# SynthMaven 1.6 MIDI settings — protocol 20
 
 USB is the only pedal-message source. Keyboard input may be USB, TRS or BOTH. The USB host role is independent of MIDI source filtering.
 
@@ -21,3 +21,9 @@ Backups use PRG2 records (PRG1 imports from 1.4 remain supported) for the workin
 USB host mode supports class-compliant full-speed USB MIDI 1.0 and one hub; it does not supply VBUS. See [USB status](USB_MIDI_STATUS.md).
 
 Command **109** (protocol ≥19): read with `part` 0–3; write with `part, enabled, split, upper, splitPoint, transpose+24, level, pan+64, mute, solo`. Boolean values are 0/1; splitPoint is 0–127; transpose+24 is 0–48; level and pan+64 are 0–127. Reply is `rc, part` followed by the same nine fields on success. Invalid requests change nothing. Focus stays unchanged. Lower includes the split point; Upper begins above it. Routing changes release the edited part, while level/pan changes use the existing mixer glide. All keyboard channels continue to follow the global MIDI input setting.
+
+## Master tuning switches (1.6)
+
+Command **110** (protocol ≥20): read `[part]`, write `[part, applyMasterTuning]`; reply `[rc, part, applyMasterTuning]` on success and `[rc, part]` on failure. Part is 0–3 and switch is 0/1. Every sound defaults to 1. Invalid writes change nothing. Programs and settings persist these switches. Command 109 remains unchanged.
+
+SEL QNT value 3 (**ALL**) snaps keyboard, incoming USB/TRS MIDI, arp and sequencer notes across the four program sounds into the focused sound’s ROOT/SCL, following per-part transpose. Original notes determine split routing and note-off ownership. Master tuning bypass independently controls maqam/temperament/Scala offsets and reference A4.

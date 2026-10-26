@@ -208,6 +208,18 @@ static int kb_scaled(const track_t *t)
 #endif
     return 1;
 }
+#if SYNTHMAVEN_SYNTH
+/* ALL uses the focused sound's scale for every program source and part. */
+static uint32_t program_quantize(uint32_t note) {
+    const track_t *t=TSEL;
+    if(!program_mode || t->p[P_QUANT]!=3)return note;
+    uint32_t mask=scale_mask(t);
+    while(note && !(mask&(1u<<((note+12u-(uint32_t)t->p[P_ROOT])%12u))))note--;
+    /* At the bottom MIDI boundary round upwards if no legal lower note exists. */
+    while(note<127u && !(mask&(1u<<((note+12u-(uint32_t)t->p[P_ROOT])%12u))))note++;
+    return note;
+}
+#endif
 /* key k's note on a scaled track with the octave buttons at oct (KB_SILENT: none): QNT, ROOT, SCALE, TRN as they are
  * now. The keys (kb_map), and the notes the arp holds (arp_next, SLOOP 2.6 after Felucca 1.5 #191: a latched chord
  * follows TRN, ROOT, SCALE and QNT, in the octave its keys were pressed in) */

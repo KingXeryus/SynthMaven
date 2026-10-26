@@ -490,6 +490,8 @@ static track_t trk[NTRK];        /* the instrument: three parts and the drum tra
 static song_t song;
 #if SYNTHMAVEN_SYNTH
 static uint8_t program_mode, program_layer;
+static uint8_t master_tuning_bypass; /* zero: every sound follows master tuning by default */
+static uint32_t program_quantize(uint32_t note);
 typedef struct { uint8_t enabled,split,upper,point; int8_t transpose; } program_route_t;
 static program_route_t program_route[4] = {{1,0,0,60,0},{1,0,0,60,0},{1,0,0,60,0},{1,0,0,60,0}};
 /* SynthMaven 0.6: the layer in MULTI (the two sounds two parts: the layer on its own MIDI channel, its own controls) */

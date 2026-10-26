@@ -23,7 +23,7 @@ enum { X_LYMODE, X_LYSOUND, X_LYSPLIT, X_LYLEVEL, X_LYOCT, X_LYPAN, X_LYFILT, X_
        X_MIN, X_MOUT,                                  /* 1.0: GLO > MIDI, the instrument's channels (seq.c midi_in_ch) */
        X_MBEND, X_MLOCAL, X_MPROG, X_MCCO,             /* 1.0: the bend range (voice.c midi_bend), LOCAL, PROG, CC OUT */
        X_MBRTH,                                        /* 1.0: EWI (seq.c midi_breath) */
-       X_SMPORT, X_SMKEY, X_SMBT, X_SMPAIR, X_SMDEV, X_SMCON, X_PTYPE, X_PNUM, X_PVAL, X_PCH, X_USBROLE, X_PGLAYER, X_PGENABLE, X_PGSPLIT, X_PGSIDE, X_PGPOINT, X_PGLEVEL, X_PGPAN, X_PGMUTE, X_PGSOLO, X_PGTRANS, X_COUNT };
+       X_SMPORT, X_SMKEY, X_SMBT, X_SMPAIR, X_SMDEV, X_SMCON, X_PTYPE, X_PNUM, X_PVAL, X_PCH, X_USBROLE, X_PGLAYER, X_PGENABLE, X_PGSPLIT, X_PGSIDE, X_PGPOINT, X_PGLEVEL, X_PGPAN, X_PGMUTE, X_PGSOLO, X_PGTRANS, X_MTUNE, X_COUNT };
 static void mseq_fill(struct track *t, uint32_t l, uint32_t f);
 static const char *const N_QFILL[] = {"--", "RAMP+", "RAMP-", "TRI", "SINE", "SQR", "RND", "FLAT", "INVRT", "SHIFT"};
 enum { QF_NONE, QF_UP, QF_DOWN, QF_TRI, QF_SINE, QF_SQR, QF_RND, QF_FLAT, QF_INV, QF_SHIFT, QF_N };
@@ -93,6 +93,7 @@ static const param_desc_t XD[X_COUNT] = {
     [X_QSTEP] = PD("STEP", F_INT, 1, 16, 1),
     [X_QVAL] = PD("VALUE", F_INT, -8, 7, 0),
     [X_QFILL] = PE("SHAPE", N_QFILL, 0),
+    [X_MTUNE] = PE("MASTER", N_ONOFF, 1),
     [X_TSYS] = PE("TUNE", N_TUNE, 0),
     [X_TROOT] = PE("ROOT", N_NOTE, 0),
     [X_TA4] = {"A4", F_INT, 400, 480, 440, 0, "Hz"},
@@ -615,6 +616,7 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
         return &hd;
     }
     case X_HCMP: xv[X_HCMP] = hist_cmp_on; *valp = &xv[X_HCMP]; break;
+    case X_MTUNE: xv[X_MTUNE]=!(master_tuning_bypass&(1u<<(song.sel%4u)));*valp=&xv[X_MTUNE];break;
     case X_TSYS: xv[X_TSYS] = (int16_t)(tune_cfg.sys % TU_N); *valp = &xv[X_TSYS]; break;
     case X_TROOT: xv[X_TROOT] = (int16_t)(tune_cfg.root % 12u); *valp = &xv[X_TROOT]; break;
     case X_TA4: xv[X_TA4] = (int16_t)(440 + clamp(tune_cfg.a4, -40, 40)); *valp = &xv[X_TA4]; break;
@@ -784,6 +786,7 @@ static void syn_changed(uint32_t id, int16_t *vp)
         TSEL->ms[clamp(xv[X_QLANE], 1, 4) - 1][clamp(xv[X_QSTEP], 1, 16) - 1] = (int8_t)clamp(*vp, -8, 7);
         ui.force = 1;
         break;
+    case X_MTUNE: master_tuning_bypass=(uint8_t)((master_tuning_bypass&~(1u<<(song.sel%4u)))|((!*vp)<<(song.sel%4u)));settings_later=1;break;
     case X_TSYS:
     case X_TROOT:
     case X_TA4:                                       /* (0.9) the TUNING: the table again, saved with the settings */

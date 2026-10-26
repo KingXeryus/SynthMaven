@@ -7,6 +7,7 @@ static int st_erase(uint32_t off){memset(nor+off,255,4096);return 0;}
 static int st_prog(uint32_t off,const void *p,uint32_t n){const uint8_t *s=p;while(n--)nor[off++]&=*s++;return 0;}
 #include "../firmware/src/storage.c"
 #include "../firmware/src/custom_scale_store.h"
+#include "../firmware/src/master_tuning_store.h"
 int main(void){
  program_t a,b;custom_scale_record_t scales;
  memset(nor,255,sizeof nor);bank_resolve();panel=PANEL_DEFAULT;layers_init();host_tracks_init();
@@ -25,5 +26,10 @@ int main(void){
  b=a;b.custom[0]=0xFF000000;b.sum=program_hash(&b,sizeof b-4);check(!program_valid(&b),"out-of-range custom scale bits rejected");
  custom_scale_fill(&scales);memset(custom_scale,0,sizeof custom_scale);check(!custom_scale_take(&scales) && custom_scale[2]==0x654321u,"four custom scales round trip through settings record");
  scales.crc^=1;check(custom_scale_take(&scales),"corrupt custom settings rejected");
+ master_tuning_record_t mt;master_tuning_bypass=5;master_tuning_fill(&mt);
+ check(!st_save(OBJ_SETTINGS,&mt,sizeof mt),"master tuning switches saved through atomic flash storage");
+ master_tuning_bypass=0;memset(&mt,0,sizeof mt);check(st_load(OBJ_SETTINGS,&mt,sizeof mt)==sizeof mt&&!master_tuning_take(&mt)&&master_tuning_bypass==5,"master tuning switches restore after a settings reload");
+ mt.crc^=1;master_tuning_bypass=0;check(master_tuning_take(&mt)&&!master_tuning_bypass,"corrupt switch settings retain default enabled tuning");
+ memset(&mt,255,sizeof mt);check(master_tuning_take(&mt)&&!master_tuning_bypass,"erased legacy settings retain default enabled tuning");
  return fails?1:0;
 }

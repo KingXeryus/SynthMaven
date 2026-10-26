@@ -29,7 +29,7 @@ static uint32_t program_hash(const void *data,uint32_t n) {
 }
 static int program_valid(const program_t *p) {
     uint32_t i,k;
-    if(p->magic!=PROGRAM_MAGIC || p->size!=sizeof *p || p->active>=4u || p->layer>1u ||
+    if(p->magic!=PROGRAM_MAGIC || p->size!=sizeof *p || p->active>=4u || p->layer>1u || p->reserved[1]>15u ||
        p->tuning.sys>=TU_N || p->tuning.root>11 || p->tuning.a4< -40 || p->tuning.a4>40 ||
        p->tuning.n<1 || p->tuning.n>TU_MAXDEG || p->sum!=program_hash(p,sizeof *p-4u))return 0;
     for(i=0;i<4;i++)if(p->custom[i]&0xFF000000u)return 0;

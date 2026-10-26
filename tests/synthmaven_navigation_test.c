@@ -34,6 +34,9 @@ int main(void) {
  program_apply(&saved);frames(8);
  check(song.sel==3 && program_layer && trk[0].eng_req==0 && trk[3].eng_req==3,"program restores all four sounds, focus and layer mode");
  saved.sum^=1;check(!program_valid(&saved),"program corruption rejected");
+ go_home();program_layer_set(0);press(B_GLO);frames(190);
+ check(program_layer && ly_lock!=LY_MIX,"GLO long press enables layering without latching");frames(200);check(program_layer,"GLO toggles only once while held");release(B_GLO);check(ly_lock==LY_PLAY,"GLO stays unlatched after release");
+ press(B_GLO);frames(190);release(B_GLO);check(!program_layer && ly_lock==LY_PLAY,"second GLO hold disables layering");
  go_home();tap(B_SCL);check(tune_cfg.sys==1,"SEL tap cycles tuning scales");
  press(B_SCL);frames(190);release(B_SCL);check(scale_edit && ly_lock==LY_SCALE,"SEL holds three seconds then custom editor stays open");
  tune_cfg.root=0;tune_cfg.sys=TU_CUSTOM1;custom_scale[0]=0;

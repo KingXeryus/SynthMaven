@@ -842,6 +842,9 @@ static int layers_input(uint32_t note_edges, uint32_t *pressed, uint32_t home)
     static uint32_t t0[LY_COUNT];
     uint32_t l, now = fm1_ms, held = LY_PLAY, eat = 0;
 #if SYNTHMAVEN_SYNTH
+    static uint8_t glo_toggled;
+#endif
+#if SYNTHMAVEN_SYNTH
     if(scale_edit && (*pressed & ly_bit[LY_SONG])) {
         custom_scale_dirty=1;settings_later=1;*pressed&=~ly_bit[LY_SONG];ui_message("SCALE SAVE PENDING");
     }
@@ -860,9 +863,18 @@ static int layers_input(uint32_t note_edges, uint32_t *pressed, uint32_t home)
         uint32_t d = (fm1_in.buttons & ly_bit[l]) != 0u;
         if (d && !down[l]) {
             t0[l] = now;
+#if SYNTHMAVEN_SYNTH
+            if(l==LY_MIX)glo_toggled=0;
+#endif
             used[l] = (uint8_t)((eat & ly_bit[l]) != 0u);  /* (the press that unlocked: not a tap) */
         }
         if(d && down[l] && now-t0[l]>=3000u && ly_lock!=l) {
+#if SYNTHMAVEN_SYNTH
+            if(l==LY_MIX){
+                if(!glo_toggled){program_layer_set(!program_layer);glo_toggled=1;ui_message(program_layer?"LAYERING ON":"LAYERING OFF");}
+                used[l]=1;down[l]=(uint8_t)d;continue; /* GLO never latches and toggles once per hold. */
+            }
+#endif
 #if SYNTHMAVEN_SYNTH
             if(l==LY_SCALE)scale_edit_open();
 #endif

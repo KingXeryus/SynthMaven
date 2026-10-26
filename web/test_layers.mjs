@@ -8,8 +8,12 @@ const E=vm.runInNewContext(src+';({makeMockDevice,Link,req,parse,CMD,bkProjForma
 const mock=E.makeMockDevice({modern:true,maqam:true,synthmaven:true,oriental:true,auto:false}),input=[...mock.access.inputs.values()][0],output=[...mock.access.outputs.values()][0];
 const link=new E.Link(d=>output.send(d),{timeout:500});input.onmidimessage=e=>link.receive(e.data);const rq=r=>link.request(r);
 try{
- const info=E.parse[E.CMD.INFO](await rq(E.req.info()));assert.equal(info.proto,19);assert.equal(info.ntrk,5);
+ const info=E.parse[E.CMD.INFO](await rq(E.req.info()));assert.equal(info.proto,20);assert.equal(info.ntrk,5);
  for(let i=0;i<4;i++){const a=await rq([109,[i]]);assert.equal(a.length,11);assert.equal(a[0],0);assert.equal(a[1],i);assert.equal(a[2],1);}
+ for(let i=0;i<4;i++)assert.deepEqual(Array.from(await rq([110,[i]])),[0,i,1]);
+ assert.deepEqual(Array.from(await rq([110,[2,0]])),[0,2,0]);assert.deepEqual(Array.from(await rq([110,[1]])),[0,1,1]);
+ for(const a of [[],[4],[2,2],[2,0,1]])assert.equal((await rq([110,a]))[0],1);
+ assert.deepEqual(Array.from(await rq([110,[2]])),[0,2,0]);
  const value=[2,1,1,1,60,12,80,0,1,1];let r=await rq([109,value]);assert.deepEqual(Array.from(r),[0,...value]);assert.deepEqual(Array.from(await rq([109,[2]])),[0,...value]);
  for(const bad of [[4],[],[0,1],[2,2,...value.slice(2)],[...value.slice(0,5),49,...value.slice(6)]])assert.equal((await rq([109,bad]))[0],1);
  assert.deepEqual(Array.from(await rq([109,[2]])),[0,...value]);
