@@ -44,6 +44,17 @@
 #include "debug.h"
 const char log_tag_const_i_BLE_MIDI = 1;           /* the SDK keeps these in log_config; ours here */
 
+/* Production builds keep UI status/error reporting, without verbose UART traces.
+ * Define BLE_MIDI_TRACE=1 for a diagnostic build with sufficient flash space. */
+#ifndef BLE_MIDI_TRACE
+#define BLE_MIDI_TRACE 0
+#endif
+#if BLE_MIDI_TRACE
+#define MIDI_TRACE(...) printf(__VA_ARGS__)
+#else
+#define MIDI_TRACE(...) ((void)0)
+#endif
+
 #ifndef BLE_MIDI_CENTRAL
 #define BLE_MIDI_CENTRAL 0
 #endif
@@ -135,7 +146,7 @@ static void connection_update_complete_success(u8 *packet)
     int conn_interval = hci_subevent_le_connection_update_complete_get_conn_interval(packet);
     int conn_latency = hci_subevent_le_connection_update_complete_get_conn_latency(packet);
     int conn_timeout = hci_subevent_le_connection_update_complete_get_supervision_timeout(packet);
-    printf("conn: interval %d latency %d\n", conn_interval, conn_latency);   /* 1.25 ms units, on the log */
+    MIDI_TRACE("conn: interval %d latency %d\n", conn_interval, conn_latency);   /* 1.25 ms units, on the log */
 }
 
 /* ---- MIDI in: a BLE MIDI packet is a header, then (timestamp, message) pairs with running status */
@@ -405,12 +416,12 @@ void ble_midi_disconnect(void)
 void ble_midi_poll(void)
 {
     if (mc_state == BLE_MC_CONNECTING && !mc_handle && shim_ms() - mc_t0 > 5000u) {
-        printf("central: no answer\n");
+        MIDI_TRACE("central: no answer\n");
         ble_op_create_connection_cancel();
         mc_state = BLE_MC_OFF;
         bt_ble_adv_enable(1);
     } else if (mc_state == BLE_MC_SEARCHING && mc_handle && shim_ms() - mc_t0 > 5000u) {
-        printf("central: search timed out\n");
+        MIDI_TRACE("central: search timed out\n");
         mc_t0 = shim_ms();                       /* (once: the disconnection then turns the state off) */
         ble_op_disconnect(mc_handle);
     }
@@ -425,10 +436,10 @@ void user_client_report_search_result(search_result_t *r)
             static u16 on = 1;
             SEND(mc_handle, mc_value + 1, (u8 *)&on, 2, ATT_OP_WRITE);
             mc_state = BLE_MC_READY;
-            printf("central: MIDI ready\n");
+            MIDI_TRACE("central: MIDI ready\n");
             bt_ble_adv_enable(1);                /* set up: the computer may find us again */
         } else {
-            printf("central: no MIDI characteristic\n");
+            MIDI_TRACE("central: no MIDI characteristic\n");
             ble_op_disconnect(mc_handle);
         }
         return;
@@ -461,7 +472,7 @@ static void client_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t
             if (hci_subevent_le_connection_complete_get_role(packet))
                 break;                           /* a central connected to us: the server's */
             if (packet[3]) {
-                printf("central: connect failed %x\n", packet[3]);
+                MIDI_TRACE("central: connect failed %x\n", packet[3]);
                 mc_state = BLE_MC_OFF;
                 bt_ble_adv_enable(1);
                 break;
@@ -472,7 +483,7 @@ static void client_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t
             mc_t0 = shim_ms();
             mc_value = 0;
             mc_mtu = 20;
-            printf("central: connected %x\n", mc_handle);
+            MIDI_TRACE("central: connected %x\n", mc_handle);
             ble_op_multi_att_send_conn_handle(mc_handle, 0, ROLE_CLIENT);
             user_client_init(mc_handle, search_ram_buffer, sizeof search_ram_buffer);
             mc_state = BLE_MC_SEARCHING;
@@ -483,12 +494,12 @@ static void client_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t
     case HCI_EVENT_DISCONNECTION_COMPLETE:
         if (little_endian_read_16(packet, 3) != mc_handle)
             break;
-        printf("central: disconnected %x\n", packet[5]);
+        MIDI_TRACE("central: disconnected %x\n", packet[5]);
         ble_op_multi_att_send_conn_handle(0, 0, ROLE_CLIENT);
         mc_handle = 0;
         mc_value = 0;
         if (packet[5] == 0x3E && mc_state != BLE_MC_READY && mc_tries && --mc_tries) {
-            printf("central: again (%d left)\n", mc_tries);
+            MIDI_TRACE("central: again (%d left)\n", mc_tries);
             mc_create();                         /* never established: try again */
             break;
         }
@@ -613,7 +624,7 @@ static void cbk_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *p
                 break;
             }
             con_handle = hci_subevent_le_enhanced_connection_complete_get_connection_handle(packet);
-            printf("computer: connected (enh) %x\n", con_handle);
+            MIDI_TRACE("computer: connected (enh) %x\n", con_handle);
             server_profile_start(con_handle);
             break;
         case HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
@@ -622,7 +633,7 @@ static void cbk_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *p
             if (packet[3])
                 break;                           /* failed */
             con_handle = hci_subevent_le_connection_complete_get_connection_handle(packet);
-            printf("computer: connected %x\n", con_handle);
+            MIDI_TRACE("computer: connected %x\n", con_handle);
             connection_update_complete_success(packet + 8);
             server_profile_start(con_handle);
             break;
@@ -635,7 +646,7 @@ static void cbk_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *p
     case HCI_EVENT_DISCONNECTION_COMPLETE:
         if (little_endian_read_16(packet, 3) != con_handle)
             break;
-        printf("computer: disconnected %x\n", packet[5]);
+        MIDI_TRACE("computer: disconnected %x\n", packet[5]);
 #if BLE_MIDI_CENTRAL
         multi_att_clear_ccc_config(con_handle);
         ble_op_multi_att_send_conn_handle(0, 0, ROLE_SERVER);
@@ -669,7 +680,7 @@ static void cbk_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *p
         if (little_endian_read_16(packet, 2) != con_handle)
             break;
         tmp = little_endian_read_16(packet, 4);
-        printf("conn param %d: %s\n", connection_update_cnt, tmp ? "refused" : "accepted");   /* on the log */
+        MIDI_TRACE("conn param %d: %s\n", connection_update_cnt, tmp ? "refused" : "accepted");   /* on the log */
         if (tmp) {
             connection_update_cnt++;
             check_connetion_updata_deal();
@@ -678,7 +689,7 @@ static void cbk_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *p
         }
         break;
     case HCI_EVENT_ENCRYPTION_CHANGE:
-        printf("encryption %d on %x\n", packet[2], little_endian_read_16(packet, 3));
+        MIDI_TRACE("encryption %d on %x\n", packet[2], little_endian_read_16(packet, 3));
         break;
     }
 }
@@ -698,7 +709,7 @@ static void cbk_sm_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t
         break;
     case SM_EVENT_PAIR_PROCESS: {                /* on the log: 1 reconnect, 2 key missing, 3 failed, 4 timeout, 5 encryption failed */
         sm_just_event_t *e = (void *)packet;
-        printf("pairing %x on %x\n", e->data[0], e->con_handle);
+        MIDI_TRACE("pairing %x on %x\n", e->data[0], e->con_handle);
         break;
     }
     }
@@ -706,7 +717,7 @@ static void cbk_sm_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t
 
 void ble_profile_init(void)
 {
-    printf("ble profile init (MIDI)\n");
+    MIDI_TRACE("ble profile init (MIDI)\n");
     le_device_db_init();
     sm_init();
     sm_set_io_capabilities(IO_CAPABILITY_NO_INPUT_NO_OUTPUT);

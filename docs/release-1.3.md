@@ -20,6 +20,10 @@ Read the [full catalogue](MAQAM_SCALES.md), [manual](USER_MANUAL.md) or
 [installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) and verify
 SYNTHMAVEN 1.3 / FM-1_913.
 
+Verbose BLE UART traces are optional in production builds to fit the catalogue;
+on-screen link/error status and crash diagnostics remain. No engines or presets
+are removed. Diagnostic builds can define BLE_MIDI_TRACE=1.
+
 ## Validation
 
 Host tests cover all 46 settings × 12 roots × 128 MIDI notes against the
