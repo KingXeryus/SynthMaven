@@ -23,3 +23,5 @@ For layers or splits, open **Sound → Layers** in the editor: turn layering on,
 Set SEL → QNT to ALL to quantize the four program sounds and incoming MIDI using the focused sound’s ROOT/SCL. Each Layers strip offers Apply master tuning, enabled by default. Hold GLO for two seconds to toggle layering once without latching GLO.
 
 Holding GLO replaces the current display with **Layered ON** or **Layered OFF**. At two seconds, layering toggles once and the label updates. Release GLO to return to the previous screen. Other function buttons retain their three-second hold behavior.
+
+On **SAVE → PROGRAM**, the SELECT knob cycles the saved-program slots, wrapping at either end. Browsing does not load or overwrite a program; use LOAD or SAVE to confirm the action.

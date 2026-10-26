@@ -1271,6 +1271,11 @@ static void ui_input(void)
     if ((s = panel_enc(EN_SELECT)) != 0) {
         if (SYNTHMAVEN_SYNTH && ui.home && !rec_wait && !ft_on)
             track_select((uint32_t)(((int32_t)song.sel+s%4+4)%4)); /* HOME: select one loaded program sound */
+        else if (SYNTHMAVEN_SYNTH && !ui.home && cur_page()->fam==FAM_SAVE && cur_page()->graph==GR_SLOTS && !rec_wait && !ft_on) {
+            int32_t count=GP[G_SLOT].max-GP[G_SLOT].min+1;
+            song.g[G_SLOT]=(int16_t)(GP[G_SLOT].min+(song.g[G_SLOT]-GP[G_SLOT].min+s%count+count)%count);
+            ui.arm=ui.arm_t=0;ui.force=1; /* browsing never loads or overwrites a program */
+        }
         else if (rec_wait || ft_on || !page_walk(s)) {
             song.g[G_BPM] = (int16_t)clamp(song.g[G_BPM] + accel(EN_SELECT, s, 200), GP[G_BPM].min, GP[G_BPM].max);
             ui.bpm_t = 40;                          /* pages / recording retain their existing SELECT behavior */

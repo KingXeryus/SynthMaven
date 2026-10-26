@@ -54,5 +54,9 @@ int main(void) {
  tap(B_SCL);check(!scale_edit && ly_lock==LY_PLAY,"SEL exits latched scale editor");
  go_home();frames(110);ppm("synthmaven-four-program-sounds");
  open_family(FAM_SAVE);check(!strcmp(cur_page()->title,"PROGRAM"),"SAVE opens program save/load page");
+ int16_t old_bpm=song.g[G_BPM];uint8_t save_page=ui.page,old_focus=song.sel;song.g[G_SLOT]=GP[G_SLOT].min;ui.arm=G_SAVE;ui.arm_t=40;
+ encs[panel.enc[EN_SELECT]]=-1;frames(2);check(song.g[G_SLOT]==GP[G_SLOT].max && !ui.arm && !ui.arm_t,"SAVE SELECT wraps backwards through slots and cancels pending confirmation");
+ encs[panel.enc[EN_SELECT]]=1;frames(2);check(song.g[G_SLOT]==GP[G_SLOT].min && song.g[G_BPM]==old_bpm && ui.page==save_page && song.sel==old_focus && !saves && !loads,"SAVE SELECT wraps forwards without loading, saving, changing focus, page or tempo");
+
  return fails?1:0;
 }

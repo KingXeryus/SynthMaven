@@ -359,3 +359,5 @@ Hold GLO for two seconds to toggle layering once, then release. Holding longer d
 JUNO, VECTOR, FMX, WSEQ, MACRO, the filter models, TURNG and SPICE / DICE are inherited from **Clipper by 3dSam**. Their instrument and synthesis design inspirations are separate from code authorship. SynthMaven is a derivative of Clipper, which builds on SLOOP and Felucca. Existing copyright and third-party notices are retained; see [licensing and upstream notices](../LICENSING.md).
 
 Holding GLO replaces the current display with **Layered ON** or **Layered OFF**. At two seconds, layering toggles once and the label updates. Release GLO to return to the previous screen. Other function buttons retain their three-second hold behavior.
+
+On **SAVE → PROGRAM**, the SELECT knob cycles the saved-program slots, wrapping at either end. Browsing does not load or overwrite a program; use LOAD or SAVE to confirm the action.
