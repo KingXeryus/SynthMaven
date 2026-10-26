@@ -77,6 +77,7 @@ def main(pkg, version, out):
     for dest in (inst, ed):
         for asset in ("synthmaven-theme.css","synthmaven-theme.js"):
             shutil.copy(HERE / asset, dest / asset)
+    shutil.copytree(HERE / "fonts", inst / "fonts", dirs_exist_ok=True)
     shutil.copy(pkg, fw / name)
     shutil.copy(HERE / "editor.html", ed / "index.html")
     shutil.copy(logo, ed / "synthmaven-logo.svg")

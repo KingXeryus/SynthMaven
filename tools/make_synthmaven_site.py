@@ -22,6 +22,7 @@ else:
  (out/"index.html").write_text('<!doctype html><meta charset="utf-8"><title>SynthMaven</title><meta http-equiv="refresh" content="0;url=webapp/installer/">')
 for dest in (out/"webapp/installer",out/"webapp/editor"):
  for asset in ("synthmaven-theme.css","synthmaven-theme.js"):shutil.copy(web/asset,dest/asset)
+shutil.copytree(web/"fonts",out/"webapp/installer/fonts",dirs_exist_ok=True)
 make_site.publish_docs(out)
 # corresponding source and licence notices, for every published site
 src=out/"source";src.mkdir(exist_ok=True)
