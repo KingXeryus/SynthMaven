@@ -8,7 +8,7 @@ run-length 4-bit alpha storage. BDF and uncompressed formats remain supported.
 import sys
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont, features
+from PIL import Image, ImageDraw, ImageFont
 
 FONTS = Path(__file__).resolve().parents[1] / "assets" / "fonts"
 # (name, file, px, scale, pixel, first, last): pixel fonts are rendered without
@@ -157,11 +157,6 @@ def main(out):
                 end=at+1
                 while end<len(g) and end-at<16 and g[end]==g[at]:end+=1
                 data.append(((end-at-1)<<4)|g[at]);at=end
-            continue
-            for y in range(h):
-                row = g[y * bw:(y + 1) * bw] + [0]
-                for x in range(0, bw, 2):
-                    data.append((row[x] << 4) | row[x + 1])
         assert len(data) < 65536
         lines.append(f"static const uint8_t FONT_{name}_DATA[{len(data)}] = {{")
         for i in range(0, len(data), 24):

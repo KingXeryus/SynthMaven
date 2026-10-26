@@ -11,6 +11,7 @@ int main(void){
  check(readable,"all five palettes retain visible labels and units");
  uint8_t n[4];t->p[P_CHORD]=6;uint32_t count=chord_play_notes(t,60,0,n);check(count==3 && n[0]==60 && n[1]==64 && n[2]==67,"fixed major chord");
  t->p[P_CHORD]=7;count=chord_play_notes(t,60,0,n);check(count==3&&n[1]==63,"fixed minor chord independent of scale");
+ t->p[P_CHORD]=6;t->p[P_VOICE]=V_MONO;t->p[P_VLEAD]=VC_SMOOTH;vl_n[0]=1;vl_prev[0][0]=84;count=chord_play_notes(t,60,0,n);check(count==1 && n[0]==60,"new fixed chords preserve the mono root instead of voice-leading it to another octave");t->p[P_VOICE]=V_POLY;
  uint32_t valid=1,top=1,preview=1;
  for(uint32_t scale=0;scale<NSCALES;scale++)for(uint32_t root=0;root<12;root++)for(uint32_t voic=0;voic<6;voic++){
   t->p[P_SCALE]=(int16_t)scale;t->p[P_ROOT]=(int16_t)root;t->p[P_VLEAD]=(int16_t)voic;

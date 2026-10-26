@@ -366,6 +366,9 @@ static void sort_notes(uint8_t *c, uint32_t n)
 static uint32_t chord_play_notes(track_t *t, uint32_t n, uint32_t mods, uint8_t *c)
 {
     uint32_t k = chord_notes(t, n, c), j, type = (uint32_t)clamp(t->p[P_CHORD], 0, 15), part = trk_index(t);
+    if(type>=6u && type<CH_AUTO && (!voice_poly(t->p[P_VOICE]) || chord_kit(t))) {
+        sm_chord_view_set(t,n,c,k);return k;
+    }
     if(type>=CH_AUTO) {
         if(type==CH_AUTO && !sm_chord_micro(t) && !chord_kit(t)) {
             int32_t root;uint16_t mask;k=chord_auto_make(t,n,c,&root,&mask);chord_auto_remember(t,root,mask,c,k);
