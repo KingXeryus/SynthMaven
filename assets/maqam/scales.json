@@ -1,0 +1,1384 @@
+[
+  {
+    "id": "RAST",
+    "name": "Rast",
+    "url": "https://www.maqamworld.com/en/maqam/rast.php",
+    "degrees": [
+      0,
+      200,
+      350,
+      500,
+      700,
+      900,
+      1050
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      -50,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      -50
+    ],
+    "profile": 0,
+    "note": ""
+  },
+  {
+    "id": "BAYATI",
+    "name": "Bayati",
+    "url": "https://www.maqamworld.com/en/maqam/bayati.php",
+    "degrees": [
+      0,
+      150,
+      300,
+      500,
+      700,
+      800,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      -50,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 1,
+    "note": ""
+  },
+  {
+    "id": "AJAM",
+    "name": "Ajam",
+    "url": "https://www.maqamworld.com/en/maqam/ajam.php",
+    "degrees": [
+      0,
+      200,
+      400,
+      500,
+      700,
+      900,
+      1100
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": ""
+  },
+  {
+    "id": "AJAM_USHAYRAN",
+    "name": "Ajam Ushayran",
+    "url": "https://www.maqamworld.com/en/maqam/ajam_ushayran.php",
+    "degrees": [
+      0,
+      200,
+      400,
+      500,
+      700,
+      900,
+      1100
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": "Transposed Ajam"
+  },
+  {
+    "id": "ATHAR_KURD",
+    "name": "Athar Kurd",
+    "url": "https://www.maqamworld.com/en/maqam/athar_kurd.php",
+    "degrees": [
+      0,
+      100,
+      300,
+      600,
+      700,
+      800,
+      1100
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": ""
+  },
+  {
+    "id": "AWJ_IRAQ",
+    "name": "Awj Iraq",
+    "url": "https://www.maqamworld.com/en/maqam/awj_iraq.php",
+    "degrees": [
+      0,
+      150,
+      350,
+      450,
+      750,
+      850,
+      1150
+    ],
+    "offsets": [
+      0,
+      0,
+      -50,
+      0,
+      -50,
+      -50,
+      0,
+      0,
+      -50,
+      -50,
+      0,
+      50
+    ],
+    "profile": 3,
+    "note": "Tonic normalized from a half-flat reference; descending outline"
+  },
+  {
+    "id": "BASTANIKAR",
+    "name": "Bastanikar",
+    "url": "https://www.maqamworld.com/en/maqam/bastanikar.php",
+    "degrees": [
+      0,
+      150,
+      350,
+      500,
+      650,
+      750,
+      1050,
+      1150
+    ],
+    "offsets": [
+      0,
+      0,
+      -50,
+      0,
+      -50,
+      0,
+      0,
+      -50,
+      -50,
+      0,
+      50,
+      50
+    ],
+    "profile": 4,
+    "note": "First octave only; upper ajnas extend beyond the octave"
+  },
+  {
+    "id": "BAYATI_SHURI",
+    "name": "Bayati Shuri",
+    "url": "https://www.maqamworld.com/en/maqam/bayati_shuri.php",
+    "degrees": [
+      0,
+      150,
+      300,
+      500,
+      600,
+      900,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      -50,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 1,
+    "note": ""
+  },
+  {
+    "id": "DALANSHIN",
+    "name": "Dalanshin",
+    "url": "https://www.maqamworld.com/en/maqam/dalanshin.php",
+    "degrees": [
+      0,
+      200,
+      350,
+      500,
+      700,
+      900,
+      1050
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      -50,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      -50
+    ],
+    "profile": 0,
+    "note": "First-octave Rast outline; upper modulation is played separately"
+  },
+  {
+    "id": "FARAHFAZA",
+    "name": "Farahfaza",
+    "url": "https://www.maqamworld.com/en/maqam/nahawand.php",
+    "degrees": [
+      0,
+      200,
+      300,
+      500,
+      700,
+      800,
+      1100
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": "Transposed Nahawand"
+  },
+  {
+    "id": "HIJAZ",
+    "name": "Hijaz",
+    "url": "https://www.maqamworld.com/en/maqam/hijaz.php",
+    "degrees": [
+      0,
+      100,
+      400,
+      500,
+      700,
+      800,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": "Nahawand upper jins reference"
+  },
+  {
+    "id": "HIJAZKAR",
+    "name": "Hijazkar",
+    "url": "https://www.maqamworld.com/en/maqam/hijazkar.php",
+    "degrees": [
+      0,
+      100,
+      400,
+      500,
+      700,
+      800,
+      1100
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": ""
+  },
+  {
+    "id": "HIJAZKAR_KURD",
+    "name": "Hijazkar Kurd",
+    "url": "https://www.maqamworld.com/en/maqam/hijazkar_kurd.php",
+    "degrees": [
+      0,
+      100,
+      300,
+      500,
+      700,
+      800,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": "Lower-octave Kurd reference; octave-dependent alterations cannot be encoded in a repeating 12-key table"
+  },
+  {
+    "id": "HUSAYNI",
+    "name": "Husayni",
+    "url": "https://www.maqamworld.com/en/maqam/husayni.php",
+    "degrees": [
+      0,
+      150,
+      300,
+      500,
+      700,
+      850,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      -50,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      -50,
+      0,
+      0
+    ],
+    "profile": 5,
+    "note": "Upper Bayati reference; B-flat alternative remains on its chromatic key"
+  },
+  {
+    "id": "HUZAM",
+    "name": "Huzam",
+    "url": "https://www.maqamworld.com/en/maqam/huzam.php",
+    "degrees": [
+      0,
+      150,
+      350,
+      450,
+      750,
+      850,
+      1050
+    ],
+    "offsets": [
+      0,
+      0,
+      -50,
+      0,
+      -50,
+      -50,
+      0,
+      0,
+      -50,
+      -50,
+      0,
+      -50
+    ],
+    "profile": 6,
+    "note": "Tonic normalized from a half-flat reference"
+  },
+  {
+    "id": "IRAQ",
+    "name": "Iraq",
+    "url": "https://www.maqamworld.com/en/maqam/iraq.php",
+    "degrees": [
+      0,
+      150,
+      350,
+      500,
+      650,
+      850,
+      1050
+    ],
+    "offsets": [
+      0,
+      0,
+      -50,
+      0,
+      -50,
+      0,
+      0,
+      -50,
+      0,
+      -50,
+      0,
+      -50
+    ],
+    "profile": 7,
+    "note": "Tonic normalized from a half-flat reference"
+  },
+  {
+    "id": "JIHARKAH",
+    "name": "Jiharkah",
+    "url": "https://www.maqamworld.com/en/maqam/jiharkah.php",
+    "degrees": [
+      0,
+      200,
+      375,
+      475,
+      700,
+      900,
+      1050
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      -25,
+      -25,
+      0,
+      0,
+      0,
+      0,
+      0,
+      -50
+    ],
+    "profile": 8,
+    "note": "Reference approximation: thirds/fourths 25 cents low"
+  },
+  {
+    "id": "KIRDAN",
+    "name": "Kirdan",
+    "url": "https://www.maqamworld.com/en/maqam/kirdan.php",
+    "degrees": [
+      0,
+      200,
+      350,
+      500,
+      700,
+      900,
+      1050
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      -50,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      -50
+    ],
+    "profile": 0,
+    "note": "Rast tuning; descending melodic identity"
+  },
+  {
+    "id": "KURD",
+    "name": "Kurd",
+    "url": "https://www.maqamworld.com/en/maqam/kurd.php",
+    "degrees": [
+      0,
+      100,
+      300,
+      500,
+      700,
+      800,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": ""
+  },
+  {
+    "id": "LAMI",
+    "name": "Lami",
+    "url": "https://www.maqamworld.com/en/maqam/lami.php",
+    "degrees": [
+      0,
+      100,
+      300,
+      500,
+      600,
+      800,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": ""
+  },
+  {
+    "id": "MAHUR",
+    "name": "Mahur",
+    "url": "https://www.maqamworld.com/en/maqam/mahur.php",
+    "degrees": [
+      0,
+      200,
+      350,
+      500,
+      700,
+      900,
+      1100
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      -50,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 9,
+    "note": ""
+  },
+  {
+    "id": "MUHAYYAR",
+    "name": "Muhayyar",
+    "url": "https://www.maqamworld.com/en/maqam/bayati.php",
+    "degrees": [
+      0,
+      150,
+      300,
+      500,
+      700,
+      800,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      -50,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 1,
+    "note": "Bayati tuning; upper-register melodic identity"
+  },
+  {
+    "id": "MUSTAAR",
+    "name": "Mustaar",
+    "url": "https://www.maqamworld.com/en/maqam/mustaar.php",
+    "degrees": [
+      0,
+      250,
+      350,
+      550,
+      650,
+      850,
+      1050
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      -50,
+      -50,
+      0,
+      -50,
+      -50,
+      0,
+      -50,
+      0,
+      -50
+    ],
+    "profile": 10,
+    "note": "Tonic normalized from a half-flat reference"
+  },
+  {
+    "id": "NAHAWAND",
+    "name": "Nahawand",
+    "url": "https://www.maqamworld.com/en/maqam/nahawand.php",
+    "degrees": [
+      0,
+      200,
+      300,
+      500,
+      700,
+      800,
+      1100
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": "Harmonic-minor reference; descending flat seventh is still available"
+  },
+  {
+    "id": "NAHAWAND_MURASSAA",
+    "name": "Nahawand Murassaa",
+    "url": "https://www.maqamworld.com/en/maqam/nahawand_murassaa.php",
+    "degrees": [
+      0,
+      200,
+      300,
+      500,
+      600,
+      900,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": ""
+  },
+  {
+    "id": "NAIRUZ",
+    "name": "Nairuz",
+    "url": "https://www.maqamworld.com/en/maqam/nairuz.php",
+    "degrees": [
+      0,
+      200,
+      350,
+      500,
+      700,
+      850,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      -50,
+      0,
+      0,
+      0,
+      0,
+      -50,
+      0,
+      0
+    ],
+    "profile": 11,
+    "note": ""
+  },
+  {
+    "id": "NAWA_ATHAR",
+    "name": "Nawa Athar",
+    "url": "https://www.maqamworld.com/en/maqam/nawa_athar.php",
+    "degrees": [
+      0,
+      200,
+      300,
+      600,
+      700,
+      800,
+      1100
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": ""
+  },
+  {
+    "id": "NIKRIZ",
+    "name": "Nikriz",
+    "url": "https://www.maqamworld.com/en/maqam/nikriz.php",
+    "degrees": [
+      0,
+      200,
+      300,
+      600,
+      700,
+      900,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": ""
+  },
+  {
+    "id": "RAHAT_AL_ARWAH",
+    "name": "Rahat al-Arwah",
+    "url": "https://www.maqamworld.com/en/maqam/huzam.php",
+    "degrees": [
+      0,
+      150,
+      350,
+      450,
+      750,
+      850,
+      1050
+    ],
+    "offsets": [
+      0,
+      0,
+      -50,
+      0,
+      -50,
+      -50,
+      0,
+      0,
+      -50,
+      -50,
+      0,
+      -50
+    ],
+    "profile": 6,
+    "note": "Transposed Huzam"
+  },
+  {
+    "id": "SABA",
+    "name": "Saba",
+    "url": "https://www.maqamworld.com/en/maqam/saba.php",
+    "degrees": [
+      0,
+      150,
+      300,
+      400,
+      700,
+      800,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      -50,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 1,
+    "note": "Repeating first-octave reference; upper lowered tonic is played chromatically"
+  },
+  {
+    "id": "SABA_ZAMZAM",
+    "name": "Saba Zamzam",
+    "url": "https://www.maqamworld.com/en/maqam/saba_zamzam.php",
+    "degrees": [
+      0,
+      100,
+      300,
+      400,
+      700,
+      800,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": "Repeating first-octave reference"
+  },
+  {
+    "id": "SAZKAR",
+    "name": "Sazkar",
+    "url": "https://www.maqamworld.com/en/maqam/kirdan.php",
+    "degrees": [
+      0,
+      200,
+      350,
+      500,
+      700,
+      900,
+      1050
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      -50,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      -50
+    ],
+    "profile": 0,
+    "note": "Rast tuning; chromatic D-sharp remains available"
+  },
+  {
+    "id": "SHADD_ARABAN",
+    "name": "Shadd Araban",
+    "url": "https://www.maqamworld.com/en/maqam/hijazkar.php",
+    "degrees": [
+      0,
+      100,
+      400,
+      500,
+      700,
+      800,
+      1100
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": "Transposed Hijazkar"
+  },
+  {
+    "id": "SHAHNAZ",
+    "name": "Shahnaz",
+    "url": "https://www.maqamworld.com/en/maqam/hijazkar.php",
+    "degrees": [
+      0,
+      100,
+      400,
+      500,
+      700,
+      800,
+      1100
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": "Transposed Hijazkar"
+  },
+  {
+    "id": "SHAWQ_AFZA",
+    "name": "Shawq Afza",
+    "url": "https://www.maqamworld.com/en/maqam/shawq_afza.php",
+    "degrees": [
+      0,
+      200,
+      400,
+      500,
+      700,
+      800,
+      1100
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": ""
+  },
+  {
+    "id": "SIKAH",
+    "name": "Sikah",
+    "url": "https://www.maqamworld.com/en/maqam/sikah.php",
+    "degrees": [
+      0,
+      150,
+      350,
+      550,
+      700,
+      850,
+      1050
+    ],
+    "offsets": [
+      0,
+      0,
+      -50,
+      0,
+      -50,
+      0,
+      -50,
+      0,
+      0,
+      -50,
+      0,
+      -50
+    ],
+    "profile": 12,
+    "note": "Tonic normalized from a half-flat reference"
+  },
+  {
+    "id": "SIKAH_BALADI",
+    "name": "Sikah Baladi approx",
+    "url": "https://www.maqamworld.com/en/maqam/sikah_baladi.php",
+    "degrees": [
+      0,
+      150,
+      350,
+      475,
+      600,
+      700,
+      850,
+      1050
+    ],
+    "offsets": [
+      0,
+      0,
+      -50,
+      0,
+      -50,
+      -25,
+      0,
+      0,
+      0,
+      -50,
+      0,
+      -50
+    ],
+    "profile": 13,
+    "note": "Approximation only; variable intonation is not fully representable by a fixed table"
+  },
+  {
+    "id": "SUZDALARA",
+    "name": "Suzdalara",
+    "url": "https://www.maqamworld.com/en/maqam/suzdalara.php",
+    "degrees": [
+      0,
+      200,
+      350,
+      500,
+      700,
+      900,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      -50,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 9,
+    "note": ""
+  },
+  {
+    "id": "SUZIDIL",
+    "name": "Suzidil",
+    "url": "https://www.maqamworld.com/en/maqam/hijazkar.php",
+    "degrees": [
+      0,
+      100,
+      400,
+      500,
+      700,
+      800,
+      1100
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": "Transposed Hijazkar"
+  },
+  {
+    "id": "SUZNAK",
+    "name": "Suznak",
+    "url": "https://www.maqamworld.com/en/maqam/suznak.php",
+    "degrees": [
+      0,
+      200,
+      350,
+      500,
+      700,
+      800,
+      1100
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      -50,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 9,
+    "note": ""
+  },
+  {
+    "id": "USHAQ_MASRI",
+    "name": "Ushaq Masri",
+    "url": "https://www.maqamworld.com/en/maqam/ushaq_masri.php",
+    "degrees": [
+      0,
+      200,
+      300,
+      500,
+      700,
+      850,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      -50,
+      0,
+      0
+    ],
+    "profile": 14,
+    "note": ""
+  },
+  {
+    "id": "YAKAH",
+    "name": "Yakah",
+    "url": "https://www.maqamworld.com/en/maqam/nairuz.php",
+    "degrees": [
+      0,
+      200,
+      350,
+      500,
+      700,
+      850,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      -50,
+      0,
+      0,
+      0,
+      0,
+      -50,
+      0,
+      0
+    ],
+    "profile": 11,
+    "note": "Transposed Nairuz"
+  },
+  {
+    "id": "ZANJARAN",
+    "name": "Zanjaran",
+    "url": "https://www.maqamworld.com/en/maqam/zanjaran.php",
+    "degrees": [
+      0,
+      100,
+      400,
+      500,
+      700,
+      900,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 2,
+    "note": ""
+  },
+  {
+    "id": "RAST_DESC",
+    "name": "Rast descending",
+    "url": "https://www.maqamworld.com/en/maqam/rast.php",
+    "degrees": [
+      0,
+      200,
+      350,
+      500,
+      700,
+      900,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      -50,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "profile": 9,
+    "note": "Flat seventh descending reference"
+  },
+  {
+    "id": "BAYATI_RAST",
+    "name": "Bayati upper Rast",
+    "url": "https://www.maqamworld.com/en/maqam/bayati.php",
+    "degrees": [
+      0,
+      150,
+      300,
+      500,
+      700,
+      850,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      -50,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      -50,
+      0,
+      0
+    ],
+    "profile": 5,
+    "note": "Rast upper jins"
+  },
+  {
+    "id": "HIJAZ_RAST",
+    "name": "Hijaz upper Rast",
+    "url": "https://www.maqamworld.com/en/maqam/hijaz.php",
+    "degrees": [
+      0,
+      100,
+      400,
+      500,
+      700,
+      850,
+      1000
+    ],
+    "offsets": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      -50,
+      0,
+      0
+    ],
+    "profile": 14,
+    "note": "Rast upper jins"
+  }
+]

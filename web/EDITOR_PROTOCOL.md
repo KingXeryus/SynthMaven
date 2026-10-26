@@ -550,3 +550,14 @@ the NAMES count. PRESET requests use `engine,127,index-127` for an extended
 index; original requests stay `engine,index`. All other fields are unchanged.
 Protocol 16 allows the complete Oriental bank's PHYS presets (through 139) and
 140-name list without changing existing factory IDs. Use the matching editor.
+
+### SynthMaven protocol 17: expanded maqam catalogue
+
+INFO protocol 17 advertises 58 tuning-system IDs: existing IDs 0–13 retain
+their exact meanings (RAST 6, BAYATI 7, USER 13); IDs 14–57 add 44 named
+maqam/variant settings, giving 46 maqam entries total. TUNE_GET/TUNE_PUT packet
+layout is unchanged. ROOT 0–11 rotates a repeating chromatic offset table;
+maqam presets do not change the USER degree buffer or map successive keys to
+seven-note degrees. A4 applies uniformly. The editor gates the expanded list
+on protocol >=17 and always chooses USER ID 13 after Scala import. See
+[maqam catalogue](../docs/MAQAM_SCALES.md) and assets/maqam/scales.json.

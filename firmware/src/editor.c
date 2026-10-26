@@ -30,8 +30,8 @@ enum { ED_INFO = 1, ED_GET, ED_SET, ED_DUMP, ED_DESC, ED_STEP_GET, ED_STEP_SET, 
        ED_FM6_GET = 68, ED_FM6_PUT, ED_FM6_LIST, ED_FM6_ERASE };                /* v9: FM6 patches (Felucca's numbers) */
 /* v10 (SLOOP 2.5): DSYN_LIST .. DSYN_PLAY = 72..76, editor_dsyn.c; backup object 9 = the SYN kits */
 /* v11 (SynthMaven): HY_GET, HY_PUT = 77, 78, editor_hybrid.c */
-#define ED_PROTO (SYNTHMAVEN_SYNTH ? 16u : 11u)           /* the protocol version INFO ends with (12: SynthMaven's FMX, 13: its
-                                                        * MOD SEQ, JUNO, VECTOR, 14: the TUNING) */
+#define ED_PROTO (SYNTHMAVEN_SYNTH ? 17u : 11u)           /* the protocol version INFO ends with (12: SynthMaven's FMX, 13: its
+                                                        * MOD SEQ, JUNO, VECTOR, 14: the TUNING, 17: 46 maqam tunings) */
 
 /* Extended PHYS list: 140 entries need up to 1828 wire bytes. */
 static uint8_t ed_out[2048];

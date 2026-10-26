@@ -1,9 +1,9 @@
 # SynthMaven for M-VAVE FM-1
 
-Version 1.2 recognizes Chocolate Plus HID-only advertisements as connection
-candidates, retaining MIDI service validation. HOME SELECT loads presets within
-the selected bank. Pedal navigation assignments and the four-patch HOME remain.
-[Release notes](docs/release-1.2.md).
+Version 1.3 adds 46 Arabic maqam settings with selectable ROOT C–B,
+12 chromatic-key microtuning and a full-name/cent-offset hardware view.
+All 23 engines, 537 presets, HOME preset navigation and pedal assignments remain.
+[Release notes](docs/release-1.3.md).
 
 
 ![SynthMaven](assets/logo/synthmaven-logo.svg)
@@ -14,9 +14,9 @@ SynthMaven is an open-source firmware based on [Clipper](https://github.com/isod
 
 [1.0 release notes and melodic preset catalog](docs/release-1.0.md)
 
-## Version 1.2 status
+## Version 1.3 status
 
-**SynthMaven 1.2: 23 engines and 537 factory presets. Hardware validation is outstanding.** Native BLE builds include MIDI pedal discovery, explicit device selection, connection and disconnect controls. Original Chocolate and Chocolate Plus pairing, reconnect and audio timing still need testing on the FM1. Version 0.2 predates this integration.
+**SynthMaven 1.3: 23 engines and 537 factory presets. Hardware validation is outstanding.** Native BLE builds include MIDI pedal discovery, explicit device selection, connection and disconnect controls. Original Chocolate and Chocolate Plus pairing, reconnect and audio timing still need testing on the FM1. Version 0.2 predates this integration.
 
 Native USB host support is not implemented. Selecting USB input means device-mode MIDI from a host; a USB keyboard or USB pedal cannot connect directly using a power bank alone. TRS keyboard plus BLE pedal is the intended computer-free combination.
 
@@ -62,7 +62,7 @@ to keep edits, and use CC0=127 with Program Change for existing user-slot access
 
 Original factory IDs and favourite keys are unchanged. New preset IDs append
 within their native engine; projects and user presets retain the patch settings.
-Use the matching protocol-16 web editor. Host tests compare all 126 track
+Use the matching protocol-17 web editor. Host tests compare all 126 track
 parameters of all 88 loaded patches to the selected software recipes, with the
 three effect sends and the SPACE macro explicitly disabled.
 See [bank provenance and limits](assets/oriental/README.md). The BLE-enabled target passed all enforced memory bounds; see the
@@ -73,11 +73,11 @@ Hardware listening and radio validation remain outstanding.
 
 ## Web editor
 
-Open the [SynthMaven 1.2 editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/)
+Open the [SynthMaven 1.3 editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/)
 in Chrome or Edge and connect the FM1 over USB. Browse factory/user sounds,
 load or edit patches, import DX7 SysEx and Korg-compatible programs, set tuning,
 and save backups. The full-name Oriental selector matches the 88 melodic
-presets in the firmware. The editor identifies version 1.2, 23 engines and
+presets in the firmware. The editor identifies version 1.3, 23 engines and
 537 factory presets; device connection reports the installed firmware version.
 
 ## MIDI settings
@@ -116,6 +116,15 @@ GPL-3.0-only unless stated otherwise in the retained notices. Upstream work by i
 
 During 1.1 Bluetooth/Chocolate Plus testing, the FM1 crashed and entered USB
 rescue; the user restored the original firmware. The cause remains unresolved.
-Version 1.2 fixes discovery and link-status reporting, but has not been shown
+Version 1.3 fixes discovery and link-status reporting, but has not been shown
 to fix that crash. Hardware stability and pedal MIDI remain unverified.
 
+
+## Arabic maqam selection
+
+Choose **GLO → TUNING → TUNE**, select one of **46 maqam settings**, then choose
+**ROOT C–B**. The 12-note grid shows each chromatic key’s offset in cents.
+Only the displayed nonzero offsets retune keys; all other chromatic notes stay
+available. A4 remains adjustable from 400 to 480 Hz. The editor has the same
+list and root control. See the [full maqam catalogue](docs/MAQAM_SCALES.md) for every
+setting, variant, reference degrees and tuning limitations.

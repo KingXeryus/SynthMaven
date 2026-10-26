@@ -7,7 +7,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SynthMaven 1.2 Editor</title>
+<title>SynthMaven 1.3 Editor</title>
 <style>
   /* SLOOP 2.4 editor: the FM-1's screen on a big display. Black, the four track colours, the device's own
      Terminus pixel font (tools/gen_webfont.py, inlined: the editor also runs from file://), 16 px and 32 px only
@@ -479,7 +479,7 @@
 <div class="app">
   <aside class="side">
     <a class="brand" href="#sound" aria-label="SynthMaven"><img src="synthmaven-logo.svg" alt="SynthMaven" style="width:160px;height:130px;object-fit:contain;background:white"></a>
-    <p class="dim" style="margin:0">Version 1.2 · 23 engines · 537 factory presets</p>
+    <p class="dim" style="margin:0">Version 1.3 · 23 engines · 537 factory presets</p>
     <nav class="tabs" id="tabs" role="tablist" aria-orientation="vertical">
       <div class="navh" id="navtrack" data-t="navTrack"></div>
       <button role="tab" data-tab="sound" data-t="sound" data-ic="symbol_audio"></button>
@@ -3020,10 +3020,10 @@ function makeMockDevice(opt = {}) {
         break;
       }
       case CMD.INFO:
-        s(opt.synthmaven ? "FELUCCA SYNTHMAVEN 1.2 (MOCK)" : opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : (opt.synthmaven ? "FELUCCA SYNTHMAVEN 1.2 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)")); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
+        s(opt.synthmaven ? "FELUCCA SYNTHMAVEN 1.3 (MOCK)" : opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : (opt.synthmaven ? "FELUCCA SYNTHMAVEN 1.3 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)")); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
         ENG.forEach((e) => s(e.name));
         if (!opt.legacy) b(NTRK);
-        if (v5) b(opt.synthmaven ? (opt.oriental?16:15) : opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : opt.synthmaven ? (JU_E >= 0 ? (opt.synthmaven === "0.8" ? 13 : 14) : FX_E >= 0 ? 12 : 11) : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
+        if (v5) b(opt.synthmaven ? (opt.maqam?17:opt.oriental?16:15) : opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : opt.synthmaven ? (JU_E >= 0 ? (opt.synthmaven === "0.8" ? 13 : 14) : FX_E >= 0 ? 12 : 11) : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
         break;
       case CMD.GET: case CMD.SET: {
         if (a.length < 2) return null;
@@ -3333,7 +3333,7 @@ function makeMockDevice(opt = {}) {
         }
         break;
       }
-      case CMD.TUNE_GET: case CMD.TUNE_PUT: {       /* SynthMaven 0.9: editor_fmx.c (TU_N 14 systems, 48 degrees) */
+      case CMD.TUNE_GET: case CMD.TUNE_PUT: {       /* SynthMaven 0.9: editor_fmx.c (TU_N 58 systems, 48 degrees) */
         if (JU_E < 0 || opt.synthmaven === "0.8") return null;
         const u21 = (v) => [v & 127, (v >> 7) & 127, (v >> 14) & 127];
         st.tune = st.tune || { sys: 0, root: 0, period: 19200, deg: Array.from({ length: 12 }, (_, i) => i * 1600), a4: 440 };
@@ -3344,7 +3344,7 @@ function makeMockDevice(opt = {}) {
           b(st.tune.a4 - 400);                        /* (SynthMaven 1.0) */
         } else {
           const nd = a[2] | 0, g = (k) => a[k] | a[k + 1] << 7 | a[k + 2] << 14, base = 6 + 3 * (nd - 1);
-          let rc = a.length < 6 || a[0] >= 14 || a[1] > 11 || nd < 1 || nd > 48 || (a.length !== base && (a.length !== base + 1 || a[base] > 80)) ? 1 : 0;
+          let rc = a.length < 6 || a[0] >= (opt.maqam ? TU_NAMES.length : 14) || a[1] > 11 || nd < 1 || nd > 48 || (a.length !== base && (a.length !== base + 1 || a[base] > 80)) ? 1 : 0;
           const deg = [0];
           for (let i = 1; !rc && i < nd; i++) { const d = g(6 + 3 * (i - 1)); if (d <= deg[i - 1] || d >= g(3)) rc = 1; deg.push(d); }
           if (!rc) st.tune = { sys: a[0], root: a[1], period: g(3), deg, a4: a.length === base + 1 ? 400 + a[base] : st.tune.a4 };
@@ -5116,7 +5116,7 @@ const TEXT = {
     msShape: "shape", msApply: "Apply to the lane",
     lyTitle: "Layer (a second sound)", lyHelp: "Track 2's sound played with the instrument's. LAYER: every note on both. SPLIT: the keys below SPLIT on the layer. MULTI: the layer on its own MIDI channel (CH), two parts. OCT shifts the layer's notes; LEVEL, PAN and FILT are its own. The layer's sound and SWAP: on the FM-1, EDIT > LAYER.",
     lySound: "Layer sound:",
-    tuTitle: "Tuning (scales, temperaments, Scala)", tuHelp: "The FM-1's tuning, for every sound: equal temperament, just intonation, Pythagorean, meantone, Werckmeister III, Kirnberger III, the maqams Rast and Bayati, slendro, pelog, 19 / 24 / 31-EDO, or a USER scale from a Scala .scl file (up to 48 notes; each key the next degree, C4 + ROOT its 1/1). On the FM-1: GLO > TUNING.",
+    tuTitle: "Tuning (scales, temperaments, Scala)", tuHelp: "The FM-1's tuning, for every sound: equal temperament, just intonation, Pythagorean, meantone, Werckmeister III, Kirnberger III, 46 Arabic maqam reference settings (12 chromatic keys, ROOT C–B; only listed keys are microtuned), slendro, pelog, 19 / 24 / 31-EDO, or a USER scale from a Scala .scl file (up to 48 notes; each key the next degree, C4 + ROOT its 1/1). On the FM-1: GLO > TUNING.",
     tuSystem: "system", tuRoot: "root", tuLoad: "Load a .scl", tuBad: "Not a scale the FM-1 takes (.scl, 1..48 notes, rising, inside the period):", tuUser: "USER scale:", tuSendBtn: "send to the FM-1",
     fxTitle: "FMX patch (six operators, any routing)", fxHelp: "The whole patch of the FMX engine: each operator its own wave (sine, triangle, saw, square, OPL halves and quarters, pulse, 8-bit sine, noise) and its own mode (PM as the DX7, true FM, RING), a ratio or a fixed frequency, an envelope; any operator into any other (its own: feedback) and any to the output. Start from a template (the DX7's 32 and 8 more), then change any connection. The device's EDIT knobs are macros on top (PTCH, ALG, MOD, FB, TIME, DTN, VEL, KTRK). With LIVE each change is heard at once; STORE keeps it in a bank slot (B1..B27, stop the device first): then it is a PTCH value, kept with presets and projects.",
     fxRouting: "Routing", fxTemplate: "template", fxTemplateHelp: "(fills the grid: a row is an operator, a column what modulates it; the diagonal is feedback; OUT to the output)",
@@ -9950,16 +9950,18 @@ async function lySet(id, v) {
 }
 /* ---------------------------------------------------------------- TUNING --- */
 /* SynthMaven 0.9: the FM-1's tuning (firmware v14): a system and its root, or a USER scale from a Scala .scl file */
-const TU_NAMES = ["EQUAL", "JUST", "PYTHAG", "MEANTONE", "WERCK III", "KIRNB III", "RAST", "BAYATI", "SLENDRO", "PELOG",
-  "19-EDO", "24-EDO", "31-EDO", "USER"];
+const TU_NAMES = ["EQUAL", "JUST", "PYTHAG", "MEANTONE", "WERCK III", "KIRNB III", "RAST", "BAYATI", "SLENDRO", "PELOG", "19-EDO", "24-EDO", "31-EDO", "USER", "AJAM", "AJAM USHAYRAN", "ATHAR KURD", "AWJ IRAQ", "BASTANIKAR", "BAYATI SHURI", "DALANSHIN", "FARAHFAZA", "HIJAZ", "HIJAZKAR", "HIJAZKAR KURD", "HUSAYNI", "HUZAM", "IRAQ", "JIHARKAH", "KIRDAN", "KURD", "LAMI", "MAHUR", "MUHAYYAR", "MUSTAAR", "NAHAWAND", "NAHAWAND MURASSAA", "NAIRUZ", "NAWA ATHAR", "NIKRIZ", "RAHAT AL-ARWAH", "SABA", "SABA ZAMZAM", "SAZKAR", "SHADD ARABAN", "SHAHNAZ", "SHAWQ AFZA", "SIKAH", "SIKAH BALADI APPROX", "SUZDALARA", "SUZIDIL", "SUZNAK", "USHAQ MASRI", "YAKAH", "ZANJARAN", "RAST DESCENDING", "BAYATI UPPER RAST", "HIJAZ UPPER RAST"];
+const TU_USER = 13;
+const TU_MAQAM = [{"sys":6,"name":"Rast","offsets":[0,0,0,0,-50,0,0,0,0,0,0,-50],"note":""},{"sys":7,"name":"Bayati","offsets":[0,0,-50,0,0,0,0,0,0,0,0,0],"note":""},{"sys":14,"name":"Ajam","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":15,"name":"Ajam Ushayran","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Transposed Ajam"},{"sys":16,"name":"Athar Kurd","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":17,"name":"Awj Iraq","offsets":[0,0,-50,0,-50,-50,0,0,-50,-50,0,50],"note":"Tonic normalized from a half-flat reference; descending outline"},{"sys":18,"name":"Bastanikar","offsets":[0,0,-50,0,-50,0,0,-50,-50,0,50,50],"note":"First octave only; upper ajnas extend beyond the octave"},{"sys":19,"name":"Bayati Shuri","offsets":[0,0,-50,0,0,0,0,0,0,0,0,0],"note":""},{"sys":20,"name":"Dalanshin","offsets":[0,0,0,0,-50,0,0,0,0,0,0,-50],"note":"First-octave Rast outline; upper modulation is played separately"},{"sys":21,"name":"Farahfaza","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Transposed Nahawand"},{"sys":22,"name":"Hijaz","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Nahawand upper jins reference"},{"sys":23,"name":"Hijazkar","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":24,"name":"Hijazkar Kurd","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Lower-octave Kurd reference; octave-dependent alterations cannot be encoded in a repeating 12-key table"},{"sys":25,"name":"Husayni","offsets":[0,0,-50,0,0,0,0,0,0,-50,0,0],"note":"Upper Bayati reference; B-flat alternative remains on its chromatic key"},{"sys":26,"name":"Huzam","offsets":[0,0,-50,0,-50,-50,0,0,-50,-50,0,-50],"note":"Tonic normalized from a half-flat reference"},{"sys":27,"name":"Iraq","offsets":[0,0,-50,0,-50,0,0,-50,0,-50,0,-50],"note":"Tonic normalized from a half-flat reference"},{"sys":28,"name":"Jiharkah","offsets":[0,0,0,0,-25,-25,0,0,0,0,0,-50],"note":"Reference approximation: thirds/fourths 25 cents low"},{"sys":29,"name":"Kirdan","offsets":[0,0,0,0,-50,0,0,0,0,0,0,-50],"note":"Rast tuning; descending melodic identity"},{"sys":30,"name":"Kurd","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":31,"name":"Lami","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":32,"name":"Mahur","offsets":[0,0,0,0,-50,0,0,0,0,0,0,0],"note":""},{"sys":33,"name":"Muhayyar","offsets":[0,0,-50,0,0,0,0,0,0,0,0,0],"note":"Bayati tuning; upper-register melodic identity"},{"sys":34,"name":"Mustaar","offsets":[0,0,0,-50,-50,0,-50,-50,0,-50,0,-50],"note":"Tonic normalized from a half-flat reference"},{"sys":35,"name":"Nahawand","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Harmonic-minor reference; descending flat seventh is still available"},{"sys":36,"name":"Nahawand Murassaa","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":37,"name":"Nairuz","offsets":[0,0,0,0,-50,0,0,0,0,-50,0,0],"note":""},{"sys":38,"name":"Nawa Athar","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":39,"name":"Nikriz","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":40,"name":"Rahat al-Arwah","offsets":[0,0,-50,0,-50,-50,0,0,-50,-50,0,-50],"note":"Transposed Huzam"},{"sys":41,"name":"Saba","offsets":[0,0,-50,0,0,0,0,0,0,0,0,0],"note":"Repeating first-octave reference; upper lowered tonic is played chromatically"},{"sys":42,"name":"Saba Zamzam","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Repeating first-octave reference"},{"sys":43,"name":"Sazkar","offsets":[0,0,0,0,-50,0,0,0,0,0,0,-50],"note":"Rast tuning; chromatic D-sharp remains available"},{"sys":44,"name":"Shadd Araban","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Transposed Hijazkar"},{"sys":45,"name":"Shahnaz","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Transposed Hijazkar"},{"sys":46,"name":"Shawq Afza","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":47,"name":"Sikah","offsets":[0,0,-50,0,-50,0,-50,0,0,-50,0,-50],"note":"Tonic normalized from a half-flat reference"},{"sys":48,"name":"Sikah Baladi approx","offsets":[0,0,-50,0,-50,-25,0,0,0,-50,0,-50],"note":"Approximation only; variable intonation is not fully representable by a fixed table"},{"sys":49,"name":"Suzdalara","offsets":[0,0,0,0,-50,0,0,0,0,0,0,0],"note":""},{"sys":50,"name":"Suzidil","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Transposed Hijazkar"},{"sys":51,"name":"Suznak","offsets":[0,0,0,0,-50,0,0,0,0,0,0,0],"note":""},{"sys":52,"name":"Ushaq Masri","offsets":[0,0,0,0,0,0,0,0,0,-50,0,0],"note":""},{"sys":53,"name":"Yakah","offsets":[0,0,0,0,-50,0,0,0,0,-50,0,0],"note":"Transposed Nairuz"},{"sys":54,"name":"Zanjaran","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":55,"name":"Rast descending","offsets":[0,0,0,0,-50,0,0,0,0,0,0,0],"note":"Flat seventh descending reference"},{"sys":56,"name":"Bayati upper Rast","offsets":[0,0,-50,0,0,0,0,0,0,-50,0,0],"note":"Rast upper jins"},{"sys":57,"name":"Hijaz upper Rast","offsets":[0,0,0,0,0,0,0,0,0,-50,0,0],"note":"Rast upper jins"}];
 let tuv = null;
+const tuSystems = () => TU_NAMES.slice(0, dev?.info?.proto >= 17 ? TU_NAMES.length : 14);
 const tuOk = () => !!dev && !!dev.info && dev.info.proto >= 14;
 function tuShow() {
   const on = tuOk();
   $("tupanel").hidden = !on;
   if (!on) return;
-  if (!$("tusys").options.length) {
-    $("tusys").replaceChildren(...TU_NAMES.map((n, i) => el("option", { value: i, text: n })));
+  if ($("tusys").options.length !== tuSystems().length) {
+    $("tusys").replaceChildren(...tuSystems().map((n, i) => el("option", { value: i, text: n })));
     $("turoot").replaceChildren(...["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"].map((n, i) => el("option", { value: i, text: n })));
   }
   if (tuShow.dev !== dev) { tuShow.dev = dev; op(tuRead); }
@@ -9970,6 +9972,12 @@ function tuRender() {
   $("turoot").value = String(tuv.root);
   $("tua4box").hidden = tuv.a4 == null;                /* (SynthMaven 1.0: the reference pitch) */
   if (tuv.a4 != null && document.activeElement !== $("tua4")) $("tua4").value = String(tuv.a4);
+  const maqam=TU_MAQAM.find(m=>m.sys===tuv.sys);
+  if(maqam) {
+    const notes=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+    $("tuinfo").textContent=maqam.name+" — chromatic key offsets (cents): "+maqam.offsets.map((c,i)=>`${notes[(i+tuv.root)%12]} ${c>0?"+":""}${c}`).join(" · ")+(maqam.note?". "+maqam.note:"");
+    return;
+  }
   $("tuinfo").textContent = `${t("tuUser")} ${tuv.desc || ""} ${tuv.deg.length} / ${(tuv.period / 16).toFixed(2)} ct: ` +
     tuv.deg.map((d) => (d / 16).toFixed(1)).join(" ");
 }
@@ -10000,7 +10008,7 @@ $("tufile").addEventListener("change", async (e) => {
   if (!f) return;
   const sc = parseScl(await f.text());
   if (!sc) { sayK("tuBad", ` ${f.name}`); return; }
-  tuv = { ...(tuv || { root: 0 }), sys: TU_NAMES.length - 1, deg: sc.deg, period: sc.period, desc: sc.desc };
+  tuv = { ...(tuv || { root: 0 }), sys: TU_USER, deg: sc.deg, period: sc.period, desc: sc.desc };
   tuRender();
   op(tuSend);
 });

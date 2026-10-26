@@ -38,5 +38,5 @@ const installer=readFileSync(new URL('./index_pkg.html',import.meta.url),'utf8')
 assert(!html.includes('id="lang"'));
 assert(html.includes('const lang = "en";'));
 for(const path of ['user-manual.html','quick-start.html','release-notes.html'])assert(installer.includes('../../docs/'+path));
-assert(installer.includes('SynthMaven 1.2'));
-console.log('1.2 website: English editor, no language switch, direct documentation links PASS');
+assert(installer.includes('SynthMaven 1.3'));
+console.log('1.3 website: English editor, no language switch, direct documentation links PASS');

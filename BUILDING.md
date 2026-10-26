@@ -136,7 +136,7 @@ For a local matching site after a successful build:
 python3 tools/make_synthmaven_site.py --package build/felucca.fwsc
 ```
 
-## SynthMaven 1.2 native BLE release
+## SynthMaven 1.3 native BLE release
 
 Install the pinned AC79NN_SDK_V1.2.1_2023-12-13 SDK and the JieLi toolchain as
 above. The hardware release requires the complete SDK (Bluetooth headers,
@@ -144,12 +144,12 @@ configuration sources and static libraries), not just the three packaging files.
 On macOS the compiler needs a Linux x86-64 runtime such as Docker. CI uses Ubuntu.
 
 ```
-SYNTHMAVEN_BLE=1 ./build.sh --release 1.2
-python3 tools/make_synthmaven_site.py --package build/felucca-1.2.fwsc
+SYNTHMAVEN_BLE=1 ./build.sh --release 1.3
+python3 tools/make_synthmaven_site.py --package build/felucca-1.3.fwsc
 ```
 
 The output site includes readable, linked manuals in `docs/` and the matching
-source archive. The installer package metadata contains the 1.2 version and
-SHA256, and the device reports SYNTHMAVEN 1.2 / FM-1_912. The build checks flash,
+source archive. The installer package metadata contains the 1.3 version and
+SHA256, and the device reports SYNTHMAVEN 1.3 / FM-1_913. The build checks flash,
 static RAM, pool and low-SRAM bounds before making a package; it retains all
 23 engines. See `.github/workflows/synthmaven.yml` for the release build.

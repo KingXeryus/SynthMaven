@@ -953,15 +953,30 @@ static int32_t mseq_q15(int32_t v) { return clamp(v * 4369, -32767, 32767); }   
 /* SynthMaven 0.9, the TUNING (GLO > TUNING; the editor sends a Scala scale): every note's pitch off equal temperament by
  * tun_tab (1/4096 semitone), between notes interpolated (a glide goes through the scale). Two kinds of systems:
  *   12-note tables, each pitch class's deviation from equal temperament around ROOT (JUST, PYTHAG, MEANTONE, WERCK3,
- *   KIRNB3, the maqams RAST and BAYATI with their neutral thirds);
+ *   KIRNB3, the Arabic maqam reference tables (only affected chromatic keys change));
  *   scales of n degrees in a period (SLENDRO, PELOG, 19 / 24 / 31-EDO, the USER scale from a .scl file): every key
  *   the next degree, C4 + ROOT the scale's 1/1 at its equal-tempered pitch.
  * G_TUNE (A4 in cents) still moves it all. EQUAL: tun_on 0, nothing touched, bit for bit.
  * (1.0) A4: the reference pitch in Hz (400 .. 480: 432, 415 baroque, 442 / 443 orchestras), every system on top of it */
+#include "maqam_scales.h"
+#define TU_ENUM(id,name,profile) TU_##id,
 enum { TU_EQUAL, TU_JUST, TU_PYTH, TU_MEAN, TU_WERCK, TU_KIRN, TU_RAST, TU_BAYATI, TU_SLENDRO, TU_PELOG, TU_19, TU_24,
-       TU_31, TU_USER, TU_N };
-static const char *const N_TUNE[TU_N] = {"EQUAL", "JUST", "PYTHA", "MEANT", "WERCK", "KIRNB", "RAST", "BAYAT", "SLEND",
-                                         "PELOG", "19EDO", "24EDO", "31EDO", "USER"};
+       TU_31, TU_USER, MAQAM_ADDED(TU_ENUM) TU_N };
+#undef TU_ENUM
+#define TU_NAME(id,name,profile) name,
+static const char *const N_TUNE[TU_N] = {"EQUAL", "JUST", "PYTHA", "MEANT", "WERCK", "KIRNB", "RAST", "BAYATI", "SLEND",
+    "PELOG", "19EDO", "24EDO", "31EDO", "USER", MAQAM_ADDED(TU_NAME)};
+#undef TU_NAME
+#define TU_PROFILE(id,name,profile) [TU_##id] = profile,
+static const uint8_t TU_MAQAM[TU_N] = {MAQAM_EXISTING(TU_PROFILE) MAQAM_ADDED(TU_PROFILE)};
+#undef TU_PROFILE
+_Static_assert(TU_RAST == 6 && TU_BAYATI == 7 && TU_USER == 13 && TU_N < 128, "saved tuning and MIDI IDs");
+static int tune_is_maqam(uint32_t sys) { return sys == TU_RAST || sys == TU_BAYATI || (sys > TU_USER && sys < TU_N); }
+static int32_t maqam_cents(uint32_t sys,uint32_t pc)
+{
+    const uint16_t *m=MAQAM_MASKS[TU_MAQAM[sys]];
+    return -50*(int32_t)((m[0]>>pc)&1u)+50*(int32_t)((m[1]>>pc)&1u)-25*(int32_t)((m[2]>>pc)&1u);
+}
 #define TU_MAXDEG 48u
 typedef struct {
     uint8_t sys, root, n;                               /* system, ROOT (0..11), USER: degrees (1..TU_MAXDEG) */
@@ -979,13 +994,12 @@ static const int16_t TU_A4[81] = {-6759, -6582, -6405, -6229, -6053, -5878, -570
     1751, 1908, 2065, 2221, 2377, 2533, 2688, 2843, 2998, 3152, 3306, 3460, 3613, 3766, 3919, 4071, 4223, 4375, 4526, 4677,
     4828, 4978, 5128, 5278, 5428, 5577, 5726, 5874, 6022, 6170};
 static volatile uint8_t tun_on;
-static const int16_t TU_TAB12[6][12] = {               /* 1/10 cent off equal temperament, from ROOT */
+static const int16_t TU_TAB12[5][12] = {               /* 1/10 cent off equal temperament, from ROOT */
     {0, 117, 39, 156, -137, -20, -98, 20, 137, -156, 176, -117},       /* JUST (5-limit) */
     {0, -98, 39, -59, 78, -20, 117, 20, -78, 59, -39, 98},             /* PYTHAG */
     {0, -240, -68, 103, -137, 34, -205, -34, -274, -103, 68, -171},    /* MEANTONE (1/4 comma) */
     {0, -98, -78, -59, -98, -20, -117, -39, -78, -117, -39, -78},      /* WERCKMEISTER III */
     {0, -98, -68, -59, -137, -20, -98, -34, -78, -103, -39, -117},     /* KIRNBERGER III */
-    {0, 0, 0, 0, -500, 0, 0, 0, 0, 0, 0, -500},                        /* RAST: E and B half flat */
 };
 static int32_t tun_deg_cents16(uint32_t sys, uint32_t k, uint32_t *n, uint32_t *period)   /* degree k, 1/16 cent */
 {
@@ -1009,10 +1023,10 @@ static void tune_build(void)
     int32_t a4 = TU_A4[clamp(tune_cfg.a4, -40, 40) + 40];   /* (1.0) the reference pitch, on every key */
     for (key = 0; key < 128u; key++) {
         int32_t off = 0;
-        if (sys >= TU_JUST && sys <= TU_RAST) {
+        if (sys >= TU_JUST && sys <= TU_KIRN) {
             off = TU_TAB12[sys - TU_JUST][(key + 12u - root) % 12u] * 4096 / 1000;
-        } else if (sys == TU_BAYATI) {                  /* (on ROOT: its 2nd degree half flat) */
-            off = (key + 12u - root) % 12u == 2u ? -50 * 4096 / 100 : 0;
+        } else if (tune_is_maqam(sys)) {
+            off = maqam_cents(sys,(key + 12u - root) % 12u) * 4096 / 100;
         } else if (sys != TU_EQUAL) {
             int32_t d = (int32_t)key - (60 + (int32_t)root), oct, k;
             uint32_t n, per;

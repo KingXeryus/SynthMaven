@@ -1,6 +1,6 @@
-# SynthMaven 1.2 — quick start
+# SynthMaven 1.3 — quick start
 
-SynthMaven 1.2 for the M-VAVE FM1 includes **23 engines and 537 factory presets**,
+SynthMaven 1.3 for the M-VAVE FM1 includes **23 engines and 537 factory presets**,
 including 41 FM6 voices, nine XD compatibility sounds and 88 melodic Oriental /
 Middle Eastern presets. Hardware listening, Bluetooth pedal pairing/reconnect
 and audio timing under wireless load remain to be validated.
@@ -10,8 +10,8 @@ and audio timing under wireless load remain to be validated.
 Use Chrome or Edge. Connect the FM1 to your computer by USB and save a full
 backup from the [web editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/).
 Open the [installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/)
-and follow its prompts. The splash and About screen identify **SynthMaven 1.2**.
-The installer links directly to this guide, the full manual and the 1.2 release notes.
+and follow its prompts. The splash and About screen identify **SynthMaven 1.3**.
+The installer links directly to this guide, the full manual and the 1.3 release notes.
 See [BUILDING.md](BUILDING.md) to compile the firmware yourself.
 
 ## Find, load and edit sounds
@@ -87,6 +87,15 @@ under USER, and keep full backups before firmware updates.
 
 During 1.1 Bluetooth/Chocolate Plus testing, the FM1 crashed and entered USB
 rescue; the user restored the original firmware. The cause remains unresolved.
-Version 1.2 fixes discovery and link-status reporting, but has not been shown
+Version 1.3 fixes discovery and link-status reporting, but has not been shown
 to fix that crash. Hardware stability and pedal MIDI remain unverified.
 
+
+## Arabic maqam selection
+
+Choose **GLO → TUNING → TUNE**, select one of **46 maqam settings**, then choose
+**ROOT C–B**. The 12-note grid shows each chromatic key’s offset in cents.
+Only the displayed nonzero offsets retune keys; all other chromatic notes stay
+available. A4 remains adjustable from 400 to 480 Hz. The editor has the same
+list and root control. See the [full maqam catalogue](docs/MAQAM_SCALES.md) for every
+setting, variant, reference degrees and tuning limitations.

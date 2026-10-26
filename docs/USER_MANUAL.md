@@ -1,8 +1,8 @@
-# SynthMaven 1.2 — FM1 user manual
+# SynthMaven 1.3 — FM1 user manual
 
 SynthMaven is an open-source firmware based on [Clipper](https://github.com/isod89/clipper-fm1).
 This manual covers the **M-VAVE FM1 hardware firmware**, its web installer and
-web editor. Version 1.2 provides **23 engines and 537 factory presets**. The Mac
+web editor. Version 1.3 provides **23 engines and 537 factory presets**. The Mac
 software instrument has a separate feature set; its eight-layer interface and
 DAW formats are not features of this hardware firmware.
 
@@ -35,7 +35,7 @@ matching editor to save a full backup, and keep a copy outside the browser.
 Use reliable power during installation. Start listening with the output volume
 low: envelope, resonance and modulation edits can change perceived loudness.
 
-Version 1.2 includes native Bluetooth and all 23 engines. Consult the release
+Version 1.3 includes native Bluetooth and all 23 engines. Consult the release
 validation section for target build and memory-limit results. Listening tests, pairing/reconnect with both
 Chocolate models and audio timing under wireless load remain outstanding.
 
@@ -60,12 +60,12 @@ check the MIDI wiring requirements of the devices being connected.
    in Chrome or Edge with the FM1 connected over USB.
 2. Close other programs using the FM1 MIDI ports if connection fails.
 3. Follow the installer prompts and keep power connected until it finishes.
-4. Check the splash/About screen for **SYNTHMAVEN 1.2**.
+4. Check the splash/About screen for **SYNTHMAVEN 1.3**.
 5. Open the [editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/),
    click **Connect**, grant MIDI/SysEx access when prompted and choose the FM1.
 
 Use the matching online editor after updating. The firmware/editor wire protocol
-is version **16**; that protocol number is independent of product version 1.2.
+is version **17**; that protocol number is independent of product version 1.3.
 A URL ending in `?mock=1` uses a simulated device for previewing the editor.
 It does not communicate with or validate a physical FM1.
 
@@ -206,8 +206,8 @@ effects increase voice and processing demand; reduce them if performance suffers
 
 Use **GLO → TUNING** for available tuning-system/root/A4 controls, or the editor's
 **Tuning** panel. A4 reference is adjustable from **400 to 480 Hz**. Built-in
-systems include equal temperament and alternative tunings, including Rast and
-Bayati choices.
+systems include equal temperament and alternative tunings, including 46 maqam settings. See the [maqam catalogue](MAQAM_SCALES.md) for
+12-key offsets, variants and reference degrees.
 
 To use a Scala file:
 
@@ -261,7 +261,7 @@ Patch switching has its own route, independent of KEY IN:
 - **GLO → PATCH MIDI → PROG**: enable or disable MIDI patch changes.
 - **PORT**: select USB, BLE or ANY when patch switching is enabled.
 
-Version 1.2 recognizes FootCtrl/Chocolate names even when the advertisement
+Version 1.3 recognizes FootCtrl/Chocolate names even when the advertisement
 contains HID service 0x1812 rather than the MIDI service UUID. FootCtrlPlus was
 observed using that format. The FM1 checks for the actual MIDI characteristic
 after connecting; a name match alone never establishes MIDI READY.
@@ -404,7 +404,7 @@ forget bonds, requiring another connection attempt.
 |---|---|
 | Editor does not connect | Chrome/Edge, USB data cable, MIDI/SysEx permission, correct port; close competing MIDI applications |
 | Only highlight changes | Use KNOB 3 to load or KNOB 4 to load and edit |
-| Oriental collection missing | Verify SYNTHMAVEN 1.2, refresh the matching editor, select ORIENTAL on the hardware |
+| Oriental collection missing | Verify SYNTHMAVEN 1.3, refresh the matching editor, select ORIENTAL on the hardware |
 | USB keyboard is silent | Confirm a MIDI host exists; separate power alone is insufficient; check KEY IN and channel |
 | TRS keyboard is silent | Check MIDI direction, compatible cable/adapter, channel and KEY IN |
 | Pedal scans but does not switch | Wait for MIDI READY; enable PROG; check PORT, channel and actual Program Change/CC0 data |
@@ -420,10 +420,10 @@ For recovery tooling, see the [build/install guide](../BUILDING.md#install).
 
 ## Version, validation and support
 
-The 1.1 native BLE build passes the enforced flash/RAM/pool limits with all
+The 1.3 release requires a native BLE build passing flash/RAM/pool limits with all
 23 engines and 537 factory presets. The installable package identifies as
-FM-1_911; the splash and editor identify SynthMaven 1.2. The product version **1.1**
-is separate from editor protocol **16** and retained hardware-loader identifiers.
+FM-1_913; the splash and editor identify SynthMaven 1.3. The product version **1.3**
+is separate from editor protocol **17** and retained hardware-loader identifiers.
 The automated checks cover preset values, browser indexing, MIDI response,
 project recall, input routing, storage, editor transfers and target memory bounds.
 They do not establish real pedal pairing or real-time audio quality on the FM1.
@@ -432,13 +432,22 @@ Report issues at [SynthMaven Issues](https://github.com/KingXeryus/SynthMaven/is
 Include firmware version, engine/preset, connection route, steps to reproduce,
 and the actual pedal/keyboard messages where possible. Do not send private
 account credentials. Source and retained licences are available in the repository
-and alongside the installer. See [1.2 release notes](release-1.2.md), [preset catalog](release-1.0.md),
+and alongside the installer. See [1.3 release notes](release-1.3.md), [preset catalog](release-1.0.md),
 [Bluetooth status](BLUETOOTH_STATUS.md) and [USB status](USB_MIDI_STATUS.md).
 
 ## Known Bluetooth crash — experimental release
 
 During 1.1 Bluetooth/Chocolate Plus testing, the FM1 crashed and entered USB
 rescue; the user restored the original firmware. The cause remains unresolved.
-Version 1.2 fixes discovery and link-status reporting, but has not been shown
+Version 1.3 fixes discovery and link-status reporting, but has not been shown
 to fix that crash. Hardware stability and pedal MIDI remain unverified.
 
+
+## Arabic maqam selection
+
+Choose **GLO → TUNING → TUNE**, select one of **46 maqam settings**, then choose
+**ROOT C–B**. The 12-note grid shows each chromatic key’s offset in cents.
+Only the displayed nonzero offsets retune keys; all other chromatic notes stay
+available. A4 remains adjustable from 400 to 480 Hz. The editor has the same
+list and root control. See the [full maqam catalogue](MAQAM_SCALES.md) for every
+setting, variant, reference degrees and tuning limitations.
