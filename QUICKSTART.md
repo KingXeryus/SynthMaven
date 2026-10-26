@@ -17,7 +17,7 @@ See [BUILDING.md](BUILDING.md) to compile the firmware yourself.
 ## Find, load and edit sounds
 
 HOME now shows four patches from the current category bank, with the loaded
-patch highlighted. Turn ALGORITHM to change banks; turn PRESET to move within
+patch highlighted. Turn ALGORITHM to change banks; turn SELECT (or PRESET) to load sounds within
 that bank. Both directions wrap around. The four visible names follow the
 current page. A final page can contain fewer than four patches.
 

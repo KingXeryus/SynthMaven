@@ -1205,10 +1205,13 @@ static void ui_input(void)
         for (k = 0; k < 4u; k++)
             panel_enc(EN_K1 + k);
     }
-    if ((s = panel_enc(EN_SELECT)) != 0 && (rec_wait || ft_on || !page_walk(s))) {   /* SELECT: the pages of the
-                                                     * family shown, else (and on the REC screen) the tempo */
-        song.g[G_BPM] = (int16_t)clamp(song.g[G_BPM] + accel(EN_SELECT, s, 200), GP[G_BPM].min, GP[G_BPM].max);
-        ui.bpm_t = 40;                              /* the header's BPM lights up; no message over the header */
+    if ((s = panel_enc(EN_SELECT)) != 0) {
+        if (SYNTHMAVEN_SYNTH && ui.home && !rec_wait && !ft_on)
+            home_preset_step(s);                    /* HOME: select and load within the current bank */
+        else if (rec_wait || ft_on || !page_walk(s)) {
+            song.g[G_BPM] = (int16_t)clamp(song.g[G_BPM] + accel(EN_SELECT, s, 200), GP[G_BPM].min, GP[G_BPM].max);
+            ui.bpm_t = 40;                          /* pages / recording retain their existing SELECT behavior */
+        }
     }
     for (k = 0; k < 4u; k++) {
         const page_t *pg = cur_page();

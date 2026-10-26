@@ -13,6 +13,20 @@ int main(void) {
  check(preset_pos(&total)==first,"HOME preset forward wraps within bank");
  encs[panel.enc[EN_PRESET]]=-1;frames(2);check(preset_pos(&total)==last,"HOME preset backward wraps within bank");
  check(home_preset_next(first,(int32_t)count*3+1)==home_preset_next(first,1),"large encoder delta wraps in bank");
+ {
+  int16_t bpm=song.g[G_BPM];uint32_t expected,page;
+  preset_go(last);encs[panel.enc[EN_SELECT]]=1;frames(2);
+  check(preset_pos(&total)==first,"HOME SELECT loads next patch and wraps within bank");
+  encs[panel.enc[EN_SELECT]]=-1;frames(2);
+  check(preset_pos(&total)==last,"HOME SELECT reverse wraps to last patch in bank");
+  expected=home_preset_next(last,3);encs[panel.enc[EN_SELECT]]=3;frames(2);
+  check(preset_pos(&total)==expected,"HOME SELECT counts every detent");
+  check(song.g[G_BPM]==bpm,"HOME SELECT does not change tempo");
+  open_family(FAM_ENV);frames(2);page=ui.page;cur=preset_pos(&total);
+  encs[panel.enc[EN_SELECT]]=1;frames(2);
+  check(ui.page!=page && preset_pos(&total)==cur,"SELECT outside HOME still navigates editing pages");
+  go_home();frames(2);
+ }
  /* A BLE pedal CC is accepted independently of the TRS keyboard route. */
  sm_patch_port=1;sm_key_port=1;midi_pc_off=0;midi_in_ch=1;
  sm_pedal[0][0]=1;sm_pedal[0][1]=80;sm_pedal[0][2]=127;sm_pedal[0][3]=2;

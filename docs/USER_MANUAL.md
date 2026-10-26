@@ -72,8 +72,8 @@ It does not communicate with or validate a physical FM1.
 ## Hardware controls and preset browsing
 
 HOME displays four patches from the current category bank. The loaded patch is
-highlighted, with its engine below. PRESET moves through that bank and wraps in
-either direction; ALGORITHM switches category banks. The displayed page follows
+highlighted, with its engine below. SELECT loads the previous/next sound in that bank and wraps in
+either direction. PRESET also browses within the bank; ALGORITHM switches category banks. The displayed page follows
 the current patch, with fewer entries on a partially filled final page. Tap the labelled page buttons
 such as EDIT, FX, ARP, GLO and SAVE to reach their settings. Some buttons also
 have held sequencer functions; tap when the intention is page navigation.

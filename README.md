@@ -42,7 +42,7 @@ Tap SAVE to PRESETS. Four names are visible per page (fewer in a short final pag
 | KNOB 3 clockwise | Load highlighted patch |
 | KNOB 4 clockwise | Load patch and open EDIT macro pages |
 
-This replaces the synth browser's FAV knob action; existing favourites are retained. HOME shows four patches; PRESET wraps within the bank and ALGORITHM changes category banks. The web editor provides a matching four-patch user-preset browser with Load/Edit actions. Full DX7 operator editing remains in the web FM6 panel.
+This replaces the synth browser's FAV knob action; existing favourites are retained. HOME shows four patches; SELECT and PRESET load sounds and wrap within the bank and ALGORITHM changes category banks. The web editor provides a matching four-patch user-preset browser with Load/Edit actions. Full DX7 operator editing remains in the web FM6 panel.
 
 ## Oriental / Middle Eastern collection (1.0)
 

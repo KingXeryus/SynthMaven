@@ -13,11 +13,18 @@ The software instrument is developed separately.
 - Add saved CC/PC assignments for patch up/down and bank up/down, each with
   message number, exact CC value and channel. Routing follows PATCH MIDI and
   works independently of keyboard input. Configure the assignments on hardware.
-- Show four patches on HOME. PRESET wraps within the current category bank;
+- Show four patches on HOME. SELECT and PRESET load sounds and wrap within the current category bank;
   ALGORITHM changes banks. Retain SAVE → PRESETS for engine filtering/editing.
 - Add direct user-manual, quick-start and release-note links to the installer.
   Publish matching readable documentation with the site and source download.
 - Make the web editor English-only and remove its language switch.
+
+### HOME SELECT control update
+
+SELECT now loads the previous/next preset within the currently selected HOME
+bank, wrapping in either direction and counting every detent. It no longer
+changes tempo on HOME. ALGORITHM selects the bank; editing pages, recording and
+the visualizer retain their existing SELECT behavior.
 
 ## Install and use
 
