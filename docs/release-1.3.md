@@ -29,8 +29,11 @@ are removed. Diagnostic builds can define BLE_MIDI_TRACE=1.
 Host tests cover all 46 settings × 12 roots × 128 MIDI notes against the
 machine-readable reference catalogue, unaltered keys, octave/tonic behavior,
 A4 addition, actual pitch lookup, hardware controls, editor wire messages,
-old-firmware gating and Scala USER compatibility. The full native target build
-must pass before this version replaces the live installer.
+old-firmware gating and Scala USER compatibility. The [native target build](https://github.com/KingXeryus/SynthMaven/actions/runs/40254244332)
+passes: flash **581240/581564 bytes**, static RAM **91220/98304**, low SRAM
+**24832/25672**, pool **329008/344064**. The package is **610045 bytes**, identity
+**FM-1_913**. The existing -Oz fallback is used. All 23 engines and 537 presets
+remain; deployment also requires the full main-branch regression suite.
 
 ## Known Bluetooth crash — experimental release
 

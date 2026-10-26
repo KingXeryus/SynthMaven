@@ -420,7 +420,7 @@ For recovery tooling, see the [build/install guide](../BUILDING.md#install).
 
 ## Version, validation and support
 
-The 1.3 release requires a native BLE build passing flash/RAM/pool limits with all
+The 1.3 native BLE build passes flash/RAM/pool limits with all
 23 engines and 537 factory presets. The installable package identifies as
 FM-1_913; the splash and editor identify SynthMaven 1.3. The product version **1.3**
 is separate from editor protocol **17** and retained hardware-loader identifiers.
