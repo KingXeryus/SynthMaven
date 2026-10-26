@@ -1,4 +1,4 @@
-# SynthMaven 0.3 — iPhone/iPad app and AUv3
+# SynthMaven 0.5 — iPhone/iPad app and AUv3
 
 The iOS targets share the Mac app/VST3/AU processor and editor: eight-layer
 mixer plus master, per-layer octave/split controls, wave sampler, MIDI mapping,
@@ -47,3 +47,6 @@ requires the appropriate signing, provisioning, review and account setup.
 
 No developer credentials are embedded. The Mac installer/DMG cannot install
 an iOS app. See [validation status](VALIDATION.txt) for the builds actually tested.
+
+## Tuning library
+The shared tuning page has a scale-degree keyboard with detuning highlights, 34 canonical maqam names and independent root/variant selection, plus 24 named user scales. The persistent bank is stored inside the app/extension application-data container. Sandboxed hosts may have separate banks; the active tuning remains embedded in patches and DAW sessions. See USER_MANUAL.md and MAQAM_LIBRARY.md for coverage and approximation limits.

@@ -1,4 +1,4 @@
-SynthMaven 0.4.1 — macOS Universal
+SynthMaven 0.5.0 — macOS Universal
 
 Open the SynthMaven installer package inside this disk image.
 The installer lets you independently select Standalone, VST3 and Audio Unit.
@@ -80,4 +80,6 @@ format. Audio Unit is the included format for Logic Pro and GarageBand.
 See USER_MANUAL.md in the corresponding source for controls. iOS builds are separate
 from this Mac installer and require Apple signing/provisioning for device install.
 
-0.4.1 expands the graphical controls: ADSR attack/decay/sustain/release for synth, sampler and extra oscillators; cutoff/resonance; delay echoes; reverb tail; EQ; distortion; LFOs; and stereo chorus/flanger modulation. See USER_MANUAL.md in the corresponding source archive for graph interactions and preview limits.
+0.5.0 expands the graphical controls: ADSR attack/decay/sustain/release for synth, sampler and extra oscillators; cutoff/resonance; delay echoes; reverb tail; EQ; distortion; LFOs; and stereo chorus/flanger modulation. See USER_MANUAL.md in the corresponding source archive for graph interactions and preview limits.
+
+0.5 adds a tuning keyboard with scale-degree/detuning colors, 34 canonical maqam names with independent root selection and direction variants, and 24 named persistent custom scales.

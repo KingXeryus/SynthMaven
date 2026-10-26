@@ -1,4 +1,4 @@
-# SynthMaven software 0.4 — instrument guide
+# SynthMaven software 0.5 — instrument guide
 
 These controls are shared by Mac standalone, VST3, Audio Unit and the iOS
 app/AUv3 targets. This guide covers the software instrument, not FM1 hardware.
@@ -108,3 +108,15 @@ The Effects page groups graphical modules with their controls: delay echoes (hor
 All response and decay diagrams are illustrative normalized previews, not measurements or exact DSP impulse responses. The live output trace and imported sample waveform display actual audio data.
 
 The engine panel also includes a live 512-point Hann-windowed FFT spectrum of the mixed mono output. It uses a logarithmic frequency axis and a -90 to 0 dBFS magnitude display. The existing time-domain output scope remains available above the page.
+
+## Tuning keyboard and custom-scale library (0.5)
+
+The TUNING page shows a real piano layout. Green keys belong to the selected scale, orange keys are detuned relative to 12-TET/A4 reference, numbers identify scale degrees, a dot identifies the root, and the white border marks the selected key. A key may be orange even when excluded from the membership mask. Membership is a visual/custom-scale annotation; it does not mute or quantize incoming notes.
+
+Select a key to inspect it, drag vertically to edit its cents, or use HALF-FLAT and RESET NOTE. IN SCALE edits membership for a custom 12-note scale. The twelve sliders edit offsets relative to ROOT; their note labels transpose with ROOT. Scala assigns one MIDI key per degree, so every key is a scale degree and the membership toggle is disabled while Scala is active.
+
+The maqam browser includes 34 canonical names covering the MaqamWorld index after grouping the transposition-only Ajam Ushayran entry with Ajam. Search also finds listed aliases, including Muhayyar, Shadd Araban, Shahnaz, Suzidil, Rahat al-Arwah, Farahfaza, Yakah and Sazkar. There is one Rast entry, independent of root; choose its primary/ascending or descending variant from the variant selector. Preset selection keeps your ROOT and A4 reference.
+
+This is a bounded reference catalogue, not a claim that every historical/regional maqam is enumerated. Tuning values are editable octave sketches; Jiharkah and Sikah Baladi in particular have flexible intonation. Non-octave and upper-register melodic behavior, ornaments, sayr and automatic ascending/descending detection are not modeled. Root anchors are ordinary MIDI pitches; the player can further edit the tuning. See [maqam library notes](MAQAM_LIBRARY.md).
+
+Select any of 24 USER LIBRARY slots, enter a name and click SAVE SCALE. LOAD SCALE recalls it into the current layer or master scope. The bank persists between launches in the app's SynthMaven/CustomScales.xml application-data folder; Mac app and plug-ins normally share the user folder, while sandboxed hosts/iOS may use their own app container. The active scale and up to 24 legacy/used memories per scope are also embedded in patch/session state. Older five-memory patches retain their existing slots.

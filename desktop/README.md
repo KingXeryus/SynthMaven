@@ -114,7 +114,7 @@ channel, pan, level, transpose, portamento and scale. MIDI Learn and explicit
 channel/CC mappings are stored in project and preset state. See INSTALL.txt
 for default controllers and routing. The TUNING page provides 12 editable
 note offsets, quarter-tone buttons, root, A4 reference, Scala import, bypass,
-editable temperament/maqam starting points and five store/recall memories.
+a highlighted tuning keyboard, 34 canonical maqam entries with independent root/variant selection, and 24 named persistent custom-scale slots.
 The Master Tuning toggle beside the scale panel switches all layers to a
 separate master scale. Turning it off restores their independent scales.
 All tuning data and memories persist in project/preset state.
@@ -153,5 +153,7 @@ Signed iOS installation/distribution requires valid Apple provisioning.
 ## Software 0.4 visuals and oscillator rack
 The shared UI adds live output, interactive ADSR diagrams, LFO waveform previews, an illustrative filter response, and effect-send bars. Each layer combines the original engine/sample source with two optional waveform oscillators. The post-source stereo chorus and flanger have independent controls. New oscillator and effect parameters support saved state, DAW automation and MIDI Map assignment. See USER_MANUAL.md for signal routing and preview limitations.
 
-### Expanded graphs in 0.4.1
+### Expanded graphs in 0.5.0
 ADSR panels cover native amplitude, modulation, auxiliary oscillators and sampled sounds. Filter cutoff/resonance, LFOs, echo timing/feedback, reverb tails, EQ, distortion and chorus/flanger modulation each have a labeled visual panel. The Effects page groups those displays with their controls; All Parameters can focus on each module. Responses are illustrative previews, while the output scope and sample waveform display actual audio.
+
+See [Maqam library coverage and tuning approximations](MAQAM_LIBRARY.md) for scale catalogue details.

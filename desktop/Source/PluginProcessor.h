@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 #pragma once
 #include "OscillatorRack.h"
+#include "MaqamPresets.h"
 #include <juce_audio_utils/juce_audio_utils.h>
 #include <juce_dsp/juce_dsp.h>
 #include "SynthMavenDSP.h"
@@ -41,6 +42,7 @@ public:
  juce::String learningDescription()const;juce::String controllerStatus()const;void clearMappings();
  static juce::String tuningId(int,const juce::String&);
  bool loadScala(int,const juce::String&,juce::String&);juce::String scaleDescription(int)const;
+ void useScaleLibrary(const juce::File&);int scaleDegree(int,int)const;unsigned scaleMask(int)const;void setScaleMask(int,unsigned);void applyMaqam(int,int,bool descending=false);juce::String tuningName(int)const;bool storeUserScale(int,int,const juce::String&);void recallUserScale(int,int);juce::String userScaleName(int,int)const;
  void resetTuning(int);void tuningPreset(int,int);void storeTuning(int,int);void recallTuning(int,int);
  double tuningOffset(int,int)const;double appliedTuningOffset(int layer,int note)const{return sm_tuning_offset(layers[(size_t)layer].dsp,note);}
  std::atomic<int> selectedLayer{0};std::atomic<unsigned> uiRevision{0};
@@ -60,8 +62,9 @@ private:
  juce::CriticalSection sampleLock;std::vector<std::shared_ptr<const MavenSample>>retiredSamples;
  void publishSample(int,std::shared_ptr<const MavenSample>);static std::shared_ptr<const MavenSample> decodeSample(juce::AudioFormatReader&,const juce::String&,juce::String&);
 
- struct Tuning {std::array<std::atomic<float>,140>scala{};std::array<std::atomic<float>*,12>notes{};std::atomic<float>*root=nullptr,*reference=nullptr,*bypass=nullptr,*scalaOn=nullptr;std::atomic<unsigned>version{0};juce::String source,description;std::array<juce::ValueTree,5>memories;std::array<float,16>cachedValues{};std::array<double,128>cachedOffsets{};unsigned cachedVersion=~0u,revision=0;};
+ struct Tuning {std::array<std::atomic<float>,140>scala{};std::array<std::atomic<float>*,12>notes{};std::atomic<float>*root=nullptr,*reference=nullptr,*bypass=nullptr,*scalaOn=nullptr;std::atomic<unsigned>version{0};juce::String source,description;std::atomic<unsigned>mask{4095};std::atomic<int>scalaCount{12};juce::String name{"Equal / Custom"};std::array<juce::ValueTree,24>memories;std::array<float,16>cachedValues{};std::array<double,128>cachedOffsets{};unsigned cachedVersion=~0u,revision=0;};
  std::array<Tuning,9>tunings;std::atomic<float>*masterTuning=nullptr;mutable juce::CriticalSection tuningLock;
+ juce::File customScaleLibrary;std::array<juce::ValueTree,24>userScales;void loadUserScales();juce::File userScalesFile()const;
  juce::ValueTree tuningState(int)const;void restoreTuning(int,const juce::ValueTree&);void applyTuning();
  struct HostParameter { juce::String id;juce::RangedAudioParameter*param=nullptr;std::atomic<float>*raw=nullptr;int layer=-1,native=-1; };
  std::vector<HostParameter> allParameters;std::unique_ptr<std::atomic<float>[]>mappedUpdates;
