@@ -10456,8 +10456,8 @@ let smLayers=null,smLayersDev=null,smLayerReading=null;
 const smLayerCtls=[],smLayerPending=[],smLayerBusy=[];
 async function smLayerRead(){
  const d=dev,box=$("sm-layer-mixer");
- if(!d||!synthOnly()||d.info.proto<19){box.hidden=true;smLayers=null;smLayersDev=null;return;}
- box.hidden=false;if(smLayerReading)return smLayerReading;
+ if(!d||!synthOnly()||d.info.proto<19){box.hidden=true;const mode=$("sm-program-mode-card"),check=$("sm-program-layer");if(mode){mode.hidden=false;if(check?.closest('#sm-layer-mixer'))mode.append(check.closest('p'));}smLayers=null;smLayersDev=null;return;}
+ box.hidden=false;const mode=$("sm-program-mode-card"),check=$("sm-program-layer");if(mode&&check?.closest('p')){mode.hidden=true;if(!check.closest('#sm-layer-mixer'))box.querySelector('h2').after(check.closest('p'));}if(smLayerReading)return smLayerReading;
  smLayerReading=(async()=>{const rows=[];for(let i=0;i<4;i++){const a=await rq([109,[i]]);checkRc(a[0]);if(a.length!==11||a[1]!==i)throw new Error("Invalid program mixer reply");rows.push(Array.from(a.slice(2)));}
   if(dev===d){if(smLayersDev!==d){smLayerCtls.length=0;smLayerPending.length=0;smLayerBusy.length=0;$("sm-layer-strips").replaceChildren();}smLayersDev=d;for(let i=0;i<4;i++)if(!smLayerBusy[i]){if(!smLayers)smLayers=[];smLayers[i]=rows[i];}smLayerRender();}
  })();try{return await smLayerReading;}finally{smLayerReading=null;}
@@ -10486,15 +10486,15 @@ function smLayerRender(){
   pan.addEventListener("dblclick",()=>smLayerChange(i,6,64));
   const level=el("input",{type:"range",min:0,max:127,step:1,class:"sm-layer-fader","aria-label":"Level sound "+(i+1),oninput:e=>smLayerChange(i,5,+e.target.value)}),levelOut=el("output");level.addEventListener("dblclick",()=>smLayerChange(i,5,104));
   const mute=button("M",7),solo=button("S",8),sound=el("p",{class:"sm-layer-name"}),select=el("button",{type:"button",onclick:()=>selectTrack(i)},"L"+(i+1));
-  const zone=el("p",{class:"sm-layer-zone"});
-  const strip=el("section",{class:"sm-layer-strip","aria-label":"Sound "+(i+1)+" mixer"},select,sound,field("On",enable),field("Keyboard",mode),field("Zone",side),field("Split point",point),
+  const zone=el("p",{class:"sm-layer-zone"}),routingSummary=el("summary",{text:"LAYER"}),routing=el("details",{class:"sm-layer-routing"},routingSummary,el("div",{},field("Keyboard",mode),field("Zone",side),field("Split point",point)));
+  const strip=el("section",{class:"sm-layer-strip","aria-label":"Sound "+(i+1)+" mixer"},select,sound,field("On",enable),routing,
    el("div",{class:"sm-layer-octave"},el("button",{type:"button","aria-label":"Octave down sound "+(i+1),onclick:()=>smLayerChange(i,4,Math.max(0,smLayers[i][4]-12))},"−"),transpose,el("button",{type:"button","aria-label":"Octave up sound "+(i+1),onclick:()=>smLayerChange(i,4,Math.min(48,smLayers[i][4]+12))},"+")),
    zone,el("div",{class:"knob"},el("span",{class:"kl",text:"Pan"}),panOut,pan),el("div",{class:"sm-layer-level"},levelOut,level),el("div",{class:"sm-layer-ms"},mute,solo),el("button",{type:"button",onclick:()=>{selectTrack(i);document.querySelector('[data-sm-section=sound]')?.click();}},"Edit sound"));
-  smLayerCtls.push({strip,select,sound,enable,mode,side,point,transpose,pan,panOut,level,levelOut,mute,solo,zone});$("sm-layer-strips").append(strip);
+  smLayerCtls.push({strip,select,sound,enable,mode,side,point,transpose,pan,panOut,level,levelOut,mute,solo,zone,routingSummary});$("sm-layer-strips").append(strip);
  }}
  smLayerCtls.forEach((c,i)=>{const v=smLayers[i],x=dev.mix?.tracks[i];c.select.setAttribute("aria-pressed",String(dev.sel===i));c.sound.textContent=x?trackName(x):"Sound "+(i+1);
   c.enable.checked=!!v[0];for(const[e,val]of [[c.mode,v[1]],[c.side,v[2]],[c.point,v[3]],[c.transpose,v[4]-24],[c.pan,v[6]],[c.level,v[5]]])if(document.activeElement!==e)e.value=String(val);
-  c.side.disabled=c.point.disabled=!v[1];c.mute.setAttribute("aria-pressed",String(!!v[7]));c.solo.setAttribute("aria-pressed",String(!!v[8]));c.strip.classList.toggle("sm-layer-off",!v[0]);
+  c.routingSummary.textContent=v[1]?"SPLIT · "+(v[2]?"UPPER":"LOWER"):"LAYER · FULL KEYBOARD";c.side.disabled=c.point.disabled=!v[1];c.mute.setAttribute("aria-pressed",String(!!v[7]));c.solo.setAttribute("aria-pressed",String(!!v[8]));c.strip.classList.toggle("sm-layer-off",!v[0]);
   c.panOut.textContent=v[6]===64?"C":Math.round(Math.abs(v[6]-64)/(v[6]<64?64:63)*100)+(v[6]<64?" L":" R");
   c.level.style.setProperty("--p",(v[5]/127*100)+"%");
   c.levelOut.textContent=v[5]?((v[5]-112)/2).toFixed(1)+" dB":"−∞ dB";c.zone.textContent=v[1]?(v[2]?(v[3]===127?"Empty upper zone":note(v[3]+1)+" → G9"):"C−1 → "+note(v[3])):"Entire keyboard";
