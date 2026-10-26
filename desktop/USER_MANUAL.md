@@ -106,3 +106,5 @@ Attack, decay, sustain and release have shared ADSR plots for the original ampli
 The Effects page groups graphical modules with their controls: delay echoes (horizontal drag edits time, vertical edits send), reverb tail (horizontal edits size, vertical edits send), EQ (drag the low/mid/high band vertically), distortion transfer, and stereo chorus/flanger modulation traces (horizontal edits rate, vertical edits depth). Sampler delay uses fixed 250 ms timing/feedback and sampler reverb uses fixed size/damping, so their graphs edit sends only. LFO plots allow horizontal rate editing. Routing diagrams show configured source/destination connections for the first six slots.
 
 All response and decay diagrams are illustrative normalized previews, not measurements or exact DSP impulse responses. The live output trace and imported sample waveform display actual audio data.
+
+The engine panel also includes a live 512-point Hann-windowed FFT spectrum of the mixed mono output. It uses a logarithmic frequency axis and a -90 to 0 dBFS magnitude display. The existing time-domain output scope remains available above the page.

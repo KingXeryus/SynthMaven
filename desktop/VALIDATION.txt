@@ -39,3 +39,5 @@ provisioning and TestFlight/App Store distribution remain separate steps.
 0.4 additions: graphics share host parameter state; extra-oscillator A4 pitch, note-off release and stereo chorus/flanger impulse tail are covered by MixerSampler tests. Filter diagrams are illustrative, not measured transfer functions.
 
 0.4.1 graphical coverage: shared ADSR plots for native amplitude/modulation, auxiliary oscillators and sampler; filter cutoff/resonance, LFO waveform/rate, delay echoes, reverb decay/damping, EQ, distortion transfer, stereo chorus/flanger modulation and matrix routes. Graph edits are tested against sampler attack, oscillator release and chorus-depth host parameters. Diagram responses are illustrative; no new independent native filter-envelope stage is claimed.
+
+The engine panel also includes a live 512-point Hann-windowed FFT spectrum of the mixed mono output. It uses a logarithmic frequency axis and a -90 to 0 dBFS magnitude display. The existing time-domain output scope remains available above the page.
