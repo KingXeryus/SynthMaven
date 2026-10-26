@@ -1,6 +1,6 @@
 # SynthMaven 1.6 — FM1 user manual
 
-SynthMaven is an open-source firmware based on [Clipper](https://github.com/isod89/clipper-fm1).
+SynthMaven is an open-source firmware based on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1).
 This manual covers the **M-VAVE FM1 hardware firmware**, its web installer and
 web editor. Version 1.6 provides **23 engines and 537 factory presets**. The Mac
 software instrument has a separate feature set; its eight-layer interface and
@@ -353,3 +353,7 @@ In SEL, choose ROOT and SCL, then set QNT to **ALL**. The focused sound supplies
 The Layers editor has **Apply master tuning** for each sound, enabled by default. GLO → TUNING → MASTER changes this switch for the HOME-selected sound. Disable it to bypass the master maqam/temperament, custom/Scala tuning and reference A4 for that sound. Pitch quantization, transpose and the global fine-tune control remain independent. Programs save these four switches; settings preserve them across power cycles. Existing programs default to all four enabled. Firmware before 1.6 cannot load a saved program using QNT ALL; export backups before upgrading or downgrading.
 
 Hold GLO for three seconds to toggle layering once, then release. Holding longer does not toggle again. GLO never latches from a long press; other function buttons keep their existing three-second latch behavior.
+
+## Upstream code credits
+
+JUNO, VECTOR, FMX, WSEQ, MACRO, the filter models, TURNG and SPICE / DICE are inherited from **Clipper by 3dSam**. Their instrument and synthesis design inspirations are separate from code authorship. SynthMaven is a derivative of Clipper, which builds on SLOOP and Felucca. Existing copyright and third-party notices are retained; see [licensing and upstream notices](../LICENSING.md).

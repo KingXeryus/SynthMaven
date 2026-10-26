@@ -7,3 +7,5 @@
 - Editor protocol 20 adds command 110: read [part], write [part, applyMasterTuning], reply [status, part, applyMasterTuning]. Parts are 0–3, switch values 0/1. Invalid writes leave state unchanged. Protocol 19 mixer command 109 remains unchanged.
 
 The 537-entry factory catalogue and calibrated trims remain unchanged: 536 audible sounds and USER WT silent until uploaded. Bluetooth remains removed. Direct USB host and Chocolate Plus hardware/audio validation remain outstanding. Automated host tests and release CI gate deployment; physical hardware testing is still required.
+
+Credits now explicitly identify Clipper by 3dSam as the source of the inherited engines, filter models and algorithmic features. The installer, editor footer, manual, README and licensing notices distinguish upstream code authorship from instrument design inspiration.

@@ -1,5 +1,7 @@
 # SynthMaven licensing and upstream notices
 
+SynthMaven is derived from **Clipper by 3dSam** (<https://github.com/isod89/clipper-fm1>), which builds on SLOOP and Felucca. JUNO, VECTOR, FMX, WSEQ, MACRO, the filter models, TURNG and SPICE / DICE are inherited Clipper implementations. References to commercial instruments describe design inspiration, not SynthMaven authorship. Copyright (C) 2026 3dSam notices and all other upstream notices remain in the corresponding source files.
+
 SynthMaven inherits the following upstream licensing terms. The **code** is licensed under the GNU General Public License,
 version 3 only (`GPL-3.0-only`, full text in `LICENSE`). Its **assets** are not part of
 that licence: the icon atlas `assets/icons.png`, the panel image `docs/panel.jpg` and the drum sounds made by
@@ -69,7 +71,7 @@ by those owners.
 
 ## Radio
 
-SynthMaven BLE builds enable the FM1 Bluetooth radio through fm1-base (Charles Vestal), MPL-2.0, with retained notices and Apache-2.0 SDK dependencies. Adapted sources and licences are in `firmware/vendor/fm1-base`; JieLi stack libraries are obtained from the SDK during the build. Wi-Fi is not enabled.
+Bluetooth is removed from the current SynthMaven release. Historical BLE vendor sources and notices remain in `firmware/vendor/fm1-base` (Charles Vestal, MPL-2.0); the current build does not enable the radio. Wi-Fi is not enabled.
 
 Lossless factory wavetable decoding uses Jibsen tinf, zlib licence; source and notice are in `firmware/vendor/tinf`.
 
