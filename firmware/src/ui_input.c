@@ -862,9 +862,6 @@ static int layers_input(uint32_t note_edges, uint32_t *pressed, uint32_t home)
         if(l==LY_MIX)long_ms=2000u;
 #endif
         if (d && !down[l]) {
-#if SYNTHMAVEN_SYNTH
-            if(l==LY_ERASE)layer_mixer_pan=0; /* Every new EDIT hold starts with the four volumes. */
-#endif
             t0[l] = now;
             used[l] = (uint8_t)((eat & ly_bit[l]) != 0u);  /* (the press that unlocked: not a tap) */
         }
@@ -1133,8 +1130,14 @@ static void ui_input(void)
     if (layered || ui.hold_kind) {                      /* a layer / a hold: the rest waits */
 #if SYNTHMAVEN_SYNTH
         if(ui.layer==LY_ERASE) {
-            if((s=panel_enc(EN_SELECT))!=0){layer_mixer_pan=(uint8_t)((layer_mixer_pan+s%2+2)%2);ui.force=1;}
-            panel_enc(EN_ALGO);panel_enc(EN_PRESET);return;
+            if((s=panel_enc(EN_SELECT))!=0)track_select((uint32_t)(((int32_t)song.sel+s%4+4)%4));
+            uint32_t part=song.sel%4u;
+            if((s=panel_enc(EN_ALGO))!=0){
+                program_route_t *r=&program_route[part];uint8_t point=(uint8_t)clamp((int32_t)r->point+s,33,93); /* A1..A6, C4=60 */
+                if(point!=r->point || !r->split){fm1_irq_off();r->point=point;r->split=1;panic_req|=1u<<part;fm1_irq_on();ui.force=1;}
+            }
+            if((s=panel_enc(EN_PRESET))!=0){trk[part].p[P_PAN]=(int16_t)clamp(trk[part].p[P_PAN]+s,TP[P_PAN].min,TP[P_PAN].max);ui.force=1;}
+            return;
         }
         if(scale_edit) {
             if((s=panel_enc(EN_SELECT))!=0)tune_cfg.sys=(uint8_t)(TU_CUSTOM1+((tune_cfg.sys-TU_CUSTOM1+s%4+4)%4));

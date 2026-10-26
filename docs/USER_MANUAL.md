@@ -1,4 +1,4 @@
-# SynthMaven 1.8 — FM1 user manual
+# SynthMaven 1.9 — FM1 user manual
 
 SynthMaven is an open-source firmware based on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1).
 This manual covers the **M-VAVE FM1 hardware firmware**, its web installer and
@@ -311,7 +311,7 @@ For recovery tooling, see the [build/install guide](../BUILDING.md#install).
 
 ## Version, validation and support
 
-Version 1.8 uses editor protocol 21. See [release notes](release-1.8.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
+Version 1.9 uses editor protocol 21. See [release notes](release-1.9.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
 
 
 
@@ -377,4 +377,4 @@ Tap SEL to open the scale browser without changing the scale. SELECT cycles the 
 
 EDIT now has four standard pages: EDIT 1, EDIT 2, VOICE and CHARACTER. FMX keeps its operator/routing pages; OP ENV is under ENV. Macros, morph, randomize, undo and FMX STORE remain accessible in the editor. Layer ON/OFF stays in GLO and on its two-second hold.
 
-Hold EDIT for two seconds to preview the four-sound mixer. KNOBS 1–4 control sounds 1–4; SELECT switches between VOLUME and PAN. At three seconds the mixer latches and stays open after release. Tap EDIT or HOME to exit; save a program to keep the mix. The keyboard still plays and EDIT no longer erases sequence notes. Short presses never show a held-layer screen. HOME opens its menu after three seconds.
+Hold EDIT for two seconds to preview the four-sound mixer. KNOBS 1–4 control the volumes of sounds 1–4. SELECT cycles the selected part; ALGORITHM sets that part’s split point from A1 to A6 (shown as note and octave), and PRESET/parameter controls its pan. Editing a split point enables the selected part’s existing Lower/Upper zone. GLO → LAYER ROUTE or the editor can choose the zone or restore full-keyboard layering. At three seconds the mixer latches and stays open after release. Tap EDIT or HOME to exit; save a program to keep the mix. The keyboard still plays and EDIT no longer erases sequence notes. Short presses never show a held-layer screen. HOME opens its menu after three seconds.

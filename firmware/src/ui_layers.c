@@ -490,7 +490,7 @@ static void layer_knobs(uint32_t layer)
 #if SYNTHMAVEN_SYNTH
     if(layer==LY_ERASE) {
         for(k=0;k<4;k++)if((s=panel_enc(EN_K1+k))!=0){
-            uint32_t id=layer_mixer_pan?P_PAN:P_LEVEL;
+            uint32_t id=P_LEVEL;
             trk[k].p[id]=(int16_t)clamp(trk[k].p[id]+s,TP[id].min,TP[id].max);
             ui.layer_used=1;ui.force=1;
         }
@@ -694,21 +694,23 @@ static void layer_screen_draw(void)
     }
 #if SYNTHMAVEN_SYNTH
     if(layer==LY_ERASE) {
-        cv_begin(240,36,C_BLACK);cv_text(4,4,&FONT_S,layer_mixer_pan?"LAYER MIXER: PAN":"LAYER MIXER: VOLUME",C_HI);cv_blit(0,0);
-        cv_begin(240,124,C_BLACK);
+        char b[16],part[8]="PART ";uint32_t focus=song.sel%4u;const program_route_t *r=&program_route[focus];const char *u;
+        part[5]=(char)('1'+focus);part[6]=0;
+        cv_begin(240,36,C_BLACK);cv_text(4,4,&FONT_S,"LAYER MIXER",C_HI);cv_text(176,4,&FONT_S,part,TE_COL[focus]);cv_blit(0,0);
+        cv_begin(240,104,C_BLACK);
         for(i=0;i<4;i++) {
-            char b[12],n[2]={(char)('1'+i),0};int32_t x=i*60;
-            cv_text(x+4,4,&FONT_S,n,TE_COL[i]);
-            const char *u;param_format(&TP[layer_mixer_pan?P_PAN:P_LEVEL],trk[i].p[layer_mixer_pan?P_PAN:P_LEVEL],b,&u);
-            cv_text(x+4,38,&FONT_S,b,C_WHITE);cv_text(x+4,58,&FONT_S,u,C_GRAY);
-            cv_rect(x+6,76,46,4,C_GRAY);
-            int32_t v=trk[i].p[layer_mixer_pan?P_PAN:P_LEVEL]+(layer_mixer_pan?64:0);
-            cv_rect(x+6,76,v*46/127,4,TE_COL[i]);
+            char n[2]={(char)('1'+i),0};int32_t x=i*60;
+            if(i==focus)cv_rect(x+2,0,56,2,TE_COL[i]);
+            cv_text(x+4,6,&FONT_S,n,i==focus?C_WHITE:TE_COL[i]);
+            param_format(&TP[P_LEVEL],trk[i].p[P_LEVEL],b,&u);
+            cv_text(x+4,34,&FONT_S,b,C_WHITE);cv_text(x+4,54,&FONT_S,u,C_GRAY);
+            cv_rect(x+6,78,46,4,C_GRAY);cv_rect(x+6,78,trk[i].p[P_LEVEL]*46/127,4,TE_COL[i]);
         }
-        cv_blit(0,40);cv_begin(240,76,C_BLACK);
-        cv_text(4,4,&FONT_S,"KNOBS 1-4: SOUNDS 1-4",C_GRAY);
-        cv_text(4,26,&FONT_S,"SELECT: VOLUME / PAN",C_GRAY);
-        cv_text(4,48,&FONT_S,ly_lock==LY_ERASE?"EDIT / HOME: EXIT":"HOLD 3s TO KEEP OPEN",C_GRAY);cv_blit(0,164);return;
+        cv_blit(0,40);cv_begin(240,92,C_BLACK);
+        cv_text(4,0,&FONT_S,"SPLIT",C_GRAY);note_name(b,r->point);cv_text(60,0,&FONT_S,b,C_WHITE);cv_text(124,0,&FONT_S,r->split?(r->upper?"UPPER":"LOWER"):"FULL",TE_COL[focus]);
+        cv_text(4,22,&FONT_S,"PAN",C_GRAY);param_format(&TP[P_PAN],trk[focus].p[P_PAN],b,&u);cv_text(60,22,&FONT_S,b,C_WHITE);cv_text(108,22,&FONT_S,u,C_GRAY);
+        cv_text(4,44,&FONT_S,"ALGO:SPLIT PRESET:PAN",C_GRAY);
+        cv_text(4,66,&FONT_S,ly_lock==LY_ERASE?"SELECT:PART EDIT:EXIT":"SELECT:PART HOLD 3s",C_GRAY);cv_blit(0,148);return;
     }
     if(layer==LY_SCALE) {
         /* The shared canvas is only 124 pixels high; render three strips. */
