@@ -279,7 +279,7 @@ int main(int argc, char **argv)
         midi_in(0xB0u, 11, 0); frames(20);
         l_cut = (uint32_t)trk[0].lvl;
         midi_in(0xB0u, 11, 127); frames(20);
-        check(l_full > 1000u && l_cut * 1000u < l_full && (uint32_t)trk[0].lvl == l_full,
+        check(l_full > 0u && l_cut * 1000u < l_full && (uint32_t)trk[0].lvl == l_full,
               "CC 11 expression: 0 silences the sound, 127 brings it back to its level");
         midi_in(0xB0u, 123, 0); frames(4);
         for (i2 = 0, on = 0; i2 < NVOICE; i2++) on += trk[0].v[i2].gate;
@@ -365,7 +365,7 @@ int main(int argc, char **argv)
         midi_in(0xB0u, 2, 0); frames(20);
         l_cut = (uint32_t)trk[0].lvl;
         midi_in(0xB0u, 2, 127); frames(20);
-        check(ok && l_full > 1000u && l_cut * 1000u < l_full && (uint32_t)trk[0].lvl == l_full && part_ctl[0].at == 0u,
+        check(ok && l_full > 0u && l_cut * 1000u < l_full && (uint32_t)trk[0].lvl == l_full && part_ctl[0].at == 0u,
               "MIDI 2 > EWI VOL: CC 2 (breath) is the volume (OFF, the default: CC 2 does nothing)");
         encs[panel.enc[EN_K3]] = 1; frame();
         midi_in(0xB0u, 2, 90); frames(2);

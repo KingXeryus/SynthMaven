@@ -652,3 +652,6 @@ static const param_desc_t *page_desc(const page_t *pg, uint32_t slot, int16_t **
 }
 
 #include "oriental.c"
+#if SYNTHMAVEN_SYNTH
+#include "factory_levels.h"
+#endif

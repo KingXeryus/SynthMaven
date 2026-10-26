@@ -1,8 +1,8 @@
-# SynthMaven 1.4 — FM1 user manual
+# SynthMaven 1.5 — FM1 user manual
 
 SynthMaven is an open-source firmware based on [Clipper](https://github.com/isod89/clipper-fm1).
 This manual covers the **M-VAVE FM1 hardware firmware**, its web installer and
-web editor. Version 1.4 provides **23 engines and 537 factory presets**. The Mac
+web editor. Version 1.5 provides **23 engines and 537 factory presets**. The Mac
 software instrument has a separate feature set; its eight-layer interface and
 DAW formats are not features of this hardware firmware.
 
@@ -30,7 +30,7 @@ DAW formats are not features of this hardware firmware.
 
 ## Before installation
 
-Back up the FM1 before installing custom firmware. Version 1.4 removes Bluetooth. Direct USB host mode has software test coverage but still needs Chocolate Plus hardware validation.
+Back up the FM1 before installing custom firmware. Version 1.5 removes Bluetooth. Direct USB host mode has software test coverage but still needs Chocolate Plus hardware validation.
 
 ### Connection options
 
@@ -48,12 +48,12 @@ The FM1 port cannot act as host and computer device at the same time. This host 
    in Chrome or Edge with the FM1 connected over USB.
 2. Close other programs using the FM1 MIDI ports if connection fails.
 3. Follow the installer prompts and keep power connected until it finishes.
-4. Check the splash/About screen for **SYNTHMAVEN 1.4**.
+4. Check the splash/About screen for **SYNTHMAVEN 1.5**.
 5. Open the [editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/),
    click **Connect**, grant MIDI/SysEx access when prompted and choose the FM1.
 
 Use the matching online editor after updating. The firmware/editor wire protocol
-is version **18**; that protocol number is independent of product version 1.4.
+is version **18**; that protocol number is independent of product version 1.5.
 A URL ending in `?mock=1` uses a simulated device for previewing the editor.
 It does not communicate with or validate a physical FM1.
 
@@ -294,7 +294,7 @@ USER presets store individual sounds. Export user banks and backups before updat
 |---|---|
 | Editor does not connect | Chrome/Edge, USB data cable, MIDI/SysEx permission, correct port; close competing MIDI applications |
 | Only highlight changes | Use KNOB 3 to load or KNOB 4 to load and edit |
-| Oriental collection missing | Verify SYNTHMAVEN 1.4, refresh the matching editor, select ORIENTAL on the hardware |
+| Oriental collection missing | Verify SYNTHMAVEN 1.5, refresh the matching editor, select ORIENTAL on the hardware |
 | USB keyboard is silent | Confirm a MIDI host exists; separate power alone is insufficient; check KEY IN and channel |
 | TRS keyboard is silent | Check MIDI direction, compatible cable/adapter, channel and KEY IN |
 | Pedal scans but does not switch | Wait for MIDI READY; enable PROG; check PORT, channel and actual Program Change/CC0 data |
@@ -310,7 +310,7 @@ For recovery tooling, see the [build/install guide](../BUILDING.md#install).
 
 ## Version, validation and support
 
-Version 1.4 uses editor protocol 18. See [release notes](release-1.4.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
+Version 1.5 uses editor protocol 18. See [release notes](release-1.5.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
 
 
 
@@ -326,3 +326,9 @@ setting, variant, reference degrees and tuning limitations.
 ## Custom chromatic scales
 
 Tap SEL to cycle scales. Hold SEL for three seconds to enter the latched editor. SELECT chooses CUSTOM 1–4; PRESET selects ROOT C–B. Each chromatic key press cycles its offset through −25, −50, −75 and 0 cents. Other pitch classes stay unchanged. The offsets repeat across octaves relative to ROOT. Press SAVE and wait for SCALE SAVED; press SEL to leave. These custom scales appear in the tuning list alongside the 46 maqam reference tunings and Scala USER scale.
+
+## Appearance and factory levels (1.5)
+
+Use **Appearance** in the editor or installer to choose Dark, Light or System. The browser remembers this choice. The editor uses the standalone instrument’s system sans-serif font, rounded panels, rotary controls and gridded parameter previews, with the logo’s red accent. Under Sound, choose Sound, Modulation, Effects, Layers, Tuning or All parameters. Drag a knob vertically, use Shift for fine pointer adjustment, use arrow keys when focused, or double-click to reset. Envelope graph handles edit attack, decay, sustain and release. Parameter diagrams are previews rather than live audio measurements.
+
+The 537-entry catalogue has **536 audible, level-matched factory sounds plus USER WT**. USER WT deliberately stays silent until a wavetable is uploaded. Factory matching uses the complete stereo firmware mix and a −29 LUFS reference target on role-appropriate phrases. Playing different notes, changing velocity/effects or layering sounds changes loudness. Saved sounds keep their stored trim; reload the factory preset to use the new calibration.

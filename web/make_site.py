@@ -74,6 +74,9 @@ def main(pkg, version, out):
     for old in list(fw.glob("felucca-*.fwsc")) + list(fw.glob("sloop-*.fwsc")) + list(fw.glob("synthmaven-*.fwsc")):   # one package: the current one
         old.unlink()
     (inst / "index.html").write_text(html, encoding="utf-8")
+    for dest in (inst, ed):
+        for asset in ("synthmaven-theme.css","synthmaven-theme.js"):
+            shutil.copy(HERE / asset, dest / asset)
     shutil.copy(pkg, fw / name)
     shutil.copy(HERE / "editor.html", ed / "index.html")
     shutil.copy(logo, ed / "synthmaven-logo.svg")

@@ -22,11 +22,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: pip install Pillow Markdown==3.7
+      - run: pip install Pillow Markdown==3.7 numpy scipy
       - name: Host UI, routing, settings and editor tests
         env:
           SM_SKIP_FULL_WEB: ${{ github.ref == 'refs/heads/main' && '0' || '1' }}
         run: sh tools/test_synthmaven.sh
+      - name: Audit all 537 factory entries
+        run: sh tools/audit_factory_levels.sh
       - name: Build development website
         run: python3 tools/make_synthmaven_site.py
       - name: Download target toolchain and SDK
@@ -44,11 +46,11 @@ jobs:
         if: steps.deps.outcome == 'success'
         continue-on-error: true
         run: |
-          JIELI_TOOLCHAIN="$RUNNER_TEMP/jieli/toolchain" AC79_SDK="$RUNNER_TEMP/ac79" sh build.sh --release 1.4
-          python3 tools/make_synthmaven_site.py --package build/felucca-1.4.fwsc
+          JIELI_TOOLCHAIN="$RUNNER_TEMP/jieli/toolchain" AC79_SDK="$RUNNER_TEMP/ac79" sh build.sh --release 1.5
+          python3 tools/make_synthmaven_site.py --package build/felucca-1.5.fwsc
       - name: Report target build status
         run: |
-          if [ ! -f build/felucca-1.4.fwsc ]; then
+          if [ ! -f build/felucca-1.5.fwsc ]; then
             echo 'Target firmware not built; deployment is blocked.' >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi

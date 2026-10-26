@@ -1,4 +1,4 @@
-# SynthMaven 1.4 — quick start
+# SynthMaven 1.5 — quick start
 
 Back up before installing. Open the [installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) in Chrome or Edge. Connect the FM1 by USB in COMPUTER mode and follow the prompts. For rescue, hold OCT− while powering on.
 
@@ -14,4 +14,6 @@ Set GLO → PATCH MIDI → PROG ON, then configure PATCH UP/DOWN and BANK UP/DOW
 
 Choose USB ROLE → COMPUTER before reconnecting the web editor or installer. The USB port supports one role at a time.
 
-Read the [user manual](docs/USER_MANUAL.md), [release notes](docs/release-1.4.md), and [maqam catalogue](docs/MAQAM_SCALES.md).
+Read the [user manual](docs/USER_MANUAL.md), [release notes](docs/release-1.5.md), and [maqam catalogue](docs/MAQAM_SCALES.md).
+
+Choose **Appearance → Dark / Light / System** in the installer or editor. In the editor’s Sound page, use the instrument tabs and rotary controls; drag an envelope handle to edit its shape. The 537-entry bank contains 536 level-matched audible sounds and USER WT, which stays silent until you upload a wavetable.

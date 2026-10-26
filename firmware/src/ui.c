@@ -3,7 +3,7 @@
 /* Felucca user interface. Four columns map to KNOB 1..4. Rendering is lazy:
  * every element remembers what it last drew and is redrawn only on change. */
 #ifndef FELUCCA_VERSION
-#define FELUCCA_VERSION "SYNTHMAVEN 1.3"  /* (experimental) the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
+#define FELUCCA_VERSION "SYNTHMAVEN 1.5"  /* (experimental) the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
 #endif
 static void project_save(uint32_t slot);
 static void program_layer_set(uint32_t on);
@@ -544,6 +544,9 @@ static void apply_preset_to(track_t *t, uint32_t pi)
     mseq_init(t);                                    /* (0.8) the MOD SEQ: the shapes to start from */
 #endif
     sm_or_apply(t,logical_pi);
+#if SYNTHMAVEN_SYNTH
+    t->p[P_ED_FX]=SM_FACTORY_LEVEL[t->eng_req%NENGINES][logical_pi%SM_LEVEL_MAX];
+#endif
     fm6_track_loaded(t);                             /* FM6: the preset's patch (its PTCH) */
 }
 

@@ -1,0 +1,62 @@
+/* SynthMaven: shared instrument/editor/installer visual language. GPL-3.0-only. */
+:root{--sm-brand:#cd2020;--sm-accent:#ff7474;--sm-bg:#10151d;--sm-panel:#1a222e;--sm-raised:#222e3d;--sm-ink:#e9f0f7;--sm-muted:#99a9ba;--sm-line:#2b3747;--sm-plot:#101923;--sm-grid:#243442;--sm-active:#40262e;--sm-onbrand:#fff;--sm-font:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color-scheme:dark}
+:root[data-theme=light]{--sm-bg:#f3f4f6;--sm-panel:#fff;--sm-raised:#e8ebef;--sm-ink:#171c24;--sm-muted:#526171;--sm-line:#cbd2db;--sm-plot:#f8f9fb;--sm-grid:#dde2e9;--sm-active:#fae6e6;--sm-accent:#b71920;color-scheme:light}
+html[data-sm-app]{--bg:var(--sm-bg);--s1:var(--sm-panel);--s2:var(--sm-raised);--s3:var(--sm-line);--line:var(--sm-line);--dim:var(--sm-muted);--fg2:var(--sm-ink);--fg:var(--sm-ink);--red:var(--sm-accent);--t1:var(--sm-accent);--t2:var(--sm-accent);--t3:var(--sm-accent);--t4:var(--sm-accent);--trk:var(--sm-accent);--font:var(--sm-font);--blue:var(--sm-brand);--green:var(--sm-ink);--yellow:var(--sm-muted);--orange:var(--sm-brand);--tile:var(--sm-panel)}
+html[data-sm-app] body{font:13px/1.5 var(--sm-font);-webkit-font-smoothing:antialiased;font-smooth:auto;text-rendering:optimizeLegibility;background:var(--sm-bg);color:var(--sm-ink)}
+html[data-sm-app] h1,html[data-sm-app] h2,html[data-sm-app] h3{font-family:var(--sm-font);font-weight:600;line-height:1.4;letter-spacing:.045em}
+html[data-sm-app] button,html[data-sm-app] select,html[data-sm-app] input{font-family:var(--sm-font);font-size:13px}
+html[data-sm-app] button{border:1px solid var(--sm-line);border-radius:5px;background:var(--sm-panel);color:var(--sm-muted);text-transform:none;min-height:32px;padding:6px 12px}
+html[data-sm-app] button:hover:not(:disabled){background:var(--sm-raised);color:var(--sm-ink)}
+html[data-sm-app] button.pri,html[data-sm-app] button#go{background:var(--sm-brand);color:var(--sm-onbrand);border-color:var(--sm-brand)}
+html[data-sm-app] button:disabled{opacity:.45;cursor:not-allowed}
+html[data-sm-app] select,html[data-sm-app] input[type=text],html[data-sm-app] input[type=number],html[data-sm-app] input[type=search]{border:1px solid var(--sm-line);border-radius:5px;background-color:var(--sm-panel);color:var(--sm-ink);padding:7px 10px;min-height:32px}
+html[data-sm-app] button[aria-pressed=true],html[data-sm-app] button[aria-selected=true]{background:var(--sm-active);color:var(--sm-accent);border-color:var(--sm-line);box-shadow:inset 0 -2px var(--sm-accent)}
+.sm-theme{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--sm-muted)}.sm-theme select{font-size:12px!important;min-width:86px}
+html[data-sm-app=editor] .app{grid-template-columns:232px minmax(0,1fr)}
+html[data-sm-app=editor] .side{background:var(--sm-bg);border-right:1px solid var(--sm-line);padding:16px 12px;gap:16px}
+html[data-sm-app=editor] .brand img{width:192px!important;height:114px!important;border-radius:5px;padding:10px;background:#fff!important}
+html[data-sm-app=editor] .main{padding:20px 24px;max-width:1800px}
+html[data-sm-app=editor] .tabs button{min-height:36px;border-radius:5px;margin:2px 0;letter-spacing:.02em}
+html[data-sm-app=editor] .top{border-bottom:1px solid var(--sm-line);padding-bottom:16px;margin-bottom:16px}
+html[data-sm-app=editor] .titlebar h1{font-size:19px;color:var(--sm-ink);letter-spacing:.06em}
+html[data-sm-app=editor] .card,html[data-sm-app=editor] .group{background:var(--sm-panel);border:1px solid var(--sm-line);border-radius:8px;padding:18px;margin-bottom:16px}
+html[data-sm-app=editor] .group h2,html[data-sm-app=editor] .card h2{font-size:12px;color:var(--sm-muted);padding-bottom:12px;border-bottom:1px solid var(--sm-line);margin-bottom:16px;text-transform:uppercase}
+html[data-sm-app=editor] .group h3{font-size:11px;color:var(--sm-muted);margin:18px 0 8px}
+html[data-sm-app=editor] .groups{display:block}
+html[data-sm-app=editor] .knobs{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:12px;margin:12px 0}
+html[data-sm-app=editor] .knob{--c:var(--sm-accent)!important;border:0;padding:8px!important;align-items:center;text-align:center;gap:8px;min-height:130px}
+html[data-sm-app=editor] .knob .kl{font:600 11px/1.3 var(--sm-font);color:var(--sm-muted);text-transform:none;white-space:normal;min-height:28px}
+html[data-sm-app=editor] .knob .v,html[data-sm-app=editor] .knob .v.long{font:600 14px/20px var(--sm-font);order:3;color:var(--sm-ink)}
+html[data-sm-app=editor] .knob .v small{font:11px var(--sm-font)}
+html[data-sm-app=editor] .knob.enum select{font-size:13px;color:var(--sm-ink);max-width:180px;background-color:var(--sm-panel);height:34px;margin-top:20px}
+.sm-dial-wrap{position:relative;display:inline-block;width:70px;height:70px;flex:none;vertical-align:middle}.sm-dial-wrap svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.sm-dial-wrap input[type=range]{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;opacity:0;touch-action:none;cursor:ns-resize;margin:0!important}.sm-dial-wrap:focus-within{outline:2px solid var(--sm-accent);outline-offset:2px;border-radius:50%}.sm-dial-wrap:has(input:disabled){opacity:.4}
+.sm-dial-track{fill:none;stroke:var(--sm-line);stroke-width:3}.sm-dial-progress{fill:none;stroke:var(--sm-accent);stroke-width:3;stroke-linecap:round}.sm-dial-face{fill:var(--sm-raised)}.sm-dial-needle{stroke:var(--sm-ink);stroke-width:2;stroke-linecap:round}
+.sm-sections{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 16px}.sm-sections button{flex:1 0 auto;min-width:105px;font-size:11px;text-transform:uppercase!important;letter-spacing:.04em}
+[data-sm-section-hidden=true]{display:none!important}
+.sm-graphic{display:block;width:100%;height:168px;background:var(--sm-plot);border-radius:6px;margin:12px 0;color:var(--sm-accent);touch-action:none}.sm-graphic .sm-grid{stroke:var(--sm-grid);stroke-width:1}.sm-graphic .sm-curve{stroke:var(--sm-accent);stroke-width:2;fill:none}.sm-graphic text{fill:var(--sm-muted);font:10px var(--sm-font)}.sm-graphic circle{fill:var(--sm-accent);cursor:grab}.sm-graphic .sm-fill{fill:var(--sm-accent);opacity:.13}
+html[data-sm-app=editor] .envsvg{display:none}
+html[data-sm-app=editor] th{font:600 11px var(--sm-font);color:var(--sm-muted);text-transform:none;padding:8px}
+html[data-sm-app=editor] td{padding:8px;border-bottom:1px solid var(--sm-line)}
+html[data-sm-app=editor] .hytable .sm-dial-wrap,html[data-sm-app=editor] .fmops .sm-dial-wrap{width:58px;height:58px}
+html[data-sm-app=editor] canvas,html[data-sm-app=editor] .fxgraph{background:var(--sm-plot);border-radius:6px}
+html[data-sm-app=editor] .hytable,html[data-sm-app=editor] table{font-family:var(--sm-font);font-size:12px}
+html[data-sm-app=installer] main{max-width:900px;padding:40px 28px}
+html[data-sm-app=installer] .top{gap:24px;flex-wrap:wrap}
+html[data-sm-app=installer] .logo{background:#fff;padding:12px 18px;border-radius:6px}
+html[data-sm-app=installer] .logo svg{width:210px;height:125px}
+html[data-sm-app=installer] .strip i{background:var(--sm-brand)!important}.strip i:nth-child(2){opacity:.75}.strip i:nth-child(3){opacity:.5}.strip i:nth-child(4){opacity:.25}
+html[data-sm-app=installer] .exp{border-color:var(--sm-brand);background:var(--sm-panel);border-radius:8px}
+html[data-sm-app=installer] .exp b{color:var(--sm-accent)}
+html[data-sm-app=installer] .lead{font-size:22px;line-height:1.5}
+html[data-sm-app=installer] .tile{border-color:var(--sm-brand);background:var(--sm-panel);border-radius:6px;padding:18px}
+html[data-sm-app=installer] .tile b{color:var(--sm-accent);font-size:28px}
+html[data-sm-app=installer] .tile span{color:var(--sm-muted);font-size:13px;text-transform:none}
+html[data-sm-app=installer] .documentation{padding:12px 0;color:var(--sm-accent);font-size:13px}
+html[data-sm-app=installer] #go{border-radius:6px;font-size:15px;margin-top:12px}
+html[data-sm-app=installer] .editorlink{background:var(--sm-panel);border:1px solid var(--sm-line);border-radius:5px}
+@media(max-width:800px){html[data-sm-app=editor] .app{display:block}html[data-sm-app=editor] .side{height:auto;position:relative;border-right:0;border-bottom:1px solid var(--sm-line)}html[data-sm-app=editor] .tabs{display:flex;flex-wrap:wrap;gap:4px}html[data-sm-app=editor] .tabs .navh{display:none}html[data-sm-app=editor] .main{padding:14px}html[data-sm-app=editor] .knobs{grid-template-columns:repeat(3,minmax(0,1fr))}html[data-sm-app=editor] .brand img{width:150px!important;height:90px!important}html[data-sm-app=installer] main{padding:24px 16px}.sm-sections button{min-width:90px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+/* Desktop instrument frame: global navigation above a persistent factory library. */
+@media(min-width:1000px){html[data-sm-app=editor] .app{display:block}html[data-sm-app=editor] .side{display:grid;grid-template-columns:210px minmax(0,1fr) 250px;gap:6px 24px;height:auto;position:relative;border-right:0;border-bottom:1px solid var(--sm-line)}html[data-sm-app=editor] .brand{grid-column:1;grid-row:1/3}html[data-sm-app=editor] .side>p{grid-column:2;grid-row:1}html[data-sm-app=editor] .tabs{grid-column:2;grid-row:2/4;display:flex;flex-wrap:wrap;align-content:start;gap:4px}html[data-sm-app=editor] .tabs .navh{display:none}html[data-sm-app=editor] .devcard{grid-column:3;grid-row:1/3}html[data-sm-app=editor] .sm-theme{grid-column:3;grid-row:3}.sm-instrument-layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:16px;align-items:start}.sm-factory-library{position:sticky;top:16px}.sm-factory-library .browser{display:block}.sm-factory-library .fld{display:block;margin-bottom:12px}.sm-factory-library #preset{height:390px;width:100%;font-size:13px}.sm-factory-library .acts button{white-space:normal;font-size:11px}.sm-factory-library .acts .bar{gap:4px}.sm-factory-library #ctlhelp{font-size:11px}.sm-factory-library #oriental-preset{max-width:100%}}
+html[data-sm-app=editor] #pagetitle{color:var(--sm-ink)}html[data-sm-app=editor] footer{color:var(--sm-muted);font:11px/1.5 var(--sm-font)}
+html[data-sm-app=editor] .sm-instrument-stage{min-width:0}html[data-sm-app=editor] .knobs>.sm-graphic{grid-column:1/-1}

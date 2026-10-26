@@ -1,4 +1,4 @@
-# SynthMaven 1.4 MIDI settings — protocol 18
+# SynthMaven 1.5 MIDI settings — protocol 18
 
 USB is the only pedal-message source. Keyboard input may be USB, TRS or BOTH. The USB host role is independent of MIDI source filtering.
 

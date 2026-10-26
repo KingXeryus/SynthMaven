@@ -129,7 +129,7 @@ enforces memory limits, packages the actual firmware, and then deploys GitHub Pa
 Deployment stops if tests or target compilation fail. The site includes matching
 GPL source and licence notices. No upstream binary is substituted.
 
-Current [release notes](docs/release-1.4.md) and [melodic preset catalogue](docs/release-1.0.md).
+Current [release notes](docs/release-1.5.md) and [melodic preset catalogue](docs/release-1.0.md).
 For a local matching site after a successful build:
 
 ```
@@ -137,6 +137,6 @@ python3 tools/make_synthmaven_site.py --package build/felucca.fwsc
 ```
 
 
-## SynthMaven 1.4 USB host release
+## SynthMaven 1.5 USB host release
 
-Run `sh tools/test_synthmaven.sh`, then `sh build.sh --release 1.4`. USB host support is enabled for the app and disabled for the rescue loader. Bluetooth is excluded. The AC79 SDK remains a packaging dependency. Linux CI checks target flash, static RAM, low SRAM and pool limits before deployment. macOS requires Docker for the Linux toolchain.
+Run `sh tools/test_synthmaven.sh`, then `sh build.sh --release 1.5`. USB host support is enabled for the app and disabled for the rescue loader. Bluetooth is excluded. The AC79 SDK remains a packaging dependency. Linux CI checks target flash, static RAM, low SRAM and pool limits before deployment. macOS requires Docker for the Linux toolchain.

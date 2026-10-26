@@ -1237,9 +1237,12 @@ static void mix_part1(track_t *t, uint32_t n)
     {
         int32_t lvl = LEVEL_Q12[t->p[P_LEVEL] ? clamp(t->p[P_LEVEL] + t->p[P_ED_FX], 1, 127) : 0], pan = t->p[P_PAN];   /* (+ the sound's trim: 1/2 dB steps, as LEVEL's) */
 #if SYNTHMAVEN_SYNTH
+        /* Independent half-dB factory trim: preserve boosts above the LEVEL control range. */
+        lvl = (int32_t)(((int64_t)LEVEL_Q12[clamp(t->p[P_LEVEL], 0, 127)] *
+                         SM_TRIM_GAIN_Q12[clamp(t->p[P_ED_FX], -64, 63) + 64]) >> 12);
         {   /* (1.0) the expression (CC 11): x (cc + 1)^2 / 128^2, 127 unchanged */
             int32_t ex = 128 - part_ctl[ctl_part(t)].exoff;
-            lvl = (lvl * ex * ex) >> 14;
+            lvl = (int32_t)(((int64_t)lvl * ex * ex) >> 14);
         }
         pan = clamp(pan + t->panmod, -64, 64);         /* SynthMaven 0.4: + the matrix's PAN (voice.c) */
 #endif
@@ -1323,7 +1326,10 @@ static void mix_part1(track_t *t, uint32_t n)
         t->lvl = mix_glide(lvl0, lvl), t->gpl = mix_glide(gl0, gl), t->gpr = mix_glide(gr0, gr);
         dl = (t->lvl - lvl0) >> CTL_LOG2, dgl = t->gpl - gl0, dgr = t->gpr - gr0;
         for (i = 0; i < n; i++) {
-#if NVOICE > 8                                          /* SynthMaven: 12 / 16 loud voices: one more bit of headroom */
+#if SYNTHMAVEN_SYNTH
+            int32_t x = clamp((int32_t)(((int64_t)clamp(b[i], -PART_MAX, PART_MAX) *
+                                         (lvl0 + dl * (int32_t)i)) >> 12), -MIX_MAX, MIX_MAX), a;
+#elif NVOICE > 8                                          /* SynthMaven: 12 / 16 loud voices: one more bit of headroom */
             int32_t x = ((clamp(b[i], -PART_MAX * 2, PART_MAX * 2) >> 3) * (lvl0 + dl * (int32_t)i)) >> 9, a;
 #else
             int32_t x = ((clamp(b[i], -PART_MAX, PART_MAX) >> 2) * (lvl0 + dl * (int32_t)i)) >> 10, a;   /* pre-shift: 8
@@ -1347,11 +1353,8 @@ static void mix_part1(track_t *t, uint32_t n)
             gl = gl0 + ((dgl * (int32_t)i) >> CTL_LOG2), gr = gr0 + ((dgr * (int32_t)i) >> CTL_LOG2);   /* (0.7) */
 #if SYNTHMAVEN_SYNTH
             if (side) {                                 /* the chorus's left - right, through the same level */
-#if NVOICE > 8
-                int32_t sd = ((side[i] >> 3) * (lvl0 + dl * (int32_t)i)) >> 9;
-#else
-                int32_t sd = ((side[i] >> 2) * (lvl0 + dl * (int32_t)i)) >> 10;
-#endif
+                int32_t sd = clamp((int32_t)(((int64_t)clamp(side[i], -PART_MAX, PART_MAX) *
+                                              (lvl0 + dl * (int32_t)i)) >> 12), -MIX_MAX, MIX_MAX);
                 if (g < 32767)
                     sd = (sd >> 4) * (g >> 3) >> 8;
                 mix_l[i] += (((x + sd) >> 4) * gl) >> 8;
