@@ -79,7 +79,8 @@ html[data-sm-app=installer] button,html[data-sm-app=installer] select,html[data-
 html[data-sm-app=installer] #go{font-size:30px}
 html[data-sm-app=installer] .sm-theme{font-size:22px}
 html[data-sm-app=installer] .sm-theme select{font-size:24px!important}
-html[data-sm-app=installer] main{overflow-wrap:break-word}
+html[data-sm-app=installer] main{width:max(900px,66.666667%);max-width:100%;overflow-wrap:break-word}
+@media(max-width:1000px){html[data-sm-app=installer] main{width:100%}}
 html[data-sm-app=installer] .tiles{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
 
 </style>
