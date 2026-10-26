@@ -750,7 +750,12 @@ static void program_bank_sync(uint32_t bank){
 static int program_bank_read(uint32_t bank){
  int n=st_load(OBJ_PROJECT0+bank,&proj_tmp,sizeof proj_tmp);
  memset(&program_bank_work,0,sizeof program_bank_work);program_bank_work.magic=PROGRAM_BANK_MAGIC;
- if(n<=0)return 1;
+ if(n==0)return 1;
+ if(n<0){
+   uint8_t header[32];uint32_t copy,k;
+   for(copy=0;copy<2;copy++){if(st_read(st_sector(OBJ_PROJECT0+bank,copy),header,sizeof header))return 0;for(k=0;k<sizeof header;k++)if(header[k]!=255u)return 0;}
+   return 1; /* truly erased; a corrupt nonblank pair is never treated as empty */
+ }
  if(n==(int)sizeof(program_bank_t) && ((const program_bank_t *)&proj_tmp)->magic==PROGRAM_BANK_MAGIC){memcpy(&program_bank_work,&proj_tmp,sizeof program_bank_work);return program_bank_valid(&program_bank_work,&proj_tmp.pg);}
  if(program_import(&proj_tmp.pg,&proj_tmp,(uint32_t)n))return program_pack(&program_bank_work.slot[0],&proj_tmp.pg,program_names[bank]);
  return 0; /* A legacy groovebox project must be loaded/resaved before adding its paired program. */
@@ -792,11 +797,16 @@ static void project_save(uint32_t slot)
     if(song.playing || transport_req || !audio_quiet()) {program_io_rc=1;ui_message("RELEASE NOTES FIRST");return;}
 #if FELUCCA_FLASH
     if(flash_ok) {
-        if(slot>=8u || !program_bank_read(slot&3u)){program_io_rc=2;ui_message("LOAD/SAVE OLD SLOT FIRST");return;}
+        if(slot>=8u){program_io_rc=2;ui_message("BAD PROGRAM SLOT");return;}
+        if(!program_bank_read(slot&3u)){
+            if(slot>=4u || !proj_ok(p)){program_io_rc=2;ui_message("LOAD/SAVE OLD SLOT FIRST");return;}
+            /* Explicitly saving over a valid legacy groovebox slot converts that slot first. */
+            memset(&program_bank_work,0,sizeof program_bank_work);program_bank_work.magic=PROGRAM_BANK_MAGIC;
+        }
         program_name_focus(slot);program_capture(&proj_tmp.pg);
         if(!program_pack(&program_bank_work.slot[slot/4u],&proj_tmp.pg,(program_editor_name_mask&(1u<<slot))?program_editor_names[slot]:program_name_draft)){program_io_rc=2;ui_message("PROGRAM INVALID");return;}
         if(st_save(OBJ_PROJECT0+(slot&3u),&program_bank_work,sizeof program_bank_work)){program_io_rc=4;ui_message("SAVE ERROR");return;}
-        program_bank_sync(slot&3u);program_editor_name_mask&=(uint8_t)~(1u<<slot);program_draft_slot=255;ui_message("PROGRAM SAVED");return;
+        program_bank_sync(slot&3u);program_editor_name_mask&=(uint8_t)~(1u<<slot);program_draft_slot=255;ui.force=1;ui_message("PROGRAM SAVED");return;
     }
 #endif
     if(slot>=4u){program_io_rc=4;ui_message("FLASH REQUIRED");return;}
