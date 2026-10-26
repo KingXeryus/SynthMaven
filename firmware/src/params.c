@@ -505,6 +505,7 @@ static const page_t PAGES[] = {
 #if SYNTHMAVEN_SYNTH
     {"ENV 2", FAM_ENV, SC_TRACK, GR_NONE, {P_E2ATK, P_E2DEC, P_E2SUS, P_E2REL}},   /* (a modulation source: MATRIX) */
     {"ENV 2 LOOP", FAM_ENV, SC_TRACK, GR_NONE, {P_E2LOOP, 0xFF, 0xFF, 0xFF}},       /* (1.0) */
+    {"OP ENV", FAM_ENV, SC_SYN, GR_FMX, {27, 28, 29, 30}},      /* X_FATK X_FDEC X_FSUS X_FREL */
 #endif
     {"LFO", FAM_LFO, SC_TRACK, GR_LFO, {P_LRATE, P_LWAVE, P_LPHASE, P_LFADE}},
     {"LFO DEST", FAM_LFO, SC_TRACK, GR_NONE, {P_LD_PIT, P_LD_FLT, P_LD_SHP, P_LD_AMP}},
@@ -545,21 +546,12 @@ static const page_t PAGES[] = {
 #if SYNTHMAVEN_SYNTH                                          /* 0.6: FMX's own pages (ui_synth.c X_F*), on FMX only */
     {"OP", FAM_EDIT, SC_SYN, GR_FMX, {19, 20, 21, 22}},          /* X_FOP X_FWAVE X_FMODE X_FRATIO */
     {"OP 2", FAM_EDIT, SC_SYN, GR_FMX, {23, 24, 25, 26}},        /* X_FFINE X_FLEVEL X_FVEL X_FKSC */
-    {"OP ENV", FAM_EDIT, SC_SYN, GR_FMX, {27, 28, 29, 30}},      /* X_FATK X_FDEC X_FSUS X_FREL */
     {"ROUTE", FAM_EDIT, SC_SYN, GR_FMX, {31, 32, 33, 34}},       /* X_FTO X_FFROM X_FAMT X_FOUT */
     {"FMX", FAM_EDIT, SC_SYN, GR_FMX, {35, 36, 37, 38}},         /* X_FDTN X_FFIX X_FPEG X_FPTIM */
-    {"STORE", FAM_EDIT, SC_SYN, GR_FMX, {39, 40, 0xFF, 0xFF}},   /* X_FSLOT X_FSTORE */
 #endif
     {"VOICE", FAM_EDIT, SC_TRACK, GR_NONE, {P_VOICE, P_GLIDE, P_GLMODE, P_PRIO}},
 #if SYNTHMAVEN_SYNTH                                                        /* (one instrument: nothing to mute) */
-    {"VOICE 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_ALLOC, P_DETUNE, P_PAN, P_VINT}},   /* (0.9: VINTAGE) */
-    {"VOICE 3", FAM_EDIT, SC_TRACK, GR_NONE, {P_SPREAD, 0xFF, 0xFF, 0xFF}},      /* (1.0: SPREAD) */
-    {"MACROS", FAM_EDIT, SC_TRACK, GR_NONE, {P_MAC1, P_MAC2, P_MAC3, P_MAC4}},   /* (1.0) */
-    {"LAYER", FAM_EDIT, SC_SYN, GR_NONE, {68, 0xFF, 0xFF, 0xFF}},         /* X_LYMODE X_LYSOUND X_LYSPLIT X_LYLEVEL */
-       /* X_LYOCT X_LYPAN X_LYFILT X_LYSWAP */
-    {"MORPH", FAM_EDIT, SC_SYN, GR_MORPH, {8, 9, 10, 0xFF}},     /* X_MORPH X_SETA X_SETB */
-    {"RANDOM", FAM_EDIT, SC_SYN, GR_NONE, {11, 12, 13, 14}},     /* X_RNDAMT X_RNDWHAT X_RNDGO X_RNDBACK */
-    {"UNDO", FAM_EDIT, SC_SYN, GR_HIST, {41, 42, 0xFF, 0xFF}},   /* (0.7) X_HPOS X_HCMP: the sound's history, COMPARE */
+    {"CHARACTER", FAM_EDIT, SC_TRACK, GR_NONE, {P_ALLOC, P_DETUNE, P_VINT, P_SPREAD}},
 #else
     {"VOICE 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_ALLOC, P_DETUNE, P_PAN, P_MUTE}},
 #endif

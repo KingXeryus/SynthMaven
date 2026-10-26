@@ -722,7 +722,7 @@ static uint32_t btn_hold(uint32_t *t0, uint32_t label, uint32_t now, int hold_ok
     if ((fm1_in.buttons >> panel.btn[label]) & 1u) {
         if (!*t0)
             *t0 = (now | 1u) & ~2u;
-        else if (hold_ok && !(*t0 & 2u) && now - (*t0 & ~3u) > 700u * 1000u * FM1_TICKS_PER_US) {
+        else if (hold_ok && !(*t0 & 2u) && now - (*t0 & ~3u) > (SYNTHMAVEN_SYNTH?3000u:700u) * 1000u * FM1_TICKS_PER_US) {
             *t0 |= 2u;
             return BT_HOLD;
         }
@@ -773,7 +773,7 @@ static void layer_tap(uint32_t layer)
         break;
     case LY_SCALE:
 #if SYNTHMAVEN_SYNTH
-        scale_cycle(1);
+        open_family(FAM_SCL);ui.page=(uint8_t)page_first(FAM_SCL);scale_browser=1;ui.force=1;
 #else
         open_family(FAM_SCL);
 #endif
@@ -872,7 +872,7 @@ static int layers_input(uint32_t note_edges, uint32_t *pressed, uint32_t home)
             }
 #endif
 #if SYNTHMAVEN_SYNTH
-            if(l==LY_SCALE)scale_edit_open();
+            if(l==LY_SCALE){scale_browser=0;scale_edit_open();}
 #endif
             if(ly_on(l)){ly_lock=(uint8_t)l;ui.layer=(uint8_t)l;ui.force=1;}
             else if(!used[l])layer_tap(l);
@@ -889,10 +889,10 @@ static int layers_input(uint32_t note_edges, uint32_t *pressed, uint32_t home)
         if (!d && down[l] && l == LY_SONG)
             chain_release();                              /* SAVE let go: the section taps of the hold (ui_layers.c) */
         down[l] = (uint8_t)d;
-        if (d && held == LY_PLAY && ly_on(l))
+        if (d && held == LY_PLAY && ly_on(l) && (!SYNTHMAVEN_SYNTH || l!=LY_MIX))
             held = l;
     }
-    if (held != LY_PLAY && home == BT_TAP && !home_eat) {  /* held + HOME: locked open */
+    if (held != LY_PLAY && home == BT_TAP && !home_eat && !SYNTHMAVEN_SYNTH) {  /* held + HOME: locked open */
         ly_lock = (uint8_t)held;
         used[held] = 1;
         ui.layer = (uint8_t)held;
@@ -904,7 +904,7 @@ static int layers_input(uint32_t note_edges, uint32_t *pressed, uint32_t home)
     }
     punch.hold = (uint8_t)(held == LY_FX);
     if (held != LY_PLAY && held != ui.layer && ui.layer != LY_PLAY)
-        ui.layer = (uint8_t)held;                         /* (from one layer straight to another) */
+        ui.layer = (uint8_t)((SYNTHMAVEN_SYNTH && ly_lock!=held && now-t0[held]<2000u)?LY_PLAY:held);                         /* (from one layer straight to another) */
     if (held == LY_PLAY) {
         while (lk_r != lk_w) {                            /* a key let go after its layer: its release only */
             uint32_t e = lk_q[lk_r % LKQ];
@@ -932,15 +932,19 @@ static int layers_input(uint32_t note_edges, uint32_t *pressed, uint32_t home)
         used[held] = 1;
         layer_key(e >> 8, e & 31u, (e >> 7) & 1u);
     }
+#if SYNTHMAVEN_SYNTH
+    /* Preview at two seconds; latch at three. Knobs never edit a hidden hold screen. */
+    if(ly_lock!=held && now-t0[held]<2000u)return 1;
+#endif
     layer_knobs(held);
     if (ui.layer_used)
         used[held] = 1;
-    if (ui.layer == LY_PLAY && (used[held] || now - t0[held] >= SHOW_MS)) {
+    if (ui.layer == LY_PLAY && ((SYNTHMAVEN_SYNTH ? 0 : used[held]) || now - t0[held] >= SHOW_MS)) {
         ui.layer = (uint8_t)held;                         /* show it (not for a quick tap) */
         if (held == LY_STEP && (uint32_t)ui.step_page * 16u >= trk_len(TSEL))
             ui.step_page = 0;
     }
-    if (held == LY_ERASE) {                               /* EDIT + OCT- / OCT+: undo / redo */
+    if (held == LY_ERASE && !SYNTHMAVEN_SYNTH) {                               /* EDIT + OCT- / OCT+: undo / redo */
         uint32_t ob = 1u << panel.btn[B_OCTDN], pb = 1u << panel.btn[B_OCTUP];
         static uint32_t prev;
         uint32_t b = fm1_in.buttons & (ob | pb), press = b & ~prev;
@@ -1125,6 +1129,10 @@ static void ui_input(void)
     pressed &= ~((on_song_page() ? 0u : 1u << panel.btn[B_REC]) | (1u << panel.btn[B_SAVE]));
     if (layered || ui.hold_kind) {                      /* a layer / a hold: the rest waits */
 #if SYNTHMAVEN_SYNTH
+        if(ui.layer==LY_ERASE) {
+            if((s=panel_enc(EN_SELECT))!=0){layer_mixer_pan=(uint8_t)((layer_mixer_pan+s%2+2)%2);ui.force=1;}
+            panel_enc(EN_ALGO);panel_enc(EN_PRESET);return;
+        }
         if(scale_edit) {
             if((s=panel_enc(EN_SELECT))!=0)tune_cfg.sys=(uint8_t)(TU_CUSTOM1+((tune_cfg.sys-TU_CUSTOM1+s%4+4)%4));
             if((s=panel_enc(EN_PRESET))!=0)tune_cfg.root=(uint8_t)((tune_cfg.root+s%12+12)%12);
@@ -1175,6 +1183,18 @@ static void ui_input(void)
             go_home();
         }
     }
+#if SYNTHMAVEN_SYNTH
+    if(scale_browser && !ui.home && cur_page()->fam==FAM_SCL) {
+        if((s=panel_enc(EN_SELECT))!=0)scale_cycle(s);
+        if((s=panel_enc(EN_PRESET))!=0){tune_cfg.root=(uint8_t)((tune_cfg.root+s%12+12)%12);tune_build();settings_later=1;ui.force=1;}
+        panel_enc(EN_ALGO);
+        if((s=panel_enc(EN_K1))!=0){tune_cfg.root=(uint8_t)((tune_cfg.root+s%12+12)%12);tune_build();settings_later=1;ui.force=1;}
+        if((s=panel_enc(EN_K2))!=0)scale_cycle(s);
+        if((s=panel_enc(EN_K3))!=0)edit_param(2,s);
+        if((s=panel_enc(EN_K4))!=0)edit_param(3,s);
+        enc_hold=(1u<<NE)-1u;
+    }
+#endif
     cursor_fix();                                       /* LEN may have changed (knob, editor, load) */
     if (on_notes_page()) {                              /* (1.0, SLOOP 2.7.2) OCT+ held: the note's sheet; tapped: as
                                                          * before */

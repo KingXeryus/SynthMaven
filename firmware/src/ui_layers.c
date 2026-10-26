@@ -31,8 +31,8 @@ static uint8_t chain_tap[CHAIN_MAX], chain_taps;        /* the section keys tapp
 #if SYNTHMAVEN_SYNTH
 static uint8_t scale_edit;
 #endif
-#define TAP_MS 450u                                     /* a press shorter than this, untouched: a tap */
-#define SHOW_MS 140u                                    /* the layer shows after this (a tap does not flash it) */
+#define TAP_MS (SYNTHMAVEN_SYNTH?2000u:450u)                                     /* a press shorter than this, untouched: a tap */
+#define SHOW_MS (SYNTHMAVEN_SYNTH?2000u:140u)                                    /* the layer shows after this (a tap does not flash it) */
 
 /* the ISR's view of the panel: the layers' buttons, OCT- / OCT+, REC / PLAY of a free take */
 static void layers_init(void)
@@ -488,6 +488,14 @@ static void layer_knobs(uint32_t layer)
     int32_t s;
     track_t *t = TSEL;
 #if SYNTHMAVEN_SYNTH
+    if(layer==LY_ERASE) {
+        for(k=0;k<4;k++)if((s=panel_enc(EN_K1+k))!=0){
+            uint32_t id=layer_mixer_pan?P_PAN:P_LEVEL;
+            trk[k].p[id]=(int16_t)clamp(trk[k].p[id]+s,TP[id].min,TP[id].max);
+            ui.layer_used=1;ui.force=1;
+        }
+        return;
+    }
     if(layer==LY_SCALE) {
         for(k=0;k<4;k++)if((s=panel_enc(EN_K1+k))!=0) {
             if(scale_edit) {
@@ -685,6 +693,23 @@ static void layer_screen_draw(void)
         layer_shown = 1;
     }
 #if SYNTHMAVEN_SYNTH
+    if(layer==LY_ERASE) {
+        cv_begin(240,36,C_BLACK);cv_text(4,4,&FONT_S,layer_mixer_pan?"LAYER MIXER: PAN":"LAYER MIXER: VOLUME",C_HI);cv_blit(0,0);
+        cv_begin(240,124,C_BLACK);
+        for(i=0;i<4;i++) {
+            char b[12],n[2]={(char)('1'+i),0};int32_t x=i*60;
+            cv_text(x+4,4,&FONT_S,n,TE_COL[i]);
+            const char *u;param_format(&TP[layer_mixer_pan?P_PAN:P_LEVEL],trk[i].p[layer_mixer_pan?P_PAN:P_LEVEL],b,&u);
+            cv_text(x+4,38,&FONT_S,b,C_WHITE);cv_text(x+4,58,&FONT_S,u,C_GRAY);
+            cv_rect(x+6,76,46,4,C_GRAY);
+            int32_t v=trk[i].p[layer_mixer_pan?P_PAN:P_LEVEL]+(layer_mixer_pan?64:0);
+            cv_rect(x+6,76,v*46/127,4,TE_COL[i]);
+        }
+        cv_blit(0,40);cv_begin(240,76,C_BLACK);
+        cv_text(4,4,&FONT_S,"KNOBS 1-4: SOUNDS 1-4",C_GRAY);
+        cv_text(4,26,&FONT_S,"SELECT: VOLUME / PAN",C_GRAY);
+        cv_text(4,48,&FONT_S,ly_lock==LY_ERASE?"EDIT / HOME: EXIT":"HOLD 3s TO KEEP OPEN",C_GRAY);cv_blit(0,164);return;
+    }
     if(layer==LY_SCALE) {
         /* The shared canvas is only 124 pixels high; render three strips. */
         cv_begin(240,24,C_BLACK);

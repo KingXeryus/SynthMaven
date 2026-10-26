@@ -1192,7 +1192,7 @@ static void ui_draw(void)
     ui.frame++;
 #if SYNTHMAVEN_SYNTH
     /* GLO's dedicated screen takes priority over HOME, pages, menus and held layers. */
-    if(program_mode && (fm1_in.buttons & ly_bit[LY_MIX])) {
+    if(program_mode && glo_hold_done && (fm1_in.buttons & ly_bit[LY_MIX])) {
         const char *label=glo_layer_label();
         if(!glo_screen_shown){lcd_fill(0,0,240,240,C_BLACK);glo_screen_shown=1;}
         cv_begin(240,124,C_BLACK);
@@ -1202,6 +1202,17 @@ static void ui_draw(void)
         cv_blit(0,58);ui_timers();ui.force=0;return;
     }
     if(glo_screen_shown){glo_screen_shown=0;lcd_fill(0,0,240,240,C_BLACK);ui.force=1;}
+#endif
+#if SYNTHMAVEN_SYNTH
+    if(scale_browser && !ui.home && cur_page()->fam==FAM_SCL && !ui.menu && ui.layer==LY_PLAY) {
+        if(!scale_browser_shown){lcd_fill(0,0,240,240,C_BLACK);scale_browser_shown=1;}
+        cv_begin(240,32,C_BLACK);cv_text(4,4,&FONT_S,"SCALES",C_HI);cv_text(140,4,&FONT_S,"ROOT",C_GRAY);cv_text(204,4,&FONT_S,N_NOTE[tune_cfg.root%12u],C_WHITE);cv_blit(0,0);
+        cv_begin(240,124,C_BLACK);graph_tuning();cv_blit(0,36);
+        cv_begin(240,80,C_BLACK);cv_text(4,4,&FONT_S,"SELECT: SCALE",C_WHITE);cv_text(4,28,&FONT_S,"PRESET: ROOT",C_GRAY);char q[12],ch[12];const char *u;param_format(&TP[P_QUANT],TSEL->p[P_QUANT],q,&u);param_format(&TP[P_CHORD],TSEL->p[P_CHORD],ch,&u);
+        cv_text(4,52,&FONT_S,"QNT",C_GRAY);cv_text(44,52,&FONT_S,q,C_WHITE);cv_text(120,52,&FONT_S,"CHD",C_GRAY);cv_text(160,52,&FONT_S,ch,C_WHITE);cv_blit(0,160);
+        ui_timers();ui.force=0;return;
+    }
+    if(scale_browser_shown){scale_browser_shown=0;lcd_fill(0,0,240,240,C_BLACK);ui.force=1;}
 #endif
     if (!ui.home && page_hidden(ui.page)) {            /* (0.6: the sound left FMX on one of its pages) */
         ui.page = (uint8_t)page_first(PAGES[ui.page].fam);

@@ -170,7 +170,7 @@ static uint32_t layer_now(void)
 {
     uint32_t b = layer_buttons(), l;
     for (l = LY_FX; l < LY_COUNT; l++)
-        if ((b & ly_bit[l]) && ly_on(l))
+        if ((b & ly_bit[l]) && ly_on(l) && (!SYNTHMAVEN_SYNTH || (l!=LY_ERASE && l!=LY_MIX)))
             return l;
     return LY_PLAY;
 }

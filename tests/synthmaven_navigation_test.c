@@ -35,16 +35,19 @@ int main(void) {
  check(song.sel==3 && program_layer && trk[0].eng_req==0 && trk[3].eng_req==3,"program restores all four sounds, focus and layer mode");
  saved.sum^=1;check(!program_valid(&saved),"program corruption rejected");
  go_home();program_layer_set(0);press(B_GLO);
- check(glo_screen_shown && !strcmp(glo_layer_label(),"Layered OFF"),"GLO replaces HOME immediately with Layered OFF");
+ check(!glo_screen_shown,"GLO short press never flashes the hold screen");
  frames(123);check(!program_layer,"GLO does not toggle before two seconds");frames(2);
  check(program_layer && ly_lock!=LY_MIX && !strcmp(glo_layer_label(),"Layered ON"),"GLO toggles at two seconds and shows Layered ON without latching");ppm("synthmaven-layered-on");
  frames(250);check(program_layer && glo_screen_shown,"GLO toggles only once and keeps its screen while held");release(B_GLO);check(ly_lock==LY_PLAY && !glo_screen_shown,"GLO release restores normal screen without latching");
  uint8_t prior_page=ui.page;press(B_GLO);frames(125);check(!program_layer && !strcmp(glo_layer_label(),"Layered OFF"),"second two-second GLO hold shows Layered OFF");ppm("synthmaven-layered-off");release(B_GLO);check(ly_lock==LY_PLAY && !glo_screen_shown && ui.page==prior_page,"second GLO release returns to the previous page");
  tap(B_GLO);check(!program_layer && !glo_screen_shown,"short GLO tap keeps layering unchanged");
- open_family(FAM_ENV);prior_page=ui.page;press(B_GLO);frames(30);release(B_GLO);check(!ui.home && ui.page==prior_page && !glo_screen_shown,"GLO screen returns to the same parameter page after release");
+ open_family(FAM_ENV);prior_page=ui.page;press(B_GLO);frames(30);release(B_GLO);check(!ui.home && cur_page()->fam==FAM_GLO && !glo_screen_shown,"short GLO press opens its menu without flashing the hold screen");
  ui.menu=1;ui.menu_sel=2;press(B_GLO);frames(125);check(program_layer && glo_screen_shown && ui.menu==1,"GLO hold replaces a menu and still toggles at two seconds");release(B_GLO);check(!glo_screen_shown && ui.menu==1 && ui.menu_sel==2,"GLO release restores the same menu and selection");ui.menu=0;
 
- go_home();tap(B_SCL);check(tune_cfg.sys==1,"SEL tap cycles tuning scales");
+ go_home();uint8_t scale_before=tune_cfg.sys;tap(B_SCL);check(scale_browser && tune_cfg.sys==scale_before,"SEL tap opens scale browser without changing tuning");
+ encs[panel.enc[EN_SELECT]]=1;frames(2);check(tune_cfg.sys==(scale_before+1u)%TU_N,"SELECT cycles tuning while scale browser stays visible");ppm("synthmaven-scale-browser");
+ encs[panel.enc[EN_SELECT]]=-1;frames(2);check(tune_cfg.sys==scale_before,"SELECT browses scales backwards");
+ tap(B_SCL);check(scale_browser && tune_cfg.sys==scale_before,"repeated SEL taps never cycle scales");
  press(B_SCL);frames(190);release(B_SCL);check(scale_edit && ly_lock==LY_SCALE,"SEL holds three seconds then custom editor stays open");
  tune_cfg.root=0;tune_cfg.sys=TU_CUSTOM1;custom_scale[0]=0;
  for(i=1;i<=4;i++){key(0);check(custom_scale[0]==((i%4u)<<(2u*(53u%12u))),"custom key cycles -25/-50/-75/0 cents");}
@@ -52,6 +55,16 @@ int main(void) {
  ppm("synthmaven-custom-scale");
  tap(B_SAVE);check(scale_edit && custom_scale_dirty,"SAVE stores custom scale without leaving editor");
  tap(B_SCL);check(!scale_edit && ly_lock==LY_PLAY,"SEL exits latched scale editor");
+
+ go_home();press(B_EDIT);frames(80);check(ui.layer==LY_PLAY && ly_lock==LY_PLAY,"EDIT shows no hold screen before two seconds");frames(45);check(ui.layer==LY_ERASE && ly_lock==LY_PLAY,"EDIT mixer previews at two seconds without latching");
+ check(layer_now()==LY_PLAY,"mixer leaves keyboard playing and never erases sequence notes");int16_t lv[4],pan[4];for(i=0;i<4;i++){lv[i]=trk[i].p[P_LEVEL];pan[i]=trk[i].p[P_PAN];encs[panel.enc[EN_K1+i]]=-1;}frames(2);
+ for(i=0;i<4;i++)check(trk[i].p[P_LEVEL]==lv[i]-1 && trk[i].p[P_PAN]==pan[i],"four mixer knobs adjust their own sound volume only");ppm("synthmaven-layer-volume");
+ encs[panel.enc[EN_SELECT]]=1;frames(2);check(layer_mixer_pan,"mixer SELECT switches volume to pan");for(i=0;i<4;i++)encs[panel.enc[EN_K1+i]]=1;frames(2);
+ for(i=0;i<4;i++)check(trk[i].p[P_PAN]==pan[i]+1 && trk[i].p[P_LEVEL]==lv[i]-1,"four mixer knobs adjust their own pan without changing volume");ppm("synthmaven-layer-pan");
+ frames(65);release(B_EDIT);check(ly_lock==LY_ERASE && ui.layer==LY_ERASE,"EDIT mixer latches at three seconds and remains after release");
+ uint8_t bpm_before=(uint8_t)song.g[G_BPM];encs[panel.enc[EN_SELECT]]=1;frames(2);check(!layer_mixer_pan && song.g[G_BPM]==bpm_before,"latched mixer SELECT toggles back without changing tempo");press(B_SCL);frames(8);check(ly_lock==LY_PLAY && ui.layer==LY_PLAY,"switching from a latched mixer never flashes the next hold screen");release(B_SCL);frames(2);
+ press(B_EDIT);frames(190);release(B_EDIT);tap(B_EDIT);check(ly_lock==LY_PLAY,"EDIT tap exits latched mixer");
+ set_engine(0);open_family(FAM_EDIT);uint32_t edit_pages=0;for(i=0;i<NPAGES;i++)if(PAGES[i].fam==FAM_EDIT&&!page_hidden(i))edit_pages++;check(edit_pages==4,"normal EDIT has four focused sound pages");
  go_home();frames(110);ppm("synthmaven-four-program-sounds");
  open_family(FAM_SAVE);check(!strcmp(cur_page()->title,"PROGRAM"),"SAVE opens program save/load page");
  int16_t old_bpm=song.g[G_BPM];uint8_t save_page=ui.page,old_focus=song.sel;song.g[G_SLOT]=GP[G_SLOT].min;ui.arm=G_SAVE;ui.arm_t=40;

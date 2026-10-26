@@ -441,13 +441,13 @@ int main(int argc, char **argv)
     /* SEQ and SEL keep their layers */
     {
         go_home(); frames(2);
-        press(B_SEQ); frames(12);
+        press(B_SEQ); frames(125);
         check(ui.layer == LY_STEP, "SEQ held: the steps layer");
         ui.force = 1; frame(); ppm("synthmaven-layer-steps");
         key(0); frames(2);
         check(trk_step_on(TSEL, 0), "SEQ held + key 1: step 1 set");
         release(B_SEQ); frames(2);
-        press(B_SCL); frames(12);
+        press(B_SCL); frames(125);
         check(ui.layer == LY_SCALE, "SEL held: the key layer");
         release(B_SCL); frames(2);
     }
@@ -462,54 +462,15 @@ int main(int argc, char **argv)
         t->p[P_SLEN] = 16; t->p[P_CHORD] = 0; song.octave = 0;
         for (j = 0; j < NSTEP; j++) step_clear(&t->step[j]);
         for (j = 0; j < 16u; j += 4u) put_step(t, j, 1, j % 8u ? n64 : n60, ST_NOTE, 0);
-        press(B_EDIT); frames(12);
-        ok = ui.layer == LY_ERASE;
-        ui.force = 1; frame(); ppm("synthmaven-layer-edit");
-        {                                             /* EDIT + a key, stopped: that note gone from the whole pattern */
-            uint32_t k;
-            for (k = 0; k < 27u && kb_map(t, k) != 64u; k++)
-                ;
-            ok &= k < 27u;
-            key(k); frames(2);
-        }
-        ok &= step_on(&t->step[0]) && !step_on(&t->step[4]) && step_on(&t->step[8]) && !step_on(&t->step[12]) && voices_part(0) == 0u;
-        check(ok, "EDIT held: the erase layer; EDIT + E4 (stopped) erases every E4 (the C4s stay), nothing plays");
-        press(B_OCTDN); release(B_OCTDN); frames(2);
-        check(step_on(&t->step[4]) && step_on(&t->step[12]), "EDIT + OCT-: undo (the E4s back)");
-        encs[panel.enc[EN_K1]] = 1; frames(2);       /* SHIFT: every step one later */
-        ok = step_on(&t->step[1]) && !step_on(&t->step[0]) && t->step[1].note[0] == 60u;
-        encs[panel.enc[EN_K3]] = 1; frames(2); encs[panel.enc[EN_K3]] = 1; frames(2);   /* TRANSPOSE +2 (a semitone a turn) */
-        ok &= t->step[1].note[0] == 62u && t->step[5].note[0] == 66u;
-        encs[panel.enc[EN_K2]] = 1; frames(2);       /* LENGTH x2 */
-        ok &= t->p[P_SLEN] == 32 && t->step[17].note[0] == 62u;
-        release(B_EDIT); frames(4);
-        check(ok && ui.home, "EDIT + KNOB 1 SHIFT, KNOB 3 TRANSPOSE, KNOB 2 LENGTH x2; let go: HOME again (no page)");
-        press(B_EDIT); press(B_OCTDN); release(B_OCTDN); release(B_EDIT); frames(4);
-        check(t->p[P_SLEN] == 16 && t->step[0].note[0] == 60u && ui.home, "EDIT + OCT-: the whole hold's turns undone at once");
-        tap(B_EDIT); frames(2);
-        check(!ui.home && cur_page()->fam == FAM_EDIT, "EDIT tapped: its pages");
-        go_home(); frames(2);
-        press(B_GLO); frames(12);
-        ok = ui.layer == LY_MIX;
-        ui.force = 1; frame(); ppm("synthmaven-layer-glo");
-        fm1_in.notes |= 1u << key_of_white(8); frames(2);
-        ok &= fill_now != 0;
-        fm1_in.notes &= ~(1u << key_of_white(8)); frames(2);
-        ok &= !fill_now;
-        key(key_of_white(0)); frames(2);
-        ok &= !t->p[P_MUTE] && !trk[1].p[P_MUTE] && voices_part(0) == 0u;   /* (no mute keys: nothing, nothing plays) */
-        t->p[P_LEVEL] = 100;
-        encs[panel.enc[EN_K1]] = -10; encs[panel.enc[EN_K2]] = -10; frames(2);
-        ok &= t->p[P_LEVEL] < 100 && trk[1].p[P_LEVEL] == trk[1].p[P_LEVEL];
-        {
-            int16_t l1 = trk[1].p[P_LEVEL];
-            encs[panel.enc[EN_K2]] = -10; frames(2);
-            ok &= trk[1].p[P_LEVEL] == l1;
-        }
-        release(B_GLO); frames(4);
-        t->p[P_LEVEL] = 100;
-        check(ok, "GLO held: key 9 a fill while held; keys 1..8 nothing (one instrument); KNOB 1 the sound's level, KNOB 2 nothing");
-        press(B_ARP); frames(12);
+        press(B_EDIT); frames(20);check(ui.layer==LY_PLAY,"EDIT short hold has no screen flash");frames(105);
+        check(ui.layer==LY_ERASE && ly_lock==LY_PLAY,"EDIT previews mixer after two seconds");
+        ui.force=1;frame();ppm("synthmaven-layer-edit");
+        key(11);check(step_on(&t->step[4]) && step_on(&t->step[12]),"EDIT mixer does not erase sequence notes");
+        release(B_EDIT);frames(4);tap(B_EDIT);check(cur_page()->fam==FAM_EDIT,"EDIT tap opens focused sound pages");
+        go_home();press(B_GLO);frames(20);check(!glo_screen_shown,"GLO short hold does not flash its screen");frames(105);
+        check(glo_screen_shown && ly_lock!=LY_MIX,"GLO two-second hold displays layering without latching");
+        frame();ppm("synthmaven-layer-glo");release(B_GLO);frames(4);
+        press(B_ARP); frames(125);
         ok = ui.layer == LY_ROLL;
         transport_req = 1; frames(4);
         for (j = 0; j < NSTEP; j++) step_clear(&t->step[j]);
@@ -531,7 +492,7 @@ int main(int argc, char **argv)
             printf("synthmaven:   ARP roll: %u hits in 120 frames\n", on);
         }
         transport_req = 2; frames(4);
-        release(B_ARP); frames(30);
+        release(B_ARP); layer_unlock(); frames(30);
         check(ok, "ARP held: the roll layer; a key repeats on the grid (note repeat)");
         go_home(); frames(2);
     }
@@ -628,8 +589,7 @@ int main(int argc, char **argv)
         check(t->step[5].n == 1u && step_on(&t->step[5]), "NOTES: EDIT tapped deletes the note under edit only");
         press(B_EDIT); release(B_EDIT); frames(2);
         check(!step_on(&t->step[5]) && t->step[6].time == ST_REST, "NOTES: the chord's last note: the step and its TIEs go");
-        press(B_EDIT); press(B_OCTDN); release(B_OCTDN); release(B_EDIT); frames(2);
-        check(step_on(&t->step[5]), "NOTES: EDIT + OCT- brings it back (undo)");
+        check(undo_swap(0) && step_on(&t->step[5]), "NOTES: editor undo restores the deleted note");
         cursor_set(0); ui.force = 1; frame(); ppm("synthmaven-notes");
         frames(20);                                   /* (EDIT let go: KNOB 1..4 quiet 250 ms, #39) */
         /* the keys write the step under edit; STEP ADVANCE (MENU > SEQ) */
@@ -722,8 +682,8 @@ int main(int argc, char **argv)
         go_home(); frames(2);
     }
     /* the pages a synth keeps */
-    check(!page_named("SLICER") && !page_named("DRUMS") && !page_named("SONG") && page_named("MASTER") && page_named("VOICE 2"),
-          "pages: no SLICER, DRUMS or SONG; MASTER and VOICE 2 stay");
+    check(!page_named("SLICER") && !page_named("DRUMS") && !page_named("SONG") && page_named("MASTER") && page_named("CHARACTER"),
+          "pages: no SLICER, DRUMS or SONG; MASTER and CHARACTER stay");
     {
         uint32_t k, duck = 0, mute = 0;
         for (i = 0; i < NPAGES; i++)

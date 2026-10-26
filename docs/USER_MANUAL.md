@@ -1,4 +1,4 @@
-# SynthMaven 1.7 — FM1 user manual
+# SynthMaven 1.8 — FM1 user manual
 
 SynthMaven is an open-source firmware based on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1).
 This manual covers the **M-VAVE FM1 hardware firmware**, its web installer and
@@ -67,7 +67,7 @@ HOME displays the four sounds loaded in the working program. The outline marks t
 | PRESET | Cycle factory presets within that engine, wrapping at either end |
 | SELECT | Cycle focus through sound slots 1–4 |
 | KNOB 1–4 | Edit the focused sound’s main parameters |
-| SEL tap | Cycle tuning scales |
+| SEL tap | Open scale browser; SELECT cycles scales |
 | SEL hold 3 seconds | Latch the custom-scale editor |
 | SAVE | Open PROGRAM save/load settings |
 | GLO hold 2 seconds | Toggle layering ON/OFF once; GLO does not latch |
@@ -76,7 +76,7 @@ SAVE → PROGRAM provides **eight named program slots**. SELECT cycles slots 1�
 
 The redundant PROGRAM MODE, PRESETS and USER pages have been removed from SAVE. Layering ON/OFF remains in **GLO → LAYER PITCH**, on GLO’s two-second hold, and in the editor. Use HOME for engine/preset browsing and the editor for library and layer editing. The SAVE → TOOLS page remains for initialization/clearing operations. Each sound has an eight-voice budget.
 
-Except GLO, function layers remain open after holding their button for three seconds. Release the button and continue editing. Tap the same function button or HOME to exit. REC’s clear action still requires its confirmation hold.
+Function-layer screens first appear at two seconds. Except GLO, function layers remain open after holding their button for three seconds. Release the button and continue editing. Tap the same function button or HOME to exit. REC’s clear action still requires its confirmation hold.
 
 ### Oriental / Middle Eastern sounds
 
@@ -122,7 +122,7 @@ assuming that changing engines will preserve an equivalent tone.
 
 ## Editing a sound
 
-Load a preset and tap **EDIT**, or use KNOB 4 in PRESETS. Hardware pages expose
+Load a preset and tap **EDIT**, or choose a sound from HOME. Hardware pages expose
 engine controls and shared sound parameters. Labels vary with the engine.
 The editor's Sound tab exposes the available parameters and specialised HYBRID,
 FM6 and FMX panels when those engines are selected.
@@ -311,7 +311,7 @@ For recovery tooling, see the [build/install guide](../BUILDING.md#install).
 
 ## Version, validation and support
 
-Version 1.7 uses editor protocol 21. See [release notes](release-1.7.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
+Version 1.8 uses editor protocol 21. See [release notes](release-1.8.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
 
 
 
@@ -326,7 +326,7 @@ setting, variant, reference degrees and tuning limitations.
 
 ## Custom chromatic scales
 
-Tap SEL to cycle scales. Hold SEL for three seconds to enter the latched editor. SELECT chooses CUSTOM 1–4; PRESET selects ROOT C–B. Each chromatic key press cycles its offset through −25, −50, −75 and 0 cents. Other pitch classes stay unchanged. The offsets repeat across octaves relative to ROOT. Press SAVE and wait for SCALE SAVED; press SEL to leave. These custom scales appear in the tuning list alongside the 46 maqam reference tunings and Scala USER scale.
+Tap SEL to open the scale browser, then turn SELECT to cycle scales. Hold SEL for three seconds to enter the latched editor. SELECT chooses CUSTOM 1–4; PRESET selects ROOT C–B. Each chromatic key press cycles its offset through −25, −50, −75 and 0 cents. Other pitch classes stay unchanged. The offsets repeat across octaves relative to ROOT. Press SAVE and wait for SCALE SAVED; press SEL to leave. These custom scales appear in the tuning list alongside the 46 maqam reference tunings and Scala USER scale.
 
 ## Appearance and factory levels (1.6)
 
@@ -358,7 +358,7 @@ Hold GLO for two seconds to toggle layering once, then release. Holding longer d
 
 JUNO, VECTOR, FMX, WSEQ, MACRO, the filter models, TURNG and SPICE / DICE are inherited from **Clipper by 3dSam**. Their instrument and synthesis design inspirations are separate from code authorship. SynthMaven is a derivative of Clipper, which builds on SLOOP and Felucca. Existing copyright and third-party notices are retained; see [licensing and upstream notices](../LICENSING.md).
 
-Holding GLO replaces the current display with **Layered ON** or **Layered OFF**. At two seconds, layering toggles once and the label updates. Release GLO to return to the previous screen. Other function buttons retain their three-second hold behavior.
+At two seconds of holding GLO, layering toggles once and the display shows **Layered ON** or **Layered OFF**. Short taps open GLO without flashing this screen. Release GLO to return to the previous screen. Other function buttons retain their three-second hold behavior.
 
 On **SAVE → PROGRAM**, the SELECT knob cycles the saved-program slots, wrapping at either end. Browsing does not load or overwrite a program; use LOAD or SAVE to confirm the action.
 
@@ -369,3 +369,12 @@ Program names allow up to 12 printable ASCII characters. The editor’s Backup/P
 Two losslessly packed programs share each of the four existing program A/B records: slots 1+5, 2+6, 3+7 and 4+8. Existing PRG1/PRG2 programs in slots 1–4 are imported without moving them; the paired slot starts empty. No sample or wavetable storage is reclaimed. Old groovebox project records must be loaded and saved as a four-sound program before their paired new slot can be used. Corrupt or unknown records are not overwritten by that conversion.
 
 Backups include both programs and their names in each PBK1 object. PBK1 backups require firmware 1.7/protocol 21 or later; the editor refuses to restore them into older firmware. Legacy PRG1/PRG2 backups remain importable. Before downgrading, export a backup and individual sounds; older firmware cannot read PBK1 banks.
+
+
+### Scale browsing and four-sound mixer (1.8)
+
+Tap SEL to open the scale browser without changing the scale. SELECT cycles the tuning list; PRESET or KNOB 1 changes ROOT, KNOB 2 also browses scales, and KNOBS 3/4 retain QNT/CHORD. Hold SEL for three seconds for custom-scale editing.
+
+EDIT now has four standard pages: EDIT 1, EDIT 2, VOICE and CHARACTER. FMX keeps its operator/routing pages; OP ENV is under ENV. Macros, morph, randomize, undo and FMX STORE remain accessible in the editor. Layer ON/OFF stays in GLO and on its two-second hold.
+
+Hold EDIT for two seconds to preview the four-sound mixer. KNOBS 1–4 control sounds 1–4; SELECT switches between VOLUME and PAN. At three seconds the mixer latches and stays open after release. Tap EDIT or HOME to exit; save a program to keep the mix. The keyboard still plays and EDIT no longer erases sequence notes. Short presses never show a held-layer screen. HOME opens its menu after three seconds.

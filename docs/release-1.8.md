@@ -1,0 +1,11 @@
+# SynthMaven 1.8 — scale browser and layer mixer
+
+Tap SEL to open the scale browser without changing the tuning. Turn SELECT to cycle through the master tuning scales, with the current name and twelve chromatic note offsets displayed. PRESET or KNOB 1 changes ROOT; KNOB 2 also browses scales. KNOB 3 retains QNT and KNOB 4 retains CHORD. Hold SEL for three seconds to latch the custom scale editor; key presses still cycle detuning through −25/−50/−75/0 cents there.
+
+The normal EDIT menu now has four pages: EDIT 1, EDIT 2, VOICE and CHARACTER. Engine controls and voice allocation, glide, priority, detune, vintage and stereo spread remain. The redundant LAYER page and less-used MACROS, MORPH, RANDOM and UNDO pages are removed from device EDIT; their editor controls remain. FMX retains its engine-specific operator/routing pages, with OP ENV moved to ENV and STORE available in the editor.
+
+Hold EDIT for two seconds to preview the four-sound mixer. KNOBS 1–4 adjust sounds 1–4. SELECT switches between VOLUME and PAN without changing tempo or the focused sound. At three seconds the mixer latches: release EDIT and keep adjusting. Tap EDIT or HOME to exit. EDIT’s mixer does not erase sequence notes or repurpose the keyboard. Save a program to retain the mix.
+
+Function-layer screens appear only after two seconds, even if a knob or key is touched earlier. They latch at three seconds; releasing before latching restores the underlying screen. GLO remains the exception: at two seconds it toggles layering once and displays Layered ON/OFF until release, without latching. Its short tap opens the GLO menu without showing the hold screen. GLO → LAYER PITCH → LAYER remains available. HOME’s menu hold is three seconds.
+
+Eight named programs, editor protocol 21, PBK1 backup/storage, default-on per-sound master tuning and QNT ALL remain compatible with 1.7. Back up before upgrading; older pre-1.7 firmware cannot read PBK1 saved programs. The catalogue still has 536 level-matched audible sounds and the intentionally silent USER WT slot. Bluetooth remains removed. Native target build, memory limits and host/editor checks gate publication; physical FM1 and direct USB pedal validation remain pending.

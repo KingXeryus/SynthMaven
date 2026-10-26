@@ -7,7 +7,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SynthMaven 1.7 Editor</title>
+<title>SynthMaven 1.8 Editor</title>
 <style>
   /* SLOOP 2.4 editor: the FM-1's screen on a big display. Black, the four track colours, the device's own
      Terminus pixel font (tools/gen_webfont.py, inlined: the editor also runs from file://), 16 px and 32 px only
@@ -481,7 +481,7 @@
 <div class="app">
   <aside class="side">
     <a class="brand" href="#sound" aria-label="SynthMaven"><img src="synthmaven-logo.svg" alt="SynthMaven" style="width:160px;height:130px;object-fit:contain;background:white"></a>
-    <p class="dim" style="margin:0">Version 1.7 · 23 engines · 537 factory presets</p>
+    <p class="dim" style="margin:0">Version 1.8 · 23 engines · 537 factory presets</p>
     <nav class="tabs" id="tabs" role="tablist" aria-orientation="vertical">
       <div class="navh" id="navtrack" data-t="navTrack"></div>
       <button role="tab" data-tab="sound" data-t="sound" data-ic="symbol_audio"></button>
@@ -3060,7 +3060,7 @@ function makeMockDevice(opt = {}) {
         break;
       }
       case CMD.INFO:
-        s(opt.modern ? "FELUCCA SYNTHMAVEN 1.7 (MOCK)" : opt.synthmaven ? "FELUCCA SYNTHMAVEN 1.3 (MOCK)" : opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : (opt.synthmaven ? "FELUCCA SYNTHMAVEN 1.3 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)")); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
+        s(opt.modern ? "FELUCCA SYNTHMAVEN 1.8 (MOCK)" : opt.synthmaven ? "FELUCCA SYNTHMAVEN 1.3 (MOCK)" : opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : (opt.synthmaven ? "FELUCCA SYNTHMAVEN 1.3 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)")); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
         ENG.forEach((e) => s(e.name));
         if (!opt.legacy) b(NTRK);
         if (v5) b(opt.synthmaven ? (opt.modern?21:opt.maqam?18:opt.oriental?16:15) : opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : opt.synthmaven ? (JU_E >= 0 ? (opt.synthmaven === "0.8" ? 13 : 14) : FX_E >= 0 ? 12 : 11) : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
