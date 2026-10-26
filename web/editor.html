@@ -5379,8 +5379,10 @@ function renderPanels() {
   if (hint) $("hint").textContent = t(hint);
   $("trackbar").hidden = !(ready && hasTracks() && (!syn || dev.info.proto>=18) && TRACK_TABS.has(want));
   $("navtrack").textContent = t(syn ? "navSynth" : "navTrack");
-  $("projhelp").dataset.t = syn ? "projHelpSyn" : "projHelp";    /* (SynthMaven: one instrument and its layer) */
-  $("projhelp").textContent = t($("projhelp").dataset.t);
+  if (!(syn && dev?.info?.proto >= 21)) {
+    $("projhelp").dataset.t = syn ? "projHelpSyn" : "projHelp";
+    $("projhelp").textContent = t($("projhelp").dataset.t);
+  }
   const nb = $("tabs").querySelector(`button[data-tab="${want}"]`);   /* the page's title: its name in the side bar */
   $("pagetitle").textContent = nb ? t(nb.dataset.t) : "";
   if (want === "kits") renderKits();
