@@ -1484,7 +1484,7 @@ function editorSynthMavenPages() {
   const L = X.LAYOUT(P.P_E0), on = (s) => new Set(L.flatMap((g) => g.pages.filter((x) => x[1] === s).flatMap((x) => x[2])));
   const p0 = on(0), g1 = on(1), all0 = L.flatMap((g) => g.pages.filter((x) => !x[1]).flatMap((x) => x[2]));
   const devP = new Set(pages.filter((x) => x[1] === "SC_TRACK").flatMap((x) => x[2]));
-  const devG = pages.filter((x) => x[1] === "SC_GLOBAL").flatMap((x) => x[2]).filter((id) => ![G.G_INFO, G.G_SLOT, G.G_LOAD, G.G_SAVE, G.G_CLRSEQ, G.G_INITSND, G.G_NEWPRJ].includes(id));
+  const devG = pages.filter((x) => x[1] === "SC_GLOBAL").flatMap((x) => x[2]).filter((id) => ![G.G_INFO, G.G_SLOT, G.G_NAME, G.G_LOAD, G.G_SAVE, G.G_CLRSEQ, G.G_INITSND, G.G_NEWPRJ].includes(id));
   const missP = [...devP].filter((id) => !p0.has(id)), missG = devG.filter((id) => !g1.has(id));
   const notOn = Array.from({ length: P.P_COUNT }, (_, i) => i).filter((i) => !p0.has(i));
   ok(pages.length > 20 && P.P_E0 === 118 && P.P_COUNT === 126 && G.G_COUNT === 34 && G.G_DMODE === 33
