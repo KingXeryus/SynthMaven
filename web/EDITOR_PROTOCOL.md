@@ -1,5 +1,7 @@
 # SLOOP editor protocol (SysEx over USB-MIDI)
 
+For current SynthMaven additions, release identity and storage migration, see [the SynthMaven protocol reference](../docs/EDITOR_PROTOCOL.md). The SLOOP protocol history below documents the inherited command foundation.
+
 The firmware side is `firmware/src/editor.c` (SLOOP is based on Felucca: the frames keep its "FL"
 header). Commands 16-26 (user presets and live sync) form protocol v2; commands 27-30 (tracks) form
 protocol v3; commands 31-32 (any track's parameters) form protocol v4; command 33 and the extra step,

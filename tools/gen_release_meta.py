@@ -18,7 +18,7 @@ e=re.sub(r'Version \d+\.\d+ ·','Version '+m['version']+' ·',e)
 e=re.sub(r'FELUCCA SYNTHMAVEN \d+\.\d+ \(MOCK\)(?=" : opt.synthmaven)', 'FELUCCA SYNTHMAVEN '+m['version']+' (MOCK)',e)
 e=re.sub(r'const SM_FILTER_MAP = .*?(?=/\* Compact performance protocol)' , 'const SM_FILTER_MAP = '+json.dumps(json.loads((ROOT/'assets/filter-capabilities.json').read_text()))+';\n',e,count=1,flags=re.S)
 outputs['web/editor.html']=e
-outputs['web/index_pkg.html']=re.sub(r'SynthMaven \d+\.\d+', 'SynthMaven '+m['version'],(ROOT/'web/index_pkg.html').read_text())
+outputs['web/index_pkg.html']=re.sub(r'(SynthMaven|SYNTHMAVEN) \d+\.\d+', lambda x:x[1]+' '+m['version'],(ROOT/'web/index_pkg.html').read_text())
 for p,s in outputs.items():
  path=ROOT/p
  if args.check:assert path.exists() and path.read_text()==s,f'{p} stale: run python3 tools/gen_release_meta.py'
