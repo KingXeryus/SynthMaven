@@ -30,4 +30,5 @@ assert(!html.includes('id="lang"'));
 assert(html.includes('const lang = "en";'));
 for(const path of ['user-manual.html','quick-start.html','release-notes.html'])assert(installer.includes('../../docs/'+path));
 assert(installer.includes('SynthMaven 1.4'));
+assert(html.includes('<title>SynthMaven 1.4 Editor</title>')); 
 console.log('1.4 website: English editor, no language switch, direct documentation links PASS');
