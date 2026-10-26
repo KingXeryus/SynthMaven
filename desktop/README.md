@@ -152,3 +152,6 @@ Signed iOS installation/distribution requires valid Apple provisioning.
 
 ## Software 0.4 visuals and oscillator rack
 The shared UI adds live output, interactive ADSR diagrams, LFO waveform previews, an illustrative filter response, and effect-send bars. Each layer combines the original engine/sample source with two optional waveform oscillators. The post-source stereo chorus and flanger have independent controls. New oscillator and effect parameters support saved state, DAW automation and MIDI Map assignment. See USER_MANUAL.md for signal routing and preview limitations.
+
+### Expanded graphs in 0.4.1
+ADSR panels cover native amplitude, modulation, auxiliary oscillators and sampled sounds. Filter cutoff/resonance, LFOs, echo timing/feedback, reverb tails, EQ, distortion and chorus/flanger modulation each have a labeled visual panel. The Effects page groups those displays with their controls; All Parameters can focus on each module. Responses are illustrative previews, while the output scope and sample waveform display actual audio.
