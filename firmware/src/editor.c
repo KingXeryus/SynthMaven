@@ -741,6 +741,11 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
 #endif
         ed_send(); return;
     }
+    if(cmd==108u) {
+        uint32_t rc=na>1u || (na && a[0]>1u);
+        if(!rc && na)program_layer_set(a[0]);
+        ed_begin(cmd);ed_b(rc);ed_b(song.sel);ed_b(program_layer);ed_send();return;
+    }
     if(cmd==107u) {
         uint32_t slot=na?a[0]:4u,rc=0,k;
         if(slot>=4u || (na!=1u && na!=13u))rc=1;

@@ -120,16 +120,16 @@ cd /tmp/felucca-site && python3 -m http.server 8000
 Installing firmware is at your own risk. If an install fails and the FM-1 no longer
 starts, recovery needs [FM-1-transporter](https://github.com/kurogedelic/FM-1-transporter).
 
-## Publishing SynthMaven 1.0
+## Publishing SynthMaven
 
 The `main` branch of `KingXeryus/SynthMaven` publishes the installer and editor
 through `.github/workflows/synthmaven.yml`. The workflow runs host/editor tests,
-compiles the BLE-enabled target with all 23 engines and 537 factory presets,
+compiles the USB-host target with all 23 engines and 537 factory presets,
 enforces memory limits, packages the actual firmware, and then deploys GitHub Pages.
 Deployment stops if tests or target compilation fail. The site includes matching
 GPL source and licence notices. No upstream binary is substituted.
 
-Current release notes and the melodic preset catalog: [release-1.0.md](docs/release-1.0.md).
+Current [release notes](docs/release-1.4.md) and [melodic preset catalogue](docs/release-1.0.md).
 For a local matching site after a successful build:
 
 ```

@@ -3306,7 +3306,7 @@ static void events_block(uint32_t n)
         seq_tick(&trk[i], adv);
     click_tick();
     roll_block(adv);
-    for (i = 0; i < (SYNTHMAVEN_SYNTH ? 1u : NPART); i++)
+    for (i = 0; i < NPART; i++)
         arp_tick(&trk[i], adv);
 #if SYNTHMAVEN_SYNTH
     for (i = 0; i < NPART; i++)

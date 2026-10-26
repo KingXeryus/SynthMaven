@@ -81,3 +81,7 @@ The 208 articulation presets in `assets/oriental` and their generated firmware
 representation are original SynthMaven synthesis parameter recipes, GPL-3.0-only.
 No commercial Yamaha ESP or TAQS.IM sample/preset library is redistributed.
 See `assets/oriental/README.md` for the frozen software reference and generator.
+
+## USB host additions (1.4)
+
+The AC791 USB host module and descriptor parser are MPL-2.0. Their source, full licence and upstream notices are preserved in `firmware/vendor/fm1-usb-host/`. Host PHY additions retain attribution in `firmware/hal/fm1_usb.h`. The app’s surrounding code remains GPL-3.0-only.

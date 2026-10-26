@@ -686,14 +686,16 @@ static void layer_screen_draw(void)
     }
 #if SYNTHMAVEN_SYNTH
     if(layer==LY_SCALE) {
-        cv_begin(240,240,C_BLACK);cv_oy=0;
-        cv_text(4,4,&FONT_S,scale_edit?"CUSTOM SCALE EDIT":"SCALE",C_HI);
-        cv_oy=32;graph_tuning();cv_oy=0;
-        cv_text(4,156,&FONT_S,scale_edit?"KEY: -25 -50 -75 0":"HOLD SEL 3s TO EDIT",C_GRAY);
-        cv_text(4,178,&FONT_S,scale_edit?"SELECT: CUSTOM SLOT":"KNOB 1: SCALE",C_GRAY);
-        cv_text(4,200,&FONT_S,scale_edit?"PRESETS: ROOT":"",C_GRAY);
-        cv_text(4,222,&FONT_S,scale_edit?"SAVE: STORE  SEL: EXIT":"",C_GRAY);
-        cv_blit(0,0);return;
+        /* The shared canvas is only 124 pixels high; render three strips. */
+        cv_begin(240,24,C_BLACK);
+        cv_text(4,4,&FONT_S,scale_edit?"CUSTOM SCALE EDIT":"SCALE",C_HI);cv_blit(0,0);
+        cv_begin(240,124,C_BLACK);graph_tuning();cv_blit(0,24);
+        cv_begin(240,92,C_BLACK);
+        cv_text(4,2,&FONT_S,scale_edit?"KEY: -25 -50 -75 0":"HOLD SEL 3s TO EDIT",C_GRAY);
+        cv_text(4,24,&FONT_S,scale_edit?"SELECT: CUSTOM SLOT":"KNOB 1: SCALE",C_GRAY);
+        cv_text(4,46,&FONT_S,scale_edit?"PRESETS: ROOT":"",C_GRAY);
+        cv_text(4,68,&FONT_S,scale_edit?"SAVE: STORE  SEL: EXIT":"",C_GRAY);
+        cv_blit(0,148);return;
     }
 #endif
     for (i = 0; i < 4u; i++)

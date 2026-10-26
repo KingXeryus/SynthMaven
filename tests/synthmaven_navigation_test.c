@@ -26,6 +26,9 @@ int main(void) {
  check(active_part(0)>0 && active_part(1)>0 && active_part(2)>0 && active_part(3)>0,"LAYER triggers all four sounds");
  song.sel=3;trk_note_off(TSEL,64);check(!ly_route[64],"note-off follows ownership after focus changes");
  trk_all_off(TSEL);frames(30);
+ program_layer_set(0);song.sel=3;frames(4);TSEL->p[P_AMODE]=1;
+ input_on(TSEL,67,100);frames(20);check(active_part(3)>0,"arpeggiator runs on the fourth selected sound");
+ input_off(TSEL,67);TSEL->p[P_AMODE]=0;program_layer_set(1);frames(30);
  program_capture(&saved);check(program_valid(&saved),"full four-sound program validates");
  song.sel=0;set_engine(ENGI_HYBRID);apply_preset(0);program_layer_set(0);frames(4);
  program_apply(&saved);frames(8);
@@ -35,9 +38,11 @@ int main(void) {
  press(B_SCL);frames(190);release(B_SCL);check(scale_edit && ly_lock==LY_SCALE,"SEL holds three seconds then custom editor stays open");
  tune_cfg.root=0;tune_cfg.sys=TU_CUSTOM1;custom_scale[0]=0;
  for(i=1;i<=4;i++){key(0);check(custom_scale[0]==((i%4u)<<(2u*(53u%12u))),"custom key cycles -25/-50/-75/0 cents");}
+ key(0);key(1);key(1);key(2);key(2);key(2);
+ ppm("synthmaven-custom-scale");
  tap(B_SAVE);check(scale_edit && custom_scale_dirty,"SAVE stores custom scale without leaving editor");
  tap(B_SCL);check(!scale_edit && ly_lock==LY_PLAY,"SEL exits latched scale editor");
- go_home();frames(4);ppm("synthmaven-four-program-sounds");
+ go_home();frames(110);ppm("synthmaven-four-program-sounds");
  open_family(FAM_SAVE);check(!strcmp(cur_page()->title,"PROGRAM"),"SAVE opens program save/load page");
  return fails?1:0;
 }

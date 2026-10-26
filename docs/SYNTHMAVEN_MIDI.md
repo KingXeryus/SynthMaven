@@ -10,6 +10,8 @@ Commands 100/101/106 reply with ten bytes: `rc, 2, caps, patchEnabled, 0, keyPor
 - 106: `usbRole` 0/1. Switching to host disconnects the computer editor. Select COMPUTER on the FM1 to reconnect.
 - 107: custom scale. Read with `slot` 0–3; write with `slot, step[12]`. Each step is 0–3 for 0/−25/−50/−75 cents relative to ROOT. Reply `rc, slot, step[12]` on success. Writes schedule settings persistence.
 
+- 108: no arguments reads program performance mode; one argument 0/1 sets LAYER OFF/ON. Reply `rc, focusedSound, layer`.
+
 Existing pedal mapping commands retain TYPE OFF/CC/PC, NUMBER, VALUE and channel IN CH/1–16. Configure these on GLO → PATCH UP/DOWN and BANK UP/DOWN. Patch changes wrap within the focused engine; bank changes cycle engines. PROG OFF blocks them.
 
 INFO now reports five runtime tracks: four synth sounds and the hidden legacy drum track. Synth editor operations accept parts 0–3. Tuning IDs 0–57 retain their prior meanings; CUSTOM 1–4 use 58–61. Scala USER remains 13.

@@ -849,6 +849,7 @@
       <div class="card" id="sm-midi">
 <h2>SynthMaven MIDI connections</h2>
 <p id="sm-status" role="status">Connect SynthMaven firmware to read MIDI settings.</p>
+<p><label><input type="checkbox" id="sm-program-layer" disabled> Layer all four program sounds</label></p>
 <p><label><input type="checkbox" id="sm-patch-enabled" disabled> Enable patch switching</label></p>
 <div id="sm-patch-options" hidden>Pedal connection: USB MIDI</div>
 <p><label>Keyboard connection <select id="sm-key-port" disabled><option value="0">USB MIDI</option><option value="1">TRS MIDI</option><option value="2">USB + TRS MIDI</option></select></label></p>
@@ -5320,7 +5321,7 @@ function renderPanels() {
     const lab = b.dataset.tab === "samples" ? (syn ? "wtTab" : "samples") : b.dataset.tab === "projects" ? (syn ? "bkTitle" : "projects") : null;
     if (lab && b.dataset.t !== lab) { b.dataset.t = lab; setLabel(b, t(lab)); }
   }
-  $("projcard").hidden = syn;
+  $("projcard").hidden = syn && dev?.info?.proto < 18;
   $("bkhelp").dataset.t = syn ? "bkHelpSyn" : "bkHelp";
   $("bkhelp").textContent = t($("bkhelp").dataset.t);
   const ready = !!dev && !!dev.dump;
@@ -5334,7 +5335,7 @@ function renderPanels() {
   }
   $("hint").hidden = !hint;
   if (hint) $("hint").textContent = t(hint);
-  $("trackbar").hidden = !(ready && hasTracks() && !syn && TRACK_TABS.has(want));
+  $("trackbar").hidden = !(ready && hasTracks() && (!syn || dev.info.proto>=18) && TRACK_TABS.has(want));
   $("navtrack").textContent = t(syn ? "navSynth" : "navTrack");
   $("projhelp").dataset.t = syn ? "projHelpSyn" : "projHelp";    /* (SynthMaven: one instrument and its layer) */
   $("projhelp").textContent = t($("projhelp").dataset.t);
@@ -5712,7 +5713,7 @@ function buildUI() {
 const TCOL = ["var(--t1)", "var(--t2)", "var(--t3)", "var(--t4)"];
 function renderTrackbar() {
   const box = $("trackbtns");
-  const ntrk = hasTracks() ? dev.info.ntrk : 0;
+  const ntrk = hasTracks() ? (synthOnly() && dev.info.proto>=18 ? 4 : dev.info.ntrk) : 0;
   if (box.children.length !== ntrk || box.dataset.lang !== lang) {
     box.dataset.lang = lang;
     box.replaceChildren(...Array.from({ length: ntrk }, (_, i) => el("button", { type: "button", "data-i": i, style: `--c:${TCOL[i % 4]}`,
@@ -5721,7 +5722,7 @@ function renderTrackbar() {
   for (const b of box.children) {
     const i = +b.dataset.i, x = dev.mix && dev.mix.tracks[i];
     b.setAttribute("aria-pressed", i === (dev.sel || 0) ? "true" : "false");
-    const nm = !x ? [i === ntrk - 1 ? "DRUMS" : "", ""] : x.engine >= dev.info.nengines ? [(dev.kitNames || [])[x.e0] || "", "drums"]
+    const nm = !x ? [!synthOnly() && i === ntrk - 1 ? "DRUMS" : "", ""] : x.engine >= dev.info.nengines ? [(dev.kitNames || [])[x.e0] || "", "drums"]
       : [(dev.names[x.engine] || [])[x.preset] || "", String(dev.info.engines[x.engine] || "").toLowerCase()];
     b.lastChild.replaceChildren(nm[0] + " ", el("span", { class: "dim", text: nm[1] }));
     b.title = `${t("track")} ${i + 1}`;
@@ -9896,7 +9897,7 @@ const LY_CTL = [
 const LY_CH = [29, { label: "CH", fmt: F.INT, min: 1, max: 16, def: 2, names: [] }];   /* (MULTI: SPLIT's knob, 0.6) */
 const lyCtls = (p) => LY_CTL.map((c, i) => (i === 1 && p[LY_MODE] === LY_MULTI ? LY_CH : c));
 const ly = { rows: new Map(), multi: null, t: {} };   /* t: id -> the user's last change (performance.now()) */
-const lyOk = () => synthOnly() && dev.info.proto >= 4 && dev.info.ntrk >= 2 && (dev.info.pe0 >= 78 || bkFwAtLeast(dev.info.version, [0, 3, 0]));
+const lyOk = () => synthOnly() && dev.info.proto < 18 && dev.info.proto >= 4 && dev.info.ntrk >= 2 && (dev.info.pe0 >= 78 || bkFwAtLeast(dev.info.version, [0, 3, 0]));
 const lyTrack = () => (dev && dev.mix && dev.mix.tracks[1] && dev.mix.tracks[1].p ? dev.mix.tracks[1] : null);
 function lyShowVal(c, v, force) {
   const [txt, unit] = fmtValue(c.d, v);
@@ -9952,6 +9953,7 @@ const TU_NAMES = ["EQUAL", "JUST", "PYTHAG", "MEANTONE", "WERCK III", "KIRNB III
 const TU_USER = 13;
 const TU_MAQAM = [{"sys":6,"name":"Rast","offsets":[0,0,0,0,-50,0,0,0,0,0,0,-50],"note":""},{"sys":7,"name":"Bayati","offsets":[0,0,-50,0,0,0,0,0,0,0,0,0],"note":""},{"sys":14,"name":"Ajam","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":15,"name":"Ajam Ushayran","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Transposed Ajam"},{"sys":16,"name":"Athar Kurd","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":17,"name":"Awj Iraq","offsets":[0,0,-50,0,-50,-50,0,0,-50,-50,0,50],"note":"Tonic normalized from a half-flat reference; descending outline"},{"sys":18,"name":"Bastanikar","offsets":[0,0,-50,0,-50,0,0,-50,-50,0,50,50],"note":"First octave only; upper ajnas extend beyond the octave"},{"sys":19,"name":"Bayati Shuri","offsets":[0,0,-50,0,0,0,0,0,0,0,0,0],"note":""},{"sys":20,"name":"Dalanshin","offsets":[0,0,0,0,-50,0,0,0,0,0,0,-50],"note":"First-octave Rast outline; upper modulation is played separately"},{"sys":21,"name":"Farahfaza","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Transposed Nahawand"},{"sys":22,"name":"Hijaz","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Nahawand upper jins reference"},{"sys":23,"name":"Hijazkar","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":24,"name":"Hijazkar Kurd","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Lower-octave Kurd reference; octave-dependent alterations cannot be encoded in a repeating 12-key table"},{"sys":25,"name":"Husayni","offsets":[0,0,-50,0,0,0,0,0,0,-50,0,0],"note":"Upper Bayati reference; B-flat alternative remains on its chromatic key"},{"sys":26,"name":"Huzam","offsets":[0,0,-50,0,-50,-50,0,0,-50,-50,0,-50],"note":"Tonic normalized from a half-flat reference"},{"sys":27,"name":"Iraq","offsets":[0,0,-50,0,-50,0,0,-50,0,-50,0,-50],"note":"Tonic normalized from a half-flat reference"},{"sys":28,"name":"Jiharkah","offsets":[0,0,0,0,-25,-25,0,0,0,0,0,-50],"note":"Reference approximation: thirds/fourths 25 cents low"},{"sys":29,"name":"Kirdan","offsets":[0,0,0,0,-50,0,0,0,0,0,0,-50],"note":"Rast tuning; descending melodic identity"},{"sys":30,"name":"Kurd","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":31,"name":"Lami","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":32,"name":"Mahur","offsets":[0,0,0,0,-50,0,0,0,0,0,0,0],"note":""},{"sys":33,"name":"Muhayyar","offsets":[0,0,-50,0,0,0,0,0,0,0,0,0],"note":"Bayati tuning; upper-register melodic identity"},{"sys":34,"name":"Mustaar","offsets":[0,0,0,-50,-50,0,-50,-50,0,-50,0,-50],"note":"Tonic normalized from a half-flat reference"},{"sys":35,"name":"Nahawand","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Harmonic-minor reference; descending flat seventh is still available"},{"sys":36,"name":"Nahawand Murassaa","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":37,"name":"Nairuz","offsets":[0,0,0,0,-50,0,0,0,0,-50,0,0],"note":""},{"sys":38,"name":"Nawa Athar","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":39,"name":"Nikriz","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":40,"name":"Rahat al-Arwah","offsets":[0,0,-50,0,-50,-50,0,0,-50,-50,0,-50],"note":"Transposed Huzam"},{"sys":41,"name":"Saba","offsets":[0,0,-50,0,0,0,0,0,0,0,0,0],"note":"Repeating first-octave reference; upper lowered tonic is played chromatically"},{"sys":42,"name":"Saba Zamzam","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Repeating first-octave reference"},{"sys":43,"name":"Sazkar","offsets":[0,0,0,0,-50,0,0,0,0,0,0,-50],"note":"Rast tuning; chromatic D-sharp remains available"},{"sys":44,"name":"Shadd Araban","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Transposed Hijazkar"},{"sys":45,"name":"Shahnaz","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Transposed Hijazkar"},{"sys":46,"name":"Shawq Afza","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":47,"name":"Sikah","offsets":[0,0,-50,0,-50,0,-50,0,0,-50,0,-50],"note":"Tonic normalized from a half-flat reference"},{"sys":48,"name":"Sikah Baladi approx","offsets":[0,0,-50,0,-50,-25,0,0,0,-50,0,-50],"note":"Approximation only; variable intonation is not fully representable by a fixed table"},{"sys":49,"name":"Suzdalara","offsets":[0,0,0,0,-50,0,0,0,0,0,0,0],"note":""},{"sys":50,"name":"Suzidil","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":"Transposed Hijazkar"},{"sys":51,"name":"Suznak","offsets":[0,0,0,0,-50,0,0,0,0,0,0,0],"note":""},{"sys":52,"name":"Ushaq Masri","offsets":[0,0,0,0,0,0,0,0,0,-50,0,0],"note":""},{"sys":53,"name":"Yakah","offsets":[0,0,0,0,-50,0,0,0,0,-50,0,0],"note":"Transposed Nairuz"},{"sys":54,"name":"Zanjaran","offsets":[0,0,0,0,0,0,0,0,0,0,0,0],"note":""},{"sys":55,"name":"Rast descending","offsets":[0,0,0,0,-50,0,0,0,0,0,0,0],"note":"Flat seventh descending reference"},{"sys":56,"name":"Bayati upper Rast","offsets":[0,0,-50,0,0,0,0,0,0,-50,0,0],"note":"Rast upper jins"},{"sys":57,"name":"Hijaz upper Rast","offsets":[0,0,0,0,0,0,0,0,0,-50,0,0],"note":"Rast upper jins"}];
 let tuv = null;
+let tuCustom = null;
 const tuSystems = () => TU_NAMES.slice(0, dev?.info?.proto >= 18 ? TU_NAMES.length : dev?.info?.proto >= 17 ? 58 : 14);
 const tuOk = () => !!dev && !!dev.info && dev.info.proto >= 14;
 function tuShow() {
@@ -9970,6 +9972,15 @@ function tuRender() {
   $("turoot").value = String(tuv.root);
   $("tua4box").hidden = tuv.a4 == null;                /* (SynthMaven 1.0: the reference pitch) */
   if (tuv.a4 != null && document.activeElement !== $("tua4")) $("tua4").value = String(tuv.a4);
+  if(tuv.sys>=58 && tuv.sys<=61 && tuCustom) {
+    const notes=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+    const buttons=tuCustom.map((step,i)=>el("button",{text:notes[(i+tuv.root)%12]+" "+(-25*step)+" ct",onclick:()=>op(async()=>{
+      const next=tuCustom.slice();next[i]=(next[i]+1)%4;
+      const r=await rq([107,[tuv.sys-58,...next]]);checkRc(r[0]);tuCustom=Array.from(r.slice(2));tuRender();
+    })}));
+    $("tuinfo").replaceChildren(el("p",{text:"Custom chromatic scale: click a note to cycle 0 / −25 / −50 / −75 cents. Changes save to the FM1 settings."}),...buttons);
+    return;
+  }
   const maqam=TU_MAQAM.find(m=>m.sys===tuv.sys);
   if(maqam) {
     const notes=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
@@ -9983,12 +9994,15 @@ async function tuRead() {
   const r = parse[CMD.TUNE_GET](await rq(req.tuneGet()));
   if (r.rc) return;
   tuv = { ...r, desc: tuv && tuv.desc };
+  tuCustom=null;
+  if(tuv.sys>=58 && tuv.sys<=61 && dev.info.proto>=18){const c=await rq([107,[tuv.sys-58]]);checkRc(c[0]);tuCustom=Array.from(c.slice(2));}
   tuRender();
 }
 async function tuSend() {
   if (!tuv) return;
   const r = parse[CMD.TUNE_PUT](await rq(req.tunePut(tuv.sys, tuv.root, tuv.deg, tuv.period, tuv.a4)));
   checkRc(r.rc);
+  await tuRead();
 }
 $("tusys").addEventListener("change", () => { if (tuv) { tuv.sys = +$("tusys").value; op(tuSend); } });
 $("turoot").addEventListener("change", () => { if (tuv) { tuv.root = +$("turoot").value; op(tuSend); } });
@@ -10400,6 +10414,8 @@ async function smRequest(cmd, values = []) {
 async function smRefresh() {
   try {
     smState = await smRequest(100);
+    const program=await rq([108,[]]);checkRc(program[0]);
+    $("sm-program-layer").checked=!!program[2];$("sm-program-layer").disabled=false;
     $("sm-patch-enabled").checked = !!smState.enabled;
     $("sm-key-port").value = String(smState.key);
     $("sm-patch-enabled").disabled = $("sm-key-port").disabled = $("sm-save").disabled = false;
@@ -10407,6 +10423,9 @@ async function smRefresh() {
     smCascade();
   } catch(e) { $("sm-status").textContent = e.message; for (const id of ["sm-patch-enabled","sm-key-port","sm-save"]) $(id).disabled = true; }
 }
+$("sm-program-layer").addEventListener("change",()=>op(async()=>{
+ const r=await rq([108,[+$("sm-program-layer").checked]]);checkRc(r[0]);$("sm-program-layer").checked=!!r[2];
+}));
 $("sm-read").addEventListener("click", smRefresh);
 $("sm-patch-enabled").addEventListener("change", smCascade);
 $("sm-save").addEventListener("click", async () => {

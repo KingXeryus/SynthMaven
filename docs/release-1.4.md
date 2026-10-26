@@ -4,7 +4,7 @@ SynthMaven 1.4 keeps 23 engines and 537 factory presets. This release changes th
 
 - ALGORITHM selects the engine of the focused sound. PRESET wraps through that engine’s factory presets. SELECT selects sound 1–4 without changing its contents.
 - SAVE opens PROGRAM. Choose one of four program slots; turn LOAD or SAVE twice to confirm. PROGRAM MODE selects LAYER OFF (focused sound only) or ON (all four sounds). The global eight-voice budget is shared by all layers.
-- Programs retain all four sounds’ parameters, modulation steps and HYBRID/FMX/FM6 patches, tuning selection, focused sound and layer mode. Working programs autosave when stopped and quiet. Custom-scale definitions are stored separately in settings.
+- Programs retain all four sounds’ parameters, modulation steps and HYBRID/FMX/FM6 patches, tuning selection, focused sound and layer mode. Working programs autosave when stopped and quiet. Custom-scale definitions persist in settings and are included in saved programs and working-program backups.
 - Tap SEL to cycle tuning scales. Hold SEL for three seconds, then release, to edit CUSTOM 1–4. SELECT chooses the custom slot; PRESET chooses ROOT. Press a chromatic key repeatedly for 0 → −25 → −50 → −75 → 0 cents. SAVE stores the scales; SEL exits. All octaves of the same pitch class share the offset relative to ROOT.
 - Function layers latch after a three-second hold. Tap a function button or HOME to leave the latched layer. REC retains its destructive clear confirmation behavior.
 - Bluetooth radio, scanning and pairing controls are removed. Pedal messages are accepted only over USB.
