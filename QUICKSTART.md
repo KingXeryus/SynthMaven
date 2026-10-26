@@ -16,7 +16,7 @@ Choose USB ROLE → COMPUTER before reconnecting the web editor or installer. Th
 
 Read the [user manual](docs/USER_MANUAL.md), [release notes](docs/release-2.0.md), and [maqam catalogue](docs/MAQAM_SCALES.md).
 
-Choose **Appearance → Dark / Light / System** in the installer or editor. In the editor’s Sound page, use the instrument tabs and rotary controls; drag an envelope handle to edit its shape. The 537-entry bank contains 536 level-matched audible sounds and USER WT, which stays silent until you upload a wavetable.
+Choose **Appearance → Dark / Light / System** in the installer or editor. In the editor’s Sound page, use the instrument tabs and rotary controls; drag an envelope handle to edit its shape. The 557-entry bank contains 556 level-matched audible sounds and USER WT, which stays silent until you upload a wavetable.
 
 For layers or splits, open **Sound → Layers** in the editor: turn layering on, enable the sounds you need, choose each slot’s full keyboard or Lower/Upper split zone, then balance Level and Pan. M mutes; S solos. Save the four-sound program to keep this mix. On the hardware, select the sound on HOME and use GLO → LAYER ROUTE / MIX / PITCH.
 
@@ -47,4 +47,12 @@ Eight voices are shared across all four parts. A four-part layered note uses fou
 
 Use **Sound → Vital preset import** to read a `.vital` file locally, inspect the compatibility report and explicitly send an approximate HYBRID sound. Save the full custom sound in the editor library or a four-part program; parameter-only user slots cannot keep arbitrary HYBRID bytes. [Supported conversions](docs/VITAL_IMPORT.md).
 
-The regional bank has 44 selectable sounds, with Dry/Expressive variations in the editor instead of duplicate factory entries. The catalogue has 493 entries: 492 audible sounds plus the intentionally empty USER WT.
+The regional bank has 44 selectable sounds, with Dry/Expressive variations in the editor instead of duplicate factory entries. The catalogue has 557 entries: 556 audible sounds plus the intentionally empty USER WT.
+
+## Vital-derived factory sounds
+
+The development bank adds **64 native HYBRID translations** selected from 68 supplied Vital presets, for **557 factory entries: 556 calibrated audible sounds plus the intentionally silent USER WT**. These are approximations using the FM1 engines, not Vital playback. Unsupported effects, wavetable motion and modulation can change the sound substantially.
+
+On a fresh start or reset, the four program parts contain **V01 STROBE, V02 DARK, V03 REESE and V04 PLUCK**, with the first part selected and layering off. Existing autosaved work takes precedence. HOME navigation is unchanged: ALGORITHM selects the engine, PRESET cycles its sounds, and SELECT chooses one of the four parts. Within HYBRID, the 64 new sounds come first, followed by the existing HYBRID sounds in the same cycle. Existing preset IDs remain stable.
+
+Selection uses compatibility checks and native waveform spectral fitting, with no duplicate translated parameter sets. Listening comparison and device validation remain pending. See the [selection record](assets/vital/README.md) for source attribution and conversion limits.

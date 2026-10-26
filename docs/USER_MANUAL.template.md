@@ -11,7 +11,7 @@ Generated from release metadata: firmware **{{version}}**, protocol **{{protocol
 
 SynthMaven is an open-source firmware based on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1).
 This manual covers the **M-VAVE FM1 hardware firmware**, its web installer and
-web editor. Version {{version}} provides **23 engines and 493 factory presets**. The Mac
+web editor. Version {{version}} provides **23 engines and 557 factory presets**. The Mac
 software instrument has a separate feature set; its eight-layer interface and
 DAW formats are not features of this hardware firmware.
 
@@ -93,8 +93,8 @@ The factory library includes 44 melodic Oriental/Middle Eastern sounds. Use the 
 
 ## Factory library and engines
 
-The 493 presets comprise **449 existing factory presets plus 44 consolidated melodic
-presets**. The existing set includes **41 FM6 voices** and **nine XD compatibility
+The 557 presets comprise **449 existing factory presets plus 44 consolidated melodic
+presets and 64 Vital-derived HYBRID translations**. The existing set includes **41 FM6 voices** and **nine XD compatibility
 sounds**; those are part of the 449, not additional sounds to add to the total.
 The original 449 factory IDs remain in place. Regional IDs are consolidated; saved four-part programs preserve their complete sound parameters and migrate their display ID. Oriental presets append to their
 native engines. Factory sounds are read-only; save edits to a user slot.
@@ -341,7 +341,7 @@ Tap SEL to open the scale browser, then turn SELECT to cycle scales. Hold SEL fo
 
 Use **Appearance** in the editor or installer to choose Dark, Light or System. The browser remembers this choice. The editor uses the standalone instrument’s system sans-serif font, rounded panels, rotary controls and gridded parameter previews, with the logo’s red accent. Under Sound, choose Sound, Modulation, Effects, Layers, Tuning or All parameters. Drag a knob vertically, use Shift for fine pointer adjustment, use arrow keys when focused, or double-click to reset. Envelope graph handles edit attack, decay, sustain and release. Parameter diagrams are previews rather than live audio measurements.
 
-The 493-entry catalogue has **492 audible, level-matched factory sounds plus USER WT**. USER WT deliberately stays silent until a wavetable is uploaded. Factory matching uses the complete stereo firmware mix and a −29 LUFS reference target on role-appropriate phrases. Playing different notes, changing velocity/effects or layering sounds changes loudness. Saved sounds keep their stored trim; reload the factory preset to use the new calibration.
+The 557-entry catalogue has **556 audible, level-matched factory sounds plus USER WT**. USER WT deliberately stays silent until a wavetable is uploaded. Factory matching uses the complete stereo firmware mix and a −29 LUFS reference target on role-appropriate phrases. Playing different notes, changing velocity/effects or layering sounds changes loudness. Saved sounds keep their stored trim; reload the factory preset to use the new calibration.
 
 The Tuning page includes a chromatic keyboard with the selected root and each key’s cents offset. Altered keys use the logo accent. In CUSTOM1–4, click a key or its note button to cycle 0 / −25 / −50 / −75 cents and save the change on the FM1.
 
@@ -417,3 +417,11 @@ Custom HYBRID patch bytes are retained in editor-library exports and in saved fo
 Raw unmodified Wave Source keyframes may be exported as WAV, then loaded through Wavetables. The FM1 reduction is 16 frames and 128 harmonics, using one of four user wavetable slots. This does not render Vital modifiers, spectral warping or interpolation. See [Vital import compatibility](VITAL_IMPORT.md).
 
 The 44 regional factory sounds replace the previous 88 D/E entries. Load a sound, then use **Variation: Dry / Expressive** in the editor. A variation changes brightness, pitch-LFO amount, glide and the calibrated trim; it leaves the mix and tuning alone. Save it in a program or user preset. Older saved programs retain their complete parameters; regional D/E favourites resolve to the same consolidated sound. New Vital-based factory presets will be added only after source files are supplied and separately validated.
+
+## Vital-derived factory sounds
+
+The development bank adds **64 native HYBRID translations** selected from 68 supplied Vital presets, for **557 factory entries: 556 calibrated audible sounds plus the intentionally silent USER WT**. These are approximations using the FM1 engines, not Vital playback. Unsupported effects, wavetable motion and modulation can change the sound substantially.
+
+On a fresh start or reset, the four program parts contain **V01 STROBE, V02 DARK, V03 REESE and V04 PLUCK**, with the first part selected and layering off. Existing autosaved work takes precedence. HOME navigation is unchanged: ALGORITHM selects the engine, PRESET cycles its sounds, and SELECT chooses one of the four parts. Within HYBRID, the 64 new sounds come first, followed by the existing HYBRID sounds in the same cycle. Existing preset IDs remain stable.
+
+Selection uses compatibility checks and native waveform spectral fitting, with no duplicate translated parameter sets. Listening comparison and device validation remain pending. See the [selection record](../assets/vital/README.md) for source attribution and conversion limits.

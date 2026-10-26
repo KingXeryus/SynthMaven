@@ -467,7 +467,7 @@ static void go_home(void)
 
 /* the parts' sounds at power-on (engine, preset): bass, pad, lead */
 #if SYNTHMAVEN_SYNTH                  /* SynthMaven: the instrument plays SYNTHMAVEN (HYBRID's first patch) */
-static const uint8_t TRK_DEF[NPART][2] = {{ENGI_HYBRID, 0}, {1, 0}, {4, 5}};
+static const uint8_t TRK_DEF[NPART][2] = {{ENGI_HYBRID,SM_VITAL_PRESET_FIRST},{ENGI_HYBRID,SM_VITAL_PRESET_FIRST+1u},{ENGI_HYBRID,SM_VITAL_PRESET_FIRST+2u},{ENGI_HYBRID,SM_VITAL_PRESET_FIRST+3u}};
 #else
 static const uint8_t TRK_DEF[NPART][2] = {{0, 0}, {1, 0}, {4, 5}};   /* ANALOG 808 BOOM, DIGITAL RHODES, SAMPLE LOFI FLUTE */
 #endif
@@ -776,7 +776,13 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     SM_KORG_BANK
 };
 #define NBASE (sizeof BANK / sizeof BANK[0])
-#define NBANK (NBASE + SM_OR_COUNT)
+#define VITAL_BANK_FIRST (NBASE + SM_OR_COUNT)
+#define NBANK (VITAL_BANK_FIRST + SM_VITAL_COUNT)
+#if SYNTHMAVEN_SYNTH
+static const uint8_t vital_kind[SM_VITAL_COUNT]=SM_VITAL_KIND_DATA;
+#else
+static const uint8_t vital_kind[1]={0};
+#endif
 static uint8_t bank_pi[NBASE];                       /* the preset index of each entry in its engine */
 static uint8_t bank_ready;
 static void bank_resolve(void)
@@ -800,6 +806,7 @@ static uint32_t base_pos(uint32_t *total)            /* list index of the select
         if (BANK[i].e == TSEL->eng_req && bank_pi[i] == TSEL->preset)
             cur = i;
     {uint32_t w,v;if(sm_or_find(TSEL->eng_req,TSEL->preset,&w,&v))cur=NBASE+w;}
+    if(TSEL->eng_req==ENGI_HYBRID && TSEL->preset>=SM_VITAL_PRESET_FIRST && TSEL->preset<SM_VITAL_PRESET_FIRST+SM_VITAL_COUNT)cur=VITAL_BANK_FIRST+TSEL->preset-SM_VITAL_PRESET_FIRST;
     if (user_of(TSEL) < UP_SLOTS)
         cur = NBANK + up_rank(user_of(TSEL));
     *total = NBANK + up_count();
@@ -815,11 +822,12 @@ static uint32_t base_at(uint32_t n, uint32_t *k)
         *k = up_nth(n - NBANK);
         return NENGINES;
     }
+    if(n>=VITAL_BANK_FIRST){*k=SM_VITAL_PRESET_FIRST+n-VITAL_BANK_FIRST;return ENGI_HYBRID;}
     if(n>=NBASE)return sm_or_at(n-NBASE,k);
     *k = bank_pi[n] == 0xFF ? 0u : bank_pi[n];
     return BANK[n].e;
 }
-static const char *base_kind(uint32_t n) { return n < NBASE ? BANK_KIND[BANK[n].kind] : n < NBANK ? "ORIENTAL" : "USER"; }
+static const char *base_kind(uint32_t n) { return n < NBASE ? BANK_KIND[BANK[n].kind] : n < VITAL_BANK_FIRST ? "ORIENTAL" : n < NBANK ? "VITAL" : "USER"; }
 
 /* 0.7, favourites (after SLOOP 2.7; PRESETS page, KNOB 4): up to 16 sounds at the top of the PRESETS list, kept in the
  * FM-1's settings (project.c, the settings' side record). An entry: a factory sound, its BANK index; a user preset,
@@ -828,6 +836,7 @@ static const char *base_kind(uint32_t n) { return n < NBASE ? BANK_KIND[BANK[n].
 #define FAV_N 16u
 #define FAV_NONE 0xFFFFu
 #define FAV_USER 0x8000u
+#define FAV_VITAL 0x4000u
 static uint16_t fav[FAV_N] = {FAV_NONE, FAV_NONE, FAV_NONE, FAV_NONE, FAV_NONE, FAV_NONE, FAV_NONE, FAV_NONE,
                               FAV_NONE, FAV_NONE, FAV_NONE, FAV_NONE, FAV_NONE, FAV_NONE, FAV_NONE, FAV_NONE};
 static int8_t fav_at = -1;                           /* the favourite the selected part's sound was loaded from */
@@ -842,6 +851,7 @@ static uint32_t fav_list(uint32_t *b)                /* the favourites as base l
             if (!up_used(f & 0xFFu))
                 continue;
             b[n++] = NBANK + up_rank(f & 0xFFu);
+        } else if((f&FAV_VITAL) && (f&0xFFu)<SM_VITAL_COUNT){b[n++]=VITAL_BANK_FIRST+(f&0xFFu);
         } else if (f < NBASE+2u*SM_OR_COUNT) {
             uint32_t mapped=f<NBASE?f:NBASE+(f-NBASE)/2u;
             uint32_t j;for(j=0;j<n && b[j]!=mapped;j++);if(j==n)b[n++] = mapped;
@@ -856,6 +866,7 @@ static uint32_t fav_key(void)                        /* the selected part's soun
         bank_resolve();
     if (user_of(TSEL) < UP_SLOTS)
         return FAV_USER | user_of(TSEL);
+    if(TSEL->eng_req==ENGI_HYBRID && TSEL->preset>=SM_VITAL_PRESET_FIRST && TSEL->preset<SM_VITAL_PRESET_FIRST+SM_VITAL_COUNT)return FAV_VITAL+(TSEL->preset-SM_VITAL_PRESET_FIRST);
     {uint32_t w,v;if(sm_or_find(TSEL->eng_req,TSEL->preset,&w,&v))return NBASE+w*2u+v;}
     for (i = 0; i < NBASE; i++)
         if (BANK[i].e == TSEL->eng_req && bank_pi[i] == TSEL->preset)
@@ -948,7 +959,7 @@ static int br_match(uint32_t n, uint32_t nf)         /* entry n of the list (nf 
     uint32_t k;
     if (br_eng == BR_ALL)
         return 1;
-    if(br_eng==BR_ORIENTAL)return n>=nf && n-nf>=NBASE && n-nf<NBANK;
+    if(br_eng==BR_ORIENTAL)return n>=nf && n-nf>=NBASE && n-nf<VITAL_BANK_FIRST;
     return n >= nf && preset_at(n, &k) == br_eng;
 }
 /* Browsing in synth mode is silent: only LOAD / EDIT changes the instrument. */
@@ -1056,7 +1067,7 @@ static void br_filter_step(int32_t s)                 /* KNOB 2: ALL, the engine
 static uint32_t kind_at(uint32_t n)                  /* (0.7: the favourites first, a kind of their own) */
 {
     uint32_t b[FAV_N], nf = fav_list(b);
-    return n < nf ? 0xFEu : n - nf < NBASE ? BANK[n - nf].kind : n-nf<NBANK ? BK_ORIENTAL : 0xFFu;
+    return n < nf ? 0xFEu : n - nf < NBASE ? BANK[n - nf].kind : n-nf<VITAL_BANK_FIRST ? BK_ORIENTAL : n-nf<NBANK ? vital_kind[n-nf-VITAL_BANK_FIRST] : 0xFFu;
 }
 static void preset_kind_jump(int32_t s)
 {
@@ -1097,12 +1108,16 @@ static uint32_t home_preset_next(uint32_t cur,int32_t steps)
 }
 static void home_engine_step(int32_t steps) {
     uint32_t e=(uint32_t)(((int32_t)TSEL->eng_req+steps%(int32_t)NENGINES+(int32_t)NENGINES)%(int32_t)NENGINES);
-    set_engine(e);apply_preset(0);ui.force=1;
+    set_engine(e);apply_preset(e==ENGI_HYBRID?SM_VITAL_PRESET_FIRST:0u);ui.force=1;
 }
 static void home_preset_step(int32_t steps)
 {
     uint32_t n=sm_factory_count(TSEL->eng_req);
-    if(n)apply_preset((uint32_t)(((int32_t)TSEL->preset+steps%(int32_t)n+(int32_t)n)%(int32_t)n));
+    if(n){uint32_t p=TSEL->preset;
+        if(TSEL->eng_req==ENGI_HYBRID){uint32_t ordinal=p>=SM_VITAL_PRESET_FIRST?p-SM_VITAL_PRESET_FIRST:p+SM_VITAL_COUNT;ordinal=(uint32_t)(((int32_t)ordinal+steps%(int32_t)n+(int32_t)n)%(int32_t)n);p=ordinal<SM_VITAL_COUNT?SM_VITAL_PRESET_FIRST+ordinal:ordinal-SM_VITAL_COUNT;}
+        else p=(uint32_t)(((int32_t)p+steps%(int32_t)n+(int32_t)n)%(int32_t)n);
+        apply_preset(p);}
+
     ui.force=1;
 }
 /* HOME: what KNOB k edits: the engine's four main parameters; on the drum track

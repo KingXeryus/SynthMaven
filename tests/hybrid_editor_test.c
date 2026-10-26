@@ -135,13 +135,13 @@ int main(int argc, char **argv)
               "HY_PUT of 0xEE bytes: every field in range");
     }
     {   /* bad requests */
-        static const uint8_t a1[2] = {ED_HY_TRACK, NPART}, a2[2] = {ED_HY_FACTORY, 99}, a3[2] = {ED_HY_FACTORY, 0};
+        static const uint8_t a1[2] = {ED_HY_TRACK, NPART}, a2[2] = {ED_HY_FACTORY, HY_NFACTORY}, a3[2] = {ED_HY_FACTORY, 0};
         hy_patch_t before = hy_cur[0];
         uint8_t g0 = hy_gen[0];
         n = cmd(ED_HY_GET, a1, 2, 0, 0);
         check(n == 3u && ed_out[2] == 1, "HY_GET of drum part: rc 1");
         n = cmd(ED_HY_GET, a2, 2, 0, 0);
-        check(n == 3u && ed_out[2] == 1, "HY_GET of factory 99: rc 1");
+        check(n == 3u && ed_out[2] == 1, "HY_GET past last factory patch: rc 1");
         n = cmd(ED_HY_PUT, a3, 2, &p, sizeof p);
         check(n == 3u && ed_out[2] == 1, "HY_PUT to a factory patch: rc 1");
         n = cmd(ED_HY_PUT, a1, 2, &p, 60);

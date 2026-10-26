@@ -19,7 +19,7 @@ int main(void) {
     check(!memcmp(pk, FM6_INIT, 128), "legacy B1 stays PTCH 8 (empty bank still init)");
     fm6_slot_get(34, pk);
     check(!memcmp(pk, FM6_INIT, 128), "legacy B27 stays PTCH 34");
-    check(HY_NFACTORY == 36 && NELEM(HY_PRESETS) == 41,
+    check(HY_NFACTORY == 100 && NELEM(HY_PRESETS) == 105,
           "HYBRID: nine XD defaults append without shifting native factory/preset IDs");
     for (i = 0; i < 9; i++) {
         uint32_t slot = 27u + i, k, active = 0;

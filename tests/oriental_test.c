@@ -6,7 +6,7 @@
 int main(int argc,char**argv){
  outdir="build/host";bank_resolve();panel=PANEL_DEFAULT;layers_init();host_tracks_init();go_home();frames(2);midi_in_ch=0;
  check(SM_OR_COUNT==44u&&SM_OR_WORLDS==44u,"all 44 consolidated world sounds are present");
- {uint32_t e,count=0;for(e=0;e<NENGINES;e++)count+=sm_factory_count(e);check(NENGINES==23u&&count==493u,"SynthMaven 1.0 contains 23 engines and 493 factory presets");}
+ {uint32_t e,count=0;for(e=0;e<NENGINES;e++)count+=sm_factory_count(e);check(NENGINES==23u&&count==557u,"SynthMaven 1.0 contains 23 engines and 557 factory presets");}
  FILE*out=fopen(argc>1?argv[1]:"build/host/oriental-loaded.json","w");fprintf(out,"[");
  for(uint32_t n=0;n<SM_OR_COUNT;n++){
   uint32_t p,e=base_at(NBASE+n,&p),w,v,total;set_engine(e);apply_preset(p);

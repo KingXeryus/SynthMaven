@@ -2817,13 +2817,589 @@
     "true_peak_dbtp": -10.738669977602806
   },
   {
+    "engine": 12,
+    "preset": 41,
+    "role": 2,
+    "trim": -35,
+    "name": "V01 STROBE",
+    "lufs": -29.04179143330407,
+    "true_peak_dbtp": -18.887982444104093
+  },
+  {
+    "engine": 12,
+    "preset": 42,
+    "role": 1,
+    "trim": -25,
+    "name": "V02 DARK",
+    "lufs": -28.973475113538303,
+    "true_peak_dbtp": -17.252742952302782
+  },
+  {
+    "engine": 12,
+    "preset": 43,
+    "role": 0,
+    "trim": -21,
+    "name": "V03 REESE",
+    "lufs": -28.97124167045168,
+    "true_peak_dbtp": -12.972890752052708
+  },
+  {
+    "engine": 12,
+    "preset": 44,
+    "role": 3,
+    "trim": -12,
+    "name": "V04 PLUCK",
+    "lufs": -28.985056078932278,
+    "true_peak_dbtp": -18.698661158855764
+  },
+  {
+    "engine": 12,
+    "preset": 45,
+    "role": 2,
+    "trim": -28,
+    "name": "V05 SPACE 2",
+    "lufs": -29.234604685891583,
+    "true_peak_dbtp": -16.99537007856015
+  },
+  {
+    "engine": 12,
+    "preset": 46,
+    "role": 2,
+    "trim": 11,
+    "name": "V06 ROOFTOP",
+    "lufs": -28.921651741348967,
+    "true_peak_dbtp": -17.260479216130232
+  },
+  {
+    "engine": 12,
+    "preset": 47,
+    "role": 2,
+    "trim": -22,
+    "name": "V07 ON DANSE",
+    "lufs": -28.94673214727512,
+    "true_peak_dbtp": -12.911797169894815
+  },
+  {
+    "engine": 12,
+    "preset": 48,
+    "role": 2,
+    "trim": -36,
+    "name": "V08 NOSTALGI",
+    "lufs": -29.030343628899058,
+    "true_peak_dbtp": -17.307042059671986
+  },
+  {
+    "engine": 12,
+    "preset": 49,
+    "role": 2,
+    "trim": -28,
+    "name": "V09 KEYS ON ",
+    "lufs": -29.249012762668503,
+    "true_peak_dbtp": -18.132950652619407
+  },
+  {
+    "engine": 12,
+    "preset": 50,
+    "role": 2,
+    "trim": -9,
+    "name": "V10 NO TIME",
+    "lufs": -29.069234804423704,
+    "true_peak_dbtp": -18.535795956588736
+  },
+  {
+    "engine": 12,
+    "preset": 51,
+    "role": 2,
+    "trim": -34,
+    "name": "V11 KEYAQUAR",
+    "lufs": -29.0393600984706,
+    "true_peak_dbtp": -12.035672451528178
+  },
+  {
+    "engine": 12,
+    "preset": 52,
+    "role": 2,
+    "trim": -33,
+    "name": "V12 TOY",
+    "lufs": -29.163368629880086,
+    "true_peak_dbtp": -9.355914426784093
+  },
+  {
+    "engine": 12,
+    "preset": 53,
+    "role": 2,
+    "trim": -42,
+    "name": "V13 CITY LIG",
+    "lufs": -29.2034892837374,
+    "true_peak_dbtp": -18.3108261812627
+  },
+  {
+    "engine": 12,
+    "preset": 54,
+    "role": 3,
+    "trim": -18,
+    "name": "V14 THE VELD",
+    "lufs": -29.104581406781765,
+    "true_peak_dbtp": -18.88805082755385
+  },
+  {
+    "engine": 12,
+    "preset": 55,
+    "role": 3,
+    "trim": -15,
+    "name": "V15 STAY",
+    "lufs": -28.90483705016018,
+    "true_peak_dbtp": -18.32699833274194
+  },
+  {
+    "engine": 12,
+    "preset": 56,
+    "role": 3,
+    "trim": -24,
+    "name": "V16 WOOD",
+    "lufs": -28.88896754525523,
+    "true_peak_dbtp": -21.965976745688963
+  },
+  {
+    "engine": 12,
+    "preset": 57,
+    "role": 3,
+    "trim": -18,
+    "name": "V17 HOLOGRAM",
+    "lufs": -28.788729223095157,
+    "true_peak_dbtp": -16.909350886129367
+  },
+  {
+    "engine": 12,
+    "preset": 58,
+    "role": 3,
+    "trim": -14,
+    "name": "V18 INSOMNIA",
+    "lufs": -28.811584909921688,
+    "true_peak_dbtp": -16.118072104646675
+  },
+  {
+    "engine": 12,
+    "preset": 59,
+    "role": 3,
+    "trim": -9,
+    "name": "V19 MAINSTRE",
+    "lufs": -28.7526215692285,
+    "true_peak_dbtp": -18.73985913160773
+  },
+  {
+    "engine": 12,
+    "preset": 60,
+    "role": 3,
+    "trim": 3,
+    "name": "V20 HAPPY",
+    "lufs": -28.750329723066194,
+    "true_peak_dbtp": -8.395899332962012
+  },
+  {
+    "engine": 12,
+    "preset": 61,
+    "role": 3,
+    "trim": -23,
+    "name": "V21 XYLOPHON",
+    "lufs": -29.15054512857135,
+    "true_peak_dbtp": -19.414668577809444
+  },
+  {
+    "engine": 12,
+    "preset": 62,
+    "role": 1,
+    "trim": -35,
+    "name": "V22 DR WHO",
+    "lufs": -29.178288964168402,
+    "true_peak_dbtp": -23.88808675738956
+  },
+  {
+    "engine": 12,
+    "preset": 63,
+    "role": 1,
+    "trim": -23,
+    "name": "V23 AIRWAVE",
+    "lufs": -29.147731214403375,
+    "true_peak_dbtp": -20.935068712393587
+  },
+  {
+    "engine": 12,
+    "preset": 64,
+    "role": 1,
+    "trim": -34,
+    "name": "V24 WOBBLY",
+    "lufs": -28.996446868717612,
+    "true_peak_dbtp": -12.113420496054982
+  },
+  {
+    "engine": 12,
+    "preset": 65,
+    "role": 1,
+    "trim": -34,
+    "name": "V25 ALCOHOLI",
+    "lufs": -28.831468490031543,
+    "true_peak_dbtp": -18.967687765775757
+  },
+  {
+    "engine": 12,
+    "preset": 66,
+    "role": 1,
+    "trim": -31,
+    "name": "V26 RETROVIS",
+    "lufs": -29.150094376191397,
+    "true_peak_dbtp": -18.48192720768751
+  },
+  {
+    "engine": 12,
+    "preset": 67,
+    "role": 1,
+    "trim": -36,
+    "name": "V27 STRINGS ",
+    "lufs": -28.822051329178716,
+    "true_peak_dbtp": -20.041784114860405
+  },
+  {
+    "engine": 12,
+    "preset": 68,
+    "role": 1,
+    "trim": -18,
+    "name": "V28 BLUR",
+    "lufs": -29.198265090036244,
+    "true_peak_dbtp": -15.290218401482175
+  },
+  {
+    "engine": 12,
+    "preset": 69,
+    "role": 1,
+    "trim": -18,
+    "name": "V29 ORCHESTR",
+    "lufs": -28.949793426705238,
+    "true_peak_dbtp": -18.28489396940276
+  },
+  {
+    "engine": 12,
+    "preset": 70,
+    "role": 1,
+    "trim": -10,
+    "name": "V30 VOID",
+    "lufs": -29.039271200105045,
+    "true_peak_dbtp": -19.46483103602496
+  },
+  {
+    "engine": 12,
+    "preset": 71,
+    "role": 1,
+    "trim": -24,
+    "name": "V31 ALIEN",
+    "lufs": -29.244288250102414,
+    "true_peak_dbtp": -16.337979790675938
+  },
+  {
+    "engine": 12,
+    "preset": 72,
+    "role": 1,
+    "trim": -3,
+    "name": "V32 NEGATIVE",
+    "lufs": -28.84510253792777,
+    "true_peak_dbtp": -15.601738619552883
+  },
+  {
+    "engine": 12,
+    "preset": 73,
+    "role": 1,
+    "trim": -8,
+    "name": "V33 BLACK SE",
+    "lufs": -28.998849118142953,
+    "true_peak_dbtp": -14.971194519168524
+  },
+  {
+    "engine": 12,
+    "preset": 74,
+    "role": 3,
+    "trim": -35,
+    "name": "V34 GANGNAM",
+    "lufs": -29.07965587280873,
+    "true_peak_dbtp": -16.937509988247403
+  },
+  {
+    "engine": 12,
+    "preset": 75,
+    "role": 3,
+    "trim": -25,
+    "name": "V35 YEAH",
+    "lufs": -28.993051321702655,
+    "true_peak_dbtp": -28.63185853254202
+  },
+  {
+    "engine": 12,
+    "preset": 76,
+    "role": 3,
+    "trim": -11,
+    "name": "V36 TYPE A",
+    "lufs": -28.793179977455683,
+    "true_peak_dbtp": -21.47501330354691
+  },
+  {
+    "engine": 12,
+    "preset": 77,
+    "role": 3,
+    "trim": -4,
+    "name": "V37 TAKE 2",
+    "lufs": -28.999200442033906,
+    "true_peak_dbtp": -13.936074871271241
+  },
+  {
+    "engine": 12,
+    "preset": 78,
+    "role": 3,
+    "trim": -26,
+    "name": "V38 BRASS",
+    "lufs": -29.187628831893488,
+    "true_peak_dbtp": -21.326254412014475
+  },
+  {
+    "engine": 12,
+    "preset": 79,
+    "role": 3,
+    "trim": -30,
+    "name": "V39 JUMP",
+    "lufs": -29.03204971978626,
+    "true_peak_dbtp": -19.659355634108064
+  },
+  {
+    "engine": 12,
+    "preset": 80,
+    "role": 3,
+    "trim": -38,
+    "name": "V40 LIVE AND",
+    "lufs": -28.803449806717804,
+    "true_peak_dbtp": -14.189377235486
+  },
+  {
+    "engine": 12,
+    "preset": 81,
+    "role": 3,
+    "trim": -34,
+    "name": "V41 FALLING ",
+    "lufs": -28.96712667491798,
+    "true_peak_dbtp": -23.216727093150915
+  },
+  {
+    "engine": 12,
+    "preset": 82,
+    "role": 3,
+    "trim": -15,
+    "name": "V42 WIN",
+    "lufs": -29.14474096997313,
+    "true_peak_dbtp": -18.208153630085544
+  },
+  {
+    "engine": 12,
+    "preset": 83,
+    "role": 3,
+    "trim": 27,
+    "name": "V43 HOUSE",
+    "lufs": -28.928439272633415,
+    "true_peak_dbtp": -5.858508986984658
+  },
+  {
+    "engine": 12,
+    "preset": 84,
+    "role": 3,
+    "trim": -18,
+    "name": "V44 SOFT LEA",
+    "lufs": -29.023665154597442,
+    "true_peak_dbtp": -10.65261967810442
+  },
+  {
+    "engine": 12,
+    "preset": 85,
+    "role": 3,
+    "trim": -28,
+    "name": "V45 COUNTDOW",
+    "lufs": -29.08051719748985,
+    "true_peak_dbtp": -24.412224585082352
+  },
+  {
+    "engine": 12,
+    "preset": 86,
+    "role": 3,
+    "trim": 15,
+    "name": "V46 LOST",
+    "lufs": -29.163857858761922,
+    "true_peak_dbtp": -18.974721480261884
+  },
+  {
+    "engine": 12,
+    "preset": 87,
+    "role": 3,
+    "trim": -27,
+    "name": "V47 NOW",
+    "lufs": -29.095313495532544,
+    "true_peak_dbtp": -19.625489308231398
+  },
+  {
+    "engine": 12,
+    "preset": 88,
+    "role": 3,
+    "trim": 5,
+    "name": "V48 ORGAN",
+    "lufs": -28.95789022745488,
+    "true_peak_dbtp": -22.30445450354592
+  },
+  {
+    "engine": 12,
+    "preset": 89,
+    "role": 3,
+    "trim": -24,
+    "name": "V49 STRANGER",
+    "lufs": -28.970297822715306,
+    "true_peak_dbtp": -19.63820098858899
+  },
+  {
+    "engine": 12,
+    "preset": 90,
+    "role": 3,
+    "trim": -12,
+    "name": "V50 SOLO LEA",
+    "lufs": -29.032630359060235,
+    "true_peak_dbtp": -19.980699789821802
+  },
+  {
+    "engine": 12,
+    "preset": 91,
+    "role": 3,
+    "trim": -35,
+    "name": "V51 SHOW",
+    "lufs": -29.21676434771207,
+    "true_peak_dbtp": -10.369334724929436
+  },
+  {
+    "engine": 12,
+    "preset": 92,
+    "role": 0,
+    "trim": -15,
+    "name": "V52 BRAMM",
+    "lufs": -29.159050893890477,
+    "true_peak_dbtp": -16.560029232267297
+  },
+  {
+    "engine": 12,
+    "preset": 93,
+    "role": 0,
+    "trim": -15,
+    "name": "V53 BASS GUI",
+    "lufs": -28.961002952992377,
+    "true_peak_dbtp": -16.39909294606027
+  },
+  {
+    "engine": 12,
+    "preset": 94,
+    "role": 0,
+    "trim": -26,
+    "name": "V54 RUSH",
+    "lufs": -29.04341660636693,
+    "true_peak_dbtp": -17.73364922482083
+  },
+  {
+    "engine": 12,
+    "preset": 95,
+    "role": 0,
+    "trim": -20,
+    "name": "V55 POLARIS",
+    "lufs": -28.788276407210674,
+    "true_peak_dbtp": -14.612551843072838
+  },
+  {
+    "engine": 12,
+    "preset": 96,
+    "role": 0,
+    "trim": -18,
+    "name": "V56 DEEP REE",
+    "lufs": -28.947347777173643,
+    "true_peak_dbtp": -16.079140837741488
+  },
+  {
+    "engine": 12,
+    "preset": 97,
+    "role": 0,
+    "trim": -17,
+    "name": "V57 DEEP RIS",
+    "lufs": -29.04231621799868,
+    "true_peak_dbtp": -15.762158631840684
+  },
+  {
+    "engine": 12,
+    "preset": 98,
+    "role": 0,
+    "trim": -23,
+    "name": "V58 TUNNEL",
+    "lufs": -29.136286733298657,
+    "true_peak_dbtp": -16.91341464207643
+  },
+  {
+    "engine": 12,
+    "preset": 99,
+    "role": 3,
+    "trim": -25,
+    "name": "V59 SYNTH GU",
+    "lufs": -29.124639122486602,
+    "true_peak_dbtp": -20.36460979057338
+  },
+  {
+    "engine": 12,
+    "preset": 100,
+    "role": 3,
+    "trim": -34,
+    "name": "V60 STARS",
+    "lufs": -28.734972595430666,
+    "true_peak_dbtp": -12.713383713996754
+  },
+  {
+    "engine": 12,
+    "preset": 101,
+    "role": 3,
+    "trim": -24,
+    "name": "V61 ARP SYNT",
+    "lufs": -28.921518247179886,
+    "true_peak_dbtp": -21.33478025745817
+  },
+  {
+    "engine": 12,
+    "preset": 102,
+    "role": 2,
+    "trim": -36,
+    "name": "V62 KEYS WAL",
+    "lufs": -28.87580400848809,
+    "true_peak_dbtp": -19.062374731035717
+  },
+  {
+    "engine": 12,
+    "preset": 103,
+    "role": 2,
+    "trim": -33,
+    "name": "V63 KEYS END",
+    "lufs": -29.024467752177227,
+    "true_peak_dbtp": -16.705832481906043
+  },
+  {
+    "engine": 12,
+    "preset": 104,
+    "role": 1,
+    "trim": -24,
+    "name": "V64 ALIEN SO",
+    "lufs": -29.133885558160493,
+    "true_peak_dbtp": -15.658227547252832
+  },
+  {
     "engine": 13,
     "preset": 0,
     "role": 3,
     "trim": -44,
     "name": "WT BASIC",
-    "lufs": -29.0457637759083,
-    "true_peak_dbtp": -22.741351130074353
+    "lufs": -28.988534791567375,
+    "true_peak_dbtp": -9.022664540710025
   },
   {
     "engine": 13,
@@ -2831,8 +3407,8 @@
     "role": 3,
     "trim": -20,
     "name": "WT SWEEP",
-    "lufs": -28.998727322130577,
-    "true_peak_dbtp": -18.49332208399162
+    "lufs": -28.820542686385945,
+    "true_peak_dbtp": -18.68704339696699
   },
   {
     "engine": 13,
@@ -2840,8 +3416,8 @@
     "role": 1,
     "trim": -36,
     "name": "PPG PAD",
-    "lufs": -29.09900787003054,
-    "true_peak_dbtp": -18.18444817286583
+    "lufs": -29.08202451329993,
+    "true_peak_dbtp": -17.89068758659232
   },
   {
     "engine": 13,
@@ -2849,8 +3425,8 @@
     "role": 3,
     "trim": -28,
     "name": "VOCAL WT",
-    "lufs": -28.7797461628498,
-    "true_peak_dbtp": -19.49625843788818
+    "lufs": -28.81123168296156,
+    "true_peak_dbtp": -19.750690996721463
   },
   {
     "engine": 13,
@@ -2874,10 +3450,10 @@
     "engine": 13,
     "preset": 6,
     "role": 3,
-    "trim": -38,
+    "trim": -39,
     "name": "DIGI BELL",
-    "lufs": -28.731359131806077,
-    "true_peak_dbtp": -20.451056883299454
+    "lufs": -29.243833580771344,
+    "true_peak_dbtp": -20.701455927792477
   },
   {
     "engine": 13,
@@ -2885,8 +3461,8 @@
     "role": 3,
     "trim": -30,
     "name": "RESO SWP",
-    "lufs": -29.07984094377065,
-    "true_peak_dbtp": -14.87069590940143
+    "lufs": -29.04743707831607,
+    "true_peak_dbtp": -14.886757080453838
   },
   {
     "engine": 13,
@@ -2894,7 +3470,7 @@
     "role": 3,
     "trim": -40,
     "name": "FOLD LEAD",
-    "lufs": -29.159901782478936,
+    "lufs": -29.160060089735385,
     "true_peak_dbtp": -21.876836749724124
   },
   {
@@ -2903,8 +3479,8 @@
     "role": 3,
     "trim": -41,
     "name": "CZ WAVE",
-    "lufs": -28.948916480189926,
-    "true_peak_dbtp": -23.384240487900463
+    "lufs": -28.889888793677343,
+    "true_peak_dbtp": -23.44517188668838
   },
   {
     "engine": 13,
@@ -2912,7 +3488,7 @@
     "role": 3,
     "trim": -37,
     "name": "CHIP WT",
-    "lufs": -29.05098288931642,
+    "lufs": -29.050981222133075,
     "true_peak_dbtp": -22.680456241155355
   },
   {
@@ -2921,8 +3497,8 @@
     "role": 1,
     "trim": -54,
     "name": "ORGAN WT",
-    "lufs": -28.963557138519125,
-    "true_peak_dbtp": -18.82561068335946
+    "lufs": -28.95614072413373,
+    "true_peak_dbtp": -18.079786591232413
   },
   {
     "engine": 13,
@@ -2930,8 +3506,8 @@
     "role": 3,
     "trim": -37,
     "name": "HARMONICS",
-    "lufs": -29.040745283966583,
-    "true_peak_dbtp": -19.99924523760725
+    "lufs": -29.0897191748136,
+    "true_peak_dbtp": -21.240163473646145
   },
   {
     "engine": 13,
@@ -2939,8 +3515,8 @@
     "role": 1,
     "trim": -49,
     "name": "COMB PAD",
-    "lufs": -29.00301317147346,
-    "true_peak_dbtp": -19.414668577809444
+    "lufs": -29.083743429941514,
+    "true_peak_dbtp": -20.02846832252682
   },
   {
     "engine": 13,
@@ -2948,8 +3524,8 @@
     "role": 1,
     "trim": -49,
     "name": "PWM STR",
-    "lufs": -29.146396647888995,
-    "true_peak_dbtp": -16.11976873315838
+    "lufs": -29.22597663326707,
+    "true_peak_dbtp": -17.9404166565929
   },
   {
     "engine": 13,
@@ -2966,7 +3542,7 @@
     "role": 0,
     "trim": -33,
     "name": "WT BASS",
-    "lufs": -29.025639797103427,
+    "lufs": -29.02562598436831,
     "true_peak_dbtp": -15.906387451859125
   },
   {
@@ -2975,8 +3551,8 @@
     "role": 1,
     "trim": -42,
     "name": "VOCAL PAD",
-    "lufs": -29.10070875547925,
-    "true_peak_dbtp": -18.979436947065032
+    "lufs": -29.130792542502107,
+    "true_peak_dbtp": -19.25224638007472
   },
   {
     "engine": 13,
@@ -2984,7 +3560,7 @@
     "role": 3,
     "trim": -33,
     "name": "ODD LEAD",
-    "lufs": -29.23730471328196,
+    "lufs": -29.249335618737806,
     "true_peak_dbtp": -14.026139838042038
   },
   {
@@ -2993,8 +3569,8 @@
     "role": 3,
     "trim": -40,
     "name": "FM BELLS",
-    "lufs": -28.83562235238178,
-    "true_peak_dbtp": -21.341717990316468
+    "lufs": -28.849769585005816,
+    "true_peak_dbtp": -21.394501038842293
   },
   {
     "engine": 13,
@@ -3002,7 +3578,7 @@
     "role": 2,
     "trim": -46,
     "name": "PD KEYS",
-    "lufs": -28.866346314414965,
+    "lufs": -28.969792475743365,
     "true_peak_dbtp": -5.201399725041242
   },
   {
@@ -3011,8 +3587,8 @@
     "role": 1,
     "trim": -26,
     "name": "DIGI PAD",
-    "lufs": -29.0299883649382,
-    "true_peak_dbtp": -15.599023563068233
+    "lufs": -29.06135219739064,
+    "true_peak_dbtp": -15.389224049254988
   },
   {
     "engine": 13,
@@ -3020,7 +3596,7 @@
     "role": 0,
     "trim": -29,
     "name": "CHIP BASS",
-    "lufs": -29.186933833312185,
+    "lufs": -29.186882837544342,
     "true_peak_dbtp": -14.189377235486
   },
   {
@@ -3029,8 +3605,8 @@
     "role": 1,
     "trim": -48,
     "name": "WT ORGAN2",
-    "lufs": -29.079968276590787,
-    "true_peak_dbtp": -19.130030274694374
+    "lufs": -29.058255084648028,
+    "true_peak_dbtp": -18.897073826367688
   },
   {
     "engine": 13,
@@ -3038,7 +3614,7 @@
     "role": 3,
     "trim": -39,
     "name": "SYNC SCREAM",
-    "lufs": -29.166590776741877,
+    "lufs": -29.160644785989575,
     "true_peak_dbtp": -26.96725551776332
   },
   {
@@ -3047,8 +3623,8 @@
     "role": 3,
     "trim": -37,
     "name": "COMB BELL",
-    "lufs": -29.043529309009582,
-    "true_peak_dbtp": -20.551817851648913
+    "lufs": -29.021563986958967,
+    "true_peak_dbtp": -20.532697210529832
   },
   {
     "engine": 13,
@@ -3056,7 +3632,7 @@
     "role": 3,
     "trim": -42,
     "name": "WT SUPER",
-    "lufs": -29.054665160602415,
+    "lufs": -28.944905837678736,
     "true_peak_dbtp": -12.66079872933826
   },
   {
@@ -3065,8 +3641,8 @@
     "role": 1,
     "trim": -49,
     "name": "HARM PAD",
-    "lufs": -29.02011911345768,
-    "true_peak_dbtp": -19.468843409389663
+    "lufs": -28.992975241494385,
+    "true_peak_dbtp": -18.8483620210789
   },
   {
     "engine": 14,
@@ -3074,7 +3650,7 @@
     "role": 0,
     "trim": -37,
     "name": "ACID LINE",
-    "lufs": -28.8962161397537,
+    "lufs": -28.896215977316746,
     "true_peak_dbtp": -9.634996214424296
   },
   {
@@ -3110,8 +3686,8 @@
     "role": 0,
     "trim": -32,
     "name": "RUBBER",
-    "lufs": -28.824995903867855,
-    "true_peak_dbtp": -18.632694939076245
+    "lufs": -28.813593552049582,
+    "true_peak_dbtp": -18.825162515732274
   },
   {
     "engine": 14,
@@ -3128,8 +3704,8 @@
     "role": 3,
     "trim": -38,
     "name": "ACID LEAD",
-    "lufs": -29.06231040529464,
-    "true_peak_dbtp": -21.94894531133808
+    "lufs": -29.106580584214516,
+    "true_peak_dbtp": -21.91757688909408
   },
   {
     "engine": 14,
@@ -3137,7 +3713,7 @@
     "role": 0,
     "trim": -25,
     "name": "BUBBLE",
-    "lufs": -29.246795051959058,
+    "lufs": -29.246794337982436,
     "true_peak_dbtp": -17.664454798978948
   },
   {
@@ -3164,8 +3740,8 @@
     "role": 0,
     "trim": -36,
     "name": "SOFT 303",
-    "lufs": -29.079949924102426,
-    "true_peak_dbtp": -20.157150522635018
+    "lufs": -29.122398471051167,
+    "true_peak_dbtp": -19.962193854510197
   },
   {
     "engine": 14,
@@ -3173,7 +3749,7 @@
     "role": 0,
     "trim": -37,
     "name": "ACID ARP",
-    "lufs": -29.157549963875436,
+    "lufs": -29.157546024824715,
     "true_peak_dbtp": -20.833731922871923
   },
   {
@@ -3209,7 +3785,7 @@
     "role": 3,
     "trim": -40,
     "name": "SQR LEAD",
-    "lufs": -29.0798060565926,
+    "lufs": -29.112599198103815,
     "true_peak_dbtp": -24.224263177445273
   },
   {
@@ -3218,8 +3794,8 @@
     "role": 0,
     "trim": -31,
     "name": "BALKAN PUL",
-    "lufs": -29.17686205262563,
-    "true_peak_dbtp": -21.378943288600027
+    "lufs": -29.1768654208049,
+    "true_peak_dbtp": -21.403849082404392
   },
   {
     "engine": 15,
@@ -3227,8 +3803,8 @@
     "role": 1,
     "trim": -38,
     "name": "SOLINA",
-    "lufs": -28.8594549733351,
-    "true_peak_dbtp": -17.174854464489847
+    "lufs": -28.877091820819377,
+    "true_peak_dbtp": -17.0401215062723
   },
   {
     "engine": 15,
@@ -3236,8 +3812,8 @@
     "role": 1,
     "trim": -39,
     "name": "VIOLINS",
-    "lufs": -29.244315555542848,
-    "true_peak_dbtp": -17.898149940479573
+    "lufs": -29.25063355858254,
+    "true_peak_dbtp": -17.906450316578603
   },
   {
     "engine": 15,
@@ -3245,8 +3821,8 @@
     "role": 1,
     "trim": -35,
     "name": "CELLOS",
-    "lufs": -28.929060250782516,
-    "true_peak_dbtp": -17.241151460851952
+    "lufs": -28.934295289792658,
+    "true_peak_dbtp": -17.505776485837206
   },
   {
     "engine": 15,
@@ -3254,8 +3830,8 @@
     "role": 1,
     "trim": -41,
     "name": "ENSEMBLE",
-    "lufs": -28.75503182138716,
-    "true_peak_dbtp": -17.85068124491655
+    "lufs": -28.7565618307342,
+    "true_peak_dbtp": -17.89851954147317
   },
   {
     "engine": 15,
@@ -3263,8 +3839,8 @@
     "role": 1,
     "trim": -37,
     "name": "STR MACHINE",
-    "lufs": -28.904708665038928,
-    "true_peak_dbtp": -15.497796930525707
+    "lufs": -28.928644798669573,
+    "true_peak_dbtp": -15.641461631133405
   },
   {
     "engine": 15,
@@ -3272,8 +3848,8 @@
     "role": 1,
     "trim": -37,
     "name": "GLASS STR",
-    "lufs": -29.044347534493145,
-    "true_peak_dbtp": -18.00974447852304
+    "lufs": -29.052097247062566,
+    "true_peak_dbtp": -18.337897333533625
   },
   {
     "engine": 15,
@@ -3281,8 +3857,8 @@
     "role": 1,
     "trim": -35,
     "name": "DARK ENS",
-    "lufs": -29.019683992952466,
-    "true_peak_dbtp": -18.094526895320865
+    "lufs": -29.015903951471216,
+    "true_peak_dbtp": -18.43110516157257
   },
   {
     "engine": 15,
@@ -3299,8 +3875,8 @@
     "role": 1,
     "trim": -41,
     "name": "OMNI STR",
-    "lufs": -29.202908113981017,
-    "true_peak_dbtp": -18.00974447852304
+    "lufs": -29.202621830648205,
+    "true_peak_dbtp": -17.961366714115726
   },
   {
     "engine": 15,
@@ -3308,8 +3884,8 @@
     "role": 1,
     "trim": -34,
     "name": "SLOW STR",
-    "lufs": -28.91970787912913,
-    "true_peak_dbtp": -14.13250029935518
+    "lufs": -28.92104598430664,
+    "true_peak_dbtp": -14.092656393129552
   },
   {
     "engine": 15,
@@ -3326,8 +3902,8 @@
     "role": 1,
     "trim": -34,
     "name": "CHOIR STR",
-    "lufs": -29.0276504668221,
-    "true_peak_dbtp": -19.064756057887664
+    "lufs": -29.03300834029726,
+    "true_peak_dbtp": -19.00220485242248
   },
   {
     "engine": 15,
@@ -3344,8 +3920,8 @@
     "role": 1,
     "trim": -33,
     "name": "LOW STR",
-    "lufs": -28.89508980121072,
-    "true_peak_dbtp": -15.430808735591928
+    "lufs": -28.88728917062447,
+    "true_peak_dbtp": -15.346062685881215
   },
   {
     "engine": 15,
@@ -3353,8 +3929,8 @@
     "role": 1,
     "trim": -36,
     "name": "80S STR",
-    "lufs": -29.01311167440075,
-    "true_peak_dbtp": -17.191011237228345
+    "lufs": -28.977764891317324,
+    "true_peak_dbtp": -17.565693184487305
   },
   {
     "engine": 15,
@@ -3362,8 +3938,8 @@
     "role": 1,
     "trim": -36,
     "name": "TAPE STR",
-    "lufs": -28.96539172625475,
-    "true_peak_dbtp": -19.443763906968645
+    "lufs": -28.972137134036412,
+    "true_peak_dbtp": -19.510607546983003
   },
   {
     "engine": 15,
@@ -3380,8 +3956,8 @@
     "role": 1,
     "trim": -34,
     "name": "TURK ENSEM",
-    "lufs": -28.955543214186193,
-    "true_peak_dbtp": -17.13370369798295
+    "lufs": -28.959895173811297,
+    "true_peak_dbtp": -17.256610222908996
   },
   {
     "engine": 15,
@@ -3389,8 +3965,8 @@
     "role": 1,
     "trim": -31,
     "name": "PERSIAN ST",
-    "lufs": -28.90401854854645,
-    "true_peak_dbtp": -16.739285561272933
+    "lufs": -28.900591302569037,
+    "true_peak_dbtp": -16.665052632502686
   },
   {
     "engine": 15,
@@ -3398,8 +3974,8 @@
     "role": 1,
     "trim": -29,
     "name": "SILK ENSEM",
-    "lufs": -28.758932061401353,
-    "true_peak_dbtp": -14.77962102922185
+    "lufs": -28.763009110473437,
+    "true_peak_dbtp": -14.739193606825609
   },
   {
     "engine": 16,
@@ -3407,7 +3983,7 @@
     "role": 4,
     "trim": -28,
     "name": "CHORD STAB",
-    "lufs": -29.039636120796317,
+    "lufs": -29.013934840572436,
     "true_peak_dbtp": -6.83846756147866
   },
   {
@@ -3416,7 +3992,7 @@
     "role": 4,
     "trim": -32,
     "name": "MAJ7 KEYS",
-    "lufs": -29.020369758673816,
+    "lufs": -29.043027895086993,
     "true_peak_dbtp": -14.565201999431807
   },
   {
@@ -3425,8 +4001,8 @@
     "role": 4,
     "trim": -41,
     "name": "M9 PAD",
-    "lufs": -29.02555720511319,
-    "true_peak_dbtp": -15.602986395688092
+    "lufs": -29.22399470877419,
+    "true_peak_dbtp": -16.251414497354745
   },
   {
     "engine": 16,
@@ -3434,8 +4010,8 @@
     "role": 3,
     "trim": -50,
     "name": "SWARM",
-    "lufs": -28.71983346857939,
-    "true_peak_dbtp": -19.320952789001065
+    "lufs": -28.706243740755514,
+    "true_peak_dbtp": -19.460975976388838
   },
   {
     "engine": 16,
@@ -3443,7 +4019,7 @@
     "role": 0,
     "trim": -26,
     "name": "SWARM SUB",
-    "lufs": -29.06094020429078,
+    "lufs": -29.06093822251127,
     "true_peak_dbtp": -15.944925892548554
   },
   {
@@ -3452,7 +4028,7 @@
     "role": 3,
     "trim": -45,
     "name": "ADDITIVE",
-    "lufs": -29.05529159420906,
+    "lufs": -29.035969470184952,
     "true_peak_dbtp": -18.501555705714345
   },
   {
@@ -3461,8 +4037,8 @@
     "role": 3,
     "trim": -46,
     "name": "HARMONIUM",
-    "lufs": -29.05898939070337,
-    "true_peak_dbtp": -23.534341452071192
+    "lufs": -29.049140983033165,
+    "true_peak_dbtp": -23.50586658795192
   },
   {
     "engine": 16,
@@ -3470,7 +4046,7 @@
     "role": 3,
     "trim": -25,
     "name": "BELL TONE",
-    "lufs": -29.24696285683483,
+    "lufs": -29.24784147685268,
     "true_peak_dbtp": -11.49413777089271
   },
   {
@@ -3488,8 +4064,8 @@
     "role": 3,
     "trim": -42,
     "name": "YEAH",
-    "lufs": -28.971599177169878,
-    "true_peak_dbtp": -5.20113676464071
+    "lufs": -28.963085411358374,
+    "true_peak_dbtp": -5.201399725041242
   },
   {
     "engine": 16,
@@ -3497,8 +4073,8 @@
     "role": 0,
     "trim": -25,
     "name": "WOW BASS",
-    "lufs": -28.89221595082153,
-    "true_peak_dbtp": -19.456923668683803
+    "lufs": -28.92180203521909,
+    "true_peak_dbtp": -19.735422565090943
   },
   {
     "engine": 16,
@@ -3506,8 +4082,8 @@
     "role": 1,
     "trim": -55,
     "name": "VOWELS",
-    "lufs": -28.854292609734856,
-    "true_peak_dbtp": -12.09205035453812
+    "lufs": -28.962886369779046,
+    "true_peak_dbtp": -11.413634967291873
   },
   {
     "engine": 16,
@@ -3515,8 +4091,8 @@
     "role": 4,
     "trim": -31,
     "name": "HOUSE CHRD",
-    "lufs": -28.808589757886775,
-    "true_peak_dbtp": -14.609455363132835
+    "lufs": -28.794910488071864,
+    "true_peak_dbtp": -14.609297766113885
   },
   {
     "engine": 16,
@@ -3524,8 +4100,8 @@
     "role": 4,
     "trim": -42,
     "name": "SUS PAD",
-    "lufs": -29.03325023832179,
-    "true_peak_dbtp": -16.572533342903164
+    "lufs": -29.170326226703796,
+    "true_peak_dbtp": -17.2472861140699
   },
   {
     "engine": 16,
@@ -3533,7 +4109,7 @@
     "role": 4,
     "trim": -33,
     "name": "6/9 KEYS",
-    "lufs": -28.974589289488083,
+    "lufs": -28.984335194295177,
     "true_peak_dbtp": -5.372602826173622
   },
   {
@@ -3551,8 +4127,8 @@
     "role": 4,
     "trim": -40,
     "name": "M11 PAD",
-    "lufs": -28.94854722212752,
-    "true_peak_dbtp": -16.191343491297822
+    "lufs": -28.947154462800487,
+    "true_peak_dbtp": -15.88705968875641
   },
   {
     "engine": 16,
@@ -3560,8 +4136,8 @@
     "role": 1,
     "trim": -53,
     "name": "SWARM PAD",
-    "lufs": -29.171302466795012,
-    "true_peak_dbtp": -19.293124995006366
+    "lufs": -29.179238440321615,
+    "true_peak_dbtp": -19.480932418945084
   },
   {
     "engine": 16,
@@ -3569,7 +4145,7 @@
     "role": 3,
     "trim": -47,
     "name": "SWARM LEAD",
-    "lufs": -29.249732480246305,
+    "lufs": -29.24972761225929,
     "true_peak_dbtp": -7.719344169212706
   },
   {
@@ -3578,8 +4154,8 @@
     "role": 1,
     "trim": -55,
     "name": "ORGAN ADD",
-    "lufs": -28.91386125115235,
-    "true_peak_dbtp": -19.045723698285705
+    "lufs": -28.920070687716503,
+    "true_peak_dbtp": -18.94883207320191
   },
   {
     "engine": 16,
@@ -3587,7 +4163,7 @@
     "role": 3,
     "trim": -21,
     "name": "ADD BELL",
-    "lufs": -29.2433685950171,
+    "lufs": -29.24451686973926,
     "true_peak_dbtp": -9.831015526583153
   },
   {
@@ -3596,8 +4172,8 @@
     "role": 0,
     "trim": -25,
     "name": "TALK BASS",
-    "lufs": -28.85309945255649,
-    "true_peak_dbtp": -16.993184811977823
+    "lufs": -28.87322972383439,
+    "true_peak_dbtp": -16.997841009581922
   },
   {
     "engine": 16,
@@ -3605,7 +4181,7 @@
     "role": 3,
     "trim": -44,
     "name": "MAMA",
-    "lufs": -28.989207137160708,
+    "lufs": -29.018003686231108,
     "true_peak_dbtp": -6.967766929454633
   },
   {
@@ -3614,8 +4190,8 @@
     "role": 3,
     "trim": -35,
     "name": "OI LEAD",
-    "lufs": -29.022042191180912,
-    "true_peak_dbtp": -16.927427605651403
+    "lufs": -29.034769994670608,
+    "true_peak_dbtp": -16.907747595829345
   },
   {
     "engine": 17,
@@ -3632,8 +4208,8 @@
     "role": 1,
     "trim": -64,
     "name": "FORMANT PAD",
-    "lufs": -28.89533520267945,
-    "true_peak_dbtp": -22.313276644685402
+    "lufs": -28.896177890035034,
+    "true_peak_dbtp": -21.980650700796712
   },
   {
     "engine": 17,
@@ -3668,8 +4244,8 @@
     "role": 2,
     "trim": -59,
     "name": "HOLLOW KEYS",
-    "lufs": -28.963409603923136,
-    "true_peak_dbtp": -18.139464860079816
+    "lufs": -28.949693988433324,
+    "true_peak_dbtp": -18.038870264728878
   },
   {
     "engine": 17,
@@ -3677,8 +4253,8 @@
     "role": 2,
     "trim": -60,
     "name": "DIGI BRASS",
-    "lufs": -28.586543916368075,
-    "true_peak_dbtp": -19.11970754406778
+    "lufs": -28.590808799093537,
+    "true_peak_dbtp": -19.11731110602304
   },
   {
     "engine": 17,
@@ -3686,7 +4262,7 @@
     "role": 3,
     "trim": -46,
     "name": "VPS BELL",
-    "lufs": -28.845762046770165,
+    "lufs": -28.845749442032588,
     "true_peak_dbtp": -20.606838970175694
   },
   {
@@ -3704,8 +4280,8 @@
     "role": 1,
     "trim": -61,
     "name": "VPS CHOIR",
-    "lufs": -28.82548460853747,
-    "true_peak_dbtp": -22.54675652673302
+    "lufs": -28.847193022038393,
+    "true_peak_dbtp": -21.730046017667167
   },
   {
     "engine": 17,
@@ -3713,7 +4289,7 @@
     "role": 3,
     "trim": -44,
     "name": "TURK SOLO",
-    "lufs": -28.797696314094605,
+    "lufs": -28.797751349766806,
     "true_peak_dbtp": -8.00756168821314
   },
   {
@@ -3722,8 +4298,8 @@
     "role": 1,
     "trim": -50,
     "name": "TERRAIN",
-    "lufs": -29.16817297078077,
-    "true_peak_dbtp": -20.662518582068707
+    "lufs": -29.163316642210766,
+    "true_peak_dbtp": -20.203186522481147
   },
   {
     "engine": 18,
@@ -3731,8 +4307,8 @@
     "role": 1,
     "trim": -59,
     "name": "RIPPLE PAD",
-    "lufs": -28.842338324186645,
-    "true_peak_dbtp": -19.320952789001065
+    "lufs": -28.81554563242387,
+    "true_peak_dbtp": -19.559686799290397
   },
   {
     "engine": 18,
@@ -3740,7 +4316,7 @@
     "role": 3,
     "trim": -30,
     "name": "CRYSTAL",
-    "lufs": -29.005392245572153,
+    "lufs": -28.993787413266705,
     "true_peak_dbtp": -5.895555759531373
   },
   {
@@ -3767,8 +4343,8 @@
     "role": 1,
     "trim": -64,
     "name": "FOLD DRONE",
-    "lufs": -28.925636831869237,
-    "true_peak_dbtp": -19.23292699686655
+    "lufs": -28.93593534208777,
+    "true_peak_dbtp": -19.552126181109784
   },
   {
     "engine": 18,
@@ -3776,7 +4352,7 @@
     "role": 3,
     "trim": -51,
     "name": "TWISTER",
-    "lufs": -29.158491370833854,
+    "lufs": -29.143343498930125,
     "true_peak_dbtp": -13.624259115877322
   },
   {
@@ -3794,7 +4370,7 @@
     "role": 2,
     "trim": -30,
     "name": "ORBIT KEYS",
-    "lufs": -28.96638053475932,
+    "lufs": -28.967529216073686,
     "true_peak_dbtp": -5.5591335440032585
   },
   {
@@ -3803,7 +4379,7 @@
     "role": 3,
     "trim": -33,
     "name": "TERRA PLUCK",
-    "lufs": -28.84648576978031,
+    "lufs": -28.845755020553387,
     "true_peak_dbtp": -16.160587557314386
   },
   {
@@ -3812,8 +4388,8 @@
     "role": 3,
     "trim": -34,
     "name": "FMX EP",
-    "lufs": -28.747337530855333,
-    "true_peak_dbtp": -19.60977177461216
+    "lufs": -28.812793209676027,
+    "true_peak_dbtp": -19.261721079668842
   },
   {
     "engine": 19,
@@ -3821,8 +4397,8 @@
     "role": 3,
     "trim": -39,
     "name": "FMX BELL",
-    "lufs": -29.13762018017115,
-    "true_peak_dbtp": -21.538955172072697
+    "lufs": -29.14101810244065,
+    "true_peak_dbtp": -21.77975481927306
   },
   {
     "engine": 19,
@@ -3830,7 +4406,7 @@
     "role": 0,
     "trim": -18,
     "name": "SAW FM BASS",
-    "lufs": -29.23857936721392,
+    "lufs": -29.238601271059338,
     "true_peak_dbtp": -16.026570140471573
   },
   {
@@ -3839,8 +4415,8 @@
     "role": 2,
     "trim": -51,
     "name": "FMX BRASS",
-    "lufs": -29.12019148800579,
-    "true_peak_dbtp": -18.411201140961328
+    "lufs": -29.19367827125507,
+    "true_peak_dbtp": -18.433319537527982
   },
   {
     "engine": 19,
@@ -3848,8 +4424,8 @@
     "role": 1,
     "trim": -44,
     "name": "FMX ORGAN",
-    "lufs": -28.921898307421028,
-    "true_peak_dbtp": -24.589583679580418
+    "lufs": -28.9251334378806,
+    "true_peak_dbtp": -24.66420368297773
   },
   {
     "engine": 19,
@@ -3857,8 +4433,8 @@
     "role": 3,
     "trim": -15,
     "name": "RING BELLS",
-    "lufs": -29.18948615206982,
-    "true_peak_dbtp": -16.592566315345653
+    "lufs": -29.163304986001602,
+    "true_peak_dbtp": -16.56160296155636
   },
   {
     "engine": 19,
@@ -3866,8 +4442,8 @@
     "role": 3,
     "trim": -29,
     "name": "TRUE FM GRWL",
-    "lufs": -29.20821417845926,
-    "true_peak_dbtp": -25.30089010295046
+    "lufs": -29.206744731646552,
+    "true_peak_dbtp": -25.523239702954577
   },
   {
     "engine": 19,
@@ -3875,7 +4451,7 @@
     "role": 3,
     "trim": -33,
     "name": "CHIP FM LEAD",
-    "lufs": -29.153731626597786,
+    "lufs": -29.16104724216292,
     "true_peak_dbtp": -24.848924101638303
   },
   {
@@ -3884,17 +4460,17 @@
     "role": 2,
     "trim": -30,
     "name": "OPL KEYS",
-    "lufs": -28.864456102056298,
-    "true_peak_dbtp": -13.236809224116586
+    "lufs": -28.951894272859118,
+    "true_peak_dbtp": -13.442299721488096
   },
   {
     "engine": 19,
     "preset": 9,
     "role": 1,
-    "trim": -51,
+    "trim": -50,
     "name": "FMX PAD",
-    "lufs": -28.851735859429525,
-    "true_peak_dbtp": -19.409710878109742
+    "lufs": -28.809876988572118,
+    "true_peak_dbtp": -19.21611130436154
   },
   {
     "engine": 19,
@@ -3902,8 +4478,8 @@
     "role": 3,
     "trim": -28,
     "name": "FM KICK",
-    "lufs": -29.06039526787528,
-    "true_peak_dbtp": -7.829734757109302
+    "lufs": -29.062232860685324,
+    "true_peak_dbtp": -7.994111897467864
   },
   {
     "engine": 19,
@@ -3911,7 +4487,7 @@
     "role": 3,
     "trim": -25,
     "name": "METAL HIT",
-    "lufs": -29.04319745874276,
+    "lufs": -29.05324355989751,
     "true_peak_dbtp": -17.125342190682023
   },
   {
@@ -3920,8 +4496,8 @@
     "role": 3,
     "trim": -24,
     "name": "FM SYNC LEAD",
-    "lufs": -29.07921474843387,
-    "true_peak_dbtp": -24.993937007863195
+    "lufs": -29.069682170747175,
+    "true_peak_dbtp": -24.94553946919944
   },
   {
     "engine": 19,
@@ -3929,7 +4505,7 @@
     "role": 3,
     "trim": -18,
     "name": "FMX PLUCK",
-    "lufs": -28.871107479670492,
+    "lufs": -28.918697031025953,
     "true_peak_dbtp": -15.274809687776338
   },
   {
@@ -3947,8 +4523,8 @@
     "role": 3,
     "trim": -41,
     "name": "CASCADE",
-    "lufs": -29.23457729309477,
-    "true_peak_dbtp": -24.71926107213539
+    "lufs": -29.196286984236362,
+    "true_peak_dbtp": -24.98932289045108
   },
   {
     "engine": 19,
@@ -3956,7 +4532,7 @@
     "role": 3,
     "trim": -36,
     "name": "GOLDEN REE",
-    "lufs": -29.086815710119755,
+    "lufs": -29.086966893841534,
     "true_peak_dbtp": -25.502475881910335
   },
   {
@@ -3965,7 +4541,7 @@
     "role": 3,
     "trim": -55,
     "name": "WAVE STEPS",
-    "lufs": -29.154161179289993,
+    "lufs": -29.181185061185975,
     "true_peak_dbtp": -23.43923952056834
   },
   {
@@ -3974,8 +4550,8 @@
     "role": 3,
     "trim": -51,
     "name": "RHYTHM SEQ",
-    "lufs": -29.16265534038242,
-    "true_peak_dbtp": -24.311732108381516
+    "lufs": -29.13632001758481,
+    "true_peak_dbtp": -24.302017931362574
   },
   {
     "engine": 20,
@@ -3983,17 +4559,17 @@
     "role": 1,
     "trim": -59,
     "name": "SWEEP PAD",
-    "lufs": -28.818832481922012,
-    "true_peak_dbtp": -17.801339816093936
+    "lufs": -28.84749587813743,
+    "true_peak_dbtp": -17.925684065188243
   },
   {
     "engine": 20,
     "preset": 3,
     "role": 4,
-    "trim": -44,
+    "trim": -45,
     "name": "FIFTH STAB",
-    "lufs": -28.79659340346017,
-    "true_peak_dbtp": -5.60958318131893
+    "lufs": -29.192714217356862,
+    "true_peak_dbtp": -5.625789148845575
   },
   {
     "engine": 20,
@@ -4001,17 +4577,17 @@
     "role": 3,
     "trim": -53,
     "name": "MINOR SEQ",
-    "lufs": -29.237671297168568,
-    "true_peak_dbtp": -23.82605919335311
+    "lufs": -29.2117325331999,
+    "true_peak_dbtp": -24.230150088368884
   },
   {
     "engine": 20,
     "preset": 5,
     "role": 3,
-    "trim": -59,
+    "trim": -58,
     "name": "MAJOR SEQ",
-    "lufs": -29.195433808760004,
-    "true_peak_dbtp": -26.89948441681773
+    "lufs": -28.808231640111504,
+    "true_peak_dbtp": -26.82967554590913
   },
   {
     "engine": 20,
@@ -4028,8 +4604,8 @@
     "role": 3,
     "trim": -50,
     "name": "TRANCE GATE",
-    "lufs": -29.18837944095323,
-    "true_peak_dbtp": -22.622211329551895
+    "lufs": -29.213960715768447,
+    "true_peak_dbtp": -22.643799992156364
   },
   {
     "engine": 20,
@@ -4037,8 +4613,8 @@
     "role": 3,
     "trim": -51,
     "name": "BELL STEPS",
-    "lufs": -29.21912897086079,
-    "true_peak_dbtp": -23.33326577934734
+    "lufs": -29.23135007276833,
+    "true_peak_dbtp": -23.301642456632294
   },
   {
     "engine": 20,
@@ -4046,7 +4622,7 @@
     "role": 3,
     "trim": -55,
     "name": "8BIT SEQ",
-    "lufs": -28.96475477782915,
+    "lufs": -28.96476980923615,
     "true_peak_dbtp": -25.554698161578372
   },
   {
@@ -4055,17 +4631,17 @@
     "role": 1,
     "trim": -61,
     "name": "MORPH PAD",
-    "lufs": -29.09821944385446,
-    "true_peak_dbtp": -19.07413872592032
+    "lufs": -29.076535214150706,
+    "true_peak_dbtp": -19.172597154492998
   },
   {
     "engine": 20,
     "preset": 11,
     "role": 3,
-    "trim": -46,
+    "trim": -47,
     "name": "VOX STEPS",
-    "lufs": -28.793097514171613,
-    "true_peak_dbtp": -7.077119779888577
+    "lufs": -29.236350086661822,
+    "true_peak_dbtp": -7.127758855708816
   },
   {
     "engine": 20,
@@ -4073,8 +4649,8 @@
     "role": 3,
     "trim": -50,
     "name": "NOISY SEQ",
-    "lufs": -29.11560972840265,
-    "true_peak_dbtp": -23.89761602981085
+    "lufs": -29.116819045323233,
+    "true_peak_dbtp": -23.791664597907626
   },
   {
     "engine": 20,
@@ -4091,7 +4667,7 @@
     "role": 3,
     "trim": -51,
     "name": "DORIAN RUN",
-    "lufs": -28.927203966353396,
+    "lufs": -28.91509401612893,
     "true_peak_dbtp": -25.166113391452136
   },
   {
@@ -4100,8 +4676,8 @@
     "role": 3,
     "trim": -50,
     "name": "PING PONG",
-    "lufs": -28.920095094410094,
-    "true_peak_dbtp": -23.515744204524065
+    "lufs": -28.919362256503423,
+    "true_peak_dbtp": -23.587313381565316
   },
   {
     "engine": 21,
@@ -4109,8 +4685,8 @@
     "role": 1,
     "trim": -43,
     "name": "JUNO 106 PAD",
-    "lufs": -28.9951643567272,
-    "true_peak_dbtp": -18.869294687989537
+    "lufs": -28.943874156807496,
+    "true_peak_dbtp": -17.791387368680308
   },
   {
     "engine": 21,
@@ -4118,8 +4694,8 @@
     "role": 2,
     "trim": -39,
     "name": "JUNO BRASS",
-    "lufs": -29.182710769836522,
-    "true_peak_dbtp": -10.607356706540639
+    "lufs": -29.113683637473937,
+    "true_peak_dbtp": -12.430723120381575
   },
   {
     "engine": 21,
@@ -4127,8 +4703,8 @@
     "role": 0,
     "trim": -23,
     "name": "JUNO BASS",
-    "lufs": -29.06295556586806,
-    "true_peak_dbtp": -18.506889546108695
+    "lufs": -28.99177590592041,
+    "true_peak_dbtp": -18.544764351436168
   },
   {
     "engine": 21,
@@ -4136,8 +4712,8 @@
     "role": 1,
     "trim": -42,
     "name": "JUNO STRINGS",
-    "lufs": -28.932376706160266,
-    "true_peak_dbtp": -18.767218449422593
+    "lufs": -28.918944613848236,
+    "true_peak_dbtp": -17.488565604641405
   },
   {
     "engine": 21,
@@ -4145,8 +4721,8 @@
     "role": 2,
     "trim": -37,
     "name": "POLY KEYS",
-    "lufs": -28.926026264424923,
-    "true_peak_dbtp": -9.248493458173844
+    "lufs": -29.010441219662912,
+    "true_peak_dbtp": -11.316993748892887
   },
   {
     "engine": 21,
@@ -4154,8 +4730,8 @@
     "role": 3,
     "trim": -32,
     "name": "SYNTHWAVE LD",
-    "lufs": -28.852889463650683,
-    "true_peak_dbtp": -21.50103926040721
+    "lufs": -28.850067203740185,
+    "true_peak_dbtp": -21.554802448203866
   },
   {
     "engine": 21,
@@ -4163,8 +4739,8 @@
     "role": 3,
     "trim": -8,
     "name": "80S HITS",
-    "lufs": -28.77298874989631,
-    "true_peak_dbtp": -11.078919138643775
+    "lufs": -28.79987113684542,
+    "true_peak_dbtp": -10.903046007595973
   },
   {
     "engine": 21,
@@ -4172,8 +4748,8 @@
     "role": 2,
     "trim": -23,
     "name": "JUNO PIANO",
-    "lufs": -28.835655829110575,
-    "true_peak_dbtp": -12.2884841629417
+    "lufs": -28.835345659040726,
+    "true_peak_dbtp": -13.45360458344171
   },
   {
     "engine": 21,
@@ -4181,8 +4757,8 @@
     "role": 1,
     "trim": -37,
     "name": "DREAM PAD",
-    "lufs": -28.781732808161394,
-    "true_peak_dbtp": -17.007029055184894
+    "lufs": -28.866630223830015,
+    "true_peak_dbtp": -18.647429751043543
   },
   {
     "engine": 21,
@@ -4190,8 +4766,8 @@
     "role": 0,
     "trim": -31,
     "name": "SUB BASS 106",
-    "lufs": -28.981542378211948,
-    "true_peak_dbtp": -19.747077857038423
+    "lufs": -28.993892910039026,
+    "true_peak_dbtp": -20.238555894861037
   },
   {
     "engine": 21,
@@ -4199,8 +4775,8 @@
     "role": 2,
     "trim": -40,
     "name": "SYNTH BRASS 2",
-    "lufs": -29.144639675727937,
-    "true_peak_dbtp": -17.833400412664094
+    "lufs": -29.236052646996573,
+    "true_peak_dbtp": -18.049912957833254
   },
   {
     "engine": 21,
@@ -4208,8 +4784,8 @@
     "role": 3,
     "trim": -1,
     "name": "ARP PLUCK",
-    "lufs": -28.990535463421907,
-    "true_peak_dbtp": -8.058075955817877
+    "lufs": -28.98393499412893,
+    "true_peak_dbtp": -7.439686156730389
   },
   {
     "engine": 21,
@@ -4217,8 +4793,8 @@
     "role": 3,
     "trim": -32,
     "name": "NOISE SWEEP",
-    "lufs": -29.058723992849924,
-    "true_peak_dbtp": -19.703343713849666
+    "lufs": -28.904298232446457,
+    "true_peak_dbtp": -18.795095499876087
   },
   {
     "engine": 21,
@@ -4226,8 +4802,8 @@
     "role": 1,
     "trim": -42,
     "name": "JUNO ORGAN",
-    "lufs": -29.040456727993668,
-    "true_peak_dbtp": -8.86227259581597
+    "lufs": -28.998551591023794,
+    "true_peak_dbtp": -11.90719124771691
   },
   {
     "engine": 21,
@@ -4235,8 +4811,8 @@
     "role": 3,
     "trim": -29,
     "name": "SAW LEAD 106",
-    "lufs": -29.116362027833283,
-    "true_peak_dbtp": -22.117125739243097
+    "lufs": -29.103056319551516,
+    "true_peak_dbtp": -22.311160343620422
   },
   {
     "engine": 21,
@@ -4244,8 +4820,8 @@
     "role": 3,
     "trim": -17,
     "name": "HOOVER JUNO",
-    "lufs": -29.06644617345003,
-    "true_peak_dbtp": -17.55771088767857
+    "lufs": -29.012070131060558,
+    "true_peak_dbtp": -17.508734956693367
   },
   {
     "engine": 21,
@@ -4253,8 +4829,8 @@
     "role": 3,
     "trim": -8,
     "name": "TURING JUNO",
-    "lufs": -28.839744057721713,
-    "true_peak_dbtp": -10.219269820180548
+    "lufs": -28.8304179826659,
+    "true_peak_dbtp": -10.216183902008268
   },
   {
     "engine": 21,
@@ -4262,8 +4838,8 @@
     "role": 3,
     "trim": -27,
     "name": "SHABI SAW",
-    "lufs": -28.861681869604663,
-    "true_peak_dbtp": -13.822714156508143
+    "lufs": -28.86033554869766,
+    "true_peak_dbtp": -14.804377542560518
   },
   {
     "engine": 22,
@@ -4271,8 +4847,8 @@
     "role": 1,
     "trim": -57,
     "name": "VS PAD",
-    "lufs": -28.796582943107357,
-    "true_peak_dbtp": -18.706462273769574
+    "lufs": -28.77889153789499,
+    "true_peak_dbtp": -19.196922965153203
   },
   {
     "engine": 22,
@@ -4280,8 +4856,8 @@
     "role": 3,
     "trim": -52,
     "name": "VECTOR SWEEP",
-    "lufs": -28.954706290740855,
-    "true_peak_dbtp": -22.165857923180795
+    "lufs": -28.98751935178786,
+    "true_peak_dbtp": -22.458669763088743
   },
   {
     "engine": 22,
@@ -4289,8 +4865,8 @@
     "role": 2,
     "trim": -54,
     "name": "VS BRASS",
-    "lufs": -28.89043095333693,
-    "true_peak_dbtp": -8.04461986719986
+    "lufs": -28.920504562344878,
+    "true_peak_dbtp": -8.5597029327545
   },
   {
     "engine": 22,
@@ -4298,8 +4874,8 @@
     "role": 3,
     "trim": -47,
     "name": "GLASS VS",
-    "lufs": -28.782596453803443,
-    "true_peak_dbtp": -21.656276316583323
+    "lufs": -28.794445947803393,
+    "true_peak_dbtp": -22.92949805744664
   },
   {
     "engine": 22,
@@ -4307,8 +4883,8 @@
     "role": 3,
     "trim": -42,
     "name": "VOX MORPH",
-    "lufs": -29.219684291916035,
-    "true_peak_dbtp": -19.64919457553414
+    "lufs": -29.211062508822724,
+    "true_peak_dbtp": -19.604289778409004
   },
   {
     "engine": 22,
@@ -4316,8 +4892,8 @@
     "role": 3,
     "trim": -41,
     "name": "DIGI BELLS",
-    "lufs": -28.823063604036726,
-    "true_peak_dbtp": -11.831239062768407
+    "lufs": -28.912011351503534,
+    "true_peak_dbtp": -11.58526859555314
   },
   {
     "engine": 22,
@@ -4325,8 +4901,8 @@
     "role": 0,
     "trim": -34,
     "name": "VS BASS",
-    "lufs": -28.786476173277027,
-    "true_peak_dbtp": -22.4590390755467
+    "lufs": -28.76424745970671,
+    "true_peak_dbtp": -22.448052246277825
   },
   {
     "engine": 22,
@@ -4334,8 +4910,8 @@
     "role": 3,
     "trim": -46,
     "name": "WAVE LOOP",
-    "lufs": -29.152566473780528,
-    "true_peak_dbtp": -21.64171043568469
+    "lufs": -29.1337290617703,
+    "true_peak_dbtp": -21.584778877265368
   },
   {
     "engine": 22,
@@ -4343,8 +4919,8 @@
     "role": 1,
     "trim": -62,
     "name": "ORGAN DRIFT",
-    "lufs": -29.1344916229238,
-    "true_peak_dbtp": -20.512738734521385
+    "lufs": -29.133611052562316,
+    "true_peak_dbtp": -20.663159795149056
   },
   {
     "engine": 22,
@@ -4352,17 +4928,17 @@
     "role": 1,
     "trim": -55,
     "name": "STRING VS",
-    "lufs": -29.040086579064038,
-    "true_peak_dbtp": -19.098952702902523
+    "lufs": -28.99678493630981,
+    "true_peak_dbtp": -19.167039473985685
   },
   {
     "engine": 22,
     "preset": 10,
     "role": 3,
-    "trim": -24,
+    "trim": -25,
     "name": "METAL HIT",
-    "lufs": -28.763544555661433,
-    "true_peak_dbtp": -10.244602286365325
+    "lufs": -29.219498867918578,
+    "true_peak_dbtp": -10.174150479178653
   },
   {
     "engine": 22,
@@ -4370,8 +4946,8 @@
     "role": 2,
     "trim": -47,
     "name": "HOLLOW KEYS",
-    "lufs": -28.799704539867346,
-    "true_peak_dbtp": -13.504340248768482
+    "lufs": -28.78228600888462,
+    "true_peak_dbtp": -12.592470868325671
   },
   {
     "engine": 22,
@@ -4379,8 +4955,8 @@
     "role": 3,
     "trim": -44,
     "name": "RESO VECTOR",
-    "lufs": -29.141049223426844,
-    "true_peak_dbtp": -23.65470212585118
+    "lufs": -29.14132246355311,
+    "true_peak_dbtp": -23.669790978147326
   },
   {
     "engine": 22,
@@ -4388,8 +4964,8 @@
     "role": 1,
     "trim": -38,
     "name": "SPACE DRONE",
-    "lufs": -28.98523058672329,
-    "true_peak_dbtp": -17.466653169537533
+    "lufs": -29.083220623964976,
+    "true_peak_dbtp": -16.517467593217987
   },
   {
     "engine": 22,
@@ -4397,8 +4973,8 @@
     "role": 3,
     "trim": -39,
     "name": "VS LEAD",
-    "lufs": -29.06418212091774,
-    "true_peak_dbtp": -25.348914665968824
+    "lufs": -29.06348630824483,
+    "true_peak_dbtp": -25.252526325471564
   },
   {
     "engine": 22,
@@ -4406,8 +4982,8 @@
     "role": 1,
     "trim": -50,
     "name": "CHOIR VS",
-    "lufs": -28.86264147552024,
-    "true_peak_dbtp": -19.865376089881252
+    "lufs": -28.88835515699676,
+    "true_peak_dbtp": -19.436683047421045
   },
   {
     "engine": 22,
@@ -4415,8 +4991,8 @@
     "role": 3,
     "trim": -32,
     "name": "MS20 VECTOR",
-    "lufs": -28.84799297409099,
-    "true_peak_dbtp": -24.134809454223834
+    "lufs": -28.84632539426663,
+    "true_peak_dbtp": -24.20311813047025
   },
   {
     "engine": 22,
@@ -4424,8 +5000,8 @@
     "role": 0,
     "trim": -27,
     "name": "DIODE VS BASS",
-    "lufs": -28.853910002893546,
-    "true_peak_dbtp": -19.593286445334023
+    "lufs": -28.86805173206361,
+    "true_peak_dbtp": -19.48687504194169
   },
   {
     "engine": 22,
@@ -4433,7 +5009,7 @@
     "role": 3,
     "trim": -32,
     "name": "LEVANT CLO",
-    "lufs": -29.08006016207042,
-    "true_peak_dbtp": -20.909625325569664
+    "lufs": -29.199329646288444,
+    "true_peak_dbtp": -21.216157799734233
   }
 ]

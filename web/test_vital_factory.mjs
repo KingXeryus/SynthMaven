@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: GPL-3.0-only
+import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
+const html=fs.readFileSync('web/editor.html','utf8'),data=JSON.parse(fs.readFileSync('assets/vital/translated.json','utf8'));assert.equal(data.items.length,64);assert.equal(data.excluded.length,4);assert.equal(new Set(data.items.map(x=>x.name)).size,64);
+const fingerprints=new Set(data.items.map(x=>JSON.stringify([x.packed.slice(0,118),x.amp])));assert.equal(fingerprints.size,64,'all 64 translations are distinct independent of their name');
+const src=html.slice(html.indexOf('/*PROTO-BEGIN*/'),html.indexOf('/*PROTO-END*/'));const E=vm.runInNewContext(src+';({makeMockDevice,Link,req,parse,CMD,HY,VITAL_STOCK})',{setTimeout,clearTimeout,setInterval,clearInterval,console,TextEncoder,TextDecoder,Blob,Response,DecompressionStream});
+assert.equal(E.HY.NFACTORY,100);for(const x of data.items){assert.equal(x.packed.length,128);assert.equal(x.preset,41+x.index-36);assert.equal(x.name.length<=12,true);assert.equal(x.patch.name.length<=10,true);assert.deepEqual(Array.from(E.HY.pack(x.patch)),x.packed);}
+const m=E.makeMockDevice({synthmaven:true,modern:true,oriental:true,auto:false}),input=[...m.access.inputs.values()][0],output=[...m.access.outputs.values()][0],link=new E.Link(d=>output.send(d),{timeout:1000});input.onmidimessage=e=>link.receive(e.data);const rq=x=>link.request(x);
+try{const info=E.parse[E.CMD.INFO](await rq(E.req.info())); const desc=E.parse[E.CMD.DESC](await rq(E.req.desc(0,info.pe0+3))); assert.equal(desc.names.length,100);for(let i=0;i<4;i++){await rq(E.req.track(i));const d=E.parse[E.CMD.DUMP](await rq(E.req.dump()),info);assert.equal(d.engine,12);assert.equal(d.preset,41+i);}
+for(const x of data.items){await rq(E.req.preset(12,x.preset));const d=E.parse[E.CMD.DUMP](await rq(E.req.dump()),info);assert.equal(d.p[info.pe0+3],x.index);const h=E.parse[E.CMD.HY_GET](await rq(E.req.hyGet(0,3)));assert.deepEqual(Array.from(h.bytes),x.packed);}}finally{link.close();m.stop();}
+console.log('Vital factory: 64 unique translated patches, all IDs/bytes, startup four-part program and mock MIDI recall PASS');

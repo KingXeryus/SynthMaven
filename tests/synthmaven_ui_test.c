@@ -64,8 +64,8 @@ int main(int argc, char **argv)
     song.g[G_BPM] = 120;
     sloop_splash(); ppm("synthmaven-splash");
     go_home(); ui.force = 1; frames(3);
-    check(ui.home && song.sel == 0 && trk[0].eng_req == ENGI_HYBRID && !strcmp(sound_name(), "SYNTHMAVEN"),
-          "power-on: HOME, the instrument plays SYNTHMAVEN");
+    check(ui.home && song.sel == 0 && trk[0].eng_req == ENGI_HYBRID && !strcmp(sound_name(), "V01 STROBE"),
+          "power-on: HOME, the instrument plays V01 STROBE");
     key(7); frames(2);                                    /* (a note, for the scope) */
     fm1_in.notes |= 1u << 7; frames(6); ui.force = 1; frame(); ppm("synthmaven-home"); fm1_in.notes &= ~(1u << 7); frames(30);
     ui.menu = 2; ui.force = 1; frame(); ppm("synthmaven-about"); ui.menu = 0; ui.force = 1; frame();
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
         k1 = kind_at(p1);
         check(k1 != k0 && (p1 == 0 || kind_at(p1 - 1u) != k1), "ALGORITHM +1: the first sound of the next kind");
         encs[panel.enc[EN_ALGO]] = -1; frames(2);
-        check(kind_at(preset_pos(&total)) == k0 && (preset_pos(&total) == 0 || kind_at(preset_pos(&total) - 1u) != k0),
+        check(TSEL->eng_req == ENGI_HYBRID && TSEL->preset == SM_VITAL_PRESET_FIRST,
               "ALGORITHM -1: back to the first sound of the kind before");
         for (i = 0; i < 12u; i++) { encs[panel.enc[EN_ALGO]] = 1; frames(1); }
         check(preset_pos(&total) < total, "ALGORITHM round the list: still a sound");
@@ -101,8 +101,7 @@ int main(int argc, char **argv)
             }
         for (e = 0; e < NENGINES; e++)
             for (k = 0; k < ENGINES[e]->npresets; k++) {
-                for (hits = 0, n = 0; n < NBASE; n++)
-                    hits += BANK[n].e == e && bank_pi[n] == k;
+                for (hits = 0, n = 0; n < NBANK; n++) { uint32_t bp, be = base_at(n, &bp); hits += be == e && bp == k; }
                 if (hits != 1) {
                     printf("synthmaven: preset %s (engine %u) is %u times in BANK\n", ENGINES[e]->presets[k].name, e, hits);
                     ok = 0;

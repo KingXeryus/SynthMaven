@@ -27,7 +27,7 @@ jobs:
         env:
           SM_SKIP_FULL_WEB: ${{ github.ref == 'refs/heads/main' && '0' || '1' }}
         run: sh tools/test_synthmaven.sh
-      - name: Audit all 493 factory entries
+      - name: Audit all 557 factory entries
         run: sh tools/audit_factory_levels.sh
       - name: Build development website
         run: python3 tools/make_synthmaven_site.py

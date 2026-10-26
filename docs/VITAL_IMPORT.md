@@ -31,7 +31,7 @@ A translation should be compared by listening. Spectral patches may be substanti
 
 ## Factory additions
 
-User-supplied Vital presets will be staged separately with their origin and permission to redistribute recorded. Each chosen translation must be reviewed, tested and level-matched before becoming a factory entry. No replacement presets are invented or bundled by this change.
+The development bank now includes 64 native HYBRID translations selected from 68 user-supplied presets. Source paths, hashes, author metadata, selection scores and conversion warnings are recorded in `assets/vital/selected.json` and `translated.json`. Original Vital files and embedded audio are not bundled. The native factory generator additionally projects stored waveform spectra onto native oscillators; the interactive importer retains its explicit unsupported-waveform warnings. All 556 audible factory entries pass the reference loudness audit. Listening comparison and hardware validation remain pending. See [the factory selection record](../assets/vital/README.md).
 
 ## Format references
 

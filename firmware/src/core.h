@@ -68,6 +68,7 @@ static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /*
 #define ENGI_HYBRID 12u          /* SynthMaven: the HYBRID voice (eng_hybrid.c), after NOISE */
 #define ENGI_SLICE 13u           /* with FELUCCA_SLICE: after HYBRID */
 #define ENGI_FM6 9u              /* the FM6 engine's index (eng_fm6.c, the stores: append-only) */
+#include "vital_factory.h"
 #define UP_SLOTS 32u             /* user presets (upreset.c) */
 #define NELEM(a) (sizeof(a) / sizeof((a)[0]))
 

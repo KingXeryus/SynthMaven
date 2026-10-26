@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* Render all 493 factory entries through the real UI loader and stereo mix.
+/* Render all 557 factory entries through the real UI loader and stereo mix.
  * argv: WAV path, catalogue path, stereo interleaved int32 raw path.
  * Roles use velocity 100 (bass/melody), 90 (held chords), 95 (comping).
  * Build: see tools/audit_factory_levels.sh. USER WT intentionally has no user data. */
@@ -69,6 +69,7 @@ int main(int argc, char **argv)
             else if (e == ENGI_MACRO && ENGINES[e]->presets[sm_factory_base(e,pi)].e[0] == 0)   /* CHORD: one key, a chord */
                 role = R_ONE;
 #endif
+            if(e==ENGI_HYBRID && pi>=SM_VITAL_PRESET_FIRST && pi<SM_VITAL_PRESET_FIRST+SM_VITAL_COUNT)role=SM_VITAL_ROLES[pi-SM_VITAL_PRESET_FIRST];
             host_tracks_init();
             song.g[G_BPM] = 100;
             program_mode=1;program_layer=0;set_engine_of(&trk[0],e);apply_preset_to(&trk[0],pi);
