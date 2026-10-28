@@ -166,6 +166,8 @@ static volatile uint32_t so_w, so_r;
 /* MIDI rings: 4-byte USB-MIDI event packets */
 #define MQ 64u
 static uint32_t midi_in_q[MQ], midi_out_q[MQ];
+static uint8_t midi_out_control_only;
+static uint8_t midi_in_cable[MQ]; /* USB virtual cable is separate from USB/TRS source. */
 static volatile uint32_t mi_w, mi_r, mo_w, mo_r;
 static volatile uint8_t midi_usb_lost;
 static volatile uint32_t midi_links;
@@ -175,7 +177,7 @@ static int midi_out_try(uint32_t pkt) {
     if(!usb_midi_out_ready() || mo_w-mo_r>=MQ)return 0;
     midi_out_q[mo_w%MQ]=pkt;RING_PUBLISH();mo_w++;return 1;
 }
-static void midi_out_event(uint32_t pkt) {(void)midi_out_try(pkt);}
+static void midi_out_event(uint32_t pkt) {if(!midi_out_control_only)(void)midi_out_try(pkt);}
 static uint32_t midi_out_room(void){return usb_midi_out_ready()?MQ-(mo_w-mo_r):0u;}
 static uint32_t midi_out_link(void){return midi_links;}
 
@@ -821,6 +823,7 @@ static void midi_in_event(uint32_t pkt)
     if (cin == 0xFu && (st == 0xF8u || st == 0xFAu || st == 0xFBu || st == 0xFCu)) {   /* clock, transport */
         if (mi_w - mi_r < MQ) {
             midi_in_q[mi_w % MQ] = 0xFu | st << 8;
+            midi_in_cable[mi_w % MQ]=(uint8_t)((pkt>>4)&15u);
             RING_PUBLISH();
             mi_w++;
         }
@@ -829,7 +832,8 @@ static void midi_in_event(uint32_t pkt)
     if (cin >= 8u && cin <= 0xEu && (st >> 4) == cin && !((pkt >> 16) & 0x80u) &&
         (cin == 0xCu || cin == 0xDu || !(pkt & 0x80000000u))) {
         if (mi_w - mi_r < MQ) {
-            midi_in_q[mi_w % MQ] = pkt;
+            midi_in_q[mi_w % MQ] = pkt & ~0xF0u;
+            midi_in_cable[mi_w % MQ]=(uint8_t)((pkt>>4)&15u);
             RING_PUBLISH();
             mi_w++;
         }

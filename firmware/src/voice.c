@@ -1056,6 +1056,8 @@ static const int16_t TU_A4[81] = {-6759, -6582, -6405, -6229, -6053, -5878, -570
     -1630, -1465, -1301, -1137, -974, -810, -648, -485, -323, -161, 0, 161, 322, 482, 642, 801, 960, 1119, 1278, 1436, 1594,
     1751, 1908, 2065, 2221, 2377, 2533, 2688, 2843, 2998, 3152, 3306, 3460, 3613, 3766, 3919, 4071, 4223, 4375, 4526, 4677,
     4828, 4978, 5128, 5278, 5428, 5577, 5726, 5874, 6022, 6170};
+static uint8_t tune_floor_octave; /* 0..8 => C0..C8 (MIDI 12..108). */
+static uint32_t tune_floor_note(void){return 12u*(1u+tune_floor_octave);}
 static volatile uint8_t tun_on;
 static const int16_t TU_TAB12[5][12] = {               /* 1/10 cent off equal temperament, from ROOT */
     {0, 117, 39, 156, -137, -20, -98, 20, 137, -156, 176, -117},       /* JUST (5-limit) */
@@ -1100,6 +1102,7 @@ static void tune_build(void)
                   d * 4096;                             /* (1/16 cent x 4096 / 1600; fits 32 bits: +-8 octaves) */
             off = clamp(off, -100 * 4096, 100 * 4096);
         }
+        if(key<tune_floor_note())off=0;
         tab[key] = off + a4;
     }
     tab[128] = tab[127];
@@ -1110,6 +1113,7 @@ static void tune_build(void)
 }
 static inline int32_t tun_at(int32_t p16)               /* the offset at a pitch in 1/16 semitone */
 {
+    if(p16<(int32_t)tune_floor_note()*16)return TU_A4[clamp(tune_cfg.a4,-40,40)+40];
     int32_t n = clamp(p16, 0, 127 * 16) >> 4, f = clamp(p16, 0, 127 * 16) & 15;
     return tun_tab[n] + (((tun_tab[n + 1] - tun_tab[n]) * f) >> 4);
 }

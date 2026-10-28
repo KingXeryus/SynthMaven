@@ -14,7 +14,7 @@ static void program_name_edit(int32_t delta){
 /* Four loaded synth parts are the working program; the selected part is UI focus. */
 static void program_capture(program_t *p) {
     uint32_t i;memset(p,0,sizeof *p);p->magic=PROGRAM_MAGIC;p->size=sizeof *p;
-    fm1_irq_off();p->active=song.sel%4u;p->layer=program_layer;p->reserved[0]=song.solo&15u;p->reserved[1]=master_tuning_bypass&15u;memcpy(p->route,program_route,sizeof p->route);p->tuning=tune_cfg;memcpy(p->custom,custom_scale,sizeof p->custom);memcpy(p->scenes,sm_scenes,sizeof p->scenes);
+    fm1_irq_off();p->active=song.sel%4u;p->layer=program_layer;p->reserved[0]=song.solo&15u;p->reserved[1]=(master_tuning_bypass&15u)|(tune_floor_octave<<4);memcpy(p->route,program_route,sizeof p->route);p->tuning=tune_cfg;memcpy(p->custom,custom_scale,sizeof p->custom);memcpy(p->scenes,sm_scenes,sizeof p->scenes);
     for(i=0;i<4;i++) {
         const track_t *t=&trk[i];program_sound_t *s=&p->sound[i];
         memcpy(s->p,t->p,sizeof s->p);memcpy(s->ms,t->ms,sizeof s->ms);
@@ -28,7 +28,7 @@ static void program_capture(program_t *p) {
 }
 static void program_apply(const program_t *p) {
     uint32_t i;transport_req=2;panic_req=(1u<<NPART)-1u;
-    fm1_irq_off();program_mode=1;program_layer=p->layer;song.sel=p->active;song.solo=p->reserved[0]&15u;master_tuning_bypass=p->reserved[1]&15u;memcpy(program_route,p->route,sizeof program_route);tune_cfg=p->tuning;memcpy(custom_scale,p->custom,sizeof custom_scale);custom_scale_dirty=1;sm_filter_comp_mask=0;memcpy(sm_scenes,p->scenes,sizeof sm_scenes);sm_scene_index=255;
+    fm1_irq_off();program_mode=1;program_layer=p->layer;song.sel=p->active;song.solo=p->reserved[0]&15u;master_tuning_bypass=p->reserved[1]&15u;tune_floor_octave=p->reserved[1]>>4;memcpy(program_route,p->route,sizeof program_route);tune_cfg=p->tuning;memcpy(custom_scale,p->custom,sizeof custom_scale);custom_scale_dirty=1;sm_filter_comp_mask=0;memcpy(sm_scenes,p->scenes,sizeof sm_scenes);sm_scene_index=255;
     for(i=0;i<4;i++) {
         track_t *t=&trk[i];const program_sound_t *s=&p->sound[i];sound_fade_begin(t);
         t->eng_req=s->engine;t->preset=(uint8_t)((s->reserved&2u)?s->preset:sm_factory_from_legacy(s->engine,s->preset));t->user=s->user;sm_filter_comp_mask|=(s->reserved&1u)<<i;

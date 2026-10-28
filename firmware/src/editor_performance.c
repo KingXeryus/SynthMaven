@@ -1,6 +1,14 @@
 /* Protocol 22: staged pedal learning, scenes, setlists and native filter capabilities. */
 static int ed_performance(uint32_t cmd,const uint8_t *a,uint32_t n){
  uint32_t i,op=n?a[0]:0,rc=0;
+ if(cmd==117u){
+  if(op==1u){if(n!=3u||a[1]>3u||a[2]>16u)rc=1;else{fm1_irq_off();sm_controller_port=a[2];sm_controller_mode(a[1]);panic_req|=(1u<<NTRK)-1u;fm1_irq_on();settings_later=1;}}
+  else if(op||n>1u)rc=1;
+  ed_b(rc);ed_b(ct_connected);ed_b(sm_controller_override);ed_b(sm_controller_port);ed_b(ct_mode);ed_b(ct_daw==255?127:ct_daw);
+  ed_b(ct_vid&127u);ed_b((ct_vid>>7)&127u);ed_b(ct_vid>>14);ed_b(ct_pid&127u);ed_b((ct_pid>>7)&127u);ed_b(ct_pid>>14);
+  ed_str(ct_product,47);ed_str(ct_family,23);return 1;
+ }
+
  if(cmd==112u){
   if(op==1){rc=n!=2?1:sm_learn_arm(a[1]);}
   else if(op==2){rc=n!=1?1:sm_learn_accept();if(!rc)settings_later=1;}

@@ -139,6 +139,9 @@ static int answer(dev_t_ *d, const uint8_t *s)
         uint8_t dd[18] = {18, 1, 0x00, 0x02, d->cls, 0, 0, d->mps0, 0x09, 0x12, 1, 0, 0, 1, 1, 2, 0, 1};
         memcpy(rsp, dd, 18);
         n = 18;
+    } else if (rt == 0x80 && rq == 6 && (val >> 8) == 3) {
+        if (!(val & 255u)) { rsp[0]=4;rsp[1]=3;rsp[2]=9;rsp[3]=4;n=4; }
+        else { const char *name="Model USB MIDI";n=2u+2u*(uint32_t)strlen(name);rsp[0]=(uint8_t)n;rsp[1]=3;for(uint32_t j=0;name[j];j++){rsp[2+2*j]=(uint8_t)name[j];rsp[3+2*j]=0;} }
     } else if (rt == 0x80 && rq == 6 && (val >> 8) == 2) {
         memcpy(rsp, d->cfgd, d->cfglen);
         n = d->cfglen;
@@ -417,7 +420,13 @@ static void test_parse(void)
     assert(uh_midi_ok(0x643C8009u) == 0);                  /* CIN does not match status */
     assert(uh_midi_ok(0x003CC00Cu) == 0x003CC00Cu);        /* program change */
     assert(uh_midi_ok(0x64BC9009u) == 0 && uh_midi_ok(0xE43C9009u) == 0);   /* data bytes with bit 7 */
-    puts("USB host: descriptor walk and packet filter: OK");
+    uh_mackie_ready=uh_mackie_pos=0;
+    uh_mackie_packet(0x6600F034u); /* invalid manufacturer 00 66 rather than 00 00 66 */
+    uh_mackie_packet(0xF7001437u);assert(!uh_mackie_ready);
+    uh_mackie_packet(0x0000F034u);uh_mackie_packet(0x00146634u);uh_mackie_packet(0x0000F735u);
+    assert(uh_mackie_ready==7 && uh_mackie_cable==3 && uh_mackie_buf[3]==0x66);
+    uh_mackie_ready=uh_mackie_pos=0;
+    puts("USB host: descriptor walk, MIDI packet filter and bounded Mackie mailbox: OK");
 }
 
 static void test_keyboard(int via_hub)
@@ -426,6 +435,7 @@ static void test_keyboard(int via_hub)
     host_on();
     assert(enumerate());
     assert(uh.run && uh.msg == UH_MSG_MIDI);
+    assert(uh.vid==0x1209 && uh.pid==1 && !strcmp(uh.product,"Model USB MIDI"));
     uh.msg = 0;
     assert(dev[KBD].cfg == 1 && dev[KBD].addr == uh.dev && dev[KBD].addr != 0);
     if (via_hub) {

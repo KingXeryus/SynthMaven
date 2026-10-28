@@ -497,7 +497,7 @@ enum { FAM_HOME, FAM_ENV, FAM_LFO, FAM_FX, FAM_SCL, FAM_EDIT, FAM_GLO, FAM_SAVE,
        FAM_CHORD, FAM_COUNT };
 enum { SC_TRACK, SC_GLOBAL, SC_ENGINE, SC_STEP, SC_TRK, SC_SONG, SC_DRUM, SC_SYN };   /* SC_SYN: ui_synth.c */
 enum { GR_NONE, GR_ADSR, GR_LFO, GR_STEPS, GR_ARP, GR_SCALE, GR_FX, GR_ROLL, GR_BROWSE, GR_SLOTS, GR_USER, GR_TRK,
-       GR_SLCR, GR_LAYER, GR_MORPH, GR_MATRIX, GR_FMX, GR_HIST, GR_MSEQ, GR_PEDAL, GR_SCENE, GR_SETLIST, GR_FILTER };
+       GR_SLCR, GR_LAYER, GR_MORPH, GR_MATRIX, GR_FMX, GR_HIST, GR_MSEQ, GR_PEDAL, GR_SCENE, GR_SETLIST, GR_FILTER, GR_CONTROLLER };
 
 typedef struct {
     const char *title;
@@ -569,7 +569,9 @@ static const page_t PAGES[] = {
     {"GLOBAL", FAM_GLO, SC_GLOBAL, GR_NONE, {G_BPM, G_SWING, G_CLOCK, G_TUNE}},
 #if SYNTHMAVEN_SYNTH                                                        /* (no kick to duck to, no note repeat) */
     {"MASTER", FAM_GLO, SC_GLOBAL, GR_NONE, {G_DUST, G_FILT, 0xFF, 0xFF}},
-    {"TUNING", FAM_GLO, SC_SYN, GR_NONE, {47, 48, 49, 78}},   /* (0.9) X_TSYS X_TROOT (1.0: X_TA4): voice.c tune_cfg */
+    {"TUNING", FAM_GLO, SC_SYN, GR_NONE, {47, 99, 48, 78}},
+    {"TUNING 2", FAM_GLO, SC_SYN, GR_NONE, {49, 0xFF, 0xFF, 0xFF}},
+    {"CONTROLLER", FAM_GLO, SC_SYN, GR_CONTROLLER, {100, 101, 0xFF, 0xFF}},   /* (0.9) X_TSYS X_TROOT (1.0: X_TA4): voice.c tune_cfg */
     {"SYSTEM", FAM_GLO, SC_GLOBAL, GR_NONE, {G_MIDI, G_SYNC, G_ROUTE, G_INFO}},
     {"MIDI", FAM_GLO, SC_SYN, GR_NONE, {50, 51, 52, 53}},   /* (1.0) X_MIN X_MOUT X_MBEND X_MLOCAL (seq.c midi_in_ch) */
     {"MIDI 2", FAM_GLO, SC_SYN, GR_NONE, {54, 55, 56, 0xFF}},

@@ -11,7 +11,7 @@ typedef struct {uint8_t level,mute,dist,chor,dly,rev,macro[4];} sm_scene_part_t;
 typedef struct {uint8_t valid,sys,root;int8_t a4;uint8_t bypass,comp,reserved[2];sm_scene_part_t part[4];} sm_scene_t;
 static sm_scene_t sm_scenes[SM_SCENES];
 static uint8_t sm_scene_index=255;
-static int sm_scene_valid(const sm_scene_t *s){uint32_t i,k;if(s->valid>1)return 0;if(!s->valid)return 1;if(s->reserved[0]||s->reserved[1]||s->sys>=TU_N||s->root>11||s->a4< -40||s->a4>40||s->bypass>15||s->comp>15)return 0;for(i=0;i<4;i++){const sm_scene_part_t *p=&s->part[i];if(p->level>127||p->mute>1||p->dist>127||p->chor>127||p->dly>127||p->rev>127)return 0;for(k=0;k<4;k++)if(p->macro[k]>127)return 0;}return 1;}
+static int sm_scene_valid(const sm_scene_t *s){uint32_t i,k;if(s->valid>1)return 0;if(!s->valid)return 1;if(s->reserved[0]>8u||s->reserved[1]||s->sys>=TU_N||s->root>11||s->a4< -40||s->a4>40||s->bypass>15||s->comp>15)return 0;for(i=0;i<4;i++){const sm_scene_part_t *p=&s->part[i];if(p->level>127||p->mute>1||p->dist>127||p->chor>127||p->dly>127||p->rev>127)return 0;for(k=0;k<4;k++)if(p->macro[k]>127)return 0;}return 1;}
 typedef struct {
     uint32_t magic,size;
     uint8_t active,layer,reserved[2];
@@ -45,7 +45,7 @@ static uint32_t program_hash(const void *data,uint32_t n) {
 }
 static int program_valid(const program_t *p) {
     uint32_t i,k;
-    if(p->magic!=PROGRAM_MAGIC || p->size!=sizeof *p || p->active>=4u || p->layer>1u || p->reserved[0]>15u || p->reserved[1]>15u ||
+    if(p->magic!=PROGRAM_MAGIC || p->size!=sizeof *p || p->active>=4u || p->layer>1u || p->reserved[0]>15u || (p->reserved[1]>>4)>8u ||
        p->tuning.sys>=TU_N || p->tuning.root>11 || p->tuning.a4< -40 || p->tuning.a4>40 ||
        p->tuning.n<1 || p->tuning.n>TU_MAXDEG || p->sum!=program_hash(p,sizeof *p-4u))return 0;
     for(i=0;i<4;i++)if(p->custom[i]&0xFF000000u)return 0;
@@ -106,7 +106,7 @@ static int program_pack(program_packed_t *out,const program_t *p,const char *nam
  for(i=0;i<4;i++){const program_sound_t *a=&p->sound[i];program_packed_sound_t *b=&out->sound[i];for(k=0;k<P_COUNT;k++)b->p[k]=(int8_t)a->p[k];memcpy(b->ms,a->ms,sizeof b->ms);b->engine=a->engine;b->preset=a->preset;b->user=a->user;b->reserved=a->reserved;memcpy(b->patch,a->patch,sizeof b->patch);}return 1;
 }
 static int program_unpack(program_t *out,const program_packed_t *p){
- uint32_t i,k;if(p->used!=1u || !program_name_valid(p->name) || p->solo>15u || p->bypass>15u)return 0;
+ uint32_t i,k;if(p->used!=1u || !program_name_valid(p->name) || p->solo>15u || (p->bypass>>4)>8u)return 0;
  memset(out,0,sizeof *out);out->magic=PROGRAM_MAGIC;out->size=sizeof *out;out->active=p->active;out->layer=p->layer;out->reserved[0]=p->solo;out->reserved[1]=p->bypass;out->tuning=p->tuning;memcpy(out->custom,p->custom,sizeof out->custom);memcpy(out->route,p->route,sizeof out->route);memcpy(out->scenes,p->scenes,sizeof out->scenes);
  for(i=0;i<4;i++){program_sound_t *a=&out->sound[i];const program_packed_sound_t *b=&p->sound[i];for(k=0;k<P_COUNT;k++)a->p[k]=b->p[k];memcpy(a->ms,b->ms,sizeof a->ms);a->engine=b->engine;a->preset=b->preset;a->user=b->user;a->reserved=b->reserved;memcpy(a->patch,b->patch,sizeof a->patch);}
  out->sum=program_hash(out,sizeof *out-4u);return program_valid(out);

@@ -10,6 +10,7 @@ import markdown
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_REF = os.environ.get('GITHUB_REF_NAME', 'release-'+json.loads((ROOT/'release.json').read_text())['version'])
 PAGES = {
+    'docs/MIDI_CONTROLLERS.md': 'midi-controllers.html',
     'docs/USER_MANUAL.md': 'user-manual.html',
     'QUICKSTART.md': 'quick-start.html',
     'docs/release-'+json.loads((ROOT/'release.json').read_text())['version']+'.md': 'release-notes.html',

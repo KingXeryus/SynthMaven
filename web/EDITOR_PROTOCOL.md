@@ -577,3 +577,11 @@ Command 109 reads/writes each of four program sounds’ enable, split mode/side/
 PROJECT accepts slots 0–7; names use command 111. Read `[slot]`; stage a save name using `[slot, 12 zero-padded printable ASCII bytes]`; success replies `[0, slot, used, 12 name bytes]`, failure `[rc, slot]`. Name staging is independent per slot and does not write flash. PROJECT SAVE commits that slot’s pending name with its four sounds. An optional PROJECT status byte is 0 success, 1 busy, 2 invalid, or 4 flash error. Slots wrap in the hardware Save screen and names are edited on the same page.
 
 PBK1 (bytes 50 42 4b 31) is backup project format 9. Objects 2–5 retain their IDs and physical A/B addresses, but each holds two losslessly packed named programs: 1+5, 2+6, 3+7, 4+8. The pair record is 3116 bytes. All 8 programs/names are included without adding objects or changing sample storage. Protocol 20 and earlier must reject format 9 before restoring any object. Working-program object 0 remains PRG2 (format 8). Older PRG1/PRG2 saved programs remain importable.
+
+## Protocol 23: tuning octave boundary
+
+TUNE_GET (95) appends `from_octave` (0..8, C0..C8) after A4. TUNE_PUT (96) accepts the same optional trailing byte after A4. Base and A4-only writes remain valid and preserve the current boundary. Invalid octave values reject the complete write without changing state. MIDI C0 is 12; the inclusive boundary is `12 * (from_octave + 1)`. Scene byte 6 (previously reserved) also stores 0..8; byte 7 remains zero. Scene size stays 48 bytes. The low nibble of the program bypass byte retains its four bypass flags; the high nibble stores the octave. Flash record sizes stay unchanged. Settings MTU2 retains the 12-byte MTU1 record layout, encoding the octave in bits 4..7 of its bypass field. Legacy records imply C0.
+
+### 117 — USB controller identity and override (protocol 23)
+
+GET payload empty or `[0]`; SET `[1, protocol, port]`, protocol 0 AUTO / 1 MIDI / 2 MCU / 3 HUI, port 0 AUTO or 1–16. Reply: result, connected, override, port override, active protocol, DAW cable (0–15 or 127 none), VID and PID (each three little-endian 7-bit bytes), product NUL string (max 47), family NUL string (max 23). Invalid writes are rejected atomically. Physical host and computer roles are mutually exclusive.

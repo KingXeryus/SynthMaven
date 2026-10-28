@@ -439,3 +439,15 @@ Chord mode uses all physical keys, including black keys. It does not reserve bla
 When master tuning introduces nonzero microtonal offsets, only OFF, OPEN 5 and NEUTRAL are offered. OPEN 5 chooses existing scale keys closest to a tuned fifth and octave above the root; NEUTRAL chooses existing scale keys closest to 350 and 700 cents. These targets guide selection; they never add or retune a scale note, so the result depends on the maqam/Scala/custom scale. At the top of the MIDI range, fewer notes can be available. Normal voicing and strum controls remain available. Bypassing master tuning on a part restores the full chord list for that part. A maqam with zero offsets also shows the full list. An incompatible saved chord ID sounds as OPEN 5 until edited, preserving the saved setting. Keyboard and incoming MIDI use the same chord generator; note releases retain their captured notes.
 
 The full list has 18 entries: the original 16 IDs remain unchanged, followed by OPEN 5 (16) and NEUTRAL (17). This release retains protocol 22 and the existing program/preset storage layout.
+
+## Tuning octave boundary (2.1.3)
+
+In GLO > TUNING, Knob 1 selects the tuning system, **Knob 2 (FROM) selects C0–C8**, Knob 3 selects its root, and Knob 4 controls Apply master tuning. FROM advances only by whole octaves, never individual notes. TUNING 2 keeps the A4 reference control.
+
+The boundary is inclusive: FROM C3 means MIDI 48 and every higher note use the selected scale/temperament offsets; lower notes retain equal-tempered intervals. The global A4 reference remains common across the keyboard. The boundary uses the sounding note after transposition and also applies to MIDI, glides, maqam/custom offsets and Scala tuning. It does not disable an explicitly selected note quantizer, chord mode, pitch bend or oscillator detune. C0 is MIDI 12; C8 is MIDI 108.
+
+The matching editor control is **Apply from octave**. The threshold saves with settings, four-part programs, named slots and scenes without increasing the flash record sizes. Older settings/programs/scenes default to C0. Older editors preserve the stored boundary when they send tuning changes without the new field. Protocol 23 adds an optional octave byte after A4 in tuning GET/PUT; older devices do not show the new editor control. The supplied InApp Logo.svg is now the logo source for the installer, editor and device splash.
+
+## Automatic USB controllers
+
+USB PEDAL/HOST mode automatically identifies supported Alesis, Novation, Arturia, Akai and Mackie controller families. MCU/HUI can control four program parts and transport; unknown class-compliant devices retain standard MIDI. See the [controller compatibility guide](MIDI_CONTROLLERS.md) for mappings, powered USB requirements and hardware-validation limits. Return to COMPUTER mode for the editor or installer.

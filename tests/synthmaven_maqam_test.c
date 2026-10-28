@@ -12,20 +12,20 @@ int main(void) {
   for(key=0;key<128;key++) {
    fprintf(out,"%s%d",key?",":"",tun_tab[key]);
    int32_t cents=maqam_cents(sys,(key+12-root)%12);
-   assert(tun_tab[key]==cents*4096/100);
+   assert(tun_tab[key]==(key<12?0:cents*4096/100));
    assert(tun_at(key*16)==tun_tab[key]);
-   if(key<116)assert(tun_tab[key]==tun_tab[key+12]);
+   if(key>=12 && key<116)assert(tun_tab[key]==tun_tab[key+12]);
   }
   assert(maqam_cents(sys,0)==0);fputs("]}",out);
  }
  fputs("]\n",out);fclose(out);
  tune_cfg.sys=TU_RAST;tune_cfg.root=0;tune_build();
- for(key=0;key<128;key++)check(tun_tab[key]==((key%12==4||key%12==11)?-2048:0),"Rast C alters E and B only; all black keys intact");
+ for(key=0;key<128;key++)check(tun_tab[key]==((key>=12 && (key%12==4||key%12==11))?-2048:0),"Rast C alters E and B only; all black keys intact");
  tune_cfg.sys=TU_BAYATI;tune_cfg.root=2;tune_build();
- for(key=0;key<128;key++)check(tun_tab[key]==(key%12==4?-2048:0),"Bayati D alters E only");
+ for(key=0;key<128;key++)check(tun_tab[key]==(key>=12 && key%12==4?-2048:0),"Bayati D alters E only");
  tune_cfg.sys=TU_HIJAZ;tune_build();for(key=0;key<128;key++)check(tun_tab[key]==0,"Hijaz chromatic fingering has no quarter-tone offset");
  tune_cfg.sys=TU_SIKAH;tune_cfg.root=1;tune_cfg.a4=-8;tune_build();
- for(key=0;key<128;key++)check(tun_tab[key]==maqam_cents(TU_SIKAH,(key+11)%12)*4096/100+TU_A4[32],"A4 adds uniformly to maqam offsets");
+ for(key=0;key<128;key++)check(tun_tab[key]==(key<12?0:maqam_cents(TU_SIKAH,(key+11)%12)*4096/100)+TU_A4[32],"A4 adds uniformly to maqam offsets");
  open_family(FAM_GLO);while(cur_page()->id[0]!=X_TSYS)open_family(FAM_GLO);
  syn_desc(X_TSYS,&vp);*vp=TU_SABA;syn_changed(X_TSYS,vp);
  syn_desc(X_TROOT,&vp);*vp=2;syn_changed(X_TROOT,vp);

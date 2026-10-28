@@ -26,7 +26,11 @@ int main(void){
  b=a;b.custom[0]=0xFF000000;b.sum=program_hash(&b,sizeof b-4);check(!program_valid(&b),"out-of-range custom scale bits rejected");
  custom_scale_fill(&scales);memset(custom_scale,0,sizeof custom_scale);check(!custom_scale_take(&scales) && custom_scale[2]==0x654321u,"four custom scales round trip through settings record");
  scales.crc^=1;check(custom_scale_take(&scales),"corrupt custom settings rejected");
- master_tuning_record_t mt;master_tuning_bypass=5;master_tuning_fill(&mt);
+ master_tuning_record_t mt;tune_floor_octave=3;master_tuning_bypass=5;master_tuning_fill(&mt);
+ tune_floor_octave=0;check(!master_tuning_take(&mt)&&tune_floor_octave==3,"octave threshold round trips through settings CRC record");
+ master_tuning_record_t legacy={0x3154554Du,5,0};legacy.crc=st_crc32(&legacy,8);check(!master_tuning_take(&legacy)&&!tune_floor_octave,"legacy settings migrate to C0");
+ mt.bypass=9u<<4;mt.crc=st_crc32(&mt,8);check(master_tuning_take(&mt)&&!tune_floor_octave,"invalid stored octave leaves settings unchanged");
+ master_tuning_fill(&mt);
  check(!st_save(OBJ_SETTINGS,&mt,sizeof mt),"master tuning switches saved through atomic flash storage");
  master_tuning_bypass=0;memset(&mt,0,sizeof mt);check(st_load(OBJ_SETTINGS,&mt,sizeof mt)==sizeof mt&&!master_tuning_take(&mt)&&master_tuning_bypass==5,"master tuning switches restore after a settings reload");
  mt.crc^=1;master_tuning_bypass=0;check(master_tuning_take(&mt)&&!master_tuning_bypass,"corrupt switch settings retain default enabled tuning");

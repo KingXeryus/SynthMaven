@@ -1,6 +1,6 @@
-# SynthMaven 2.1.2 — FM1 user manual
+# SynthMaven 2.1.3 — FM1 user manual
 
-Generated from release metadata: firmware **2.1.2**, protocol **22**, shared synth voice limit **8**.
+Generated from release metadata: firmware **2.1.3**, protocol **23**, shared synth voice limit **8**.
 
 ## Sound presets, programs and library entries
 
@@ -11,7 +11,7 @@ Generated from release metadata: firmware **2.1.2**, protocol **22**, shared syn
 
 SynthMaven is an open-source firmware based on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1).
 This manual covers the **M-VAVE FM1 hardware firmware**, its web installer and
-web editor. Version 2.1.2 provides **23 engines and 557 factory presets**. The Mac
+web editor. Version 2.1.3 provides **23 engines and 557 factory presets**. The Mac
 software instrument has a separate feature set; its eight-layer interface and
 DAW formats are not features of this hardware firmware.
 
@@ -57,12 +57,12 @@ The FM1 port cannot act as host and computer device at the same time. This host 
    in Chrome or Edge with the FM1 connected over USB.
 2. Close other programs using the FM1 MIDI ports if connection fails.
 3. Follow the installer prompts and keep power connected until it finishes.
-4. Check the splash/About screen for **SYNTHMAVEN 2.1.2**.
+4. Check the splash/About screen for **SYNTHMAVEN 2.1.3**.
 5. Open the [editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/),
    click **Connect**, grant MIDI/SysEx access when prompted and choose the FM1.
 
 Use the matching online editor after updating. The firmware/editor wire protocol
-is version **22**; that protocol number is independent of product version 2.1.2.
+is version **23**; that protocol number is independent of product version 2.1.3.
 A URL ending in `?mock=1` uses a simulated device for previewing the editor.
 It does not communicate with or validate a physical FM1.
 
@@ -304,7 +304,7 @@ USER sound presets store individual sounds. Export user banks and backups before
 |---|---|
 | Editor does not connect | Chrome/Edge, USB data cable, MIDI/SysEx permission, correct port; close competing MIDI applications |
 | Only highlight changes | Use KNOB 3 to load or KNOB 4 to load and edit |
-| Oriental collection missing | Verify SYNTHMAVEN 2.1.2, refresh the matching editor, select ORIENTAL on the hardware |
+| Oriental collection missing | Verify SYNTHMAVEN 2.1.3, refresh the matching editor, select ORIENTAL on the hardware |
 | USB keyboard is silent | Confirm a MIDI host exists; separate power alone is insufficient; check KEY IN and channel |
 | TRS keyboard is silent | Check MIDI direction, compatible cable/adapter, channel and KEY IN |
 | Pedal scans but does not switch | Wait for MIDI READY; enable PROG; check PORT, channel and actual Program Change/CC0 data |
@@ -320,7 +320,7 @@ For recovery tooling, see the [build/install guide](../BUILDING.md#install).
 
 ## Version, validation and support
 
-Version 2.1.2 uses editor protocol 22. See [release notes](release-1.9.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
+Version 2.1.3 uses editor protocol 23. See [release notes](release-1.9.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
 
 
 
@@ -388,7 +388,7 @@ EDIT now has four standard pages: EDIT 1, EDIT 2, VOICE and CHARACTER. FMX keeps
 
 Hold EDIT for two seconds to preview the four-sound mixer. KNOBS 1–4 control the volumes of sounds 1–4. SELECT cycles the selected part; ALGORITHM sets that part’s split point from A1 to A6 (shown as note and octave), and PRESET/parameter controls its pan. Editing a split point enables the selected part’s existing Lower/Upper zone. GLO → LAYER ROUTE or the editor can choose the zone or restore full-keyboard layering. At three seconds the mixer latches and stays open after release. Tap EDIT or HOME to exit; save a program to keep the mix. The keyboard still plays and EDIT no longer erases sequence notes. Short presses never show a held-layer screen. HOME opens its menu after three seconds.
 
-### Performance workflow (2.1.2, protocol 22)
+### Performance workflow (2.1.3, protocol 23)
 
 A **sound preset** describes one engine sound. A **four-part program** stores four sounds with routing, mix, tuning and four scenes. An **editor library entry** is a computer-side sound record. These names are not interchangeable.
 
@@ -406,7 +406,7 @@ EDIT → FILTER groups the selected engine's native model, cutoff, resonance and
 
 LFO → MOD PRESET offers velocity→brightness, pressure→vibrato, wheel→vibrato and envelope swell. HYBRID pressure/wheel vibrato uses a free matrix slot and sets LFO1 to sine, rate 64; a full matrix is unchanged. Compensation is optional estimated attenuation for resonance/drive, up to 12 dB, OFF by default; it is not an automatic loudness measurement. Trim is displayed in half-decibel steps.
 
-Programs now use PRG3/PBK2; older PRG1/PRG2/PBK1 saves import with empty scenes and compensation OFF. Flash addresses and sample/wavetable regions are unchanged. New-format backups require protocol 22 and are refused on older firmware. See [current release details](release-2.0.md).
+Programs now use PRG3/PBK2; older PRG1/PRG2/PBK1 saves import with empty scenes and compensation OFF. Flash addresses and sample/wavetable regions are unchanged. New-format backups require protocol 23 and are refused on older firmware. See [current release details](release-2.0.md).
 
 ## Vital presets and regional variations
 
@@ -426,7 +426,7 @@ On a fresh start or reset, the four program parts contain **V01 STROBE, V02 DARK
 
 Selection uses compatibility checks and native waveform spectral fitting, with no duplicate translated parameter sets. Listening comparison and device validation remain pending. See the [selection record](../assets/vital/README.md) for source attribution and conversion limits.
 
-## Device graphics and chords in 2.1.2
+## Device graphics and chords in 2.1.3
 
 The device uses Rubik typography and compact cards with a black/white/red palette and blue/grey accents. Hold ENV for three seconds to open the persistent CHORDS menu: assignable knobs 1–3 control CHORD, VOIC and STRUM. Nothing opens before three seconds; releasing ENV keeps CHORDS open. A short ENV press opens the envelope pages, and HOME returns home. Other navigation and shortcuts are retained. The twelve chromatic tuning cells visualize the current offsets without changing the microtuning mapping.
 
@@ -439,3 +439,15 @@ Chord mode uses all physical keys, including black keys. It does not reserve bla
 When master tuning introduces nonzero microtonal offsets, only OFF, OPEN 5 and NEUTRAL are offered. OPEN 5 chooses existing scale keys closest to a tuned fifth and octave above the root; NEUTRAL chooses existing scale keys closest to 350 and 700 cents. These targets guide selection; they never add or retune a scale note, so the result depends on the maqam/Scala/custom scale. At the top of the MIDI range, fewer notes can be available. Normal voicing and strum controls remain available. Bypassing master tuning on a part restores the full chord list for that part. A maqam with zero offsets also shows the full list. An incompatible saved chord ID sounds as OPEN 5 until edited, preserving the saved setting. Keyboard and incoming MIDI use the same chord generator; note releases retain their captured notes.
 
 The full list has 18 entries: the original 16 IDs remain unchanged, followed by OPEN 5 (16) and NEUTRAL (17). This release retains protocol 22 and the existing program/preset storage layout.
+
+## Tuning octave boundary (2.1.3)
+
+In GLO > TUNING, Knob 1 selects the tuning system, **Knob 2 (FROM) selects C0–C8**, Knob 3 selects its root, and Knob 4 controls Apply master tuning. FROM advances only by whole octaves, never individual notes. TUNING 2 keeps the A4 reference control.
+
+The boundary is inclusive: FROM C3 means MIDI 48 and every higher note use the selected scale/temperament offsets; lower notes retain equal-tempered intervals. The global A4 reference remains common across the keyboard. The boundary uses the sounding note after transposition and also applies to MIDI, glides, maqam/custom offsets and Scala tuning. It does not disable an explicitly selected note quantizer, chord mode, pitch bend or oscillator detune. C0 is MIDI 12; C8 is MIDI 108.
+
+The matching editor control is **Apply from octave**. The threshold saves with settings, four-part programs, named slots and scenes without increasing the flash record sizes. Older settings/programs/scenes default to C0. Older editors preserve the stored boundary when they send tuning changes without the new field. Protocol 23 adds an optional octave byte after A4 in tuning GET/PUT; older devices do not show the new editor control. The supplied InApp Logo.svg is now the logo source for the installer, editor and device splash.
+
+## Automatic USB controllers
+
+USB PEDAL/HOST mode automatically identifies supported Alesis, Novation, Arturia, Akai and Mackie controller families. MCU/HUI can control four program parts and transport; unknown class-compliant devices retain standard MIDI. See the [controller compatibility guide](MIDI_CONTROLLERS.md) for mappings, powered USB requirements and hardware-validation limits. Return to COMPUTER mode for the editor or installer.

@@ -7,7 +7,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SynthMaven 2.1.2 Editor</title>
+<title>SynthMaven 2.1.3 Editor</title>
 <style>
   /* SLOOP 2.4 editor: the FM-1's screen on a big display. Black, the four track colours, the device's own
      Terminus pixel font (tools/gen_webfont.py, inlined: the editor also runs from file://), 16 px and 32 px only
@@ -488,7 +488,7 @@
 <div class="app">
   <aside class="side">
     <a class="brand" href="#sound" aria-label="SynthMaven"><img src="synthmaven-logo.svg" alt="SynthMaven" style="width:160px;height:130px;object-fit:contain;background:white"></a>
-    <p class="dim" style="margin:0">Version 2.1.2 · 23 engines · 557 factory entries</p>
+    <p class="dim" style="margin:0">Version 2.1.3 · 23 engines · 557 factory entries</p>
     <nav class="tabs" id="tabs" role="tablist" aria-orientation="vertical">
       <div class="navh" id="navtrack" data-t="navTrack"></div>
       <button role="tab" data-tab="sound" data-t="sound" data-ic="symbol_audio"></button>
@@ -615,6 +615,7 @@
         <p id="sm-tuning-apply-row" hidden><label><input type="checkbox" id="sm-tuning-apply" checked> Apply master tuning to selected sound</label></p>
         <p class="dim" id="sm-quantize-help" hidden>QNT ALL applies the focused sound’s ROOT and SCL to all four program sounds, including MIDI. Master tuning switches independently apply the temperament, maqam or custom offsets and reference A4.</p>
         <p class="bar"><label><span data-t="tuSystem"></span> <select id="tusys"></select></label>
+          <label id="tufloorbox" hidden>Apply from octave <select id="tufloor" aria-label="Apply tuning from octave"></select></label>
           <label><span data-t="tuRoot"></span> <select id="turoot"></select></label>
           <label id="tua4box" hidden>A4 <input type="number" id="tua4" min="400" max="480" step="1" style="width:5em"> Hz</label>
           <button id="tuscl" data-t="tuLoad" data-ic="symbol_upload"></button>
@@ -866,6 +867,7 @@
       <div class="card" id="sm-midi">
 <h2>SynthMaven MIDI connections</h2>
 <p id="sm-status" role="status">Connect SynthMaven firmware to read MIDI settings.</p>
+<div class="card" id="sm-controller-card" hidden><h3>USB controller auto-detection</h3><p id="sm-controller-status" role="status">Read the attached controller in USB host mode.</p><button id="sm-controller-read" type="button">Read controller</button> <a href="../../docs/midi-controllers.html">Supported controllers</a><details><summary>Advanced protocol override</summary><label>Protocol <select id="sm-controller-mode" aria-label="Controller protocol"><option value="0">Automatic</option><option value="1">Standard MIDI</option><option value="2">Mackie Control / MCU</option><option value="3">HUI</option></select></label> <label>DAW port <select id="sm-controller-port" aria-label="Controller DAW port"></select></label></details></div>
 <p><label><input type="checkbox" id="sm-program-layer" disabled> Layer program sounds</label></p>
 <p><label><input type="checkbox" id="sm-patch-enabled" disabled> Enable patch switching</label></p>
 <div id="sm-patch-options" hidden>Pedal connection: USB MIDI</div>
@@ -888,7 +890,7 @@
 <script>
 "use strict";
 /*PROTO-BEGIN*/
-const SM_RELEASE = {"version": "2.1.2", "protocol": 22, "shared_voices": 8};
+const SM_RELEASE = {"version": "2.1.3", "protocol": 23, "shared_voices": 8};
 const SM_FILTER_MAP = [{"engine": 0, "name": "ANALOG", "architecture": "multi", "cutoff": "P_E4", "resonance": "P_E5", "envelope": "P_ED_FLT", "drive": "P_E6", "notes": "Selectable native model"}, {"engine": 1, "name": "DIGITAL", "architecture": "none", "cutoff": "-1", "resonance": "-1", "envelope": "-1", "drive": "-1", "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"}, {"engine": 2, "name": "PHASE", "architecture": "none", "cutoff": "-1", "resonance": "-1", "envelope": "-1", "drive": "-1", "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"}, {"engine": 3, "name": "LOFI", "architecture": "ONE POLE", "cutoff": "P_E7", "resonance": "-1", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 4, "name": "SAMPLE", "architecture": "ONE POLE", "cutoff": "P_E4", "resonance": "-1", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 5, "name": "VOICE", "architecture": "none", "cutoff": "-1", "resonance": "-1", "envelope": "-1", "drive": "-1", "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"}, {"engine": 6, "name": "TRIO", "architecture": "TRIO", "cutoff": "P_E5", "resonance": "P_E6", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Selectable native model"}, {"engine": 7, "name": "WHEEL", "architecture": "none", "cutoff": "-1", "resonance": "-1", "envelope": "-1", "drive": "-1", "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"}, {"engine": 8, "name": "GRAIN", "architecture": "ONE POLE", "cutoff": "P_E7", "resonance": "-1", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 9, "name": "FM6", "architecture": "none", "cutoff": "-1", "resonance": "-1", "envelope": "-1", "drive": "-1", "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"}, {"engine": 10, "name": "PHYS", "architecture": "none", "cutoff": "-1", "resonance": "-1", "envelope": "-1", "drive": "-1", "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"}, {"engine": 11, "name": "NOISE", "architecture": "SVF", "cutoff": "P_E2", "resonance": "P_E3", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 12, "name": "HYBRID", "architecture": "HYBRID", "cutoff": "P_E0", "resonance": "P_E1", "envelope": "P_E2", "drive": "-1", "notes": "HYBRID filter 1 base controls; filter 2 and serial/parallel/split architecture remain in editor"}, {"engine": 13, "name": "WAVE", "architecture": "multi", "cutoff": "P_E4", "resonance": "P_E5", "envelope": "P_ED_FLT", "drive": "P_E6", "notes": "Selectable native model"}, {"engine": 14, "name": "ACID", "architecture": "LADDER", "cutoff": "P_E1", "resonance": "P_E2", "envelope": "P_E3", "drive": "P_E6", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 15, "name": "STRINGS", "architecture": "SVF", "cutoff": "P_E4", "resonance": "P_E7", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 16, "name": "MACRO", "architecture": "LPG", "cutoff": "P_E4", "resonance": "-1", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 17, "name": "VPS", "architecture": "SVF", "cutoff": "P_E4", "resonance": "P_E5", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 18, "name": "TERRAIN", "architecture": "SVF", "cutoff": "P_E6", "resonance": "P_E7", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 19, "name": "FMX", "architecture": "none", "cutoff": "-1", "resonance": "-1", "envelope": "-1", "drive": "-1", "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"}, {"engine": 20, "name": "WSEQ", "architecture": "SVF", "cutoff": "P_E6", "resonance": "P_E7", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 21, "name": "JUNO", "architecture": "LADDER", "cutoff": "P_E5", "resonance": "P_E6", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 22, "name": "VECTOR", "architecture": "multi", "cutoff": "P_E7", "resonance": "-1", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Selectable native model"}];
 /* Compact performance protocol. All writes are explicit and capability gated. */
 const PERF={
@@ -1126,7 +1128,7 @@ const parse = {
   [CMD.TUNE_GET](a) {
     const u21 = (k) => a[k] | a[k + 1] << 7 | a[k + 2] << 14, n = a[3] || 0, at = 7 + 3 * Math.max(0, n - 1);
     return { rc: a[0], sys: a[1], root: a[2], n, period: u21(4), deg: [0, ...Array.from({ length: Math.max(0, n - 1) }, (_, i) => u21(7 + 3 * i))],
-      a4: a.length > at ? 400 + a[at] : null };
+      a4: a.length > at ? 400 + a[at] : null, floor: a.length>at+1?a[at+1]:null };
   },
   [CMD.TUNE_PUT](a) { return { rc: a[0] }; },
   [CMD.FMX_STORE](a) { return { slot: a[0], rc: a[1] }; },
@@ -1236,10 +1238,10 @@ const req = {
   tuneGet: () => [CMD.TUNE_GET, []],
   /* sys, root, deg: [0, d1 .. d(n-1)] and period, in 1/16 cent; a4 (Hz, 400..480; SynthMaven 1.0) only when the device
      gave one (0.9 refuses the extra byte) */
-  tunePut: (sys, root, deg, period, a4 = null) => {
+  tunePut: (sys, root, deg, period, a4 = null, floor = null) => {
     const u21 = (v) => [v & 127, (v >> 7) & 127, (v >> 14) & 127];
     return [CMD.TUNE_PUT, [sys & 127, root & 127, deg.length & 127, ...u21(period), ...deg.slice(1).flatMap(u21),
-      ...(a4 == null ? [] : [Math.max(0, Math.min(80, Math.round(a4) - 400))])]];
+      ...(a4 == null ? [] : [Math.max(0, Math.min(80, Math.round(a4) - 400))]), ...(floor==null || a4==null?[]:[Math.max(0,Math.min(8,floor|0))])]];
   },
   mseqPut: (part, steps) => [CMD.MSEQ_PUT, [part & 0x7F, ...steps.map((v) => Math.max(0, Math.min(15, (v | 0) + 8)))]],
   fmxStore: (slot, bytes) => [CMD.FMX_STORE, [slot & 0x7F, ...pack7(bytes)]],
@@ -2970,8 +2972,16 @@ function makeMockDevice(opt = {}) {
     if(i===6||i===7){for(let k=1;k<=4;k++){const j=((p.scene===127?(i===6?3:0):p.scene)+(i===6?k:4-k))%4;if(p.scenes[j])return perfScene(2,j);}return 1;}
     if(i===8||i===9){if(!p.setlist.length)return 1;const pos=p.pos===127?(i===8?0:p.setlist.length-1):(p.pos+(i===8?1:p.setlist.length-1))%p.setlist.length;return perfLoad(p.setlist[pos],pos);}return 0;
   }
-  function perfScene(op,slot){const p=st.performance;if(slot>3)return 1;if(op===1){const x=new Uint8Array(48);x[0]=1;const t=st.tune||{};x[1]=t.sys||0;x[2]=t.root||0;x[3]=((t.a4||440)-440)&255;x[4]=(st.masterTuning||[1,1,1,1]).reduce((m,v,i)=>m|(!v<<i),0);x[5]=p.comp;for(let i=0;i<4;i++){const q=st.tracks[i].p,at=8+10*i;x.set([q[0],q[40],q[33],q[34],q[35],q[36],...Array.from({length:4},(_,k)=>{const id=st.tracks[i].engine===12?P_E0+4+k:TP.findIndex(d=>d.label===["BRITE","TIMBR","MOTN","SPACE"][k]);return id>=0?q[id]-tdesc(st.tracks[i],id).min:0;})],at);}p.scenes[slot]=Array.from(x);p.scene=slot;return 0;}if(op===3){p.scenes[slot]=null;if(p.scene===slot)p.scene=127;return 0;}const x=p.scenes[slot];if(!x)return 1;for(let i=0;i<4;i++){const q=st.tracks[i].p,at=8+10*i;[0,40,33,34,35,36].forEach((id,k)=>q[id]=x[at+k]);for(let k=0;k<4;k++){const id=st.tracks[i].engine===12?P_E0+4+k:TP.findIndex(d=>d.label===["BRITE","TIMBR","MOTN","SPACE"][k]);if(id>=0)q[id]=x[at+6+k]+tdesc(st.tracks[i],id).min;}}st.tune={...(st.tune||{}),sys:x[1],root:x[2],a4:440+(x[3]>127?x[3]-256:x[3])};st.masterTuning=Array.from({length:4},(_,i)=>+!(x[4]&(1<<i)));p.comp=x[5];p.scene=slot;return 0;}
+  function perfScene(op,slot){const p=st.performance;if(slot>3)return 1;if(op===1){const x=new Uint8Array(48);x[0]=1;const t=st.tune||{};x[1]=t.sys||0;x[2]=t.root||0;x[3]=((t.a4||440)-440)&255;x[4]=(st.masterTuning||[1,1,1,1]).reduce((m,v,i)=>m|(!v<<i),0);x[5]=p.comp;x[6]=st.tune?.floor??0;for(let i=0;i<4;i++){const q=st.tracks[i].p,at=8+10*i;x.set([q[0],q[40],q[33],q[34],q[35],q[36],...Array.from({length:4},(_,k)=>{const id=st.tracks[i].engine===12?P_E0+4+k:TP.findIndex(d=>d.label===["BRITE","TIMBR","MOTN","SPACE"][k]);return id>=0?q[id]-tdesc(st.tracks[i],id).min:0;})],at);}p.scenes[slot]=Array.from(x);p.scene=slot;return 0;}if(op===3){p.scenes[slot]=null;if(p.scene===slot)p.scene=127;return 0;}const x=p.scenes[slot];if(!x)return 1;for(let i=0;i<4;i++){const q=st.tracks[i].p,at=8+10*i;[0,40,33,34,35,36].forEach((id,k)=>q[id]=x[at+k]);for(let k=0;k<4;k++){const id=st.tracks[i].engine===12?P_E0+4+k:TP.findIndex(d=>d.label===["BRITE","TIMBR","MOTN","SPACE"][k]);if(id>=0)q[id]=x[at+6+k]+tdesc(st.tracks[i],id).min;}}st.tune={...(st.tune||{}),sys:x[1],root:x[2],floor:x[6],a4:440+(x[3]>127?x[3]-256:x[3])};st.masterTuning=Array.from({length:4},(_,i)=>+!(x[4]&(1<<i)));p.comp=x[5];p.scene=slot;return 0;}
   function perfHandle(cmd,a,out,b,v,s){const p=st.performance,op=a[0]||0;let rc=0;
+    if(cmd===117){
+      const c=st.controller||(st.controller={...(opt.controller||{}),override:0,port:0});
+      if(op===1){if(a.length!==3||a[1]>3||a[2]>16)rc=1;else{c.override=a[1];c.port=a[2];}}
+      else if(op||a.length>1)rc=1;
+      const vid=c.vid||0,pid=c.pid||0;
+      [rc,+!!c.name,c.override,c.port,c.override||c.mode||1,c.name?(c.port?c.port-1:c.daw??127):127,vid&127,(vid>>7)&127,vid>>14,pid&127,(pid>>7)&127,pid>>14].forEach(b);
+      s(c.name||'');s(c.family||'');return true;
+    }
     if(cmd===112){if(op===1){if(a.length!==2||a[1]>9)rc=1;else{p.action=a[1];p.learn=1;}}
       else if(op===2){if(p.learn!==2)rc=1;else if(perfConflict(p.candidate,p.action))rc=2;else{p.maps[p.action]=p.candidate.slice();p.learn=0;p.times=[];}}
       else if(op===3)p.learn=0;
@@ -2983,7 +2993,7 @@ function makeMockDevice(opt = {}) {
     }
     if(cmd===113){const slot=a[1];if(!op){[0,p.scenes.reduce((m,x,i)=>m|(x?1<<i:0),0),p.scene].forEach(b);return true;}
       if(slot>3)rc=1;else if(op===4){[0,slot,...pack7(p.scenes[slot]||new Uint8Array(48))].forEach(b);return true;}
-      else if(op===5){const x=unpack7(a.slice(2));if(a.length!==57||x.length!==48||x[0]>1||x[2]>11||x[4]>15||x[5]>15||x[6]||x[7])rc=1;else p.scenes[slot]=x[0]?Array.from(x):null;}
+      else if(op===5){const x=unpack7(a.slice(2));if(a.length!==57||x.length!==48||x[0]>1||x[2]>11||x[4]>15||x[5]>15||x[6]>8||x[7])rc=1;else p.scenes[slot]=x[0]?Array.from(x):null;}
       else rc=perfScene(op,slot);[rc,slot??127].forEach(b);return true;
     }
     if(cmd===114){if(op===1){if(a[1]>32||a.length!==a[1]+2||a.slice(2).some(x=>x>7))rc=1;else{p.setlist=Array.from(a.slice(2));p.pos=127;}}
@@ -3023,7 +3033,7 @@ function makeMockDevice(opt = {}) {
     if (opt.v7 && cmd >= CMD.FILL_GET) return null;         /* (a v7 device: no fill conditions) */
     if (!v9 && cmd >= CMD.FM6_GET) return null;             /* (a v8 device: no FM6 patches) */
     if (!v10 && cmd >= CMD.DSYN_LIST) return null;          /* (a v9 device: no SYN kits) */
-    if(opt.modern&&cmd>=112&&cmd<=116){perfHandle(cmd,a,out,b,v,s);return frame(cmd,out);}
+    if(opt.modern&&cmd>=112&&cmd<=117){perfHandle(cmd,a,out,b,v,s);return frame(cmd,out);}
     const NB = st.bank.length;
     switch (cmd) {
       case CMD.UP_LIST: {
@@ -3138,7 +3148,7 @@ function makeMockDevice(opt = {}) {
         break;
       }
       case CMD.INFO:
-        s(opt.modern ? "FELUCCA SYNTHMAVEN 2.1.2 (MOCK)" : opt.synthmaven ? "FELUCCA SYNTHMAVEN 1.3 (MOCK)" : opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : (opt.synthmaven ? "FELUCCA SYNTHMAVEN 1.3 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)")); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
+        s(opt.modern ? "FELUCCA SYNTHMAVEN 2.1.3 (MOCK)" : opt.synthmaven ? "FELUCCA SYNTHMAVEN 1.3 (MOCK)" : opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : (opt.synthmaven ? "FELUCCA SYNTHMAVEN 1.3 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)")); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
         ENG.forEach((e) => s(e.name));
         if (!opt.legacy) b(NTRK);
         if (v5) b(opt.synthmaven ? (opt.modern?SM_RELEASE.protocol:opt.maqam?18:opt.oriental?16:15) : opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : opt.synthmaven ? (JU_E >= 0 ? (opt.synthmaven === "0.8" ? 13 : 14) : FX_E >= 0 ? 12 : 11) : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
@@ -3461,13 +3471,13 @@ function makeMockDevice(opt = {}) {
           b(0); b(st.tune.sys); b(st.tune.root); b(st.tune.deg.length);
           u21(st.tune.period).forEach(b);
           st.tune.deg.slice(1).forEach((d) => u21(d).forEach(b));
-          b(st.tune.a4 - 400);                        /* (SynthMaven 1.0) */
+          b(st.tune.a4 - 400);if(opt.oriental&&opt.modern)b(st.tune.floor??0);                        /* (SynthMaven 1.0) */
         } else {
           const nd = a[2] | 0, g = (k) => a[k] | a[k + 1] << 7 | a[k + 2] << 14, base = 6 + 3 * (nd - 1);
-          let rc = a.length < 6 || a[0] >= (opt.modern || opt.maqam ? 62 : 14) || a[1] > 11 || nd < 1 || nd > 48 || (a.length !== base && (a.length !== base + 1 || a[base] > 80)) ? 1 : 0;
+          let rc = a.length < 6 || a[0] >= (opt.modern || opt.maqam ? 62 : 14) || a[1] > 11 || nd < 1 || nd > 48 || (a.length!==base && a.length!==base+1 && (!(opt.oriental&&opt.modern) || a.length!==base+2)) || (a.length>=base+1 && a[base]>80) || (a.length===base+2 && a[base+1]>8) ? 1 : 0;
           const deg = [0];
           for (let i = 1; !rc && i < nd; i++) { const d = g(6 + 3 * (i - 1)); if (d <= deg[i - 1] || d >= g(3)) rc = 1; deg.push(d); }
-          if (!rc) st.tune = { sys: a[0], root: a[1], period: g(3), deg, a4: a.length === base + 1 ? 400 + a[base] : st.tune.a4 };
+          if (!rc) st.tune = { sys: a[0], root: a[1], period: g(3), deg, a4: a.length >= base + 1 ? 400 + a[base] : st.tune.a4, floor:a.length===base+2?a[base+1]:(st.tune.floor??0) };
           b(rc);
         }
         break;
@@ -10280,6 +10290,9 @@ function tuRender() {
   $("sm-quantize-help").hidden=dev.info.proto<20;$("sm-tuning-apply-row").hidden=dev.info.proto<20;$("sm-tuning-apply").checked=!!smMasterTuning[dev.sel];
   $("tusys").value = String(tuv.sys);
   $("turoot").value = String(tuv.root);
+  $("tufloorbox").hidden=tuv.floor==null;
+  if(!$("tufloor").options.length)$("tufloor").replaceChildren(...Array.from({length:9},(_,i)=>el("option",{value:i,text:"C"+i})));
+  if(tuv.floor!=null)$("tufloor").value=String(tuv.floor);
   $("tua4box").hidden = tuv.a4 == null;                /* (SynthMaven 1.0: the reference pitch) */
   if (tuv.a4 != null && document.activeElement !== $("tua4")) $("tua4").value = String(tuv.a4);
   if(tuv.sys>=58 && tuv.sys<=61 && tuCustom) {
@@ -10311,12 +10324,13 @@ async function tuRead() {
 }
 async function tuSend() {
   if (!tuv) return;
-  const r = parse[CMD.TUNE_PUT](await rq(req.tunePut(tuv.sys, tuv.root, tuv.deg, tuv.period, tuv.a4)));
+  const r = parse[CMD.TUNE_PUT](await rq(req.tunePut(tuv.sys, tuv.root, tuv.deg, tuv.period, tuv.a4, tuv.floor)));
   checkRc(r.rc);
   await tuRead();
 }
 $("sm-tuning-apply").addEventListener("change",()=>op(async()=>{const i=dev.sel,v=+$("sm-tuning-apply").checked;try{const a=await rq([110,[i,v]]);checkRc(a[0]);smMasterTuning[i]=a[2];}finally{tuRender();smLayerRender();}}));
 $("tusys").addEventListener("change", () => { if (tuv) { tuv.sys = +$("tusys").value; op(tuSend); } });
+$("tufloor").addEventListener("change",()=>{if(tuv){tuv.floor=+$("tufloor").value;op(tuSend);}});
 $("turoot").addEventListener("change", () => { if (tuv) { tuv.root = +$("turoot").value; op(tuSend); } });
 $("tusend").addEventListener("click", () => op(tuSend));
 $("tua4").addEventListener("change", () => {
@@ -10780,6 +10794,21 @@ async function smRequest(cmd, values = []) {
   if (a[0]) throw new Error("USB MIDI settings unavailable");
   return {caps:a[2], enabled:a[3], patch:a[4], key:a[5], host:a[8], connected:a[9]};
 }
+async function smControllerRead(){
+ const supported=!!dev&&dev.info.proto>=23;$("sm-controller-card").hidden=!supported;if(!supported)return;
+ const a=await rq([117,[]]);checkRc(a[0]);
+ if(a.length<14)throw new Error("Invalid controller reply");
+ const strings=[];let text="";for(const x of a.slice(12)){if(!x){strings.push(text);text="";}else text+=String.fromCharCode(x);}
+ const vid=a[6]|a[7]<<7|a[8]<<14,pid=a[9]|a[10]<<7|a[11]<<14;
+ $("sm-controller-status").textContent=a[1]?`${strings[0]||"USB MIDI controller"} · ${strings[1]||"Standard MIDI"} · ${["Automatic","MIDI","MCU","HUI"][a[4]]||"MIDI"}${a[5]===127?"":` · DAW port ${a[5]+1}`} · USB ${vid.toString(16).padStart(4,"0")}:${pid.toString(16).padStart(4,"0")}`:"No attached controller detected. Direct connection requires USB PEDAL/HOST mode; return to COMPUTER mode for the editor and installer.";
+ $("sm-controller-mode").value=String(a[2]);
+ if(!$("sm-controller-port").options.length)$("sm-controller-port").replaceChildren(...Array.from({length:17},(_,i)=>el("option",{value:i,text:i?String(i):"Automatic"})));
+ $("sm-controller-port").value=String(a[3]);
+}
+async function smControllerWrite(){const a=await rq([117,[1,+$("sm-controller-mode").value,+$("sm-controller-port").value]]);checkRc(a[0]);await smControllerRead();}
+$("sm-controller-read").addEventListener("click",()=>op(smControllerRead));
+$("sm-controller-mode").addEventListener("change",()=>op(smControllerWrite));
+$("sm-controller-port").addEventListener("change",()=>op(smControllerWrite));
 async function smRefresh() {
   try {
     smState = await smRequest(100);
@@ -10790,6 +10819,7 @@ async function smRefresh() {
     $("sm-patch-enabled").disabled = $("sm-key-port").disabled = $("sm-save").disabled = false;
     $("sm-status").textContent = "USB MIDI ready. Pedal messages use USB only.";
     smCascade();
+    await smControllerRead();
     await smLayerRead();
     await tuRead();
     await perfRefresh();

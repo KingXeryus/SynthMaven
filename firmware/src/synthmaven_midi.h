@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
+static uint8_t sm_controller_override,sm_controller_port;
 /* SynthMaven routing. USB=0, TRS=1. Pedal messages are USB-only. */
 #ifndef SYNTHMAVEN_MIDI_H
 #define SYNTHMAVEN_MIDI_H

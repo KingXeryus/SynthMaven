@@ -41,6 +41,7 @@ static void um_byte(uint32_t b)
 {
     if (b >= 0xF8u) {                              /* realtime: the state is kept; clock and transport */
         if ((b == 0xF8u || b == 0xFAu || b == 0xFBu || b == 0xFCu) && mi_w - mi_r < MQ) {
+            midi_in_cable[mi_w % MQ]=0;
             midi_in_q[mi_w % MQ] = 0x1Fu | b << 8; /* (cable 1: from the TRS jack; seq.c mclk_event) */
             RING_PUBLISH();
             mi_w++;
@@ -66,6 +67,7 @@ static void um_byte(uint32_t b)
         uint32_t pkt = (um.st >> 4) | (uint32_t)um.st << 8 | d1 << 16 | d2 << 24;
         um.got = 0;
         if (mi_w - mi_r < MQ) {
+            midi_in_cable[mi_w % MQ]=0;
             midi_in_q[mi_w % MQ] = pkt;
             RING_PUBLISH();
             mi_w++;

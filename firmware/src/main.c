@@ -253,9 +253,22 @@ static void fm1_main(void)
 #endif
         fm1_wdt_feed();
         #if FELUCCA_USB_HOST
-        usb_host_switch(sm_usb_host);
+        static uint32_t controller_leave_at;
+        uint32_t host_wanted=sm_usb_host;
+        if(!host_wanted&&uh.on&&uh.run&&ct_grid>=12u){
+            if(!controller_leave_at){if(ct_pad_mode(0))controller_leave_at=fm1_ms|1u;else host_wanted=1;}
+            if(controller_leave_at && mo_r!=mo_w && fm1_ms-(controller_leave_at&~1u)<100u)host_wanted=1;
+        }else controller_leave_at=0;
+        usb_host_switch(host_wanted);
         usb_host_task(fm1_ms);
         sm_usb_device_seen=(uint8_t)usb_host_device_present();sm_usb_midi_seen=(uint8_t)usb_host_connected();
+        if(uh.run && (!ct_connected || ct_vid!=uh.vid || ct_pid!=uh.pid)){fm1_irq_off();sm_controller_attach(uh.vid,uh.pid,uh.product,uh.iface_name);fm1_irq_on();}
+        if(!uh.run && ct_connected){fm1_irq_off();sm_controller_disconnect();fm1_irq_on();}
+        if(uh_mackie_ready){uint8_t data[32],len,cable;fm1_irq_off();len=uh_mackie_ready;cable=uh_mackie_cable;memcpy(data,uh_mackie_buf,len);uh_mackie_ready=0;fm1_irq_on();sm_controller_mackie(data,len,cable);}
+        sm_controller_tick(fm1_ms);
+        if(ct_focus<4u){track_select(ct_focus);ct_focus=255;}
+        if(ct_dirty){ui.force=1;ct_dirty=0;}
+
         if(midi_usb_lost) { fm1_irq_off();midi_usb_lost=0;mi_r=mi_w;memset(midi_sel_on,0,sizeof midi_sel_on);panic_req=(1u<<NTRK)-1u;fm1_irq_on(); }
         switch(usb_host_message()) {
         case UH_MSG_ON: sm_usb_device_seen=sm_usb_midi_seen=0;ui_message("USB PEDAL HOST"); break;

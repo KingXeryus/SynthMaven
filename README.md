@@ -1,8 +1,8 @@
 # SynthMaven for M-VAVE FM-1
 
-SynthMaven 2.1.2 builds on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1) with four-part programs, a layer/split mixer, learned USB pedal controls and an instrument-style visual editor. Its 23 synthesis engines provide 557 factory entries: 556 level-matched sounds and an intentionally empty USER WT slot, including 64 Vital-derived translations, 44 Oriental/Middle Eastern sounds and nine XD compatibility sounds.
+SynthMaven 2.1.3 builds on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1) with four-part programs, a layer/split mixer, learned USB pedal controls and an instrument-style visual editor. Its 23 synthesis engines provide 557 factory entries: 556 level-matched sounds and an intentionally empty USER WT slot, including 64 Vital-derived translations, 44 Oriental/Middle Eastern sounds and nine XD compatibility sounds.
 
-[Installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [User manual](docs/USER_MANUAL.md) · [Quick start](QUICKSTART.md) · [Release notes](docs/release-2.1.2.md)
+[Installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [User manual](docs/USER_MANUAL.md) · [Quick start](QUICKSTART.md) · [Release notes](docs/release-2.1.3.md)
 
 ## What SynthMaven adds
 
@@ -44,7 +44,7 @@ Back up before installing. See [USB MIDI status](docs/USB_MIDI_STATUS.md), the [
 
 ## Building and verification
 
-See [BUILDING.md](BUILDING.md). Linux x86-64 runs the JieLi toolchain directly; macOS requires Docker. Run `sh tools/test_synthmaven.sh`, then `sh build.sh --release 2.1.2`. The build enables USB host support and excludes Bluetooth. Source and licence notices are published alongside the installer.
+See [BUILDING.md](BUILDING.md). Linux x86-64 runs the JieLi toolchain directly; macOS requires Docker. Run `sh tools/test_synthmaven.sh`, then `sh build.sh --release 2.1.3`. The build enables USB host support and excludes Bluetooth. Source and licence notices are published alongside the installer.
 
 ## Credits and licence
 
@@ -77,3 +77,11 @@ Hold ENV for three seconds to open CHORDS. Knobs 1–3 control chord mode, voici
 ## Scale-aware chords in 2.1.2
 
 Chord mode plays all physical keys, including black keys. Generated tones follow the selected scale and root; named shapes adapt to the scale. Maqam chords use the catalogue’s documented degree keys with existing tuning offsets. Microtonal tuning offers OFF, OPEN 5 and NEUTRAL; other templates are hidden until tuning is equal-tempered or bypassed for that part. OPEN 5 selects scale tones near a fifth and octave; NEUTRAL selects scale tones near a neutral third and fifth, using actual tuned pitch. Neither inserts new detuned notes. If an older saved mode is incompatible, OPEN 5 is heard without overwriting its saved ID. Hold ENV for three seconds to open CHORDS.
+
+## Release 2.1.3: tuning from a selected octave
+
+GLO > TUNING Knob 2 selects FROM C0–C8. The selected scale applies from that C upward; lower notes retain equal temperament. The editor mirrors the octave control. Settings, programs and scenes preserve it. Includes the updated supplied SynthMaven logo.
+
+## Automatic USB controllers
+
+USB PEDAL/HOST mode automatically identifies supported Alesis, Novation, Arturia, Akai and Mackie controller families. MCU/HUI can control four program parts and transport; unknown class-compliant devices retain standard MIDI. See the [controller compatibility guide](docs/MIDI_CONTROLLERS.md) for mappings, powered USB requirements and hardware-validation limits. Return to COMPUTER mode for the editor or installer.

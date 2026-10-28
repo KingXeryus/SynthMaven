@@ -1,0 +1,274 @@
+[
+  {
+    "vid": 5042,
+    "patterns": [
+      "vi25",
+      "vi49",
+      "vi61"
+    ],
+    "family": "ALESIS VI",
+    "daw": 255,
+    "source": "https://www.alesis.com/products/browse/category/midi-controllers.html",
+    "models": [
+      "VI25",
+      "VI49",
+      "VI61"
+    ]
+  },
+  {
+    "vid": 5042,
+    "patterns": [
+      "v25",
+      "v49",
+      "v61"
+    ],
+    "family": "ALESIS V",
+    "daw": 255,
+    "source": "https://www.alesis.com/products/browse/category/midi-controllers.html",
+    "models": [
+      "V25 MKII",
+      "V49 MKII",
+      "V61 MKII"
+    ]
+  },
+  {
+    "vid": 5042,
+    "patterns": [
+      "vmini"
+    ],
+    "family": "ALESIS V MINI",
+    "daw": 255,
+    "source": "https://www.alesis.com/products/browse/category/midi-controllers.html",
+    "models": [
+      "V Mini"
+    ]
+  },
+  {
+    "vid": 4661,
+    "patterns": [
+      "launchkey"
+    ],
+    "family": "NOVATION LAUNCHKEY",
+    "daw": 1,
+    "source": "https://us.novationmusic.com/launchkey",
+    "models": [
+      "Launchkey Mini 25/37 MK4",
+      "Launchkey 25/37/49/61 MK4",
+      "Launchkey MK3 family"
+    ]
+  },
+  {
+    "vid": 4661,
+    "patterns": [
+      "flkey"
+    ],
+    "family": "NOVATION FLKEY",
+    "daw": 1,
+    "source": "https://us.novationmusic.com/launchkey",
+    "models": [
+      "FLkey Mini",
+      "FLkey 37/49/61"
+    ]
+  },
+  {
+    "vid": 4661,
+    "patterns": [
+      "launchpad",
+      "lpx",
+      "lpmini",
+      "lppro"
+    ],
+    "family": "NOVATION LAUNCHPAD",
+    "daw": 255,
+    "source": "https://us.novationmusic.com/launchkey",
+    "models": [
+      "Launchpad X",
+      "Launchpad Mini MK3",
+      "Launchpad Pro MK3"
+    ]
+  },
+  {
+    "vid": 4661,
+    "patterns": [
+      "impulse"
+    ],
+    "family": "NOVATION IMPULSE",
+    "daw": 1,
+    "source": "https://us.novationmusic.com/launchkey",
+    "models": [
+      "Impulse 25/49/61"
+    ]
+  },
+  {
+    "vid": 7285,
+    "patterns": [
+      "minilab"
+    ],
+    "family": "ARTURIA MINILAB",
+    "daw": 1,
+    "source": "https://www.arturia.com/store/midi-controllers-sequencers",
+    "models": [
+      "MiniLab 3",
+      "MiniLab 37"
+    ]
+  },
+  {
+    "vid": 7285,
+    "patterns": [
+      "keylab"
+    ],
+    "family": "ARTURIA KEYLAB",
+    "daw": 1,
+    "source": "https://www.arturia.com/store/midi-controllers-sequencers",
+    "models": [
+      "KeyLab Essential MK3 family",
+      "KeyLab MK3 family"
+    ]
+  },
+  {
+    "vid": 7285,
+    "patterns": [
+      "keystep"
+    ],
+    "family": "ARTURIA KEYSTEP",
+    "daw": 255,
+    "source": "https://www.arturia.com/store/midi-controllers-sequencers",
+    "models": [
+      "KeyStep",
+      "KeyStep 37",
+      "KeyStep Pro",
+      "KeyStep MK2 family"
+    ]
+  },
+  {
+    "vid": 7285,
+    "patterns": [
+      "beatstep"
+    ],
+    "family": "ARTURIA BEATSTEP",
+    "daw": 255,
+    "source": "https://www.arturia.com/store/midi-controllers-sequencers",
+    "models": [
+      "BeatStep",
+      "BeatStep Pro"
+    ]
+  },
+  {
+    "vid": 7285,
+    "patterns": [
+      "microlab"
+    ],
+    "family": "ARTURIA MICROLAB",
+    "daw": 255,
+    "source": "https://www.arturia.com/store/midi-controllers-sequencers",
+    "models": [
+      "MicroLab family"
+    ]
+  },
+  {
+    "vid": 2536,
+    "patterns": [
+      "mpk"
+    ],
+    "family": "AKAI MPK",
+    "daw": 255,
+    "source": "https://www.akaipro.com/products/controllers/",
+    "models": [
+      "MPK Mini MK3",
+      "MPK Mini IV",
+      "MPK Mini Plus / Plus II",
+      "MPK249",
+      "MPK261"
+    ]
+  },
+  {
+    "vid": 2536,
+    "patterns": [
+      "mpd"
+    ],
+    "family": "AKAI MPD",
+    "daw": 255,
+    "source": "https://www.akaipro.com/products/controllers/",
+    "models": [
+      "MPD218",
+      "MPD226",
+      "MPD232"
+    ]
+  },
+  {
+    "vid": 2536,
+    "patterns": [
+      "lpd8"
+    ],
+    "family": "AKAI LPD8",
+    "daw": 255,
+    "source": "https://www.akaipro.com/products/controllers/",
+    "models": [
+      "LPD8 MKII"
+    ]
+  },
+  {
+    "vid": 2536,
+    "patterns": [
+      "apc"
+    ],
+    "family": "AKAI APC",
+    "daw": 255,
+    "source": "https://www.akaipro.com/products/controllers/",
+    "models": [
+      "APC Mini MK2",
+      "APC Key 25 MK2",
+      "APC64"
+    ]
+  },
+  {
+    "vid": 2536,
+    "patterns": [
+      "midimix"
+    ],
+    "family": "AKAI MIDIMIX",
+    "daw": 255,
+    "source": "https://www.akaipro.com/products/controllers/",
+    "models": [
+      "MIDImix"
+    ]
+  },
+  {
+    "vid": 2536,
+    "patterns": [
+      "lpk25"
+    ],
+    "family": "AKAI LPK25",
+    "daw": 255,
+    "source": "https://www.akaipro.com/products/controllers/",
+    "models": [
+      "LPK25"
+    ]
+  },
+  {
+    "vid": 2675,
+    "patterns": [
+      "mcu",
+      "mackiecontrol"
+    ],
+    "family": "MACKIE CONTROL",
+    "daw": 0,
+    "source": "https://mackie.com/img/file_resources/MCU_Pro-XT_Pro_OM.pdf",
+    "models": [
+      "MCU Pro",
+      "Mackie Control-compatible USB surfaces"
+    ]
+  },
+  {
+    "vid": 2675,
+    "patterns": [
+      "hui"
+    ],
+    "family": "MACKIE HUI",
+    "daw": 0,
+    "source": "https://mackie.com/img/file_resources/MCU_Pro-XT_Pro_OM.pdf",
+    "models": [
+      "HUI-compatible DAW ports; legacy HUI via USB-MIDI interface"
+    ]
+  }
+]

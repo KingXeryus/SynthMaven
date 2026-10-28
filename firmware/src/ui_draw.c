@@ -902,6 +902,13 @@ static void draw_graph(void)
             cv_oy = 0;
             graph_roll(t, c);
             break;
+        case GR_CONTROLLER: {
+            char line[48];str_cpy(line,ct_connected?ct_product:"NO USB CONTROLLER",sizeof line);
+            while(text_w(&FONT_S,line)>224 && str_len(line))line[str_len(line)-1]=0;
+            cv_text(8,2,&FONT_S,line,C_WHITE);cv_text(8,26,&FONT_S,ct_connected?ct_family:"CONNECT IN USB HOST",C_GRAY);
+            cv_text(8,50,&FONT_S,ct_connected?CT_MODE_NAME[ct_mode]:"AUTO DETECT",C_HI);
+            cv_text(8,74,&FONT_S,ct_grid?"CHROMATIC PAD GRID":ct_mode>=CT_MCU?"4 PART MIX / TRANSPORT":"STANDARD MIDI INPUT",C_GRAY);break;
+        }
         case GR_SCALE:
             graph_scale(t, c);
             break;

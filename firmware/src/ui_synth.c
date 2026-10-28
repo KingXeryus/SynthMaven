@@ -23,12 +23,14 @@ enum { X_LYMODE, X_LYSOUND, X_LYSPLIT, X_LYLEVEL, X_LYOCT, X_LYPAN, X_LYFILT, X_
        X_MIN, X_MOUT,                                  /* 1.0: GLO > MIDI, the instrument's channels (seq.c midi_in_ch) */
        X_MBEND, X_MLOCAL, X_MPROG, X_MCCO,             /* 1.0: the bend range (voice.c midi_bend), LOCAL, PROG, CC OUT */
        X_MBRTH,                                        /* 1.0: EWI (seq.c midi_breath) */
-       X_SMPORT, X_SMKEY, X_SMBT, X_SMPAIR, X_SMDEV, X_SMCON, X_PTYPE, X_PNUM, X_PVAL, X_PCH, X_USBROLE, X_PGLAYER, X_PGENABLE, X_PGSPLIT, X_PGSIDE, X_PGPOINT, X_PGLEVEL, X_PGPAN, X_PGMUTE, X_PGSOLO, X_PGTRANS, X_MTUNE, X_PEDACT, X_LEARN, X_ACCEPT, X_REPEAT, X_SCENE, X_SCAP, X_SLOAD, X_LISTPOS, X_LISTSLOT, X_LISTLEN, X_LISTGO, X_FMODEL, X_FCUT, X_FRES, X_FENV, X_FDRIVE, X_FCOMP, X_FTRIM, X_TEMPLATE, X_APPLY, X_COUNT };
+       X_SMPORT, X_SMKEY, X_SMBT, X_SMPAIR, X_SMDEV, X_SMCON, X_PTYPE, X_PNUM, X_PVAL, X_PCH, X_USBROLE, X_PGLAYER, X_PGENABLE, X_PGSPLIT, X_PGSIDE, X_PGPOINT, X_PGLEVEL, X_PGPAN, X_PGMUTE, X_PGSOLO, X_PGTRANS, X_MTUNE, X_PEDACT, X_LEARN, X_ACCEPT, X_REPEAT, X_SCENE, X_SCAP, X_SLOAD, X_LISTPOS, X_LISTSLOT, X_LISTLEN, X_LISTGO, X_FMODEL, X_FCUT, X_FRES, X_FENV, X_FDRIVE, X_FCOMP, X_FTRIM, X_TEMPLATE, X_APPLY, X_TFLOOR, X_CMODE, X_CPORT, X_COUNT };
 static void mseq_fill(struct track *t, uint32_t l, uint32_t f);
 static const char *const N_QFILL[] = {"--", "RAMP+", "RAMP-", "TRI", "SINE", "SQR", "RND", "FLAT", "INVRT", "SHIFT"};
 enum { QF_NONE, QF_UP, QF_DOWN, QF_TRI, QF_SINE, QF_SQR, QF_RND, QF_FLAT, QF_INV, QF_SHIFT, QF_N };
 static const char *const N_RNDWHAT[] = {"EDIT", "+ENV", "ALL", "ENV", "MOD", "FX", "OPS"};   /* (0.7: one section, as the
                                                         * Hydrasynth's; OPS: FMX's operators, opsix style) */
+static const char *const N_CPORT[]={"AUTO","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"};
+static const char *const N_TFLOOR[]={"C0","C1","C2","C3","C4","C5","C6","C7","C8"};
 static const char *const N_OCTS[] = {"-2", "-1", "0", "+1", "+2"};
 static const char *const N_MOD_TEMPLATE[]={"VEL BRIGHT","PRESS VIB","WHEEL VIB","ENV SWELL"};
 static int16_t xv[X_COUNT] = {[X_RNDAMT] = 40, [X_RNDWHAT] = 1, [X_MSLOT] = 1, [X_FOP] = 1, [X_FTO] = 1, [X_FFROM] = 2,
@@ -37,7 +39,7 @@ static const char *const N_FRATIO[32] = {"0.5", "1", "2", "3", "4", "5", "6", "7
                                          "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26",
                                          "27", "28", "29", "30", "31"};
 static const char *const N_FFIXC[4] = {"1Hz", "10Hz", "100Hz", "1kHz"};
-_Static_assert(X_FOP == 19 && X_FSTORE == 40 && X_HPOS == 41 && X_QLANE == 43 && X_TSYS == 47 && QF_N == NELEM(N_QFILL),
+_Static_assert(X_FOP == 19 && X_FSTORE == 40 && X_HPOS == 41 && X_QLANE == 43 && X_TSYS == 47 && X_TFLOOR == 99 && QF_N == NELEM(N_QFILL),
                "params.c PAGES: FMX's ids, UNDO's, MOD SEQ's");
 static const char *const N_CMP[] = {"EDIT", "ORIG"};
 static const char *const N_MIN_CH[17] = {"OMNI", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
@@ -95,6 +97,9 @@ static const param_desc_t XD[X_COUNT] = {
     [X_QVAL] = PD("VALUE", F_INT, -8, 7, 0),
     [X_QFILL] = PE("SHAPE", N_QFILL, 0),
     [X_MTUNE] = PE("MASTER", N_ONOFF, 1),
+    [X_CMODE] = PE("MODE", CT_MODE_NAME,0),
+    [X_CPORT] = PE("PORT", N_CPORT,0),
+    [X_TFLOOR] = PE("FROM", N_TFLOOR, 0),
     [X_TSYS] = PE("TUNE", N_TUNE, 0),
     [X_TROOT] = PE("ROOT", N_NOTE, 0),
     [X_TA4] = {"A4", F_INT, 400, 480, 440, 0, "Hz"},
@@ -631,6 +636,9 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
     }
     case X_HCMP: xv[X_HCMP] = hist_cmp_on; *valp = &xv[X_HCMP]; break;
     case X_MTUNE: xv[X_MTUNE]=!(master_tuning_bypass&(1u<<(song.sel%4u)));*valp=&xv[X_MTUNE];break;
+    case X_CMODE:xv[id]=sm_controller_override;*valp=&xv[id];break;
+    case X_CPORT:xv[id]=sm_controller_port;*valp=&xv[id];break;
+    case X_TFLOOR: xv[X_TFLOOR]=tune_floor_octave;*valp=&xv[X_TFLOOR];break;
     case X_TSYS: xv[X_TSYS] = (int16_t)(tune_cfg.sys % TU_N); *valp = &xv[X_TSYS]; break;
     case X_TROOT: xv[X_TROOT] = (int16_t)(tune_cfg.root % 12u); *valp = &xv[X_TROOT]; break;
     case X_TA4: xv[X_TA4] = (int16_t)(440 + clamp(tune_cfg.a4, -40, 40)); *valp = &xv[X_TA4]; break;
@@ -812,10 +820,17 @@ static void syn_changed(uint32_t id, int16_t *vp)
         ui.force = 1;
         break;
     case X_MTUNE: master_tuning_bypass=(uint8_t)((master_tuning_bypass&~(1u<<(song.sel%4u)))|((!*vp)<<(song.sel%4u)));settings_later=1;break;
+    case X_CMODE:case X_CPORT:
+        if(id==X_CPORT)sm_controller_port=(uint8_t)clamp(*vp,0,16);
+        fm1_irq_off();sm_controller_mode(id==X_CMODE?(uint32_t)clamp(*vp,0,3):sm_controller_override);fm1_irq_on();
+        panic_req|=(1u<<NTRK)-1u;settings_later=1;break;
+    case X_TFLOOR:
     case X_TSYS:
     case X_TROOT:
     case X_TA4:                                       /* (0.9) the TUNING: the table again, saved with the settings */
-        if (id == X_TSYS)
+        if(id==X_TFLOOR)
+            tune_floor_octave=(uint8_t)clamp(*vp,0,8);
+        else if (id == X_TSYS)
             tune_cfg.sys = (uint8_t)clamp(*vp, 0, TU_N - 1);
         else if (id == X_TROOT)
             tune_cfg.root = (uint8_t)clamp(*vp, 0, 11);

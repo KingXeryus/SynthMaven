@@ -3138,6 +3138,9 @@ static void clkout_block(uint32_t n)
 
 /* everything that happens between two rendered blocks: transport, input, the steps of every
  * track at the clock, the click, the rolls and the arps; then the clock moves on by n samples */
+#if SYNTHMAVEN_SYNTH
+#include "controller.c"
+#endif
 static void events_block(uint32_t n)
 {
     chord_auto_tick(n);
@@ -3271,8 +3274,8 @@ static void events_block(uint32_t n)
            || sm_ble_pending()
 #endif
     ) {
-        uint32_t pkt;
-        if(mi_r != mi_w) {pkt=midi_in_q[mi_r % MQ];mi_r++;}
+        uint32_t pkt,cable=0;
+        if(mi_r != mi_w) {pkt=midi_in_q[mi_r % MQ];cable=midi_in_cable[mi_r % MQ];mi_r++;}
 #if SM_BLE
         else if(!sm_ble_read(&pkt))break;
 #endif
@@ -3285,6 +3288,7 @@ static void events_block(uint32_t n)
             continue;
         }
 #if SYNTHMAVEN_SYNTH
+        if(sm_controller_event(st,ch,&d1,d2,port,cable))continue;
         /* Pedal actions have their own PATCH route, before KEY IN rejects BLE CCs. */
         if(sm_pedal_receive(st,ch,d1,d2,port,(!song.g[G_ROUTE] && !midi_pc_off)?(program_mode ? midi_track(ch)!=0 : midi_track(ch)==&trk[0]):-1))continue;
 #endif

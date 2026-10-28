@@ -1222,7 +1222,7 @@ static void dsu_boot(void)                          /* the SYN kits from the set
     }
 #endif
  #if SYNTHMAVEN_SYNTH
-    if(set_tail_n>=100u){master_tuning_record_t r;memcpy(&r,set_tail+88,sizeof r);master_tuning_take(&r);}
+    if(set_tail_n>=100u){master_tuning_record_t r;memcpy(&r,set_tail+88,sizeof r);if(!master_tuning_take(&r))tune_build();}
     if(set_tail_n>=SET_TAIL_MAX){sm_performance_record_t r;memcpy(&r,set_tail+100,sizeof r);sm_performance_take(&r);}
  #endif
     dsu_dirty = 0;
