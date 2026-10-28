@@ -35,6 +35,7 @@ static uint8_t uh_rx[64 + 4] __attribute__((aligned(4)));
 static uint8_t uh_cfg[1024];                                  /* a configuration, cut short if longer */
 static struct {
     uint16_t vid,pid;
+    uint8_t daw_hint;
     char product[48],iface_name[32];
     uint8_t want;                                       /* requested mode (main loop) */
     uint8_t on;                                         /* the port is a host */
@@ -209,7 +210,7 @@ static int uh_probe(uint8_t depth, uh_midi_t *m)
         return 0;
     if (m->alt && uh_ctl(addr, 0x01, 11, m->alt, m->iface, 0, 0, mps) < 0)   /* SET_INTERFACE */
         return 0;
-    uh.vid=uh.pid=0;uh.product[0]=uh.iface_name[0]=0;
+    uh.vid=uh.pid=0;uh.daw_hint=255;uh.product[0]=uh.iface_name[0]=0;
     if(uh_ctl(addr,0x80,6,0x0100,0,sizeof dd,dd,mps)>=18){
         uh.vid=(uint16_t)(dd[8]|dd[9]<<8);uh.pid=(uint16_t)(dd[10]|dd[11]<<8);
         uh_string(addr,mps,dd[15],uh.product,sizeof uh.product);
@@ -218,6 +219,15 @@ static int uh_probe(uint8_t depth, uh_midi_t *m)
     for(uint32_t i=0;i+9u<=total;){uint32_t len=uh_cfg[i];if(len<2u||i+len>total)break;
       if(uh_cfg[i+1]==4u&&len>=9u&&uh_cfg[i+2]==m->iface&&uh_cfg[i+3]==m->alt){string_index=uh_cfg[i+8];break;}i+=len;}
     uh_string(addr,mps,string_index,uh.iface_name,sizeof uh.iface_name);
+    /* Embedded jack names identify the actual virtual control port, before family fallbacks. */
+    for(uint32_t cable=0;cable<16u;cable++){
+      uint8_t idx=uh_cable_string(uh_cfg,total,m,cable);if(!idx)continue;
+      char name[32];uh_string(addr,mps,idx,name,sizeof name);
+      for(uint32_t j=0;name[j];j++)if(name[j]>='a'&&name[j]<='z')name[j]-=32;
+      int match=0;static const char *const tags[]={"MCU","HUI","DAW","MACKIE"};
+      for(uint32_t j=0;name[j]&&!match;j++)for(uint32_t k=0;k<4u;k++){uint32_t q=0;while(tags[k][q]&&name[j+q]==tags[k][q])q++;if(!tags[k][q]){match=1;break;}}
+      if(match){uh.daw_hint=(uint8_t)cable;break;}
+    }
     uh.dev = addr;
     return 1;
 }
@@ -327,7 +337,7 @@ static void uh_start_ep(const uh_midi_t *m)
 static void uh_session_end(void)
 {
     uh.run = 0;
-    uh.vid=uh.pid=0;uh.product[0]=uh.iface_name[0]=0;uh_mackie_ready=uh_mackie_pos=0;
+    uh.vid=uh.pid=0;uh.daw_hint=255;uh.product[0]=uh.iface_name[0]=0;uh_mackie_ready=uh_mackie_pos=0;
     uh.out_mps = 0;
     uh.tx_count = 0;
     mo_r = mo_w;

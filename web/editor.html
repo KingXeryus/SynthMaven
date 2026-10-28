@@ -10784,6 +10784,10 @@ function smLayerRender(){
 }
 $("sm-layer-read").addEventListener("click",()=>op(smLayerRead));
 
+$("sm-controller-read").addEventListener("click",()=>op(smControllerRead));
+$("sm-controller-mode").addEventListener("change",()=>op(smControllerWrite));
+$("sm-controller-port").addEventListener("change",()=>op(smControllerWrite));
+
 // SynthMaven USB-only routing. Direct host mode is selected on the hardware.
 let smState = null;
 function smCascade() { $("sm-patch-options").hidden = !$("sm-patch-enabled").checked; }
@@ -10806,9 +10810,6 @@ async function smControllerRead(){
  $("sm-controller-port").value=String(a[3]);
 }
 async function smControllerWrite(){const a=await rq([117,[1,+$("sm-controller-mode").value,+$("sm-controller-port").value]]);checkRc(a[0]);await smControllerRead();}
-$("sm-controller-read").addEventListener("click",()=>op(smControllerRead));
-$("sm-controller-mode").addEventListener("change",()=>op(smControllerWrite));
-$("sm-controller-port").addEventListener("change",()=>op(smControllerWrite));
 async function smRefresh() {
   try {
     smState = await smRequest(100);

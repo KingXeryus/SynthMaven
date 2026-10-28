@@ -5,6 +5,7 @@ enum { CT_AUTO,CT_MIDI,CT_MCU,CT_HUI };
 static const char *const CT_MODE_NAME[]={"AUTO","MIDI","MCU","HUI"};
 static uint8_t ct_confirmed,ct_connected,ct_mode=CT_MIDI,ct_daw=255,ct_focus=255,ct_dirty;
 static uint16_t ct_vid,ct_pid;
+static uint8_t ct_port_hint=255;
 static char ct_product[48],ct_family[24],ct_iface[32];
 static uint8_t ct_zone=255,ct_zone_pending,ct_msb[8],ct_msb_valid,ct_touch;
 static uint32_t ct_ping_at,ct_feedback_at,ct_zone_at;
@@ -21,10 +22,11 @@ static int ct_contains(const char *s,const char *q){for(uint32_t i=0;s[i];i++){u
 static void ct_refresh(void){memset(ct_last,255,sizeof ct_last);ct_last_transport=255;ct_dirty=1;}
 static void sm_controller_attach(uint16_t vid,uint16_t pid,const char *product,const char *iface){
  char name[64],inf[40];ct_normal(name,product,sizeof name);ct_normal(inf,iface,sizeof inf);
- ct_focus=255;ct_vid=vid;ct_pid=pid;ct_connected=1;ct_confirmed=0;ct_copy(ct_iface,iface,sizeof ct_iface);ct_copy(ct_product,product,sizeof ct_product);ct_copy(ct_family,"GENERIC USB MIDI",sizeof ct_family);
+ ct_port_hint=255;ct_focus=255;ct_vid=vid;ct_pid=pid;ct_connected=1;ct_confirmed=0;ct_copy(ct_iface,iface,sizeof ct_iface);ct_copy(ct_product,product,sizeof ct_product);ct_copy(ct_family,"GENERIC USB MIDI",sizeof ct_family);
  ct_daw=255;ct_mode=CT_MIDI;ct_zone=255;ct_zone_pending=0;ct_msb_valid=ct_touch=0;ct_count=0;
  for(uint32_t i=0;i<NELEM(CT_PROFILE);i++){const ct_profile_t *p=&CT_PROFILE[i];if((vid==p->vid||(vid==0x09e8&&p->vid==0x13b2))&&ct_contains(name,p->match)){ct_copy(ct_family,p->family,sizeof ct_family);ct_daw=p->daw;if(vid==0x0a73)ct_mode=ct_contains(name,"hui")?CT_HUI:CT_MCU;break;}}
  if(ct_contains(inf,"daw")||ct_contains(inf,"mackie")||ct_contains(inf,"hui")){ct_daw=0;ct_mode=ct_contains(inf,"hui")?CT_HUI:CT_MCU;}
+ if(vid==0x1c75 && (ct_contains(name,"minilab3")||ct_contains(name,"minilab37")))ct_daw=2;
  if(sm_controller_override){ct_mode=sm_controller_override;ct_daw=ct_mode==CT_MIDI?255:0;}
  else if(ct_daw!=255&&ct_mode==CT_MIDI)ct_mode=CT_MCU;
  if(sm_controller_port && sm_controller_override!=CT_MIDI)ct_daw=(uint8_t)(sm_controller_port-1u);
@@ -40,8 +42,9 @@ static void sm_controller_attach(uint16_t vid,uint16_t pid,const char *product,c
  if(ct_grid){ct_daw=255;ct_mode=CT_MIDI;midi_out_control_only=1;}
  ct_query=(uint8_t)(vid==0x0a73 && ct_daw!=255 && ct_mode==CT_MCU);ct_ping_at=fm1_ms-1000u;ct_feedback_at=fm1_ms;ct_refresh();
 }
+static void sm_controller_hint(uint32_t hint){ct_port_hint=hint<16u?(uint8_t)hint:255;if(ct_port_hint<16u&&!ct_grid&&!sm_controller_port&&sm_controller_override!=CT_MIDI){ct_daw=ct_port_hint;if(ct_mode==CT_MIDI)ct_mode=CT_MCU;midi_out_control_only=(uint8_t)(ct_daw==0);}}
 static void sm_controller_disconnect(void){midi_out_control_only=0;ct_grid=ct_grid_init=ct_grid_mode_sent=0;ct_connected=0;ct_vid=ct_pid=0;ct_product[0]=ct_family[0]=0;ct_daw=255;ct_mode=CT_MIDI;ct_zone=255;ct_zone_pending=ct_msb_valid=ct_touch=0;ct_focus=255;ct_query=0;ct_refresh();}
-static void sm_controller_mode(uint32_t mode){if(mode>CT_HUI)return;sm_controller_override=(uint8_t)mode;ct_zone_pending=ct_msb_valid=ct_touch=0;if(ct_connected){char n[48];ct_copy(n,ct_product,sizeof n);sm_controller_attach(ct_vid,ct_pid,n,ct_iface);}}
+static void sm_controller_mode(uint32_t mode){if(mode>CT_HUI)return;sm_controller_override=(uint8_t)mode;ct_zone_pending=ct_msb_valid=ct_touch=0;if(ct_connected){char n[48];ct_copy(n,ct_product,sizeof n);uint8_t hint=ct_port_hint;sm_controller_attach(ct_vid,ct_pid,n,ct_iface);sm_controller_hint(hint);}}
 static uint32_t ct_packet(uint32_t st,uint32_t a,uint32_t b){return(ct_daw==255?0u:(uint32_t)ct_daw<<4)|(st>>4)|(st<<8)|(a<<16)|(b<<24);}
 /* Main-loop output only. Reserve complete pairs/frames before publishing. */
 static int ct_output(const uint32_t *packets,uint32_t n){int ok=0;fm1_irq_off();if(midi_out_room()>=n){for(uint32_t i=0;i<n;i++)(void)midi_out_try(packets[i]);ok=1;}fm1_irq_on();return ok;}

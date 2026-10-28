@@ -40,7 +40,7 @@ static uint16_t build_kbd_cfg(uint8_t *d, int with_out)
         9, 4, 1, 0, 2, 1, 3, 0, 0,                      /* IF1 MIDI streaming, two endpoints */
         7, 0x24, 1, 0, 1, 0x41, 0,
         6, 0x24, 2, 1, 1, 0,
-        9, 0x24, 3, 1, 3, 1, 2, 1, 0,
+        9, 0x24, 3, 1, 3, 1, 2, 1, 4,
         9, 5, 0x02, 2, 64, 0, 0, 0, 0,                  /* OUT first, as many devices list it */
         5, 0x25, 1, 1, 1,
         9, 5, 0x81, 2, 64, 0, 0, 0, 0,                  /* EP1 IN bulk */
@@ -141,7 +141,7 @@ static int answer(dev_t_ *d, const uint8_t *s)
         n = 18;
     } else if (rt == 0x80 && rq == 6 && (val >> 8) == 3) {
         if (!(val & 255u)) { rsp[0]=4;rsp[1]=3;rsp[2]=9;rsp[3]=4;n=4; }
-        else { const char *name="Model USB MIDI";n=2u+2u*(uint32_t)strlen(name);rsp[0]=(uint8_t)n;rsp[1]=3;for(uint32_t j=0;name[j];j++){rsp[2+2*j]=(uint8_t)name[j];rsp[3+2*j]=0;} }
+        else { const char *name=(val&255u)==4?"Model MCU/HUI":"Model USB MIDI";n=2u+2u*(uint32_t)strlen(name);rsp[0]=(uint8_t)n;rsp[1]=3;for(uint32_t j=0;name[j];j++){rsp[2+2*j]=(uint8_t)name[j];rsp[3+2*j]=0;} }
     } else if (rt == 0x80 && rq == 6 && (val >> 8) == 2) {
         memcpy(rsp, d->cfgd, d->cfglen);
         n = d->cfglen;
@@ -426,7 +426,10 @@ static void test_parse(void)
     uh_mackie_packet(0x0000F034u);uh_mackie_packet(0x00146634u);uh_mackie_packet(0x0000F735u);
     assert(uh_mackie_ready==7 && uh_mackie_cable==3 && uh_mackie_buf[3]==0x66);
     uh_mackie_ready=uh_mackie_pos=0;
-    puts("USB host: descriptor walk, MIDI packet filter and bounded Mackie mailbox: OK");
+    memcpy(cut,kbd_cfg,kbd_cfg_len);cut[57]=4;assert(uh_parse_midi(cut,kbd_cfg_len,&m));
+    assert(uh_cable_string(cut,kbd_cfg_len,&m,0)==4 && !uh_cable_string(cut,kbd_cfg_len,&m,1));
+    assert(!uh_cable_string(cut,57,&m,0));
+    puts("USB host: descriptor walk, named cable identity, MIDI packet filter and bounded Mackie mailbox: OK");
 }
 
 static void test_keyboard(int via_hub)
@@ -435,7 +438,7 @@ static void test_keyboard(int via_hub)
     host_on();
     assert(enumerate());
     assert(uh.run && uh.msg == UH_MSG_MIDI);
-    assert(uh.vid==0x1209 && uh.pid==1 && !strcmp(uh.product,"Model USB MIDI"));
+    assert(uh.vid==0x1209 && uh.pid==1 && !strcmp(uh.product,"Model USB MIDI") && uh.daw_hint==0);
     uh.msg = 0;
     assert(dev[KBD].cfg == 1 && dev[KBD].addr == uh.dev && dev[KBD].addr != 0);
     if (via_hub) {

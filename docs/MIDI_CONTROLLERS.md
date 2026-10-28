@@ -23,7 +23,7 @@ The catalogue identifies families, not a claim that every generation or every cu
 
 The first four strips control the four program parts: volume faders, pan encoders, mute, solo, select and record arm. Play, stop and record control the sequencer. Fader, pan, switch and transport feedback are sent back; touched motor faders are not overwritten. Additional strips, master fader, scribble strips and DAW automation are not implemented. Musical pitch bend on a keyboard's music port remains pitch bend, rather than becoming a mixer fader.
 
-Family profiles select a dedicated DAW cable where available. Mackie manufacturer handshakes and HUI traffic confirm the protocol. GLO CONTROLLER and the editor provide an advanced protocol/port override for unusual USB layouts. Standard MIDI override disables surface decoding. Settings preserve the override across restarts.
+Named USB MIDI jacks select the actual control cable where available; family profiles supply a fallback when jack names are absent. MiniLab 3 uses the third USB cable for MCU/HUI, keeping its separate DIN Thru cable musical. Mackie manufacturer handshakes and HUI traffic confirm the protocol. GLO CONTROLLER and the editor provide an advanced protocol/port override for unusual USB layouts. Standard MIDI override disables surface decoding. Settings preserve the override across restarts.
 
 Launchpad programmer mode is restored to Live/standalone mode when returning to COMPUTER mode while still connected. An abrupt unplug cannot send that restoration; use the controller's mode control or restart it. APC Mini's separate Note Mode port keeps its original note mapping.
 
@@ -35,6 +35,7 @@ Automatic identity rules, USB cable separation, MCU/HUI decoding, handshake repl
 
 - [Alesis controller range](https://www.alesis.com/products/browse/category/midi-controllers.html)
 - [Novation Launchkey](https://us.novationmusic.com/launchkey)
+- [MiniLab 3 port roles](https://support.arturia.com/hc/en-us/articles/6189475866396-MiniLab-3-General-Questions)
 - [Arturia controllers](https://www.arturia.com/store/midi-controllers-sequencers)
 - [Akai controllers](https://www.akaipro.com/products/controllers/)
 - [Mackie MCU Pro manual](https://mackie.com/img/file_resources/MCU_Pro-XT_Pro_OM.pdf)

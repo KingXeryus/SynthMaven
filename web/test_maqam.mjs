@@ -16,7 +16,7 @@ for(let i=0;i<catalog.length;i++){
 }
 const pitches=JSON.parse(readFileSync(new URL('../build/host/maqam-pitches.json',import.meta.url),'utf8'));
 assert.equal(pitches.length,46*12);
-for(const p of pitches){const row=ctx.maqams.find(x=>x.sys===p.sys);assert(row);assert.equal(p.pitches.length,128);for(let key=0;key<128;key++)assert.equal(p.pitches[key],row.offsets[(key+12-p.root)%12]*4096/100,`${row.name} root ${p.root}, MIDI ${key}`);}
+for(const p of pitches){const row=ctx.maqams.find(x=>x.sys===p.sys);assert(row);assert.equal(p.pitches.length,128);for(let key=0;key<128;key++)assert.equal(p.pitches[key],key<12?0:row.offsets[(key+12-p.root)%12]*4096/100,`${row.name} root ${p.root}, MIDI ${key}`);}
 assert.equal(ctx.systems().length,62);ctx.dev.info.proto=16;assert.equal(ctx.systems().length,14);ctx.dev.info.proto=14;assert.equal(ctx.systems().length,14);
 assert(html.includes('sys: TU_USER, deg: sc.deg'));
 const source=html.slice(html.indexOf('/*PROTO-BEGIN*/'),html.indexOf('/*PROTO-END*/'));
@@ -26,7 +26,7 @@ for(const modern of [false,true]){
  const input=[...mock.access.inputs.values()][0],output=[...mock.access.outputs.values()][0];
  const link=new E.Link(d=>output.send(d),{timeout:500});input.onmidimessage=e=>link.receive(e.data);const rq=r=>link.request(r);
  try{
-  const info=E.parse[E.CMD.INFO](await rq(E.req.info()));assert.equal(info.proto,modern?22:16);
+  const info=E.parse[E.CMD.INFO](await rq(E.req.info()));assert.equal(info.proto,modern?23:16);
   for(const sys of [6,7,13,14,57,58,61,62]){
    const rc=E.parse[E.CMD.TUNE_PUT](await rq(E.req.tunePut(sys,11,[0,1600,3200],19200,432))).rc;
    assert.equal(rc,sys<(modern?62:14)?0:1);

@@ -262,7 +262,7 @@ static void fm1_main(void)
         usb_host_switch(host_wanted);
         usb_host_task(fm1_ms);
         sm_usb_device_seen=(uint8_t)usb_host_device_present();sm_usb_midi_seen=(uint8_t)usb_host_connected();
-        if(uh.run && (!ct_connected || ct_vid!=uh.vid || ct_pid!=uh.pid)){fm1_irq_off();sm_controller_attach(uh.vid,uh.pid,uh.product,uh.iface_name);fm1_irq_on();}
+        if(uh.run && (!ct_connected || ct_vid!=uh.vid || ct_pid!=uh.pid)){fm1_irq_off();sm_controller_attach(uh.vid,uh.pid,uh.product,uh.iface_name);sm_controller_hint(uh.daw_hint);fm1_irq_on();}
         if(!uh.run && ct_connected){fm1_irq_off();sm_controller_disconnect();fm1_irq_on();}
         if(uh_mackie_ready){uint8_t data[32],len,cable;fm1_irq_off();len=uh_mackie_ready;cable=uh_mackie_cable;memcpy(data,uh_mackie_buf,len);uh_mackie_ready=0;fm1_irq_on();sm_controller_mackie(data,len,cable);}
         sm_controller_tick(fm1_ms);
