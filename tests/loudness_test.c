@@ -3,7 +3,17 @@
 #include "ui_pages_test.c"
 int main(void){
  int32_t l[CTL],r[CTL];
- check(LIM_T==18000 && KNEE==16384,"restored conservative output thresholds");
+ bank_resolve();panel=PANEL_DEFAULT;layers_init();host_tracks_init();program_mode=1;program_layer=1;song.solo=0;song.sel=0;
+ for(uint32_t i=0;i<4;i++){program_route[i].enabled=1;trk[i].p[P_LEVEL]=104;trk[i].p[P_MUTE]=0;}
+ check(sm_solo_part()==-1,"four enabled layers use mix headroom");
+ song.solo=2;check(sm_solo_part()==1,"solo bypasses layered attenuation");song.solo=0;
+ program_layer=0;check(sm_solo_part()==0,"layer OFF preserves selected solo gain");
+ program_solo_gain[0]=21;sm_solo_gain_cur=4096;
+ for(uint32_t b=0;b<120;b++){for(uint32_t i=0;i<CTL;i++){l[i]=100;r[i]=-100;}sm_solo_output(l,r,CTL);}
+ check(l[CTL-1]>=995&&l[CTL-1]<=1005,"stored solo boost is preserved");
+ program_mode=0;
+
+ check(LIM_T==25500 && KNEE==30000,"solo output thresholds retained");
  /* Quiet material is unchanged except for exactly one control block of look-ahead. */
  lim_t s={.env=LIM_T,.g=32768};int32_t prev[CTL];memset(prev,0,sizeof prev);
  for(uint32_t b=0;b<20;b++){for(uint32_t i=0;i<CTL;i++){l[i]=(int32_t)(2000*sin((b*CTL+i)*.19));r[i]=-l[i];}int32_t next[CTL];memcpy(next,l,sizeof next);lim_block(&s,l,r,CTL);for(uint32_t i=0;i<CTL;i++)check(l[i]==prev[i]&&r[i]==-prev[i],"quiet signal is transparent through limiter look-ahead");memcpy(prev,next,sizeof prev);}
