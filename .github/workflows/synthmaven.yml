@@ -52,6 +52,10 @@ jobs:
         run: |
           JIELI_TOOLCHAIN="$RUNNER_TEMP/jieli/toolchain" AC79_SDK="$RUNNER_TEMP/ac79" sh build.sh --release "$(python3 -c 'import json; print(json.load(open("release.json"))["version"])')"
           python3 tools/make_synthmaven_site.py --package "build/felucca-$(python3 -c 'import json; print(json.load(open("release.json"))["version"])').fwsc"
+      - name: Verify loader reset using the built package
+        run: |
+          cc -O2 tests/ldr_test.c -o build/host/ldr_test
+          build/host/ldr_test build/felucca-2.2.1.fwsc build/felucca-2.2.1.fwsc
       - name: Report target build status
         run: |
           if [ ! -f build/felucca-$(python3 -c 'import json; print(json.load(open("release.json"))["version"])').fwsc ]; then

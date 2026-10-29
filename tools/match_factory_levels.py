@@ -46,6 +46,6 @@ def main():
   assert len(audible)==556 and [r['name'] for r in result if r['lufs'] is None]==['USER WT']
   # 2.2.1 reports loudness without enforcing the reverted target.
   assert all(r['true_peak_dbtp']<=-1 for r in audible), 'Factory true peak exceeds -1 dBTP'
-  print('PASS: 556 sounds within ±0.5 LU; one intentionally silent USER WT; all true peaks below -1 dBTP')
+  print('PASS: 556 audible sounds; one intentionally silent USER WT; all true peaks below -1 dBTP')
  print('Measured',len(result),'audible',len(audible));print('LUFS range',min(r['lufs'] for r in audible),max(r['lufs'] for r in audible));print('Peak max',max(r['true_peak_dbtp'] for r in audible));print('Quietest',sorted(audible,key=lambda r:r['lufs'])[:8]);print('Silent',[r['name'] for r in result if r['lufs'] is None])
 if __name__=='__main__':main()
