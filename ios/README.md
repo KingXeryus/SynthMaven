@@ -1,6 +1,6 @@
 # SynthMaven Editor for iPhone and iPad
 
-Native iOS app wrapping the **existing SynthMaven web editor**, bundled offline. Version 3.0 accompanies SynthMaven firmware 3.0. Version 3.0 (8), displayed as **SM FM1 Editor** on the Home Screen, is available to the internal FM1 Release Testing group and submitted for external FM1 Friends testing. External availability requires Apple's Beta App Review approval. It is not a public App Store release.
+Native iOS app wrapping the **existing SynthMaven web editor**, bundled offline. Version 3.0 accompanies SynthMaven firmware 3.0. Version 3.0 (8), displayed as **SM FM1 Editor** on the Home Screen, is available to the internal FM1 Release Testing group and submitted for external FM1 Friends testing. External availability requires Apple's Beta App Review approval. It is not a public App Store release. The next app release is prepared as **3.1 (9)** and retains the exact spaced Home Screen name **SM FM1 Editor**; that next build is not yet uploaded.
 
 ## USB editing
 
