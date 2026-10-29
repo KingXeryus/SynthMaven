@@ -70,7 +70,7 @@ jobs:
             build/host/loudness-crosscheck.json
             build/factory-programs/audit.json
             build/factory-programs/*Previews.zip
-            docs/SynthMaven-2.2-User-Guide.pdf
+            docs/SynthMaven-2.2.1-User-Guide.pdf
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/synthmaven-site
@@ -89,10 +89,10 @@ jobs:
       - name: Package release assets and checksums
         run: |
           mkdir -p release-files
-          cp release-artifact/build/felucca-2.2.fwsc release-files/synthmaven-2.2.fwsc
-          cp release-artifact/build/synthmaven-site/source/SynthMaven-source.zip release-files/SynthMaven-2.2-source.zip
-          cp docs/release-2.2.md release-files/RELEASE-NOTES.md
-          cp docs/SynthMaven-2.2-User-Guide.pdf release-files/
+          cp release-artifact/build/felucca-2.2.1.fwsc release-files/synthmaven-2.2.1.fwsc
+          cp release-artifact/build/synthmaven-site/source/SynthMaven-source.zip release-files/SynthMaven-2.2.1-source.zip
+          cp docs/release-2.2.1.md release-files/RELEASE-NOTES.md
+          cp docs/SynthMaven-2.2.1-User-Guide.pdf release-files/
           cp release-artifact/build/host/factory-level-audit.json release-files/factory-sound-audit.json
           cp release-artifact/build/factory-programs/audit.json release-files/factory-program-audit.json
           cp release-artifact/build/factory-programs/*Previews.zip release-files/
@@ -105,13 +105,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh release view v2.2 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            existing=$(gh release view v2.2 --repo "$GITHUB_REPOSITORY" --json targetCommitish --jq .targetCommitish)
+          if gh release view v2.2.1 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            existing=$(gh release view v2.2.1 --repo "$GITHUB_REPOSITORY" --json targetCommitish --jq .targetCommitish)
             test "$existing" = "$GITHUB_SHA" || { echo 'Existing release points to another commit; refusing deployment.'; exit 1; }
-            echo 'Release v2.2 already exists at this commit; keeping immutable assets.'
+            echo 'Release v2.2.1 already exists at this commit; keeping immutable assets.'
             exit 0
           fi
-          gh release create v2.2 release-files/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "SynthMaven 2.2" --notes-file docs/release-2.2.md --latest
+          gh release create v2.2.1 release-files/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "SynthMaven 2.2.1" --notes-file docs/release-2.2.1.md --latest
   deploy:
     if: always() && needs.build.result == 'success' && github.ref == 'refs/heads/main' && needs.publish_release.result == 'success'
     needs: [build, publish_release]

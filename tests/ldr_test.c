@@ -90,7 +90,7 @@ static void ota_commit(const uint8_t *parm) { (void)parm; }
 static int ldr_fread(uint32_t off, void *p, uint32_t n) { memcpy(p, nor + off, n); return 0; }
 static int ldr_erase(uint32_t off)
 {
-    if (off < 0x4000u || off >= 0xFC000u || (off & 0xFFFu)) bad_range++;
+    if (off < 0x4000u || off >= 0xFF000u || (off & 0xFFFu)) bad_range++;
     if (off < 0x4000u) { printf("ERASE IN THE HEAD %#x\n", off); exit(1); }
     erases++;
     memset(nor + off, 0xFF, 0x1000);
@@ -142,6 +142,7 @@ static uint32_t flash_off(const uint8_t *lg)        /* flash.bin offset in the l
 }
 
 static int check(const char *what, int ok) { printf("%-56s %s\n", what, ok ? "ok" : "FAIL"); return ok ? 0 : 1; }
+static int erased(uint32_t a, uint32_t b) { for (; a < b; a++) if (nor[a] != 0xff) return 0; return 1; }
 
 static void put_record(void)                         /* a valid update record at 0xE4F00 (the SPL runs the loader) */
 {
@@ -167,18 +168,23 @@ int main(int argc, char **argv)
     memcpy(nor, old + ofo, 0x93000);
     memcpy(head, nor, sizeof head);
     put_record();
+    memset(nor + 0x97000, 0x42, 0x49000);
+    memset(nor + 0xE5000, 0x42, 0x16000);
+    memset(nor + 0xFC000, 0x42, 0x3000);
     rc = ldr_session();
     printf("  rc %d, %u requests, %u sector erases\n", rc, requests, erases);
     bad += check("install completes", rc == 0);
+    bad += check("all user storage erased", erased(0x97000,0xE0000) && erased(0xE5000,0xFB000) && erased(0xFC000,0xFF000));
     bad += check("app area == the new package's flash.bin", !memcmp(nor + 0x4000, logical + nfo + 0x4000, 0x93000 - 0x4000));
     bad += check("flash head [0, 0x4000) untouched", !memcmp(nor, head, sizeof head));
     bad += check("finish asked (0xF0000000)", f0_asked >= 1);
     bad += check("update record cleared (RAM + flash)", record_cleared && nor[0xE4F06] == 0xFF);
     bad += check("no write outside the allowed windows", bad_range == 0);
-    /* same package again: nothing to erase */
+    /* Reinstalling the same package must also reset user data. */
     erases = 0; requests = 0;
+    nor[0x97000] = 0;
     rc = ldr_session();
-    bad += check("re-run with the same package erases nothing", rc == 0 && erases == 0);
+    bad += check("re-run with the same package resets user data", rc == 0 && nor[0x97000] == 0xFF);
     /* a package for another chip key is refused before any erase */
     {
         uint8_t save = logical[nfo + 0x4000 + 5];
@@ -215,8 +221,10 @@ int main(int argc, char **argv)
         corrupt_at = 0;
         /* no "success" from the host: the record stays (the host can finish later) */
         no_finish = 1;
+        nor[0x97000] = 0x42;
         rc = ldr_session();
         bad += check("no \"success\" from the host: the record stays", rc == -13 && !record_cleared && nor[0xE4F06] == r6);
+        bad += check("unconfirmed update preserves user data", nor[0x97000] == 0x42);
         no_finish = 0;
         rc = ldr_session();
         bad += check("... and the next session finishes", rc == 0 && record_cleared && nor[0xE4F06] == 0xFF);

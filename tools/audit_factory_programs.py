@@ -35,20 +35,20 @@ for job,render_note in renders:
  assert lu is not None and rms>1e-6,'Silent factory part: '+name(job)
  assert pk<=ceiling,('Peak exceeds ceiling',name(job),pk)
  assert not np.any(np.abs(x)>=1),'Clipping: '+name(job)
- if mode not in ['hot','raw']:assert abs(lu-target)<=tol,('Loudness out of tolerance',name(job),lu)
+ # Loudness is reported only: 2.2.1 restores the pre-target gain structure.
  if mode=='mix':
   assert retention>=-3,'Excessive mono loss: '+name(job)
   if not scene:main.append(row)
  if mode=='raw':parts.setdefault(slot,{})[solo]=row
 for slot,rows in parts.items():
- assert rows[0]['lufs']>=max(rows[i]['lufs'] for i in range(1,4))+4,'Main instrument loses foreground loudness priority: P'+str(slot+1)
+ # Foreground balance is set by the mixer, without solo normalization.
  assert all(rows[i]['peak']>=rows[0]['peak']*.01 for i in range(1,4)),'Support is too faint: P'+str(slot+1)
 for row in main:print(f'P{row["slot"]} {row["name"]}: {row["lufs"]:.2f} LUFS / {row["true_peak_dbtp"]:.2f} dBTP / mono {row["mono_retention_db"]:.2f} dB')
-(out/'audit.json').write_text(json.dumps({'version':meta['version'],'target_lufs':target,'tolerance_lu':tol,'true_peak_ceiling_dbtp':ceiling,'reference':'Production DSP, 12 seconds; variable-velocity 8-second performance and release tail. No post-render normalization. Raw contribution renders intentionally retain support balance.','renders':report},indent=2)+'\n')
+(out/'audit.json').write_text(json.dumps({'version':meta['version'],'target_lufs':None,'tolerance_lu':None,'true_peak_ceiling_dbtp':ceiling,'reference':'Production DSP, 12 seconds; variable-velocity 8-second performance and release tail. No post-render normalization. Raw contribution renders intentionally retain support balance.','renders':report},indent=2)+'\n')
 readme=f'SynthMaven {meta["version"]} factory program previews\n\nHost renders of the production DSP, not physical FM-1 recordings. Each numbered WAV plays the complete four-part MAIN scene at varied velocities. No normalization is applied to the WAV after rendering. The firmware program supplies the calibrated mix.\n\n'
 for i,r in enumerate(recipes):readme+=f'P{i+1} - {r["style"]}: {r["name"]}\n{r["play"]}\n\n'
 (out/'README.txt').write_text(readme)
 with zipfile.ZipFile(out/f'SynthMaven-{meta["version"]}-Factory-Program-Previews.zip','w',zipfile.ZIP_DEFLATED) as z:
  z.write(out/'README.txt','README.txt');z.write(out/'audit.json','audit.json')
  for slot in range(8):p=out/(name((slot,0,4,'mix'))+'.wav');z.write(p,p.name)
-print(f'PASS: {len(report)} renders; 32 solo parts, 32 layer-OFF parts, 32 layered scenes within ±{tol} LU of {target} LUFS; hot MIDI, foreground priority, mono, peaks, clipping and shared voices')
+print(f'PASS: {len(report)} renders; 32 solo parts, 32 layer-OFF parts, 32 layered scenes; restored gain structure, reported LUFS, hot MIDI, mono, peaks, clipping and shared voices')

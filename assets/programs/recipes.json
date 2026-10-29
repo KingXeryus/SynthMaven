@@ -34,7 +34,7 @@
             48
           ],
           "trim_half_db": 0,
-          "solo_gain_db": 1
+          "solo_gain_db": 0
         },
         {
           "engine": 10,
@@ -55,8 +55,8 @@
             0,
             36
           ],
-          "trim_half_db": 10,
-          "solo_gain_db": 20
+          "trim_half_db": 0,
+          "solo_gain_db": 0
         },
         {
           "engine": 9,
@@ -71,8 +71,8 @@
           "delay": 0,
           "highpass": 21,
           "params": {},
-          "trim_half_db": 20,
-          "solo_gain_db": 10
+          "trim_half_db": 0,
+          "solo_gain_db": 0
         },
         {
           "engine": 21,
@@ -97,15 +97,15 @@
             38,
             56
           ],
-          "trim_half_db": 26,
-          "solo_gain_db": 19
+          "trim_half_db": 0,
+          "solo_gain_db": 0
         }
       ],
-      "trim_half_db": -8,
+      "trim_half_db": 0,
       "scene_level_offsets": [
         0,
-        2,
-        7,
+        0,
+        0,
         0
       ]
     },
@@ -136,7 +136,7 @@
             50
           ],
           "trim_half_db": 0,
-          "solo_gain_db": 1
+          "solo_gain_db": 0
         },
         {
           "engine": 9,
@@ -151,8 +151,8 @@
           "delay": 0,
           "highpass": 20,
           "params": {},
-          "trim_half_db": 8,
-          "solo_gain_db": 9
+          "trim_half_db": 0,
+          "solo_gain_db": 0
         },
         {
           "engine": 21,
@@ -180,7 +180,7 @@
             46
           ],
           "trim_half_db": 0,
-          "solo_gain_db": 15
+          "solo_gain_db": 0
         },
         {
           "engine": 1,
@@ -201,15 +201,15 @@
             18,
             48
           ],
-          "trim_half_db": 10,
-          "solo_gain_db": 27
+          "trim_half_db": 0,
+          "solo_gain_db": 0
         }
       ],
-      "trim_half_db": 2,
+      "trim_half_db": 0,
       "scene_level_offsets": [
         0,
         0,
-        10,
+        0,
         0
       ]
     },
@@ -243,7 +243,7 @@
             40
           ],
           "trim_half_db": 0,
-          "solo_gain_db": 1
+          "solo_gain_db": 0
         },
         {
           "engine": 21,
@@ -270,7 +270,7 @@
             36
           ],
           "trim_half_db": 0,
-          "solo_gain_db": 10
+          "solo_gain_db": 0
         },
         {
           "engine": 1,
@@ -292,7 +292,7 @@
             36
           ],
           "trim_half_db": 0,
-          "solo_gain_db": 9
+          "solo_gain_db": 0
         },
         {
           "engine": 10,
@@ -313,15 +313,15 @@
             0,
             36
           ],
-          "trim_half_db": 13,
-          "solo_gain_db": 10
+          "trim_half_db": 0,
+          "solo_gain_db": 0
         }
       ],
-      "trim_half_db": 6,
+      "trim_half_db": 0,
       "scene_level_offsets": [
         0,
         0,
-        9,
+        0,
         0
       ]
     },
@@ -352,7 +352,7 @@
             34
           ],
           "trim_half_db": 0,
-          "solo_gain_db": 2
+          "solo_gain_db": 0
         },
         {
           "engine": 21,
@@ -379,7 +379,7 @@
             32
           ],
           "trim_half_db": 0,
-          "solo_gain_db": 8
+          "solo_gain_db": 0
         },
         {
           "engine": 9,
@@ -395,7 +395,7 @@
           "highpass": 26,
           "params": {},
           "trim_half_db": 0,
-          "solo_gain_db": 9
+          "solo_gain_db": 0
         },
         {
           "engine": 10,
@@ -416,15 +416,15 @@
             0,
             36
           ],
-          "trim_half_db": -4,
-          "solo_gain_db": 25
+          "trim_half_db": 0,
+          "solo_gain_db": 0
         }
       ],
-      "trim_half_db": 3,
+      "trim_half_db": 0,
       "scene_level_offsets": [
         0,
-        1,
-        8,
+        0,
+        0,
         0
       ]
     },
@@ -486,8 +486,8 @@
             22,
             36
           ],
-          "trim_half_db": 16,
-          "solo_gain_db": 11
+          "trim_half_db": 0,
+          "solo_gain_db": 0
         },
         {
           "engine": 7,
@@ -508,8 +508,8 @@
             0,
             36
           ],
-          "trim_half_db": 16,
-          "solo_gain_db": 14
+          "trim_half_db": 0,
+          "solo_gain_db": 0
         },
         {
           "engine": 15,
@@ -530,15 +530,15 @@
             27,
             36
           ],
-          "trim_half_db": 16,
-          "solo_gain_db": 19
+          "trim_half_db": 0,
+          "solo_gain_db": 0
         }
       ],
-      "trim_half_db": 12,
+      "trim_half_db": 0,
       "scene_level_offsets": [
         0,
         0,
-        9,
+        0,
         0
       ]
     },
@@ -573,7 +573,7 @@
             44
           ],
           "trim_half_db": 0,
-          "solo_gain_db": 1
+          "solo_gain_db": 0
         },
         {
           "engine": 0,
@@ -599,7 +599,7 @@
             39
           ],
           "trim_half_db": 0,
-          "solo_gain_db": 11
+          "solo_gain_db": 0
         },
         {
           "engine": 1,
@@ -620,8 +620,8 @@
             72,
             37
           ],
-          "trim_half_db": 20,
-          "solo_gain_db": 8
+          "trim_half_db": 0,
+          "solo_gain_db": 0
         },
         {
           "engine": 15,
@@ -642,15 +642,15 @@
             35,
             38
           ],
-          "trim_half_db": -6,
-          "solo_gain_db": 21
+          "trim_half_db": 0,
+          "solo_gain_db": 0
         }
       ],
-      "trim_half_db": 3,
+      "trim_half_db": 0,
       "scene_level_offsets": [
         0,
-        1,
-        7,
+        0,
+        0,
         0
       ]
     },
@@ -679,7 +679,7 @@
             72
           ],
           "trim_half_db": 0,
-          "solo_gain_db": 1
+          "solo_gain_db": 0
         },
         {
           "engine": 21,
@@ -706,7 +706,7 @@
             72
           ],
           "trim_half_db": 0,
-          "solo_gain_db": 12
+          "solo_gain_db": 0
         },
         {
           "engine": 10,
@@ -727,8 +727,8 @@
             88,
             64
           ],
-          "trim_half_db": 30,
-          "solo_gain_db": 13
+          "trim_half_db": 0,
+          "solo_gain_db": 0
         },
         {
           "engine": 5,
@@ -749,15 +749,15 @@
             89,
             69
           ],
-          "trim_half_db": 26,
-          "solo_gain_db": 7
+          "trim_half_db": 0,
+          "solo_gain_db": 0
         }
       ],
-      "trim_half_db": 3,
+      "trim_half_db": 0,
       "scene_level_offsets": [
         0,
-        2,
-        7,
+        0,
+        0,
         0
       ]
     },
@@ -819,7 +819,7 @@
             24
           ],
           "trim_half_db": 0,
-          "solo_gain_db": 11
+          "solo_gain_db": 0
         },
         {
           "engine": 22,
@@ -841,7 +841,7 @@
             22
           ],
           "trim_half_db": 0,
-          "solo_gain_db": 17
+          "solo_gain_db": 0
         },
         {
           "engine": 10,
@@ -863,14 +863,14 @@
             36
           ],
           "trim_half_db": 0,
-          "solo_gain_db": 31
+          "solo_gain_db": 0
         }
       ],
-      "trim_half_db": -9,
+      "trim_half_db": 0,
       "scene_level_offsets": [
         0,
         0,
-        9,
+        0,
         0
       ]
     }

@@ -172,6 +172,18 @@ static int ldr_pass(void)
             break;
     if (i == 4u)
         return LDR_ENOFIN;
+    /* Reset user storage only after the package and host confirmation succeed.
+     * Keep update staging intact until the reset is complete, so an interrupted
+     * installation can be retried. */
+    for (s = 0x97000u; s < 0xE0000u; s += 0x1000u)
+        if (ldr_erase(s) || ldr_fread(s, cur, 0x1000u)) return -9;
+        else for (k = 0; k < 0x1000u; k++) if (cur[k] != 0xFFu) return -11;
+    for (s = 0xE5000u; s < 0xFB000u; s += 0x1000u)
+        if (ldr_erase(s) || ldr_fread(s, cur, 0x1000u)) return -9;
+        else for (k = 0; k < 0x1000u; k++) if (cur[k] != 0xFFu) return -11;
+    for (s = 0xFC000u; s < 0xFF000u; s += 0x1000u)
+        if (ldr_erase(s) || ldr_fread(s, cur, 0x1000u)) return -9;
+        else for (k = 0; k < 0x1000u; k++) if (cur[k] != 0xFFu) return -11;
     ldr_records_drop();
     return 0;
 }
