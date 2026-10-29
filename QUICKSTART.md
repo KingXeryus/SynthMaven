@@ -1,6 +1,6 @@
-# SynthMaven 2.2 — quick start
+# SynthMaven 2.2.1 — quick start
 
-Back up before installing. Open the [installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) in Chrome or Edge. Connect the FM1 by USB in COMPUTER mode and follow the prompts. For rescue, hold OCT− while powering on.
+Every firmware installation clears user settings, saved programs, user presets, samples and autosave, including same-version reinstalls. Back up before installing. Open the [installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) in Chrome or Edge. Connect the FM1 by USB in COMPUTER mode and follow the prompts. For rescue, hold OCT− while powering on.
 
 On HOME, ALGORITHM cycles engines, PRESET cycles that engine’s presets, and SELECT focuses one of the four loaded sounds. KNOB 1–4 edit that sound. The four sounds form a program.
 
