@@ -1,6 +1,6 @@
 # SynthMaven Editor for iPhone and iPad
 
-Native iOS app wrapping the **existing SynthMaven web editor**, bundled offline. Version 3.0 accompanies SynthMaven firmware 3.0. Version 3.0 (6) is distributed to invited internal TestFlight testers. It is not a public App Store release.
+Native iOS app wrapping the **existing SynthMaven web editor**, bundled offline. Version 3.0 accompanies SynthMaven firmware 3.0. Version 3.0 (8), displayed as **SM FM1 Editor** on the Home Screen, is available to the internal FM1 Release Testing group and submitted for external FM1 Friends testing. External availability requires Apple's Beta App Review approval. It is not a public App Store release.
 
 ## USB editing
 
@@ -55,7 +55,7 @@ The editor and its native connection dialogs always use dark mode. There is no l
 
 ## App identity
 
-The iPad and iPhone Home Screen name is **SynthMaven FM1**. The app icon uses the supplied SynthMaven FM1 artwork in `Branding/fm1-app-icon.svg`; the editor uses `Branding/in-app-logo.svg`. The 1024-pixel opaque icon is bundled through `Assets.xcassets/AppIcon.appiconset`. Regenerating the Xcode project preserves the icon and display name.
+The iPad and iPhone Home Screen name is **SM FM1 Editor**. The app icon uses the supplied SynthMaven FM1 artwork in `Branding/fm1-app-icon.svg`; the editor uses `Branding/in-app-logo.svg`. The 1024-pixel opaque icon is bundled through `Assets.xcassets/AppIcon.appiconset`. Regenerating the Xcode project preserves the icon and display name.
 
 Perform quick controls apply to the selected part: four existing macros, Tone,
 Distortion, Delay and Reverb, plus LFO rate/filter depth and envelope attack/release.
