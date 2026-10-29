@@ -1526,6 +1526,7 @@ static int32_t sm_solo_part(void){
 /* A fixed stored gain only when one part is audible. It does not chase playing dynamics. */
 static void sm_solo_output(int32_t *l,int32_t *r,uint32_t n){
  int32_t part=sm_solo_part(),target=(part<0||!program_solo_gain[part])?4096:(int32_t)SM_SOLO_GAIN_Q12[(program_solo_gain[part]-1u)&63u];
+ if(part<0){sm_solo_gain_cur=4096;return;} /* Never carry a solo boost into a newly layered mix. */
  int32_t from=sm_solo_gain_cur,step=(from+31)>>5,to=from+clamp(target-from,-step,step);sm_solo_gain_cur=to;
  if(from==4096&&to==4096)return;
  for(uint32_t i=0;i<n;i++){

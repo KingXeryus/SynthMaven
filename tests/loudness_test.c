@@ -11,6 +11,9 @@ int main(void){
  program_solo_gain[0]=21;sm_solo_gain_cur=4096;
  for(uint32_t b=0;b<120;b++){for(uint32_t i=0;i<CTL;i++){l[i]=100;r[i]=-100;}sm_solo_output(l,r,CTL);}
  check(l[CTL-1]>=995&&l[CTL-1]<=1005,"stored solo boost is preserved");
+ program_layer=1;song.solo=0;
+ for(uint32_t i=0;i<CTL;i++){l[i]=100;r[i]=-100;}sm_solo_output(l,r,CTL);
+ check(sm_solo_gain_cur==4096&&l[0]==100&&r[0]==-100,"enabling layers clears stale solo boost immediately");
  program_mode=0;
 
  check(LIM_T==25500 && KNEE==30000,"solo output thresholds retained");
