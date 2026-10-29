@@ -169,7 +169,7 @@ standard('Use effects without losing the instrument','Sound design','Start with 
 ],extra='Some effect settings are global. A saved program stores each part\'s supported sends and insert settings, but changing shared effect configuration can alter how the same mix sounds later.')
 # 21
 standard('Select a scale, root and octave range','Tuning','Microtuning adjusts pitches; quantization chooses notes. They are separate controls.',['scale-browser','tuning-from-c3'],[
- 'Tap SEL to open the scale browser. Turn SELECT to cycle scales; PRESET or KNOB 1 changes the root. The twelve cells visualize chromatic offsets.',
+ 'Tap SEL to open the scale browser. Turn SELECT to cycle scales; PRESET or KNOB 1 changes the root. The piano view shows white/black keys, red detuned keys and grey notes outside the maqam. Blue marks the last played pitch class; cents describe the FROM octave.',
  'For an octave boundary, open GLO > TUNING. KNOB 1 selects system, KNOB 2 FROM cycles C0-C8 by octaves only, KNOB 3 selects root, KNOB 4 controls master tuning for the focused part.',
  'FROM C3 means MIDI 48 and higher use the selected tuning. Lower notes keep equal-tempered intervals. The A4 reference remains global; find it on TUNING 2.',
  'Use QNT ALL to apply the focused ROOT/SCL note selection across all four parts and incoming MIDI. Use Apply master tuning to let an individual part follow or bypass master microtuning.'

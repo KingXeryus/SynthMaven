@@ -137,10 +137,17 @@ static uint32_t glyph(const felucca_font_t *f, uint32_t ch)
 }
 
 /* text, alpha-blended onto black with colour c; returns the end x */
-/* Flat panel cards, inspired by Melodee's device UI. */
+/* Rounded, bounded strip fills: no heap, framebuffer or floating-point work. */
 static void cv_card(int32_t x,int32_t y,int32_t w,int32_t h,uint16_t c) {
-    cv_rect(x+3,y,w-6,h,c);cv_rect(x,y+3,w,h-6,c);
-    cv_rect(x+1,y+1,w-2,h-2,c);
+    static const uint8_t inset[6]={4,2,1,1,0,0};
+    if(w<=0 || h<=0)return;
+    if(w<16 || h<16){cv_rect(x+1,y,w-2,h,c);cv_rect(x,y+1,w,h-2,c);return;}
+    cv_rect(x,y+6,w,h-12,c);
+    for(int32_t row=0;row<6;row++){
+        int32_t d=inset[row];
+        cv_rect(x+d,y+row,w-2*d,1,c);
+        cv_rect(x+d,y+h-1-row,w-2*d,1,c);
+    }
 }
 static int32_t cv_text(int32_t x, int32_t y, const felucca_font_t *f, const char *s, uint16_t c)
 {

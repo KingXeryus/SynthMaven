@@ -135,7 +135,7 @@ static void draw_column(uint32_t c, const char *label, const char *val, const ch
     if (icon == ICON_AUTO)
         icon = icon_for_label(label);
     fit(l, str_eq(label,"CHORD")?"CHRD":label, &FONT_S, 54 - LABEL_X);
-    fit(v, val, &FONT_S, is_eng_name(val) ? 56 : 40);   /* engine names whole */
+    fit(v, val, &FONT_S, is_eng_name(val) ? 56 : unit[0] ? 40 : 54);   /* engine names whole */
     fit(u, unit, &FONT_S, 54 - text_w(&FONT_S, v) - 3);
     str_cpy(key, l, 8);                                 /* cache key: texts + colour + gauge */
     str_cpy(key + str_len(key), "|", 2);
@@ -154,6 +154,7 @@ static void draw_column(uint32_t c, const char *label, const char *val, const ch
         fit(ui.big_v[c], val, &FONT_L, 112 - (unit[0] ? 4 : 0));
         str_cpy(ui.big_u[c], unit, 8);
         ui.big_c[c] = vc;
+        ui.big_ratio[c] = (int16_t)ratio;
     }
     if (c == ui.hot_col) {
         str_cpy(ui.focus_l, l, 8);
@@ -353,11 +354,38 @@ static void graph_roll(const track_t *t, uint16_t c)
         sheet_draw(112, 6, SHEET_N, val, ui.sheet - 1u, TE_DIM[song.sel & 3u]);
     }
 }
+/* Physical piano geometry, always C..B. White keys first, accidentals on top.
+ * Grey means excluded; red means an included key has a tuning offset.
+ * A blue underline identifies played keys independently of pitch colour. */
+static void graph_keyboard(int32_t y,uint32_t allowed,uint32_t detuned,uint32_t played)
+{
+    static const uint8_t white[7]={0,2,4,5,7,9,11};
+    static const uint8_t black[5]={1,3,6,8,10},edge[5]={1,2,4,5,6};
+    const uint16_t red=RGB(255,44,52),grey=RGB(128,132,140),blue=RGB(104,180,255);
+    for(uint32_t k=0;k<7;k++){
+        uint32_t bit=1u<<white[k];int32_t x=8+(int32_t)k*32;
+        uint16_t fill=!(allowed&bit)?grey:detuned&bit?red:C_WHITE;
+        cv_card(x,y,30,58,fill);
+        cv_text(x+9,y+34,&FONT_S,N_NOTE[white[k]],C_BLACK);
+        if(played&bit)cv_rect(x+4,y+53,22,3,blue);
+    }
+    for(uint32_t k=0;k<5;k++){
+        uint32_t bit=1u<<black[k];int32_t x=8+(int32_t)edge[k]*32-10;
+        uint16_t fill=!(allowed&bit)?grey:detuned&bit?red:C_BLACK;
+        cv_card(x-1,y,20,35,C_WHITE);cv_card(x,y,18,33,fill);
+        if(played&bit)cv_rect(x+3,y+27,12,3,blue);
+    }
+}
+static uint32_t graph_detuned(uint32_t base)
+{
+    uint32_t bits=0;int32_t reference=TU_A4[clamp(tune_cfg.a4,-40,40)+40];
+    for(uint32_t pc=0;pc<12;pc++)if(tun_tab[base+pc]!=reference)bits|=1u<<pc;
+    return bits;
+}
 /* Chord display uses frozen played notes; rendering never changes AUTO history. */
 static void graph_scale(const track_t *t, uint16_t c)
 {
-    static const uint8_t BLACK[12]={0,1,0,1,0,0,1,0,1,0,1,0};
-    uint32_t part=trk_index(t)%NPART,mask=scale_mask(t),pcs=0;char title[24],notes[32];notes[0]=0;
+    uint32_t part=trk_index(t)%NPART,pcs=0;char title[24],notes[32];notes[0]=0;
     if(t->p[P_CHORD] && sm_chord_view[part].n) {
         if(chord_effective(t)>=CH_OPEN5)str_cpy(title,N_CHORD[chord_effective(t)],sizeof title);else chord_auto_name(title,sm_chord_view[part].root,sm_chord_view[part].mask);
         for(uint32_t i=0;i<sm_chord_view[part].n;i++) {char b[8];uint32_t n=sm_chord_view[part].note[i];pcs|=1u<<(n%12u);note_name(b,n);
@@ -366,12 +394,8 @@ static void graph_scale(const track_t *t, uint16_t c)
     cv_card(3,1,234,94,C_SURFACE);
     cv_text(8,0,t->p[P_CHORD] && sm_chord_view[part].n?&FONT_L:&FONT_S,title,C_WHITE);while(text_w(&FONT_S,notes)>140 && str_len(notes))notes[str_len(notes)-1]=0;
     cv_text(232-text_w(&FONT_S,notes),2,&FONT_S,notes,c);
-    for(uint32_t i=0;i<12u;i++) {
-        int32_t x=8+(int32_t)i*19;uint32_t deg=(i+12u-(uint32_t)t->p[P_ROOT])%12u;
-        uint16_t col=t->p[P_CHORD]?(pcs&(1u<<i)?c:C_RAISED):((mask>>deg)&1u?c:C_RAISED);
-        cv_card(x,29,16,BLACK[i]?33:55,col);
-        if(deg==0u)cv_rect(x+3,BLACK[i]?56:78,10,2,C_WHITE);
-    }
+    uint32_t base=last_note/12u*12u;if(base>108u)base=108u;
+    graph_keyboard(29,chord_allowed(t),(master_tuning_bypass&(1u<<part))?0:graph_detuned(base),pcs);
 }
 
 static void graph_fx(const track_t *t, uint16_t c)
@@ -436,17 +460,17 @@ static uint32_t graph_signature(void)
     const page_t *pg = cur_page();
     const track_t *t = TSEL;
     uint32_t h = 2166136261u, i;
-    if(pg->graph==GR_SCALE)h^=sm_chord_view[song.sel%NPART].gen*7919u;
+    if(pg->graph==GR_SCALE)h^=sm_chord_view[song.sel%NPART].gen*7919u+tune_cfg.sys*977u+tune_cfg.root*131u+last_note*31u+master_tuning_bypass;
 #if SYNTHMAVEN_SYNTH
     if(!ui.home && pg->graph==GR_PEDAL)h^=sm_last_at+sm_last_result*137u+sm_last_match*7919u+sm_learn_state*333u+sm_trigger_count+((fm1_ms-sm_trigger_at)<1000u?0x777u:0);
     if(!ui.home && pg->graph==GR_SETLIST)h^=sm_setlist_active*7919u+sm_setlist_pos*137u+sm_setlist_len+sm_pending_program*333u;
-    if(!ui.home && pg->scope==SC_SYN && pg->id[0]==X_TSYS)h^=tune_cfg.sys*7777u+tune_cfg.root*131u;
+    if(!ui.home && pg->scope==SC_SYN && pg->id[0]==X_TSYS)h^=tune_cfg.sys*7777u+tune_cfg.root*131u+tune_floor_octave*977u+last_note*31u+custom_scale[0]+custom_scale[1]+custom_scale[2]+custom_scale[3];
 #endif
     if (ui.hot_t && settings.zoom)
         h = str_hash(str_hash(str_hash(h ^ 0x5555u, ui.focus_v), ui.focus_l), ui.focus_u);
     if (!ui.home && big_page(pg))                    /* the big values: as the columns show them */
         for (i = 0; i < 4u; i++)
-            h = str_hash(str_hash(str_hash(h ^ ui.big_c[i] * 31u, ui.big_v[i]), ui.big_l[i]), ui.big_u[i]);
+            h = str_hash(str_hash(str_hash(h ^ ui.big_c[i] * 31u ^ (uint32_t)(ui.big_ratio[i]+1) * 977u, ui.big_v[i]), ui.big_l[i]), ui.big_u[i]);
     if (ui.home)
         return h ^ (ui.frame / 2u);                  /* scope: redraw every other frame */
     h ^= (uint32_t)pg->graph * 131u + TSEL->eng_req + song.sel * 7777u;
@@ -804,6 +828,15 @@ static void graph_home(uint16_t c)
 /* SLOOP 2.4: a page without a graph (EDIT, VOICE, the DEST pages, GLOBAL, MASTER, SYSTEM...): its values
  * large in the empty space, 2 x 2 as the knobs (KNOB 1 2 / KNOB 3 4), the one turned in white; one value
  * alone (FILTER) across the width. The columns (draw_columns, drawn first) fill ui.big_* */
+/* 270-degree dial, lookup geometry keeps drawing out of floating-point DSP. */
+static void graph_dial(int32_t x,int32_t y,int32_t ratio,uint16_t accent)
+{
+    static const int8_t xy[25][2]={{-11,11},{-13,9},{-15,6},{-16,3},{-16,0},{-16,-3},{-15,-6},{-13,-9},{-11,-11},{-9,-13},{-6,-15},{-3,-16},{0,-16},{3,-16},{6,-15},{9,-13},{11,-11},{13,-9},{15,-6},{16,-3},{16,0},{16,3},{15,6},{13,9},{11,11}};
+    uint32_t at=(uint32_t)clamp(ratio,0,1000)*24u/1000u;
+    for(uint32_t i=0;i<25;i++)cv_rect(x+xy[i][0]-1,y+xy[i][1]-1,3,3,i<=at?accent:C_GRAY);
+    cv_line(x,y,x+xy[at][0]*3/4,y+xy[at][1]*3/4,C_WHITE);
+    cv_rect(x-1,y-1,3,3,C_WHITE);
+}
 static void graph_big(void)
 {
     uint32_t c, n = 0;
@@ -821,9 +854,15 @@ static void graph_big(void)
         cv_card(n==1u?4:x0-2,y0,n==1u?228:110,58,TE_CARD[c]);
         cv_rect(n==1u?5:x0-1,y0+4,2,49,TE_COL[c]);
         cv_text(x0+2, y0 + 2, &FONT_S, ui.big_l[c], TE_COL[c & 3u]);
-        x = cv_text(x0, y0 + 20, &FONT_L, ui.big_v[c], ui.big_c[c] == C_DIM ? C_DIM : ui.big_c[c] == C_WHITE ? C_WHITE : TE_COL[c]);
-        if (ui.big_u[c][0])
-            cv_text(x + 4, y0 + 34, &FONT_S, ui.big_u[c], C_GRAY);
+        if(ui.big_ratio[c]>=0 && n>1u){
+            char value[12];fit(value,ui.big_v[c],&FONT_S,64);
+            cv_text(x0+2,y0+23,&FONT_S,value,C_WHITE);
+            cv_text(x0+2,y0+40,&FONT_S,ui.big_u[c],C_GRAY);
+            graph_dial(x0+88,y0+35,ui.big_ratio[c],TE_COL[c]);
+        }else{
+            x = cv_text(x0, y0 + 20, &FONT_L, ui.big_v[c], ui.big_c[c] == C_DIM ? C_DIM : ui.big_c[c] == C_WHITE ? C_WHITE : TE_COL[c]);
+            if (ui.big_u[c][0])cv_text(x + 4, y0 + 34, &FONT_S, ui.big_u[c], C_GRAY);
+        }
     }
 }
 
@@ -831,24 +870,26 @@ static void graph_big(void)
 static int tuning_page(const page_t *p) { return !ui.home && p->scope==SC_SYN && p->id[0]==X_TSYS; }
 static void graph_tuning(void)
 {
-    uint32_t i,sys=tune_cfg.sys<TU_N?tune_cfg.sys:0;
+    uint32_t sys=tune_cfg.sys<TU_N?tune_cfg.sys:0;
     char label[32];str_cpy(label,N_TUNE[sys],sizeof label);
     while(text_w(&FONT_S,label)>228 && str_len(label))label[str_len(label)-1]=0;
     cv_card(3,0,234,23,C_SURFACE);cv_text(8,1,&FONT_S,label,C_HI);
-    /* A chromatic octave: each cell remains its original physical note.
-     * Height marks detuning, never a replacement scale-degree mapping. */
-    for(i=0;i<12;i++) {
-        int32_t x=4+(int32_t)i*19,cent=tune_is_chromatic(sys)?tuning_cents(sys,i):0;
-        uint16_t col=cent?C_HI:C_GRAY;
-        cv_card(x,29,17,42,cent?C_RAISED:C_SURFACE);
-        cv_rect(x+3,48-cent/8,11,2,col);
-        char b[8];str_cpy(b,N_NOTE[(i+tune_cfg.root)%12u],8);
-        cv_text(x,73,&FONT_S,b,col);
+    /* Maqam membership is musical; chromatic/custom maps keep all twelve keys.
+     * Other tunings show the actual twelve physical keys at the selected octave. */
+    uint32_t mask=0xFFFu;
+    if(tune_is_maqam(sys)){
+        uint32_t row=sys<8u?sys-6u:sys-12u,root=tune_cfg.root%12u;
+        mask=MAQAM_NOTE_MASKS[row];mask=((mask<<root)|(mask>>(12u-root)))&0xFFFu;
     }
-    uint32_t note=(last_note+12u-tune_cfg.root)%12u;char b[24],v[12];
-    str_cpy(b,N_NOTE[last_note%12u],sizeof b);str_cpy(b+str_len(b),"  ",sizeof b-str_len(b));
-    fmt_int(v,tune_is_chromatic(sys)?tuning_cents(sys,note):0);str_cpy(b+str_len(b),v,sizeof b-str_len(b));
-    str_cpy(b+str_len(b)," cents",sizeof b-str_len(b));cv_text(8,99,&FONT_S,b,C_WHITE);
+    uint32_t base=tune_floor_note();
+    graph_keyboard(29,mask,graph_detuned(base),1u<<(last_note%12u));
+    char b[32],v[12];uint32_t note=last_note%12u;
+    int32_t delta=tun_tab[base+note]-TU_A4[clamp(tune_cfg.a4,-40,40)+40];
+    str_cpy(b,N_NOTE[note],sizeof b);str_cpy(b+str_len(b)," ",sizeof b-str_len(b));
+    fmt_int(v,delta*100/4096);str_cpy(b+str_len(b),v,sizeof b-str_len(b));
+    str_cpy(b+str_len(b),"c  FROM C",sizeof b-str_len(b));
+    fmt_int(v,tune_floor_octave);str_cpy(b+str_len(b),v,sizeof b-str_len(b));
+    cv_text(8,96,&FONT_S,b,C_WHITE);
 }
 
 #endif
@@ -900,7 +941,7 @@ static void draw_graph(void)
         cv_oy = 0;
         graph_home(c);
 #if SYNTHMAVEN_SYNTH
-    } else if (tuning_page(pg) && tune_is_chromatic(tune_cfg.sys)) {
+    } else if (tuning_page(pg)) {
         cv_oy=0;graph_tuning();
 #endif
     } else if (ui.home) {
@@ -998,7 +1039,7 @@ static void draw_graph(void)
     top = (ui.home && SYNTHMAVEN_SYNTH) || (!ui.home && !drum_note && (pg->graph == GR_BROWSE || pg->graph == GR_SLOTS || pg->graph == GR_USER ||
                                      pg->graph == GR_ROLL || big_page(pg)));   /* these draw from the top */
 #if SYNTHMAVEN_SYNTH
-    if((tuning_page(pg) && tune_is_chromatic(tune_cfg.sys)) || pg->graph>=GR_PEDAL)top=1;
+    if((tuning_page(pg)) || pg->graph>=GR_PEDAL)top=1;
 #endif
     cv_oy = 0;
     if (ui.hot_t && settings.zoom && (!SYNTHMAVEN_SYNTH || pg->graph<GR_PEDAL) && !(ui.home && SYNTHMAVEN_SYNTH) && !(top && (big_page(pg) || pg->graph == GR_ROLL) && !drum_note)) {   /* (the big values show it already) */                 /* focus (menu ZOOM): the touched value, large and white */

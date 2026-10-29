@@ -15,3 +15,9 @@ Design research used the actual guide screenshots and Firecrawl's reads of [Elek
 ## TRS polarity limitation
 
 The requested Type A/B toggle is not implemented. The [MIDI Association's wiring diagrams](https://midi.org/updated-how-to-make-your-own-3-5mm-mini-stereo-trs-to-midi-5-pin-din-cables) show that this is a tip/ring current-loop wiring reversal. The current FM-1 HAL exposes PH8 -> input channel 1 -> UART1 RX. Neither that driver nor the installed JieLi UART API documents a switch for the jack's tip/ring wiring. No register was guessed or changed. A compatible MIDI adapter or tip/ring crossover is the supported practical remedy; a verified board schematic showing a controllable polarity-switching circuit would be needed to implement this as a device setting. UART logic inversion alone does not establish Type A/B support.
+
+## Rounded controls and piano tuning view
+
+The [X0X firmware emulator](https://charlesvestal.github.io/fm1-x0x/emu/) informed the rotary-indicator layout. New integer-only dial geometry and rounded cards are implemented locally; no X0X code or assets were copied. Existing navigation, DSP, and parameter ranges are unchanged. The tuning keyboard uses the existing maqam membership masks and actual tuning table. Red denotes included detuned keys; grey denotes excluded keys, white/black preserve the piano geometry, and blue underlines mark played pitch classes. Cents describe the selected FROM octave. Host pixel checks cover colours, root rotation and the tuning boundary.
+
+Rounded UI validation: SynthMaven regression suite (full browser suite omitted for this firmware-only change), dedicated pixel tests, all 152 guide layouts/66 menus, and 245-page guide checks pass. Final target image 557300 bytes; RAM 87448/98304; lowram 4352/29496; pool 329480/344064. No hardware candidate tests or flashes.
