@@ -8,7 +8,7 @@ ROOT=Path(__file__).resolve().parents[1];meta=json.loads((ROOT/'release.json').r
 coverage=json.loads((ROOT/'assets/guide/pdf-coverage.json').read_text());inventory=json.loads((ROOT/'assets/guide/screen-inventory.json').read_text())
 assert coverage['version']==v and coverage['protocol']==meta['protocol']
 assert {r['image'] for r in coverage['reference']}=={r['image'] for r in inventory}
-assert len({r['page_id'] for r in inventory})==coverage['menu_pages']==65
+assert len({r['page_id'] for r in inventory})==coverage['menu_pages']==66
 assert len(d)>200 and len(d.get_toc())>180
 for row in coverage['reference']:assert d[row['page']-1].get_images(full=True)
 for page in d:

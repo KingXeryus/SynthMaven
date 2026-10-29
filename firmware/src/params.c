@@ -514,6 +514,9 @@ static const page_t PAGES[] = {
     {"OP ENV", FAM_ENV, SC_SYN, GR_FMX, {27, 28, 29, 30}},      /* X_FATK X_FDEC X_FSUS X_FREL */
 #endif
     {"LFO", FAM_LFO, SC_TRACK, GR_LFO, {P_LRATE, P_LWAVE, P_LPHASE, P_LFADE}},
+    #if SYNTHMAVEN_SYNTH
+    {"LFO FILTER", FAM_LFO, SC_SYN, GR_LFO, {103,104,105,106}},
+#endif
     {"LFO DEST", FAM_LFO, SC_TRACK, GR_NONE, {P_LD_PIT, P_LD_FLT, P_LD_SHP, P_LD_AMP}},
 #if SYNTHMAVEN_SYNTH                                                        /* (velocity, mod wheel, aftertouch) */
     {"MOD PRESET", FAM_LFO, SC_SYN, GR_NONE, {97,98,0xFF,0xFF}},
@@ -570,7 +573,7 @@ static const page_t PAGES[] = {
 #if SYNTHMAVEN_SYNTH                                                        /* (no kick to duck to, no note repeat) */
     {"MASTER", FAM_GLO, SC_GLOBAL, GR_NONE, {G_DUST, G_FILT, 0xFF, 0xFF}},
     {"TUNING", FAM_GLO, SC_SYN, GR_NONE, {47, 99, 48, 78}},
-    {"TUNING 2", FAM_GLO, SC_SYN, GR_NONE, {49, 0xFF, 0xFF, 0xFF}},
+    {"TUNING 2", FAM_GLO, SC_SYN, GR_NONE, {49, 102, 0xFF, 0xFF}},
     {"CONTROLLER", FAM_GLO, SC_SYN, GR_CONTROLLER, {100, 101, 0xFF, 0xFF}},   /* (0.9) X_TSYS X_TROOT (1.0: X_TA4): voice.c tune_cfg */
     {"SYSTEM", FAM_GLO, SC_GLOBAL, GR_NONE, {G_MIDI, G_SYNC, G_ROUTE, G_INFO}},
     {"MIDI", FAM_GLO, SC_SYN, GR_NONE, {50, 51, 52, 53}},   /* (1.0) X_MIN X_MOUT X_MBEND X_MLOCAL (seq.c midi_in_ch) */

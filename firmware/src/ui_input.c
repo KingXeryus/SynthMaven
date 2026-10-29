@@ -860,7 +860,7 @@ static int layers_input(uint32_t note_edges, uint32_t *pressed, uint32_t home)
     for (l = LY_FX; l < LY_COUNT; l++) {
         uint32_t d = (fm1_in.buttons & ly_bit[l]) != 0u, long_ms=3000u;
 #if SYNTHMAVEN_SYNTH
-        if(l==LY_MIX)long_ms=2000u;
+        if(l==LY_MIX || l==LY_ERASE)long_ms=2000u;
 #endif
         if (d && !down[l]) {
             t0[l] = now;

@@ -700,6 +700,7 @@ static void layer_screen_draw(void)
         cv_begin(240,104,C_BLACK);
         for(i=0;i<4;i++) {
             char n[2]={(char)('1'+i),0};int32_t x=i*60;
+            cv_card(x+2,0,56,98,TE_CARD[i]);
             if(i==focus)cv_rect(x+2,0,56,2,TE_COL[i]);
             cv_text(x+4,6,&FONT_S,n,i==focus?C_WHITE:TE_COL[i]);
             param_format(&TP[P_LEVEL],trk[i].p[P_LEVEL],b,&u);
@@ -710,7 +711,7 @@ static void layer_screen_draw(void)
         cv_text(4,0,&FONT_S,"SPLIT",C_GRAY);note_name(b,r->point);cv_text(60,0,&FONT_S,b,C_WHITE);cv_text(124,0,&FONT_S,r->split?(r->upper?"UPPER":"LOWER"):"FULL",TE_COL[focus]);
         cv_text(4,22,&FONT_S,"PAN",C_GRAY);param_format(&TP[P_PAN],trk[focus].p[P_PAN],b,&u);cv_text(60,22,&FONT_S,b,C_WHITE);cv_text(108,22,&FONT_S,u,C_GRAY);
         cv_text(4,44,&FONT_S,"ALGO:SPLIT PRESET:PAN",C_GRAY);
-        cv_text(4,66,&FONT_S,ly_lock==LY_ERASE?"SELECT:PART EDIT:EXIT":"SELECT:PART HOLD 3s",C_GRAY);cv_blit(0,148);return;
+        cv_text(4,66,&FONT_S,ly_lock==LY_ERASE?"SELECT:PART EDIT:EXIT":"SELECT:PART HOLD 2s",C_GRAY);cv_blit(0,148);return;
     }
     if(layer==LY_SCALE) {
         /* The shared canvas is only 124 pixels high; render three strips. */

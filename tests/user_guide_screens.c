@@ -71,6 +71,7 @@ int main(int argc,char **argv){
  named_page(FAM_EDIT,"FILTER GAIN");capture("filter-gain");
  factory(0);tap(B_FX);capture("effects");
  factory(0);tap(B_LFO);capture("lfo");named_page(FAM_LFO,"MOD PRESET");capture("mod-templates");
+ named_page(FAM_LFO,"LFO FILTER");TSEL->p[P_LD_FLT]=24;capture("lfo-filter");
  factory(0);tap(B_SCL);capture("scale-browser");
  tune_cfg.sys=TU_RAST;tune_floor_octave=3;tune_build();named_page(FAM_GLO,"TUNING");capture("tuning-from-c3");
  factory(0);press(B_SCL);frames(195);release(B_SCL);custom_scale[0]=2u<<8;tune_cfg.sys=TU_CUSTOM1;tune_build();capture("custom-scale");tap(B_SCL);

@@ -1448,10 +1448,10 @@ function editorTabs() {
   {   /* 2.4: the device's palette as tokens (:root), used through var(--...); outside them only #000 (text on a colour) */
     const css = html.slice(html.indexOf("<style>"), html.indexOf("</style>")).replace(/:root\s*\{[^}]*\}/g, "");
     const hex = [...css.matchAll(/#[0-9a-f]{3,6}\b/gi)].map((m) => m[0].toLowerCase()).filter((c) => c !== "#000");
-    ok(!hex.length && /--t1: #ff7880; --t2: #68b4ff; --t3: #f0f0f6; --t4: #b4bac8;/.test(html),
+    ok(!hex.length && /--t1: #ff7880; --t2: #68b4ff; --t3: #f0f0f6; --t4: #90d8f0;/.test(html),
       "editor: the track colours of the device (ui_studio.c TE_COL), colours only as tokens" + (hex.length ? ` (${hex.join(" ")})` : ""));
     const te = readFileSync(join(HERE, "../firmware/src/ui_studio.c"), "utf8");
-    ok(/TE_COL\[4\] = \{RGB\(255,120,128\),RGB\(104,180,255\),RGB\(240,240,246\),RGB\(180,186,200\)\}/.test(te),
+    ok(/TE_COL\[4\] = \{RGB\(255,120,128\),RGB\(104,180,255\),RGB\(240,240,246\),RGB\(144,216,240\)\}/.test(te),
       "editor: ... the same four as the firmware's TE_COL");
     ok(/SLOOP-FONT\*\/url\(data:font\/ttf;base64,[A-Za-z0-9+\/=]{20000,}\)/.test(html), "editor: the device's Terminus font inlined (tools/gen_webfont.py)");
   }

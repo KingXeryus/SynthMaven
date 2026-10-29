@@ -56,7 +56,8 @@ int main(void) {
  tap(B_SAVE);check(scale_edit && custom_scale_dirty,"SAVE stores custom scale without leaving editor");
  tap(B_SCL);check(!scale_edit && ly_lock==LY_PLAY,"SEL exits latched scale editor");
 
- go_home();press(B_EDIT);frames(80);check(ui.layer==LY_PLAY && ly_lock==LY_PLAY,"EDIT shows no hold screen before two seconds");frames(45);check(ui.layer==LY_ERASE && ly_lock==LY_PLAY,"EDIT mixer previews at two seconds without latching");
+ go_home();press(B_EDIT);frames(124);check(ly_lock==LY_PLAY,"EDIT does not latch before two seconds");frames(1);release(B_EDIT);check(ly_lock==LY_ERASE && ui.layer==LY_ERASE,"release immediately after two seconds keeps mixer open");tap(B_EDIT);
+ go_home();press(B_EDIT);frames(80);check(ui.layer==LY_PLAY && ly_lock==LY_PLAY,"EDIT shows no hold screen before two seconds");frames(45);check(ui.layer==LY_ERASE && ly_lock==LY_ERASE,"EDIT mixer latches at two seconds");
  check(layer_now()==LY_PLAY,"mixer leaves keyboard playing and never erases sequence notes");int16_t lv[4],pan[4];for(i=0;i<4;i++){lv[i]=trk[i].p[P_LEVEL];pan[i]=trk[i].p[P_PAN];encs[panel.enc[EN_K1+i]]=-1;}frames(2);
  for(i=0;i<4;i++)check(trk[i].p[P_LEVEL]==lv[i]-1 && trk[i].p[P_PAN]==pan[i],"four mixer knobs adjust their own sound volume only");ppm("synthmaven-layer-volume");
  uint8_t prior_part=song.sel;int16_t prior_tempo=song.g[G_BPM];encs[panel.enc[EN_SELECT]]=1;frames(2);
@@ -69,7 +70,7 @@ int main(void) {
  encs[panel.enc[EN_ALGO]]=100;frames(2);note_name(note,program_route[part].point);check(program_route[part].point==93 && !strcmp(note,"A6"),"split point clamps at A6");ppm("synthmaven-layer-split-a6");
  encs[panel.enc[EN_PRESET]]=1000;frames(2);check(trk[part].p[P_PAN]==63,"selected pan clamps at full right");encs[panel.enc[EN_PRESET]]=-1000;frames(2);check(trk[part].p[P_PAN]==-64,"selected pan clamps at full left");
  encs[panel.enc[EN_SELECT]]=-1;frames(2);check(song.sel==prior_part,"mixer SELECT browses parts backwards");
- frames(65);release(B_EDIT);check(ly_lock==LY_ERASE && ui.layer==LY_ERASE,"EDIT mixer latches at three seconds and remains after release");
+ frames(65);release(B_EDIT);check(ly_lock==LY_ERASE && ui.layer==LY_ERASE,"EDIT mixer remains latched after release");
  encs[panel.enc[EN_SELECT]]=4;frames(2);check(song.sel==prior_part && song.g[G_BPM]==prior_tempo,"latched mixer SELECT wraps across all four parts without changing tempo");press(B_SCL);frames(8);check(ly_lock==LY_PLAY && ui.layer==LY_PLAY,"switching from a latched mixer never flashes the next hold screen");release(B_SCL);frames(2);
  press(B_EDIT);frames(190);release(B_EDIT);tap(B_EDIT);check(ly_lock==LY_PLAY,"EDIT tap exits latched mixer");
  set_engine(0);open_family(FAM_EDIT);uint32_t edit_pages=0;for(i=0;i<NPAGES;i++)if(PAGES[i].fam==FAM_EDIT&&!page_hidden(i))edit_pages++;check(edit_pages==6,"EDIT has four sound pages plus engine-aware filter controls");

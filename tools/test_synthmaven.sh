@@ -13,7 +13,7 @@ for g in font:felucca_font icons:felucca_icons samples:felucca_samples drumkits:
 done
 CC="${CC:-cc} -O1 -w -DSYNTHMAVEN_SYNTH=1 -Ibuild/gen -Ifirmware/src -Ifirmware/hal"
 python3 tools/gen_factory_programs.py --check
-for t in mono_batch_test autosave_audio_guard_test loudness_test factory_programs_test synthmaven_controller_test synthmaven_tuning_floor_test synthmaven_chord_refresh_test vital_factory_test synthmaven_performance_test synthmaven_maqam_test synthmaven_quantize_test synthmaven_navigation_test synthmaven_program_store_test synthmaven_layer_mix_test oriental_test synthmaven_usb_performance_test synthmaven_test synthmaven_storage_test synthmaven_ui_test synthmaven_stock_test hybrid_editor_test; do
+for t in synthmaven_global_tuning_test mono_batch_test autosave_audio_guard_test loudness_test factory_programs_test synthmaven_controller_test synthmaven_tuning_floor_test synthmaven_chord_refresh_test vital_factory_test synthmaven_performance_test synthmaven_maqam_test synthmaven_quantize_test synthmaven_navigation_test synthmaven_program_store_test synthmaven_layer_mix_test oriental_test synthmaven_usb_performance_test synthmaven_test synthmaven_storage_test synthmaven_ui_test synthmaven_stock_test hybrid_editor_test; do
  $CC -o "build/host/$t" "tests/$t.c" -lm
  if [ "$t" = hybrid_editor_test ]; then "build/host/$t" build/host/hy_factory.json; else "build/host/$t"; fi
 done

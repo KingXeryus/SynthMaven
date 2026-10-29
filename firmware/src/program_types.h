@@ -1,4 +1,8 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
+#define PROGRAM_TUNE_GLOBAL 0x10u
+#define PROGRAM_TUNE_SAVED 0x20u
+static uint8_t program_save_tuning; /* OFF by default; GLO > TUNING 2 > SAVE. */
+static int program_tuning_flags_valid(uint32_t v){return !(v&0xC0u) && (v&0x30u)!=0x30u;}
 #define PROGRAM_MAGIC 0x33475250u /* PRG3: scenes; PRG1/2 remain importable */
 typedef struct {
     int16_t p[P_COUNT];
@@ -45,7 +49,7 @@ static uint32_t program_hash(const void *data,uint32_t n) {
 }
 static int program_valid(const program_t *p) {
     uint32_t i,k;
-    if(p->magic!=PROGRAM_MAGIC || p->size!=sizeof *p || p->active>=4u || p->layer>1u || p->reserved[0]>15u || (p->reserved[1]>>4)>8u ||
+    if(p->magic!=PROGRAM_MAGIC || p->size!=sizeof *p || p->active>=4u || p->layer>1u || !program_tuning_flags_valid(p->reserved[0]) || (p->reserved[1]>>4)>8u ||
        p->tuning.sys>=TU_N || p->tuning.root>11 || p->tuning.a4< -40 || p->tuning.a4>40 ||
        p->tuning.n<1 || p->tuning.n>TU_MAXDEG || p->sum!=program_hash(p,sizeof *p-4u))return 0;
     for(i=0;i<4;i++)if(p->custom[i]&0xFF000000u)return 0;
@@ -106,7 +110,7 @@ static int program_pack(program_packed_t *out,const program_t *p,const char *nam
  for(i=0;i<4;i++){const program_sound_t *a=&p->sound[i];program_packed_sound_t *b=&out->sound[i];for(k=0;k<P_COUNT;k++)b->p[k]=(int8_t)a->p[k];memcpy(b->ms,a->ms,sizeof b->ms);b->engine=a->engine;b->preset=a->preset;b->user=a->user;b->reserved=a->reserved;memcpy(b->patch,a->patch,sizeof b->patch);}return 1;
 }
 static int program_unpack(program_t *out,const program_packed_t *p){
- uint32_t i,k;if(p->used!=1u || !program_name_valid(p->name) || p->solo>15u || (p->bypass>>4)>8u)return 0;
+ uint32_t i,k;if(p->used!=1u || !program_name_valid(p->name) || !program_tuning_flags_valid(p->solo) || (p->bypass>>4)>8u)return 0;
  memset(out,0,sizeof *out);out->magic=PROGRAM_MAGIC;out->size=sizeof *out;out->active=p->active;out->layer=p->layer;out->reserved[0]=p->solo;out->reserved[1]=p->bypass;out->tuning=p->tuning;memcpy(out->custom,p->custom,sizeof out->custom);memcpy(out->route,p->route,sizeof out->route);memcpy(out->scenes,p->scenes,sizeof out->scenes);
  for(i=0;i<4;i++){program_sound_t *a=&out->sound[i];const program_packed_sound_t *b=&p->sound[i];for(k=0;k<P_COUNT;k++)a->p[k]=b->p[k];memcpy(a->ms,b->ms,sizeof a->ms);a->engine=b->engine;a->preset=b->preset;a->user=b->user;a->reserved=b->reserved;memcpy(a->patch,b->patch,sizeof a->patch);}
  out->sum=program_hash(out,sizeof *out-4u);return program_valid(out);

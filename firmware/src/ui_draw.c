@@ -164,7 +164,7 @@ static void draw_column(uint32_t c, const char *label, const char *val, const ch
         return;
     str_cpy(ui.col[c], key, sizeof ui.col[c]);
     cv_begin(55, Y_SEP_END - Y_LABEL, C_BLACK);
-    cv_card(0,0,55,Y_SEP_END-Y_LABEL,C_SURFACE);         /* x 4..58: the rule at 59 stays */
+    cv_card(0,0,55,Y_SEP_END-Y_LABEL,TE_CARD[c&3u]);         /* x 4..58: the rule at 59 stays */
 
     cv_text(l[0] ? LABEL_X : 0, 0, &FONT_S, l, C_GRAY);
     x = cv_text(0, Y_VALUE - Y_LABEL, &FONT_S, v, vc);
@@ -173,7 +173,7 @@ static void draw_column(uint32_t c, const char *label, const char *val, const ch
         int32_t gy = Y_GAUGE - Y_LABEL;
         fx = ratio * gw / 1000;
         cv_rect(0, gy + 1, gw, 1, C_LINE);
-        cv_rect(0, gy, fx, 3, vc == C_DIM ? C_DIM : TE_DIM[c & 3u]);
+        cv_rect(0, gy, fx, 3, vc == C_DIM ? C_DIM : TE_COL[c & 3u]);
         cv_rect(fx, gy - 1, 1, 5, vc == C_DIM ? C_HI : vc);
     }
     cv_blit(c * 60u + 4u, Y_LABEL);
@@ -791,7 +791,7 @@ static void graph_home(uint16_t c)
         const track_t *t=&trk[i];uint32_t e=t->eng_req%NENGINES;
         int32_t x=(i%2u)*120+3,y=26+(i/2u)*46;
         uint16_t col=TE_COL[i];
-        cv_card(x,y,114,43,i==song.sel?C_RAISED:C_SURFACE);
+        cv_card(x,y,114,43,i==song.sel?C_RAISED:TE_CARD[i]);
         cv_rect(x+3,y+6,2,31,col);
         if(i==song.sel){cv_rect(x+8,y+39,99,2,col);}
         if(user_of(t)<UP_SLOTS)up_name(user_of(t),name);else str_cpy(name,sm_factory_name(e,t->preset),sizeof name);
@@ -818,9 +818,10 @@ static void graph_big(void)
             x0 = (240 - text_w(&FONT_L, ui.big_v[c]) - (ui.big_u[c][0] ? text_w(&FONT_S, ui.big_u[c]) + 4 : 0)) / 2;
             y0 = 30;
         }
-        cv_card(n==1u?4:x0-2,y0,n==1u?228:110,58,C_SURFACE);
+        cv_card(n==1u?4:x0-2,y0,n==1u?228:110,58,TE_CARD[c]);
+        cv_rect(n==1u?5:x0-1,y0+4,2,49,TE_COL[c]);
         cv_text(x0+2, y0 + 2, &FONT_S, ui.big_l[c], TE_COL[c & 3u]);
-        x = cv_text(x0, y0 + 20, &FONT_L, ui.big_v[c], ui.big_c[c] == C_DIM ? C_DIM : ui.big_c[c] == C_WHITE ? C_WHITE : C_HI);
+        x = cv_text(x0, y0 + 20, &FONT_L, ui.big_v[c], ui.big_c[c] == C_DIM ? C_DIM : ui.big_c[c] == C_WHITE ? C_WHITE : TE_COL[c]);
         if (ui.big_u[c][0])
             cv_text(x + 4, y0 + 34, &FONT_S, ui.big_u[c], C_GRAY);
     }
@@ -850,6 +851,33 @@ static void graph_tuning(void)
     str_cpy(b+str_len(b)," cents",sizeof b-str_len(b));cv_text(8,99,&FONT_S,b,C_WHITE);
 }
 
+#endif
+#if SYNTHMAVEN_SYNTH
+static void graph_lfo_filter(const track_t *t){
+    if(SM_FILTER_CAP[t->eng_req%NENGINES].cut<0){
+        cv_text(8,12,&FONT_S,"NO FILTER CUTOFF",C_WHITE);
+        cv_text(8,40,&FONT_S,"USE LFO DEST FOR",C_GRAY);
+        cv_text(8,62,&FONT_S,"TIMBRE MODULATION",C_GRAY);return;
+    }
+    int16_t *vp;const param_desc_t *d=sm_filter_desc(1,&vp);
+    int32_t base=*vp,depth=t->p[P_LD_FLT],px=8,py=65;
+    cv_card(3,2,234,88,TE_CARD[1]);
+    cv_text(8,4,&FONT_S,depth?"LFO > FILTER":"LFO > FILTER: OFF",C_WHITE);
+    int32_t span=d->max-d->min;if(span<1)span=1;
+    int32_t by=82-(base-d->min)*48/span;cv_line(8,by,230,by,TE_COL[0]);
+    for(int32_t x=8;x<232;x++){
+        uint32_t ph=(uint32_t)t->p[P_LPHASE]<<25;
+        int32_t wave=lfo_wave((track_t *)t,ph+(uint32_t)(x-8)*(0xFFFFFFFFu/112u));
+        if(t->p[P_LWAVE]==4)wave=(int32_t)(((uint32_t)(x/20)*2654435761u)>>16)-32768;
+        /* Depth preview only: other modulation/envelopes can change actual cutoff. */
+        int32_t value=clamp(base+wave*depth/32768,d->min,d->max);
+        int32_t y=82-(value-d->min)*48/span;
+        if(x>8)cv_line(px,py,x,y,TE_COL[1]);px=x;py=y;
+    }
+    char v[12],line[32]="BASE ";const char *u;param_format(d,base,v,&u);
+    str_cpy(line+5,v,sizeof line-5);uint32_t n=str_len(line);str_cpy(line+n,u,sizeof line-n);
+    cv_text(8,96,&FONT_S,line,C_WHITE);
+}
 #endif
 static void draw_graph(void)
 {
@@ -893,6 +921,9 @@ static void draw_graph(void)
             graph_adsr(t, c);
             break;
         case GR_LFO:
+#if SYNTHMAVEN_SYNTH
+            if(pg->scope==SC_SYN && pg->id[0]==X_LCUT){cv_oy=0;graph_lfo_filter(t);break;}
+#endif
             graph_lfo(t, c);
             break;
         case GR_STEPS:
@@ -954,6 +985,12 @@ static void draw_graph(void)
             if (big_page(pg)) {
                 cv_oy = 0;
                 graph_big();
+#if SYNTHMAVEN_SYNTH
+                if(pg->scope==SC_SYN && pg->id[0]==X_TA4){
+                    cv_text(8,72,&FONT_S,program_save_tuning?"SAVE TUNING IN PROGRAM":"FOLLOW GLOBAL TUNING",C_WHITE);
+                    cv_text(8,96,&FONT_S,"APPLIES WHEN YOU SAVE",C_GRAY);
+                }
+#endif
             }
             break;
         }

@@ -462,10 +462,10 @@ int main(int argc, char **argv)
         for (j = 0; j < NSTEP; j++) step_clear(&t->step[j]);
         for (j = 0; j < 16u; j += 4u) put_step(t, j, 1, j % 8u ? n64 : n60, ST_NOTE, 0);
         press(B_EDIT); frames(20);check(ui.layer==LY_PLAY,"EDIT short hold has no screen flash");frames(105);
-        check(ui.layer==LY_ERASE && ly_lock==LY_PLAY,"EDIT previews mixer after two seconds");
+        check(ui.layer==LY_ERASE && ly_lock==LY_ERASE,"EDIT latches mixer after two seconds");
         ui.force=1;frame();ppm("synthmaven-layer-edit");
         key(11);check(step_on(&t->step[4]) && step_on(&t->step[12]),"EDIT mixer does not erase sequence notes");
-        release(B_EDIT);frames(4);tap(B_EDIT);check(cur_page()->fam==FAM_EDIT,"EDIT tap opens focused sound pages");
+        release(B_EDIT);frames(4);tap(B_EDIT);check(ly_lock==LY_PLAY,"EDIT tap exits the latched mixer");tap(B_EDIT);check(cur_page()->fam==FAM_EDIT,"EDIT tap opens focused sound pages");
         go_home();press(B_GLO);frames(20);check(!glo_screen_shown,"GLO short hold does not flash its screen");frames(105);
         check(glo_screen_shown && ly_lock!=LY_MIX,"GLO two-second hold displays layering without latching");
         frame();ppm("synthmaven-layer-glo");release(B_GLO);frames(4);

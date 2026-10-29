@@ -121,14 +121,14 @@ for i,p in enumerate(PROGRAMS):
   text=f'Part {j+1}: {html.escape(role)}<br/><font color="{GRAY}">{ENG[part["engine"]]} | {voice}'+(f' | {octave:+d} octave' if octave else '')+'</font>'
   yy=para(text,yy,x=xx,w=CW-210,size=10.4,gap=10)
  Y=min(Y-212,yy-6);Y=h('How to play it',Y);Y=para(html.escape(p['play']),Y)
- Y=h('Make it your own',Y);Y=steps(['Keep SELECT on part 1 while shaping the main instrument. Use its four HOME knobs for tone and articulation.','Hold EDIT for 3 seconds, then release, to keep the mixer open. Use KNOBS 1-4 to rebalance the four parts. Keep the main instrument audible.','Try SCENE 1 MAIN, 2 INTIMATE, 3 AIR or 4 DRY from GLO > SCENES. Save a program after making edits.'],Y)
+ Y=h('Make it your own',Y);Y=steps(['Keep SELECT on part 1 while shaping the main instrument. Use its four HOME knobs for tone and articulation.','Hold EDIT for 2 seconds, then release, to keep the mixer open. Use KNOBS 1-4 to rebalance the four parts. Keep the main instrument audible.','Try SCENE 1 MAIN, 2 INTIMATE, 3 AIR or 4 DRY from GLO > SCENES. Save a program after making edits.'],Y)
  Y=box('Scene 2 reduces ambience and bright support; scene 3 emphasizes the backing texture; scene 4 removes shared effect sends. Scenes retain their musical balance without added loudness normalization. No scene adds voices. Mono supports follow last-held-note behavior, not every chord tone.',Y)
 
 # 15
-standard('Toggle layers and open the mixer','Four-part performance','The two-second preview and three-second latch are different actions.',['layered-toggle','layer-mixer'],[
+standard('Toggle layers and open the mixer','Four-part performance','EDIT latches at two seconds; GLO toggles once without latching.',['layered-toggle','layer-mixer'],[
  'Hold GLO for 2 seconds. The display replaces the current page with Layered ON or Layered OFF. It toggles once per hold.',
  'Release GLO to return. GLO never latches. A normal GLO tap opens its pages without flashing the held screen.',
- 'Hold EDIT for 2 seconds to preview the layer mixer. Continue to 3 seconds, then release, to keep it open.',
+ 'Hold EDIT for 2 seconds, then release, to keep the layer mixer open.',
  'KNOBS 1-4 set the four part volumes. SELECT chooses the part whose pan and split are shown. Tap EDIT or HOME to exit.'
 ],extra='Four layers do not mean 32 voices. All four parts share 8. The factory voicings deliberately use mono support parts where useful to leave more room for the foreground instrument.',key='mixer')
 # 16
@@ -154,9 +154,9 @@ standard('Shape the sound with EDIT','Sound design','EDIT focuses on engine and 
  'FILTER GAIN groups drive, optional output compensation and trim. Use compensation when resonance/drive makes the sound jump in level, then compare at similar listening volume.'
 ],extra='Compensation is estimated attenuation, not a loudness meter or automatic mastering. The factory sound calibration and curated program mixes are separate from this switch.',key='edit')
 # 19
-standard('Envelopes, LFOs and templates','Sound design','The envelope shapes articulation; the LFO and matrix provide movement and expression.',['envelope','mod-templates'],[
+standard('Envelopes, LFOs and templates','Sound design','The envelope shapes articulation; the LFO and matrix provide movement and expression.',['envelope','lfo-filter'],[
  'Tap ENV for attack, decay, sustain and release. Short attack gives definition; a longer attack softens the front. Release controls the tail after key-up.',
- 'Tap LFO to reach its rate, waveform and destination pages. Add a small amount first and test the full keyboard range.',
+ 'Tap LFO for LFO FILTER: KNOB 1 base cutoff, 2 signed depth, 3 rate, 4 waveform. Zero depth stops the sweep. Add a small amount first and test the full keyboard range.',
  'Use LFO > MOD PRESET for velocity-to-brightness, pressure-to-vibrato, wheel-to-vibrato or an envelope swell.',
  'Use the editor for the full matrix and graphical envelope controls. HYBRID templates need a free modulation slot; a full matrix is left unchanged.'
 ],extra='Long releases and sustain can keep voices occupied. Use shorter tails if new chord notes steal old ones. Holding ENV for 3 seconds opens CHORDS instead of the envelope pages.')
@@ -173,14 +173,14 @@ standard('Select a scale, root and octave range','Tuning','Microtuning adjusts p
  'For an octave boundary, open GLO > TUNING. KNOB 1 selects system, KNOB 2 FROM cycles C0-C8 by octaves only, KNOB 3 selects root, KNOB 4 controls master tuning for the focused part.',
  'FROM C3 means MIDI 48 and higher use the selected tuning. Lower notes keep equal-tempered intervals. The A4 reference remains global; find it on TUNING 2.',
  'Use QNT ALL to apply the focused ROOT/SCL note selection across all four parts and incoming MIDI. Use Apply master tuning to let an individual part follow or bypass master microtuning.'
-],extra='Bypassing master tuning does not turn off a separately selected quantizer or chord generator. Factory programs start in equal temperament; loading P4 does not secretly select a maqam.',key='tuning')
+],extra='Bypassing master tuning does not turn off a separately selected quantizer or chord generator. Program changes preserve global tuning. TUNING 2 > SAVE ON includes a tuning override when saving; OFF follows current global tuning.',key='tuning')
 # 22
 standard('Create a custom chromatic scale','Tuning','Use the physical key for the pitch class that should change. Other chromatic keys stay unaltered.',['custom-scale'],[
  'Hold SEL for 3 seconds, then release. CUSTOM SCALE EDIT remains open. SELECT chooses CUSTOM 1-4 and PRESET chooses ROOT.',
  'Press a key once for -25 cents, twice for -50, three times for -75 and four times to restore 0. Repeat for each pitch class you want to detune.',
  'For example, to lower E by 50 cents, press an E key twice. E in other octaves receives the same pitch-class adjustment, subject to FROM.',
  'Tap SAVE to store the custom scale, then SEL to exit. Save the program if you also want its complete four-part setup preserved.'
-],extra='ROM factory recall preserves your four custom-scale definitions. Loading a saved user program restores the definitions stored in that program. Export a backup before replacing an important setup.')
+],extra='ROM factory recall preserves your four custom-scale definitions. Only programs with saved tuning restore their stored definitions. Export a backup before replacing an important setup.')
 # 23
 standard('Chords, voicings and strum','Harmony','Use the three-second ENV shortcut. Normal ENV taps still open envelope editing.',['chords'],[
  'Hold ENV for 3 seconds and release. CHORDS stays open. Use KNOB 1 for CHORD, KNOB 2 for VOIC and KNOB 3 for STRUM.',
@@ -226,7 +226,7 @@ Y=table([['Source','What to expect'],['DX7 / .syx','FM6 can read supported voice
 Y=box('Stop transport and release notes before storage/restore operations when requested. Loading a program replaces working edits. Restore only compatible backups and keep an untouched original copy.',Y)
 # 29
 Y=newpage('Shortcuts and secondary functions','Quick reference','Short taps and holds have different jobs. A brief tap does not show a held-layer screen.',key='shortcuts')
-Y=table([['Gesture / context','Result'],['ALGORITHM on HOME','Engine for the focused part'],['PRESET on HOME','Preset within that engine; wrap at ends'],['SELECT on HOME','Focus part 1-4'],['SEL tap','Scale browser; SELECT cycles tuning scales'],['SEL hold 3 seconds','Latched custom-scale editor; repeated key presses cycle -25/-50/-75/0 cents'],['ENV tap / hold 3 seconds','Envelope pages / CHORDS menu'],['EDIT tap / hold 2 / hold 3 seconds','Edit pages / mixer preview / latched mixer'],['Mixer KNOBS 1-4','Four part volumes'],['Mixer SELECT / PRESET / ALGORITHM','Part focus / pan / split point A1-A6'],['GLO tap / hold 2 seconds','Global pages / toggle layering once; never latch'],['SAVE tap','Program load/save and naming'],['SAVE page SELECT / ALGORITHM / PRESET','Slot / name position / name character'],['HOME tap away from HOME','Return to the four-part HOME display; full-screen visualizer is disabled'],['HOME hold 3 seconds','System menu'],['Other supported function layers','Preview after 2 seconds; latch after 3; tap the same function button or HOME to leave'],['REC tap / hold','Record action / separate clear countdown; release early to cancel']],Y,[164,CW-164])
+Y=table([['Gesture / context','Result'],['ALGORITHM on HOME','Engine for the focused part'],['PRESET on HOME','Preset within that engine; wrap at ends'],['SELECT on HOME','Focus part 1-4'],['SEL tap','Scale browser; SELECT cycles tuning scales'],['SEL hold 3 seconds','Latched custom-scale editor; repeated key presses cycle -25/-50/-75/0 cents'],['ENV tap / hold 3 seconds','Envelope pages / CHORDS menu'],['EDIT tap / hold 2 seconds','Edit pages / latched mixer'],['Mixer KNOBS 1-4','Four part volumes'],['Mixer SELECT / PRESET / ALGORITHM','Part focus / pan / split point A1-A6'],['GLO tap / hold 2 seconds','Global pages / toggle layering once; never latch'],['SAVE tap','Program load/save and naming'],['SAVE page SELECT / ALGORITHM / PRESET','Slot / name position / name character'],['HOME tap away from HOME','Return to the four-part HOME display; full-screen visualizer is disabled'],['HOME hold 3 seconds','System menu'],['Other supported function layers','Preview after 2 seconds; latch after 3; tap the same function button or HOME to leave'],['REC tap / hold','Record action / separate clear countdown; release early to cancel']],Y,[164,CW-164])
 # 30
 Y=newpage('Troubleshoot the sound','Practical limits','Check the performance setup before assuming an engine or preset is broken.',key='troubleshooting')
 Y=table([['Symptom','Try this'],['Only one part sounds','Check layering, enable/mute/solo, focus, split zones and input routing.'],['New chord notes cut old notes','Reduce chord density, unison and release tails. Eight voices are shared across all parts.'],['Piano is not an acoustic grand','P1 is a synthesized stage-piano design. It is not a multisampled acoustic instrument.'],['Mono support does not play every chord tone','This is intentional. The polyphonic main carries the chord; mono followers supply quieter colour.'],['Unexpected detuning','Check tuning system, root, FROM, master-tuning bypass, A4, pitch bend and oscillator detune.'],['Pedal/controller detected but silent','Check that a MIDI interface was detected, KEY IN/channel settings and the controller\'s own mode.'],['Editor cannot connect','Use COMPUTER, a data cable, Chrome/Edge and MIDI/SysEx permission; close competing MIDI applications.'],['Notes keep sounding','Release sustain, check HOLD/release/loops and send an all-notes/all-sound-off safety command if needed.'],['Old sound returns after upgrade','Existing autosave is preserved. Recall a factory program explicitly to try the new bank.']],Y,[156,CW-156])

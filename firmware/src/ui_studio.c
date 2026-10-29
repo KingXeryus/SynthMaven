@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* LIVE screens, 240 x 240, in a teenage-engineering-like style: black, four colours (one per
- * track and per knob: blue, green, yellow, orange), white for what you touch, red for recording,
+ * track and per knob: red, blue, white, ice blue), white for what you touch, red for recording,
  * big numbers, lowercase labels, four dials at the bottom that show what KNOB 1..4 do.
  * Screens: TRACKS (the performance view), DRUMS (GRID / KIT, pads that flash on each hit), the
  * LAYERS (a function button held: what the 16 white keys and the knobs do now), HOLD (a hold to
@@ -16,7 +16,8 @@ static int on_drum_page(void) { return !ui.home && cur_page()->scope == SC_DRUM;
 #define TE_G3 RGB(170, 174, 186)         /* labels */
 #define TE_G4 RGB(196, 196, 204)         /* secondary text */
 #define TE_RED RGB(255, 44, 52)          /* recording, erasing */
-static const uint16_t TE_COL[4] = {RGB(255,120,128),RGB(104,180,255),RGB(240,240,246),RGB(180,186,200)};
+static const uint16_t TE_COL[4] = {RGB(255,120,128),RGB(104,180,255),RGB(240,240,246),RGB(144,216,240)};
+static const uint16_t TE_CARD[4] = {RGB(44,20,28),RGB(16,34,52),RGB(25,32,44),RGB(20,38,46)};
 static const uint16_t TE_MID[4] = {RGB(170,42,48),RGB(40,94,170),RGB(160,160,164),RGB(106,110,122)};
 static const uint16_t TE_DIM[4] = {RGB(76,20,24),RGB(18,42,76),RGB(66,66,72),RGB(44,48,56)};
 #define TE_DRUM TE_COL[3]

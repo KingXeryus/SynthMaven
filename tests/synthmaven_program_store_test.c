@@ -14,7 +14,7 @@ int main(void){
  outdir="build/host";song.sel=3;program_layer=1;custom_scale[2]=0x654321u;
  program_route[1]=(program_route_t){1,1,1,61,-12};trk[1].p[P_LEVEL]=80;trk[1].p[P_PAN]=-32;song.solo=2;
  program_solo_gain[0]=17;program_solo_gain[1]=23;
- program_capture(&a);check(program_valid(&a),"program with custom scales validates");
+ program_save_tuning=1;program_capture(&a);check(program_valid(&a),"program with custom scales validates");
  check(!st_save(OBJ_PROJECT0,&a,sizeof a),"program saved with atomic object store");
  memset(&b,0,sizeof b);check(st_load(OBJ_PROJECT0,&b,sizeof b)==sizeof b && program_valid(&b) && !memcmp(&a,&b,sizeof a),"four-sound program round trips through flash");
  custom_scale[2]=0;memset(program_solo_gain,0,sizeof program_solo_gain);program_apply(&b);check(program_solo_gain[0]==17&&program_solo_gain[1]==23,"fixed solo compensation survives flash save/restore");check(custom_scale[2]==0x654321u && program_layer && song.sel==3,"program restores custom definitions, layer mode and focus");

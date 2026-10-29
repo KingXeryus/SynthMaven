@@ -18,6 +18,6 @@ for page in raw:
 for image in SCREEN_DIR.glob('*.ppm'):
  with Image.open(image) as im:im.save(image.with_suffix('.png'))
 Path('assets/guide/screen-inventory.json').write_text(json.dumps(out,indent=2)+'\n')
-assert len({p['page_id'] for p in out})==65
+assert len({p['page_id'] for p in out})==66
 assert {p['engine'] for p in out if p['title']=='EDIT 1'}==set(['ANALOG','DIGITAL','PHASE','LOFI','SAMPLE','VOICE','TRIO','WHEEL','GRAIN','FM6','PHYS','NOISE','HYBRID','WAVE','ACID','STRINGS','MACRO','VPS','TERRAIN','FMX','WSEQ','JUNO','VECTOR'])
-print(f'Guide inventory: {len(out)} distinct layouts; all 65 reachable menu pages.')
+print(f'Guide inventory: {len(out)} distinct layouts; all 66 reachable menu pages.')

@@ -85,7 +85,7 @@ SAVE → PROGRAM provides **eight named program slots**. SELECT cycles slots 1�
 
 The redundant PROGRAM MODE, PRESETS and USER pages have been removed from SAVE. Layering ON/OFF remains in **GLO → LAYER PITCH**, on GLO’s two-second hold, and in the editor. Use HOME for engine/preset browsing and the editor for library and layer editing. The SAVE → TOOLS page remains for initialization/clearing operations. All four parts share **8 voices total**. This is not 8 voices per part. Each enabled layer and each unison voice consumes that shared budget; a note using all four parts normally costs four voices, so a two-note chord fills an eight-voice budget. Additional notes can steal existing voices. Release tails and unison also use voices; stolen voices may briefly fade over one audio block.
 
-Function-layer screens first appear at two seconds. Except GLO, function layers remain open after holding their button for three seconds. Release the button and continue editing. Tap the same function button or HOME to exit. REC’s clear action still requires its confirmation hold.
+Function-layer screens first appear at two seconds. EDIT latches its mixer at two seconds. Other function layers except GLO remain open after holding their button for three seconds. Release the button and continue editing. Tap the same function button or HOME to exit. REC’s clear action still requires its confirmation hold.
 
 ### Oriental / Middle Eastern sounds
 
@@ -386,7 +386,7 @@ Tap SEL to open the scale browser without changing the scale. SELECT cycles the 
 
 EDIT now has four standard pages: EDIT 1, EDIT 2, VOICE and CHARACTER. FMX keeps its operator/routing pages; OP ENV is under ENV. Macros, morph, randomize, undo and FMX STORE remain accessible in the editor. Layer ON/OFF stays in GLO and on its two-second hold.
 
-Hold EDIT for two seconds to preview the four-sound mixer. KNOBS 1–4 control the volumes of sounds 1–4. SELECT cycles the selected part; ALGORITHM sets that part’s split point from A1 to A6 (shown as note and octave), and PRESET/parameter controls its pan. Editing a split point enables the selected part’s existing Lower/Upper zone. GLO → LAYER ROUTE or the editor can choose the zone or restore full-keyboard layering. At three seconds the mixer latches and stays open after release. Tap EDIT or HOME to exit; save a program to keep the mix. The keyboard still plays and EDIT no longer erases sequence notes. Short presses never show a held-layer screen. HOME opens its menu after three seconds.
+Hold EDIT for two seconds to open and latch the four-sound mixer. KNOBS 1–4 control the volumes of sounds 1–4. SELECT cycles the selected part; ALGORITHM sets that part’s split point from A1 to A6 (shown as note and octave), and PRESET/parameter controls its pan. Editing a split point enables the selected part’s existing Lower/Upper zone. GLO → LAYER ROUTE or the editor can choose the zone or restore full-keyboard layering. At two seconds the mixer latches and stays open after release. Tap EDIT or HOME to exit; save a program to keep the mix. The keyboard still plays and EDIT no longer erases sequence notes. Short presses never show a held-layer screen. HOME opens its menu after three seconds.
 
 ### Performance workflow (2.2.4, protocol 24)
 
@@ -465,3 +465,25 @@ Hardware tests before the final note-batching change showed 64–75% average CPU
 Installation resets settings, programs, user presets, samples and autosave, including same-version reinstalls. Back up first. The corrected loader successfully restarted the connected FM-1 automatically during candidate installs.
 
 Saved PRG3/PBK2 records retain their size and addresses. Sound flag bits 2–7 encode zero for legacy unity or 1–63 for calibrated unity through +62 dB, in whole-dB steps. Trim supports −32 to +63.5 dB in half-dB steps. Backups require protocol 24 before restore.
+
+## Firmware interface refinements (development)
+
+The same menu navigation now uses colored parameter cards and consistent red, blue, white and ice-blue part accents. Text remains high contrast. These are cached display updates, not additional audio processing.
+
+### Global tuning and saved program tuning
+
+Normal program changes keep the current global scale, root, A4 reference, FROM octave and custom-scale definitions. On **GLO > TUNING 2**, KNOB 2 **SAVE** defaults to OFF. Turn it ON before saving a program to include an explicit tuning override, including equal temperament if desired. Recall of that program restores its saved tuning. Turn SAVE OFF and save again to make it follow the current global tuning. An override becomes the current tuning; a subsequent global program leaves it in place. Each part's MASTER bypass still belongs to that part.
+
+Older programs have no explicit tuning policy: a non-equal scale, non-440 A4, or non-default FROM octave is treated as saved tuning. Old equal-tempered defaults follow global tuning. The eight factory programs therefore do not reset the selected maqam. Scenes retain their separately captured tuning behavior.
+
+### Direct LFO filter controls
+
+Tap LFO and select **LFO FILTER**. KNOB 1 changes the engine's base cutoff; KNOB 2 changes signed DEPTH; KNOB 3 controls RATE; KNOB 4 selects WAVE. Start with a low rate and a small positive depth. Zero depth stops the sweep; a negative depth reverses its direction. The red line marks the base setting and the blue curve previews the LFO's excursion within the available cutoff range. Other envelopes, key tracking and modulation can still affect the audible result. HYBRID's base control is filter 1; its shared LFO cutoff modulation retains the existing filter routing. Engines without a cutoff show an unavailable message and disabled cutoff/depth controls; their original LFO DEST page remains available for timbre modulation.
+
+### EDIT mixer shortcut
+
+Hold EDIT for **two seconds**, then release: the four-part mixer stays open. A short press does not flash the mixer. KNOBS 1–4 control part volumes, SELECT chooses the part, PRESET controls its pan, and ALGORITHM controls its split point. Tap EDIT or HOME to exit.
+
+### TRS polarity
+
+KEY IN selects USB, TRS or BOTH. Type A/B polarity swaps the physical tip and ring conductors; the current FM-1 driver exposes only a fixed PH8 UART receive input, with no documented switch for the jack wiring. A firmware polarity toggle is not implemented. Use a compatible TRS MIDI adapter or a tip/ring crossover adapter for opposite Type A/B wiring. UART bit inversion is not a substitute for rewiring the MIDI current loop.

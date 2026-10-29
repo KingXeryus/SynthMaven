@@ -23,7 +23,7 @@ enum { X_LYMODE, X_LYSOUND, X_LYSPLIT, X_LYLEVEL, X_LYOCT, X_LYPAN, X_LYFILT, X_
        X_MIN, X_MOUT,                                  /* 1.0: GLO > MIDI, the instrument's channels (seq.c midi_in_ch) */
        X_MBEND, X_MLOCAL, X_MPROG, X_MCCO,             /* 1.0: the bend range (voice.c midi_bend), LOCAL, PROG, CC OUT */
        X_MBRTH,                                        /* 1.0: EWI (seq.c midi_breath) */
-       X_SMPORT, X_SMKEY, X_SMBT, X_SMPAIR, X_SMDEV, X_SMCON, X_PTYPE, X_PNUM, X_PVAL, X_PCH, X_USBROLE, X_PGLAYER, X_PGENABLE, X_PGSPLIT, X_PGSIDE, X_PGPOINT, X_PGLEVEL, X_PGPAN, X_PGMUTE, X_PGSOLO, X_PGTRANS, X_MTUNE, X_PEDACT, X_LEARN, X_ACCEPT, X_REPEAT, X_SCENE, X_SCAP, X_SLOAD, X_LISTPOS, X_LISTSLOT, X_LISTLEN, X_LISTGO, X_FMODEL, X_FCUT, X_FRES, X_FENV, X_FDRIVE, X_FCOMP, X_FTRIM, X_TEMPLATE, X_APPLY, X_TFLOOR, X_CMODE, X_CPORT, X_COUNT };
+       X_SMPORT, X_SMKEY, X_SMBT, X_SMPAIR, X_SMDEV, X_SMCON, X_PTYPE, X_PNUM, X_PVAL, X_PCH, X_USBROLE, X_PGLAYER, X_PGENABLE, X_PGSPLIT, X_PGSIDE, X_PGPOINT, X_PGLEVEL, X_PGPAN, X_PGMUTE, X_PGSOLO, X_PGTRANS, X_MTUNE, X_PEDACT, X_LEARN, X_ACCEPT, X_REPEAT, X_SCENE, X_SCAP, X_SLOAD, X_LISTPOS, X_LISTSLOT, X_LISTLEN, X_LISTGO, X_FMODEL, X_FCUT, X_FRES, X_FENV, X_FDRIVE, X_FCOMP, X_FTRIM, X_TEMPLATE, X_APPLY, X_TFLOOR, X_CMODE, X_CPORT, X_TUSAVE, X_LCUT, X_LDEPTH, X_LRATE, X_LWAVE, X_COUNT };
 static void mseq_fill(struct track *t, uint32_t l, uint32_t f);
 static const char *const N_QFILL[] = {"--", "RAMP+", "RAMP-", "TRI", "SINE", "SQR", "RND", "FLAT", "INVRT", "SHIFT"};
 enum { QF_NONE, QF_UP, QF_DOWN, QF_TRI, QF_SINE, QF_SQR, QF_RND, QF_FLAT, QF_INV, QF_SHIFT, QF_N };
@@ -39,7 +39,7 @@ static const char *const N_FRATIO[32] = {"0.5", "1", "2", "3", "4", "5", "6", "7
                                          "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26",
                                          "27", "28", "29", "30", "31"};
 static const char *const N_FFIXC[4] = {"1Hz", "10Hz", "100Hz", "1kHz"};
-_Static_assert(X_FOP == 19 && X_FSTORE == 40 && X_HPOS == 41 && X_QLANE == 43 && X_TSYS == 47 && X_TFLOOR == 99 && QF_N == NELEM(N_QFILL),
+_Static_assert(X_FOP == 19 && X_FSTORE == 40 && X_HPOS == 41 && X_QLANE == 43 && X_TSYS == 47 && X_TFLOOR == 99 && X_TUSAVE == 102 && X_LWAVE == 106 && QF_N == NELEM(N_QFILL),
                "params.c PAGES: FMX's ids, UNDO's, MOD SEQ's");
 static const char *const N_CMP[] = {"EDIT", "ORIG"};
 static const char *const N_MIN_CH[17] = {"OMNI", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
@@ -96,6 +96,7 @@ static const param_desc_t XD[X_COUNT] = {
     [X_QSTEP] = PD("STEP", F_INT, 1, 16, 1),
     [X_QVAL] = PD("VALUE", F_INT, -8, 7, 0),
     [X_QFILL] = PE("SHAPE", N_QFILL, 0),
+    [X_TUSAVE] = PE("SAVE", N_ONOFF, 0),
     [X_MTUNE] = PE("MASTER", N_ONOFF, 1),
     [X_CMODE] = PE("MODE", CT_MODE_NAME,0),
     [X_CPORT] = PE("PORT", N_CPORT,0),
@@ -618,6 +619,12 @@ static void layer_swap(void)
 static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
 {
     track_t *l = &trk[1];
+    if(id==X_LCUT)return sm_filter_desc(1,valp);
+    if(id>=X_LDEPTH && id<=X_LWAVE){
+        uint32_t pid=id==X_LDEPTH?P_LD_FLT:id==X_LRATE?P_LRATE:P_LWAVE;
+        static param_desc_t d;d=TP[pid];if(id==X_LDEPTH){d.label="DEPTH";if(SM_FILTER_CAP[TSEL->eng_req%NENGINES].cut<0){static int16_t off;off=0;d=(param_desc_t){"--",F_ENUM,0,0,0,N_DASH,0};*valp=&off;return &d;}}
+        *valp=&TSEL->p[pid];return &d;
+    }
     if(id>=X_FMODEL && id<=X_FTRIM)return sm_filter_desc(id-X_FMODEL,valp);
     switch (id) {
     case X_LEARN:xv[id]=sm_learn_state!=0;*valp=&xv[id];break;
@@ -638,6 +645,7 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
     case X_MTUNE: xv[X_MTUNE]=!(master_tuning_bypass&(1u<<(song.sel%4u)));*valp=&xv[X_MTUNE];break;
     case X_CMODE:xv[id]=sm_controller_override;*valp=&xv[id];break;
     case X_CPORT:xv[id]=sm_controller_port;*valp=&xv[id];break;
+    case X_TUSAVE: xv[X_TUSAVE]=program_save_tuning;*valp=&xv[X_TUSAVE];break;
     case X_TFLOOR: xv[X_TFLOOR]=tune_floor_octave;*valp=&xv[X_TFLOOR];break;
     case X_TSYS: xv[X_TSYS] = (int16_t)(tune_cfg.sys % TU_N); *valp = &xv[X_TSYS]; break;
     case X_TROOT: xv[X_TROOT] = (int16_t)(tune_cfg.root % 12u); *valp = &xv[X_TROOT]; break;
@@ -765,6 +773,7 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
 /* ui_input.c: a value of the synth's pages was turned to *vp */
 static void syn_changed(uint32_t id, int16_t *vp)
 {
+    if(id==X_LCUT){sm_filter_changed(1,*vp);ui.force=1;return;}
     if(id>=X_FMODEL && id<=X_FTRIM){sm_filter_changed(id-X_FMODEL,*vp);ui.force=1;return;}
     switch (id) {
     case X_LEARN:if(*vp)sm_learn_arm((uint32_t)xv[X_PEDACT]);else sm_learn_state=0;ui.force=1;break;
@@ -819,6 +828,7 @@ static void syn_changed(uint32_t id, int16_t *vp)
         TSEL->ms[clamp(xv[X_QLANE], 1, 4) - 1][clamp(xv[X_QSTEP], 1, 16) - 1] = (int8_t)clamp(*vp, -8, 7);
         ui.force = 1;
         break;
+    case X_TUSAVE: program_save_tuning=(uint8_t)(*vp!=0);ui.force=1;break;
     case X_MTUNE: master_tuning_bypass=(uint8_t)((master_tuning_bypass&~(1u<<(song.sel%4u)))|((!*vp)<<(song.sel%4u)));settings_later=1;break;
     case X_CMODE:case X_CPORT:
         if(id==X_CPORT)sm_controller_port=(uint8_t)clamp(*vp,0,16);

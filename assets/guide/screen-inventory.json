@@ -361,11 +361,84 @@
   {
     "page_id": 6,
     "family": "LFO",
+    "title": "LFO FILTER",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-06-e00-v00",
+    "controls": [
+      {
+        "id": 103,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 90,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "2.5 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 104,
+        "label": "DEPTH",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 105,
+        "label": "RATE",
+        "min": 0,
+        "max": 127,
+        "default": 60,
+        "format": 4,
+        "formatted": [
+          ".05 Hz",
+          "40.0 Hz",
+          "1.18 Hz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 106,
+        "label": "WAVE",
+        "min": 0,
+        "max": 4,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "SIN",
+          "S&H",
+          "SIN"
+        ],
+        "choices": [
+          "SIN",
+          "TRI",
+          "SAW",
+          "SQR",
+          "S&H"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 7,
+    "family": "LFO",
     "title": "LFO DEST",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 0,
-    "image": "ref-06-e00-v00",
+    "image": "ref-07-e00-v00",
     "controls": [
       {
         "id": 13,
@@ -426,13 +499,13 @@
     ]
   },
   {
-    "page_id": 7,
+    "page_id": 8,
     "family": "LFO",
     "title": "MOD PRESET",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
-    "image": "ref-07-e00-v00",
+    "image": "ref-08-e00-v00",
     "controls": [
       {
         "id": 97,
@@ -472,13 +545,13 @@
     ]
   },
   {
-    "page_id": 8,
+    "page_id": 9,
     "family": "LFO",
     "title": "MOD",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 0,
-    "image": "ref-08-e00-v00",
+    "image": "ref-09-e00-v00",
     "controls": [
       {
         "id": 45,
@@ -540,13 +613,13 @@
     ]
   },
   {
-    "page_id": 9,
+    "page_id": 10,
     "family": "LFO",
     "title": "LFO 2",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 0,
-    "image": "ref-09-e00-v00",
+    "image": "ref-10-e00-v00",
     "controls": [
       {
         "id": 53,
@@ -603,13 +676,13 @@
     ]
   },
   {
-    "page_id": 10,
+    "page_id": 11,
     "family": "LFO",
     "title": "LFO 3",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 0,
-    "image": "ref-10-e00-v00",
+    "image": "ref-11-e00-v00",
     "controls": [
       {
         "id": 92,
@@ -666,13 +739,13 @@
     ]
   },
   {
-    "page_id": 11,
+    "page_id": 12,
     "family": "LFO",
     "title": "MATRIX",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
-    "image": "ref-11-e00-v00",
+    "image": "ref-12-e00-v00",
     "controls": [
       {
         "id": 15,
@@ -770,13 +843,13 @@
     ]
   },
   {
-    "page_id": 12,
+    "page_id": 13,
     "family": "LFO",
     "title": "MOD SEQ",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
-    "image": "ref-12-e00-v00",
+    "image": "ref-13-e00-v00",
     "controls": [
       {
         "id": 43,
@@ -848,13 +921,13 @@
     ]
   },
   {
-    "page_id": 13,
+    "page_id": 14,
     "family": "LFO",
     "title": "MOD SEQ 2",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 0,
-    "image": "ref-13-e00-v00",
+    "image": "ref-14-e00-v00",
     "controls": [
       {
         "id": 83,
@@ -928,13 +1001,13 @@
     ]
   },
   {
-    "page_id": 14,
+    "page_id": 15,
     "family": "FX",
     "title": "FX",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 0,
-    "image": "ref-14-e00-v00",
+    "image": "ref-15-e00-v00",
     "controls": [
       {
         "id": 33,
@@ -995,13 +1068,13 @@
     ]
   },
   {
-    "page_id": 15,
+    "page_id": 16,
     "family": "FX",
     "title": "PART FILTER",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 0,
-    "image": "ref-15-e00-v00",
+    "image": "ref-16-e00-v00",
     "controls": [
       {
         "id": 50,
@@ -1023,13 +1096,13 @@
     ]
   },
   {
-    "page_id": 16,
+    "page_id": 17,
     "family": "FX",
     "title": "INSERT",
     "engine": "All applicable engines",
     "variant": 0,
     "scope": 0,
-    "image": "ref-16-e00-v01",
+    "image": "ref-17-e00-v01",
     "controls": [
       {
         "id": 78,
@@ -1103,13 +1176,13 @@
     ]
   },
   {
-    "page_id": 16,
+    "page_id": 17,
     "family": "FX",
     "title": "INSERT",
     "engine": "All applicable engines",
     "variant": 1,
     "scope": 0,
-    "image": "ref-16-e00-v02",
+    "image": "ref-17-e00-v02",
     "controls": [
       {
         "id": 78,
@@ -1183,13 +1256,13 @@
     ]
   },
   {
-    "page_id": 16,
+    "page_id": 17,
     "family": "FX",
     "title": "INSERT",
     "engine": "All applicable engines",
     "variant": 5,
     "scope": 0,
-    "image": "ref-16-e00-v06",
+    "image": "ref-17-e00-v06",
     "controls": [
       {
         "id": 78,
@@ -1263,13 +1336,13 @@
     ]
   },
   {
-    "page_id": 16,
+    "page_id": 17,
     "family": "FX",
     "title": "INSERT",
     "engine": "All applicable engines",
     "variant": 6,
     "scope": 0,
-    "image": "ref-16-e00-v07",
+    "image": "ref-17-e00-v07",
     "controls": [
       {
         "id": 78,
@@ -1343,13 +1416,13 @@
     ]
   },
   {
-    "page_id": 16,
+    "page_id": 17,
     "family": "FX",
     "title": "INSERT",
     "engine": "All applicable engines",
     "variant": 9,
     "scope": 0,
-    "image": "ref-16-e00-v10",
+    "image": "ref-17-e00-v10",
     "controls": [
       {
         "id": 78,
@@ -1423,13 +1496,13 @@
     ]
   },
   {
-    "page_id": 17,
+    "page_id": 18,
     "family": "FX",
     "title": "INSERT 2",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 0,
-    "image": "ref-17-e00-v00",
+    "image": "ref-18-e00-v00",
     "controls": [
       {
         "id": 82,
@@ -1451,13 +1524,13 @@
     ]
   },
   {
-    "page_id": 18,
+    "page_id": 19,
     "family": "FX",
     "title": "DLY",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 1,
-    "image": "ref-18-e00-v00",
+    "image": "ref-19-e00-v00",
     "controls": [
       {
         "id": 4,
@@ -1527,13 +1600,13 @@
     ]
   },
   {
-    "page_id": 19,
+    "page_id": 20,
     "family": "FX",
     "title": "DLY 2",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 1,
-    "image": "ref-19-e00-v00",
+    "image": "ref-20-e00-v00",
     "controls": [
       {
         "id": 33,
@@ -1559,13 +1632,13 @@
     ]
   },
   {
-    "page_id": 20,
+    "page_id": 21,
     "family": "FX",
     "title": "REVERB",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 1,
-    "image": "ref-20-e00-v00",
+    "image": "ref-21-e00-v00",
     "controls": [
       {
         "id": 28,
@@ -1631,13 +1704,13 @@
     ]
   },
   {
-    "page_id": 21,
+    "page_id": 22,
     "family": "FX",
     "title": "CHORUS",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 1,
-    "image": "ref-21-e00-v00",
+    "image": "ref-22-e00-v00",
     "controls": [
       {
         "id": 10,
@@ -1672,13 +1745,13 @@
     ]
   },
   {
-    "page_id": 22,
+    "page_id": 23,
     "family": "FX",
     "title": "EQ+COMP",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 1,
-    "image": "ref-22-e00-v00",
+    "image": "ref-23-e00-v00",
     "controls": [
       {
         "id": 25,
@@ -1739,13 +1812,13 @@
     ]
   },
   {
-    "page_id": 23,
+    "page_id": 24,
     "family": "SEL",
     "title": "SEL",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 0,
-    "image": "ref-23-e00-v00",
+    "image": "ref-24-e00-v00",
     "controls": [
       {
         "id": 25,
@@ -1847,13 +1920,13 @@
     ]
   },
   {
-    "page_id": 24,
+    "page_id": 25,
     "family": "SEL",
     "title": "SEL 2",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 0,
-    "image": "ref-24-e00-v00",
+    "image": "ref-25-e00-v00",
     "controls": [
       {
         "id": 28,
@@ -1908,13 +1981,13 @@
     ]
   },
   {
-    "page_id": 25,
+    "page_id": 26,
     "family": "EDIT",
     "title": "FILTER",
     "engine": "ANALOG",
     "variant": -1,
     "scope": 7,
-    "image": "ref-25-e01-v00",
+    "image": "ref-26-e01-v00",
     "controls": [
       {
         "id": 90,
@@ -1984,13 +2057,13 @@
     ]
   },
   {
-    "page_id": 25,
+    "page_id": 26,
     "family": "EDIT",
     "title": "FILTER",
     "engine": "LOFI",
     "variant": -1,
     "scope": 7,
-    "image": "ref-25-e04-v00",
+    "image": "ref-26-e04-v00",
     "controls": [
       {
         "id": 90,
@@ -2055,13 +2128,13 @@
     ]
   },
   {
-    "page_id": 25,
+    "page_id": 26,
     "family": "EDIT",
     "title": "FILTER",
     "engine": "SAMPLE",
     "variant": -1,
     "scope": 7,
-    "image": "ref-25-e05-v00",
+    "image": "ref-26-e05-v00",
     "controls": [
       {
         "id": 90,
@@ -2126,13 +2199,13 @@
     ]
   },
   {
-    "page_id": 25,
+    "page_id": 26,
     "family": "EDIT",
     "title": "FILTER",
     "engine": "TRIO",
     "variant": -1,
     "scope": 7,
-    "image": "ref-25-e07-v00",
+    "image": "ref-26-e07-v00",
     "controls": [
       {
         "id": 90,
@@ -2198,13 +2271,13 @@
     ]
   },
   {
-    "page_id": 25,
+    "page_id": 26,
     "family": "EDIT",
     "title": "FILTER",
     "engine": "GRAIN",
     "variant": -1,
     "scope": 7,
-    "image": "ref-25-e09-v00",
+    "image": "ref-26-e09-v00",
     "controls": [
       {
         "id": 90,
@@ -2269,13 +2342,13 @@
     ]
   },
   {
-    "page_id": 25,
+    "page_id": 26,
     "family": "EDIT",
     "title": "FILTER",
     "engine": "NOISE",
     "variant": -1,
     "scope": 7,
-    "image": "ref-25-e12-v00",
+    "image": "ref-26-e12-v00",
     "controls": [
       {
         "id": 90,
@@ -2338,13 +2411,13 @@
     ]
   },
   {
-    "page_id": 25,
+    "page_id": 26,
     "family": "EDIT",
     "title": "FILTER",
     "engine": "HYBRID",
     "variant": -1,
     "scope": 7,
-    "image": "ref-25-e13-v00",
+    "image": "ref-26-e13-v00",
     "controls": [
       {
         "id": 90,
@@ -2414,13 +2487,13 @@
     ]
   },
   {
-    "page_id": 25,
+    "page_id": 26,
     "family": "EDIT",
     "title": "FILTER",
     "engine": "WAVE",
     "variant": -1,
     "scope": 7,
-    "image": "ref-25-e14-v00",
+    "image": "ref-26-e14-v00",
     "controls": [
       {
         "id": 90,
@@ -2490,13 +2563,13 @@
     ]
   },
   {
-    "page_id": 25,
+    "page_id": 26,
     "family": "EDIT",
     "title": "FILTER",
     "engine": "ACID",
     "variant": -1,
     "scope": 7,
-    "image": "ref-25-e15-v00",
+    "image": "ref-26-e15-v00",
     "controls": [
       {
         "id": 90,
@@ -2559,13 +2632,13 @@
     ]
   },
   {
-    "page_id": 25,
+    "page_id": 26,
     "family": "EDIT",
     "title": "FILTER",
     "engine": "STRINGS",
     "variant": -1,
     "scope": 7,
-    "image": "ref-25-e16-v00",
+    "image": "ref-26-e16-v00",
     "controls": [
       {
         "id": 90,
@@ -2628,13 +2701,13 @@
     ]
   },
   {
-    "page_id": 25,
+    "page_id": 26,
     "family": "EDIT",
     "title": "FILTER",
     "engine": "MACRO",
     "variant": -1,
     "scope": 7,
-    "image": "ref-25-e17-v00",
+    "image": "ref-26-e17-v00",
     "controls": [
       {
         "id": 90,
@@ -2699,13 +2772,13 @@
     ]
   },
   {
-    "page_id": 25,
+    "page_id": 26,
     "family": "EDIT",
     "title": "FILTER",
     "engine": "VPS",
     "variant": -1,
     "scope": 7,
-    "image": "ref-25-e18-v00",
+    "image": "ref-26-e18-v00",
     "controls": [
       {
         "id": 90,
@@ -2768,13 +2841,13 @@
     ]
   },
   {
-    "page_id": 25,
+    "page_id": 26,
     "family": "EDIT",
     "title": "FILTER",
     "engine": "TERRAIN",
     "variant": -1,
     "scope": 7,
-    "image": "ref-25-e19-v00",
+    "image": "ref-26-e19-v00",
     "controls": [
       {
         "id": 90,
@@ -2837,13 +2910,13 @@
     ]
   },
   {
-    "page_id": 25,
+    "page_id": 26,
     "family": "EDIT",
     "title": "FILTER",
     "engine": "WSEQ",
     "variant": -1,
     "scope": 7,
-    "image": "ref-25-e21-v00",
+    "image": "ref-26-e21-v00",
     "controls": [
       {
         "id": 90,
@@ -2906,13 +2979,13 @@
     ]
   },
   {
-    "page_id": 25,
+    "page_id": 26,
     "family": "EDIT",
     "title": "FILTER",
     "engine": "JUNO",
     "variant": -1,
     "scope": 7,
-    "image": "ref-25-e22-v00",
+    "image": "ref-26-e22-v00",
     "controls": [
       {
         "id": 90,
@@ -2975,13 +3048,13 @@
     ]
   },
   {
-    "page_id": 25,
+    "page_id": 26,
     "family": "EDIT",
     "title": "FILTER",
     "engine": "VECTOR",
     "variant": -1,
     "scope": 7,
-    "image": "ref-25-e23-v00",
+    "image": "ref-26-e23-v00",
     "controls": [
       {
         "id": 90,
@@ -3053,13 +3126,13 @@
     ]
   },
   {
-    "page_id": 26,
+    "page_id": 27,
     "family": "EDIT",
     "title": "FILTER GAIN",
     "engine": "ANALOG",
     "variant": -1,
     "scope": 7,
-    "image": "ref-26-e01-v00",
+    "image": "ref-27-e01-v00",
     "controls": [
       {
         "id": 94,
@@ -3107,791 +3180,13 @@
     ]
   },
   {
-    "page_id": 26,
+    "page_id": 27,
     "family": "EDIT",
     "title": "FILTER GAIN",
     "engine": "LOFI",
     "variant": -1,
     "scope": 7,
-    "image": "ref-26-e04-v00",
-    "controls": [
-      {
-        "id": 94,
-        "label": "--",
-        "min": 0,
-        "max": 0,
-        "default": 0,
-        "format": 8,
-        "formatted": [
-          "--",
-          "--",
-          "--"
-        ],
-        "choices": [
-          "--"
-        ]
-      },
-      {
-        "id": 95,
-        "label": "COMP",
-        "min": 0,
-        "max": 0,
-        "default": 0,
-        "format": 11,
-        "formatted": [
-          "OFF",
-          "OFF",
-          "OFF"
-        ],
-        "choices": []
-      },
-      {
-        "id": 96,
-        "label": "TRIM",
-        "min": -64,
-        "max": 127,
-        "default": 0,
-        "format": 18,
-        "formatted": [
-          "-32.0 dB",
-          "63.5 dB",
-          ".0 dB"
-        ],
-        "choices": []
-      },
-      null
-    ]
-  },
-  {
-    "page_id": 26,
-    "family": "EDIT",
-    "title": "FILTER GAIN",
-    "engine": "SAMPLE",
-    "variant": -1,
-    "scope": 7,
-    "image": "ref-26-e05-v00",
-    "controls": [
-      {
-        "id": 94,
-        "label": "--",
-        "min": 0,
-        "max": 0,
-        "default": 0,
-        "format": 8,
-        "formatted": [
-          "--",
-          "--",
-          "--"
-        ],
-        "choices": [
-          "--"
-        ]
-      },
-      {
-        "id": 95,
-        "label": "COMP",
-        "min": 0,
-        "max": 0,
-        "default": 0,
-        "format": 11,
-        "formatted": [
-          "OFF",
-          "OFF",
-          "OFF"
-        ],
-        "choices": []
-      },
-      {
-        "id": 96,
-        "label": "TRIM",
-        "min": -64,
-        "max": 127,
-        "default": 0,
-        "format": 18,
-        "formatted": [
-          "-32.0 dB",
-          "63.5 dB",
-          ".0 dB"
-        ],
-        "choices": []
-      },
-      null
-    ]
-  },
-  {
-    "page_id": 26,
-    "family": "EDIT",
-    "title": "FILTER GAIN",
-    "engine": "TRIO",
-    "variant": -1,
-    "scope": 7,
-    "image": "ref-26-e07-v00",
-    "controls": [
-      {
-        "id": 94,
-        "label": "--",
-        "min": 0,
-        "max": 0,
-        "default": 0,
-        "format": 8,
-        "formatted": [
-          "--",
-          "--",
-          "--"
-        ],
-        "choices": [
-          "--"
-        ]
-      },
-      {
-        "id": 95,
-        "label": "COMP",
-        "min": 0,
-        "max": 1,
-        "default": 0,
-        "format": 11,
-        "formatted": [
-          "OFF",
-          "ON",
-          "OFF"
-        ],
-        "choices": []
-      },
-      {
-        "id": 96,
-        "label": "TRIM",
-        "min": -64,
-        "max": 127,
-        "default": 0,
-        "format": 18,
-        "formatted": [
-          "-32.0 dB",
-          "63.5 dB",
-          ".0 dB"
-        ],
-        "choices": []
-      },
-      null
-    ]
-  },
-  {
-    "page_id": 26,
-    "family": "EDIT",
-    "title": "FILTER GAIN",
-    "engine": "GRAIN",
-    "variant": -1,
-    "scope": 7,
-    "image": "ref-26-e09-v00",
-    "controls": [
-      {
-        "id": 94,
-        "label": "--",
-        "min": 0,
-        "max": 0,
-        "default": 0,
-        "format": 8,
-        "formatted": [
-          "--",
-          "--",
-          "--"
-        ],
-        "choices": [
-          "--"
-        ]
-      },
-      {
-        "id": 95,
-        "label": "COMP",
-        "min": 0,
-        "max": 0,
-        "default": 0,
-        "format": 11,
-        "formatted": [
-          "OFF",
-          "OFF",
-          "OFF"
-        ],
-        "choices": []
-      },
-      {
-        "id": 96,
-        "label": "TRIM",
-        "min": -64,
-        "max": 127,
-        "default": 0,
-        "format": 18,
-        "formatted": [
-          "-32.0 dB",
-          "63.5 dB",
-          ".0 dB"
-        ],
-        "choices": []
-      },
-      null
-    ]
-  },
-  {
-    "page_id": 26,
-    "family": "EDIT",
-    "title": "FILTER GAIN",
-    "engine": "NOISE",
-    "variant": -1,
-    "scope": 7,
-    "image": "ref-26-e12-v00",
-    "controls": [
-      {
-        "id": 94,
-        "label": "--",
-        "min": 0,
-        "max": 0,
-        "default": 0,
-        "format": 8,
-        "formatted": [
-          "--",
-          "--",
-          "--"
-        ],
-        "choices": [
-          "--"
-        ]
-      },
-      {
-        "id": 95,
-        "label": "COMP",
-        "min": 0,
-        "max": 1,
-        "default": 0,
-        "format": 11,
-        "formatted": [
-          "OFF",
-          "ON",
-          "OFF"
-        ],
-        "choices": []
-      },
-      {
-        "id": 96,
-        "label": "TRIM",
-        "min": -64,
-        "max": 127,
-        "default": 0,
-        "format": 18,
-        "formatted": [
-          "-32.0 dB",
-          "63.5 dB",
-          ".0 dB"
-        ],
-        "choices": []
-      },
-      null
-    ]
-  },
-  {
-    "page_id": 26,
-    "family": "EDIT",
-    "title": "FILTER GAIN",
-    "engine": "HYBRID",
-    "variant": -1,
-    "scope": 7,
-    "image": "ref-26-e13-v00",
-    "controls": [
-      {
-        "id": 94,
-        "label": "DRIVE",
-        "min": 0,
-        "max": 127,
-        "default": 0,
-        "format": 1,
-        "formatted": [
-          "0 %",
-          "100 %",
-          "0 %"
-        ],
-        "choices": []
-      },
-      {
-        "id": 95,
-        "label": "COMP",
-        "min": 0,
-        "max": 1,
-        "default": 0,
-        "format": 11,
-        "formatted": [
-          "OFF",
-          "ON",
-          "OFF"
-        ],
-        "choices": []
-      },
-      {
-        "id": 96,
-        "label": "TRIM",
-        "min": -64,
-        "max": 127,
-        "default": 0,
-        "format": 18,
-        "formatted": [
-          "-32.0 dB",
-          "63.5 dB",
-          ".0 dB"
-        ],
-        "choices": []
-      },
-      null
-    ]
-  },
-  {
-    "page_id": 26,
-    "family": "EDIT",
-    "title": "FILTER GAIN",
-    "engine": "WAVE",
-    "variant": -1,
-    "scope": 7,
-    "image": "ref-26-e14-v00",
-    "controls": [
-      {
-        "id": 94,
-        "label": "DRV",
-        "min": 0,
-        "max": 127,
-        "default": 0,
-        "format": 1,
-        "formatted": [
-          "0 %",
-          "100 %",
-          "0 %"
-        ],
-        "choices": []
-      },
-      {
-        "id": 95,
-        "label": "COMP",
-        "min": 0,
-        "max": 1,
-        "default": 0,
-        "format": 11,
-        "formatted": [
-          "OFF",
-          "ON",
-          "OFF"
-        ],
-        "choices": []
-      },
-      {
-        "id": 96,
-        "label": "TRIM",
-        "min": -64,
-        "max": 127,
-        "default": 0,
-        "format": 18,
-        "formatted": [
-          "-32.0 dB",
-          "63.5 dB",
-          ".0 dB"
-        ],
-        "choices": []
-      },
-      null
-    ]
-  },
-  {
-    "page_id": 26,
-    "family": "EDIT",
-    "title": "FILTER GAIN",
-    "engine": "ACID",
-    "variant": -1,
-    "scope": 7,
-    "image": "ref-26-e15-v00",
-    "controls": [
-      {
-        "id": 94,
-        "label": "DIST",
-        "min": 0,
-        "max": 127,
-        "default": 20,
-        "format": 1,
-        "formatted": [
-          "0 %",
-          "100 %",
-          "16 %"
-        ],
-        "choices": []
-      },
-      {
-        "id": 95,
-        "label": "COMP",
-        "min": 0,
-        "max": 1,
-        "default": 0,
-        "format": 11,
-        "formatted": [
-          "OFF",
-          "ON",
-          "OFF"
-        ],
-        "choices": []
-      },
-      {
-        "id": 96,
-        "label": "TRIM",
-        "min": -64,
-        "max": 127,
-        "default": 0,
-        "format": 18,
-        "formatted": [
-          "-32.0 dB",
-          "63.5 dB",
-          ".0 dB"
-        ],
-        "choices": []
-      },
-      null
-    ]
-  },
-  {
-    "page_id": 26,
-    "family": "EDIT",
-    "title": "FILTER GAIN",
-    "engine": "STRINGS",
-    "variant": -1,
-    "scope": 7,
-    "image": "ref-26-e16-v00",
-    "controls": [
-      {
-        "id": 94,
-        "label": "--",
-        "min": 0,
-        "max": 0,
-        "default": 0,
-        "format": 8,
-        "formatted": [
-          "--",
-          "--",
-          "--"
-        ],
-        "choices": [
-          "--"
-        ]
-      },
-      {
-        "id": 95,
-        "label": "COMP",
-        "min": 0,
-        "max": 1,
-        "default": 0,
-        "format": 11,
-        "formatted": [
-          "OFF",
-          "ON",
-          "OFF"
-        ],
-        "choices": []
-      },
-      {
-        "id": 96,
-        "label": "TRIM",
-        "min": -64,
-        "max": 127,
-        "default": 0,
-        "format": 18,
-        "formatted": [
-          "-32.0 dB",
-          "63.5 dB",
-          ".0 dB"
-        ],
-        "choices": []
-      },
-      null
-    ]
-  },
-  {
-    "page_id": 26,
-    "family": "EDIT",
-    "title": "FILTER GAIN",
-    "engine": "MACRO",
-    "variant": -1,
-    "scope": 7,
-    "image": "ref-26-e17-v00",
-    "controls": [
-      {
-        "id": 94,
-        "label": "--",
-        "min": 0,
-        "max": 0,
-        "default": 0,
-        "format": 8,
-        "formatted": [
-          "--",
-          "--",
-          "--"
-        ],
-        "choices": [
-          "--"
-        ]
-      },
-      {
-        "id": 95,
-        "label": "COMP",
-        "min": 0,
-        "max": 0,
-        "default": 0,
-        "format": 11,
-        "formatted": [
-          "OFF",
-          "OFF",
-          "OFF"
-        ],
-        "choices": []
-      },
-      {
-        "id": 96,
-        "label": "TRIM",
-        "min": -64,
-        "max": 127,
-        "default": 0,
-        "format": 18,
-        "formatted": [
-          "-32.0 dB",
-          "63.5 dB",
-          ".0 dB"
-        ],
-        "choices": []
-      },
-      null
-    ]
-  },
-  {
-    "page_id": 26,
-    "family": "EDIT",
-    "title": "FILTER GAIN",
-    "engine": "VPS",
-    "variant": -1,
-    "scope": 7,
-    "image": "ref-26-e18-v00",
-    "controls": [
-      {
-        "id": 94,
-        "label": "--",
-        "min": 0,
-        "max": 0,
-        "default": 0,
-        "format": 8,
-        "formatted": [
-          "--",
-          "--",
-          "--"
-        ],
-        "choices": [
-          "--"
-        ]
-      },
-      {
-        "id": 95,
-        "label": "COMP",
-        "min": 0,
-        "max": 1,
-        "default": 0,
-        "format": 11,
-        "formatted": [
-          "OFF",
-          "ON",
-          "OFF"
-        ],
-        "choices": []
-      },
-      {
-        "id": 96,
-        "label": "TRIM",
-        "min": -64,
-        "max": 127,
-        "default": 0,
-        "format": 18,
-        "formatted": [
-          "-32.0 dB",
-          "63.5 dB",
-          ".0 dB"
-        ],
-        "choices": []
-      },
-      null
-    ]
-  },
-  {
-    "page_id": 26,
-    "family": "EDIT",
-    "title": "FILTER GAIN",
-    "engine": "TERRAIN",
-    "variant": -1,
-    "scope": 7,
-    "image": "ref-26-e19-v00",
-    "controls": [
-      {
-        "id": 94,
-        "label": "--",
-        "min": 0,
-        "max": 0,
-        "default": 0,
-        "format": 8,
-        "formatted": [
-          "--",
-          "--",
-          "--"
-        ],
-        "choices": [
-          "--"
-        ]
-      },
-      {
-        "id": 95,
-        "label": "COMP",
-        "min": 0,
-        "max": 1,
-        "default": 0,
-        "format": 11,
-        "formatted": [
-          "OFF",
-          "ON",
-          "OFF"
-        ],
-        "choices": []
-      },
-      {
-        "id": 96,
-        "label": "TRIM",
-        "min": -64,
-        "max": 127,
-        "default": 0,
-        "format": 18,
-        "formatted": [
-          "-32.0 dB",
-          "63.5 dB",
-          ".0 dB"
-        ],
-        "choices": []
-      },
-      null
-    ]
-  },
-  {
-    "page_id": 26,
-    "family": "EDIT",
-    "title": "FILTER GAIN",
-    "engine": "WSEQ",
-    "variant": -1,
-    "scope": 7,
-    "image": "ref-26-e21-v00",
-    "controls": [
-      {
-        "id": 94,
-        "label": "--",
-        "min": 0,
-        "max": 0,
-        "default": 0,
-        "format": 8,
-        "formatted": [
-          "--",
-          "--",
-          "--"
-        ],
-        "choices": [
-          "--"
-        ]
-      },
-      {
-        "id": 95,
-        "label": "COMP",
-        "min": 0,
-        "max": 1,
-        "default": 0,
-        "format": 11,
-        "formatted": [
-          "OFF",
-          "ON",
-          "OFF"
-        ],
-        "choices": []
-      },
-      {
-        "id": 96,
-        "label": "TRIM",
-        "min": -64,
-        "max": 127,
-        "default": 0,
-        "format": 18,
-        "formatted": [
-          "-32.0 dB",
-          "63.5 dB",
-          ".0 dB"
-        ],
-        "choices": []
-      },
-      null
-    ]
-  },
-  {
-    "page_id": 26,
-    "family": "EDIT",
-    "title": "FILTER GAIN",
-    "engine": "JUNO",
-    "variant": -1,
-    "scope": 7,
-    "image": "ref-26-e22-v00",
-    "controls": [
-      {
-        "id": 94,
-        "label": "--",
-        "min": 0,
-        "max": 0,
-        "default": 0,
-        "format": 8,
-        "formatted": [
-          "--",
-          "--",
-          "--"
-        ],
-        "choices": [
-          "--"
-        ]
-      },
-      {
-        "id": 95,
-        "label": "COMP",
-        "min": 0,
-        "max": 1,
-        "default": 0,
-        "format": 11,
-        "formatted": [
-          "OFF",
-          "ON",
-          "OFF"
-        ],
-        "choices": []
-      },
-      {
-        "id": 96,
-        "label": "TRIM",
-        "min": -64,
-        "max": 127,
-        "default": 0,
-        "format": 18,
-        "formatted": [
-          "-32.0 dB",
-          "63.5 dB",
-          ".0 dB"
-        ],
-        "choices": []
-      },
-      null
-    ]
-  },
-  {
-    "page_id": 26,
-    "family": "EDIT",
-    "title": "FILTER GAIN",
-    "engine": "VECTOR",
-    "variant": -1,
-    "scope": 7,
-    "image": "ref-26-e23-v00",
+    "image": "ref-27-e04-v00",
     "controls": [
       {
         "id": 94,
@@ -3943,11 +3238,789 @@
   {
     "page_id": 27,
     "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "SAMPLE",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-27-e05-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "OFF",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "TRIO",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-27-e07-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "GRAIN",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-27-e09-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "OFF",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "NOISE",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-27-e12-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "HYBRID",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-27-e13-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "DRIVE",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "WAVE",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-27-e14-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "DRV",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "ACID",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-27-e15-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "DIST",
+        "min": 0,
+        "max": 127,
+        "default": 20,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "16 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "STRINGS",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-27-e16-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "MACRO",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-27-e17-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "OFF",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "VPS",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-27-e18-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "TERRAIN",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-27-e19-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "WSEQ",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-27-e21-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "JUNO",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-27-e22-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "VECTOR",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-27-e23-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "OFF",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
     "title": "EDIT 1",
     "engine": "ANALOG",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e01-v00",
+    "image": "ref-28-e01-v00",
     "controls": [
       {
         "id": 118,
@@ -4014,13 +4087,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "DIGITAL",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e02-v00",
+    "image": "ref-28-e02-v00",
     "controls": [
       {
         "id": 118,
@@ -4138,13 +4211,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "PHASE",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e03-v00",
+    "image": "ref-28-e03-v00",
     "controls": [
       {
         "id": 118,
@@ -4224,13 +4297,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "LOFI",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e04-v00",
+    "image": "ref-28-e04-v00",
     "controls": [
       {
         "id": 118,
@@ -4303,13 +4376,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "LOFI",
     "variant": 4,
     "scope": 2,
-    "image": "ref-27-e04-v05",
+    "image": "ref-28-e04-v05",
     "controls": [
       {
         "id": 118,
@@ -4382,13 +4455,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "LOFI",
     "variant": 5,
     "scope": 2,
-    "image": "ref-27-e04-v06",
+    "image": "ref-28-e04-v06",
     "controls": [
       {
         "id": 118,
@@ -4461,13 +4534,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "SAMPLE",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e05-v00",
+    "image": "ref-28-e05-v00",
     "controls": [
       {
         "id": 118,
@@ -4536,13 +4609,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "VOICE",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e06-v00",
+    "image": "ref-28-e06-v00",
     "controls": [
       {
         "id": 118,
@@ -4603,13 +4676,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "TRIO",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e07-v00",
+    "image": "ref-28-e07-v00",
     "controls": [
       {
         "id": 118,
@@ -4687,13 +4760,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "WHEEL",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e08-v00",
+    "image": "ref-28-e08-v00",
     "controls": [
       {
         "id": 118,
@@ -4771,13 +4844,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "GRAIN",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e09-v00",
+    "image": "ref-28-e09-v00",
     "controls": [
       {
         "id": 118,
@@ -4843,13 +4916,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "FM6",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e10-v00",
+    "image": "ref-28-e10-v00",
     "controls": [
       {
         "id": 118,
@@ -4910,13 +4983,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "PHYS",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e11-v00",
+    "image": "ref-28-e11-v00",
     "controls": [
       {
         "id": 118,
@@ -4982,13 +5055,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "PHYS",
     "variant": 2,
     "scope": 2,
-    "image": "ref-27-e11-v03",
+    "image": "ref-28-e11-v03",
     "controls": [
       {
         "id": 118,
@@ -5054,13 +5127,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "PHYS",
     "variant": 3,
     "scope": 2,
-    "image": "ref-27-e11-v04",
+    "image": "ref-28-e11-v04",
     "controls": [
       {
         "id": 118,
@@ -5126,13 +5199,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "NOISE",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e12-v00",
+    "image": "ref-28-e12-v00",
     "controls": [
       {
         "id": 118,
@@ -5198,13 +5271,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "HYBRID",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e13-v00",
+    "image": "ref-28-e13-v00",
     "controls": [
       {
         "id": 118,
@@ -5366,13 +5439,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "WAVE",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e14-v00",
+    "image": "ref-28-e14-v00",
     "controls": [
       {
         "id": 118,
@@ -5454,13 +5527,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "ACID",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e15-v00",
+    "image": "ref-28-e15-v00",
     "controls": [
       {
         "id": 118,
@@ -5524,13 +5597,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "STRINGS",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e16-v00",
+    "image": "ref-28-e16-v00",
     "controls": [
       {
         "id": 118,
@@ -5591,13 +5664,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "MACRO",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e17-v00",
+    "image": "ref-28-e17-v00",
     "controls": [
       {
         "id": 118,
@@ -5663,13 +5736,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "VPS",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e18-v00",
+    "image": "ref-28-e18-v00",
     "controls": [
       {
         "id": 118,
@@ -5730,13 +5803,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "TERRAIN",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e19-v00",
+    "image": "ref-28-e19-v00",
     "controls": [
       {
         "id": 118,
@@ -5806,13 +5879,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "FMX",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e20-v00",
+    "image": "ref-28-e20-v00",
     "controls": [
       {
         "id": 118,
@@ -5873,13 +5946,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "WSEQ",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e21-v00",
+    "image": "ref-28-e21-v00",
     "controls": [
       {
         "id": 118,
@@ -5962,13 +6035,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "JUNO",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e22-v00",
+    "image": "ref-28-e22-v00",
     "controls": [
       {
         "id": 118,
@@ -6033,13 +6106,13 @@
     ]
   },
   {
-    "page_id": 27,
+    "page_id": 28,
     "family": "EDIT",
     "title": "EDIT 1",
     "engine": "VECTOR",
     "variant": -1,
     "scope": 2,
-    "image": "ref-27-e23-v00",
+    "image": "ref-28-e23-v00",
     "controls": [
       {
         "id": 118,
@@ -6168,13 +6241,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "ANALOG",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e01-v00",
+    "image": "ref-29-e01-v00",
     "controls": [
       {
         "id": 122,
@@ -6235,13 +6308,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "DIGITAL",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e02-v00",
+    "image": "ref-29-e02-v00",
     "controls": [
       {
         "id": 122,
@@ -6302,13 +6375,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "PHASE",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e03-v00",
+    "image": "ref-29-e03-v00",
     "controls": [
       {
         "id": 122,
@@ -6372,13 +6445,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "LOFI",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e04-v00",
+    "image": "ref-29-e04-v00",
     "controls": [
       {
         "id": 122,
@@ -6444,13 +6517,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "SAMPLE",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e05-v00",
+    "image": "ref-29-e05-v00",
     "controls": [
       {
         "id": 122,
@@ -6511,13 +6584,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "VOICE",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e06-v00",
+    "image": "ref-29-e06-v00",
     "controls": [
       {
         "id": 122,
@@ -6578,13 +6651,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "TRIO",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e07-v00",
+    "image": "ref-29-e07-v00",
     "controls": [
       {
         "id": 122,
@@ -6650,13 +6723,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "WHEEL",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e08-v00",
+    "image": "ref-29-e08-v00",
     "controls": [
       {
         "id": 122,
@@ -6729,13 +6802,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "GRAIN",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e09-v00",
+    "image": "ref-29-e09-v00",
     "controls": [
       {
         "id": 122,
@@ -6796,13 +6869,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "FM6",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e10-v00",
+    "image": "ref-29-e10-v00",
     "controls": [
       {
         "id": 122,
@@ -6863,13 +6936,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "PHYS",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e11-v00",
+    "image": "ref-29-e11-v00",
     "controls": [
       {
         "id": 122,
@@ -6930,13 +7003,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "PHYS",
     "variant": 2,
     "scope": 2,
-    "image": "ref-28-e11-v03",
+    "image": "ref-29-e11-v03",
     "controls": [
       {
         "id": 122,
@@ -6997,13 +7070,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "PHYS",
     "variant": 3,
     "scope": 2,
-    "image": "ref-28-e11-v04",
+    "image": "ref-29-e11-v04",
     "controls": [
       {
         "id": 122,
@@ -7064,13 +7137,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "NOISE",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e12-v00",
+    "image": "ref-29-e12-v00",
     "controls": [
       {
         "id": 122,
@@ -7131,13 +7204,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "NOISE",
     "variant": 2,
     "scope": 2,
-    "image": "ref-28-e12-v03",
+    "image": "ref-29-e12-v03",
     "controls": [
       {
         "id": 122,
@@ -7198,13 +7271,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "NOISE",
     "variant": 3,
     "scope": 2,
-    "image": "ref-28-e12-v04",
+    "image": "ref-29-e12-v04",
     "controls": [
       {
         "id": 122,
@@ -7265,13 +7338,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "HYBRID",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e13-v00",
+    "image": "ref-29-e13-v00",
     "controls": [
       {
         "id": 122,
@@ -7332,13 +7405,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "WAVE",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e14-v00",
+    "image": "ref-29-e14-v00",
     "controls": [
       {
         "id": 122,
@@ -7399,13 +7472,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "ACID",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e15-v00",
+    "image": "ref-29-e15-v00",
     "controls": [
       {
         "id": 122,
@@ -7466,13 +7539,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "STRINGS",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e16-v00",
+    "image": "ref-29-e16-v00",
     "controls": [
       {
         "id": 122,
@@ -7533,13 +7606,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "MACRO",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e17-v00",
+    "image": "ref-29-e17-v00",
     "controls": [
       {
         "id": 122,
@@ -7600,13 +7673,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "VPS",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e18-v00",
+    "image": "ref-29-e18-v00",
     "controls": [
       {
         "id": 122,
@@ -7667,13 +7740,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "TERRAIN",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e19-v00",
+    "image": "ref-29-e19-v00",
     "controls": [
       {
         "id": 122,
@@ -7734,13 +7807,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "FMX",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e20-v00",
+    "image": "ref-29-e20-v00",
     "controls": [
       {
         "id": 122,
@@ -7801,13 +7874,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "WSEQ",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e21-v00",
+    "image": "ref-29-e21-v00",
     "controls": [
       {
         "id": 122,
@@ -7868,13 +7941,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "JUNO",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e22-v00",
+    "image": "ref-29-e22-v00",
     "controls": [
       {
         "id": 122,
@@ -7945,13 +8018,13 @@
     ]
   },
   {
-    "page_id": 28,
+    "page_id": 29,
     "family": "EDIT",
     "title": "EDIT 2",
     "engine": "VECTOR",
     "variant": -1,
     "scope": 2,
-    "image": "ref-28-e23-v00",
+    "image": "ref-29-e23-v00",
     "controls": [
       {
         "id": 122,
@@ -8024,13 +8097,13 @@
     ]
   },
   {
-    "page_id": 29,
+    "page_id": 30,
     "family": "EDIT",
     "title": "OP",
     "engine": "FMX",
     "variant": -1,
     "scope": 7,
-    "image": "ref-29-e20-v00",
+    "image": "ref-30-e20-v00",
     "controls": [
       {
         "id": 19,
@@ -8139,13 +8212,13 @@
     ]
   },
   {
-    "page_id": 30,
+    "page_id": 31,
     "family": "EDIT",
     "title": "OP 2",
     "engine": "FMX",
     "variant": -1,
     "scope": 7,
-    "image": "ref-30-e20-v00",
+    "image": "ref-31-e20-v00",
     "controls": [
       {
         "id": 23,
@@ -8206,13 +8279,13 @@
     ]
   },
   {
-    "page_id": 31,
+    "page_id": 32,
     "family": "EDIT",
     "title": "ROUTE",
     "engine": "FMX",
     "variant": -1,
     "scope": 7,
-    "image": "ref-31-e20-v00",
+    "image": "ref-32-e20-v00",
     "controls": [
       {
         "id": 31,
@@ -8273,13 +8346,13 @@
     ]
   },
   {
-    "page_id": 32,
+    "page_id": 33,
     "family": "EDIT",
     "title": "FMX",
     "engine": "FMX",
     "variant": -1,
     "scope": 7,
-    "image": "ref-32-e20-v00",
+    "image": "ref-33-e20-v00",
     "controls": [
       {
         "id": 35,
@@ -8343,13 +8416,13 @@
     ]
   },
   {
-    "page_id": 33,
+    "page_id": 34,
     "family": "EDIT",
     "title": "VOICE",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 0,
-    "image": "ref-33-e00-v00",
+    "image": "ref-34-e00-v00",
     "controls": [
       {
         "id": 37,
@@ -8424,13 +8497,13 @@
     ]
   },
   {
-    "page_id": 34,
+    "page_id": 35,
     "family": "EDIT",
     "title": "CHARACTER",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 0,
-    "image": "ref-34-e00-v00",
+    "image": "ref-35-e00-v00",
     "controls": [
       {
         "id": 43,
@@ -8494,13 +8567,13 @@
     ]
   },
   {
-    "page_id": 35,
+    "page_id": 36,
     "family": "GLO",
     "title": "GLOBAL",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 1,
-    "image": "ref-35-e00-v00",
+    "image": "ref-36-e00-v00",
     "controls": [
       {
         "id": 0,
@@ -8565,13 +8638,13 @@
     ]
   },
   {
-    "page_id": 36,
+    "page_id": 37,
     "family": "GLO",
     "title": "MASTER",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 1,
-    "image": "ref-36-e00-v00",
+    "image": "ref-37-e00-v00",
     "controls": [
       {
         "id": 27,
@@ -8606,13 +8679,13 @@
     ]
   },
   {
-    "page_id": 37,
+    "page_id": 38,
     "family": "GLO",
     "title": "TUNING",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
-    "image": "ref-37-e00-v00",
+    "image": "ref-38-e00-v00",
     "controls": [
       {
         "id": 47,
@@ -8762,13 +8835,13 @@
     ]
   },
   {
-    "page_id": 38,
+    "page_id": 39,
     "family": "GLO",
     "title": "TUNING 2",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
-    "image": "ref-38-e00-v00",
+    "image": "ref-39-e00-v00",
     "controls": [
       {
         "id": 49,
@@ -8784,19 +8857,35 @@
         ],
         "choices": []
       },
-      null,
+      {
+        "id": 102,
+        "label": "SAVE",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "ON"
+        ]
+      },
       null,
       null
     ]
   },
   {
-    "page_id": 39,
+    "page_id": 40,
     "family": "GLO",
     "title": "CONTROLLER",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
-    "image": "ref-39-e00-v00",
+    "image": "ref-40-e00-v00",
     "controls": [
       {
         "id": 100,
@@ -8854,13 +8943,13 @@
     ]
   },
   {
-    "page_id": 40,
+    "page_id": 41,
     "family": "GLO",
     "title": "SYSTEM",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 1,
-    "image": "ref-40-e00-v00",
+    "image": "ref-41-e00-v00",
     "controls": [
       {
         "id": 12,
@@ -8931,13 +9020,13 @@
     ]
   },
   {
-    "page_id": 41,
+    "page_id": 42,
     "family": "GLO",
     "title": "MIDI",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
-    "image": "ref-41-e00-v00",
+    "image": "ref-42-e00-v00",
     "controls": [
       {
         "id": 50,
@@ -9045,13 +9134,13 @@
     ]
   },
   {
-    "page_id": 42,
+    "page_id": 43,
     "family": "GLO",
     "title": "MIDI 2",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
-    "image": "ref-42-e00-v00",
+    "image": "ref-43-e00-v00",
     "controls": [
       {
         "id": 54,
@@ -9109,13 +9198,13 @@
     ]
   },
   {
-    "page_id": 43,
+    "page_id": 44,
     "family": "GLO",
     "title": "PATCH MIDI",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
-    "image": "ref-43-e00-v00",
+    "image": "ref-44-e00-v00",
     "controls": [
       {
         "id": 54,
@@ -9155,13 +9244,13 @@
     ]
   },
   {
-    "page_id": 44,
+    "page_id": 45,
     "family": "GLO",
     "title": "KEY MIDI",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
-    "image": "ref-44-e00-v00",
+    "image": "ref-45-e00-v00",
     "controls": [
       {
         "id": 58,
@@ -9218,13 +9307,13 @@
     ]
   },
   {
-    "page_id": 45,
+    "page_id": 46,
     "family": "GLO",
     "title": "PEDAL LEARN",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
-    "image": "ref-45-e00-v00",
+    "image": "ref-46-e00-v00",
     "controls": [
       {
         "id": 79,
@@ -9296,13 +9385,13 @@
     ]
   },
   {
-    "page_id": 46,
+    "page_id": 47,
     "family": "GLO",
     "title": "SCENES",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
-    "image": "ref-46-e00-v00",
+    "image": "ref-47-e00-v00",
     "controls": [
       {
         "id": 83,
@@ -9350,13 +9439,13 @@
     ]
   },
   {
-    "page_id": 47,
+    "page_id": 48,
     "family": "GLO",
     "title": "SETLIST",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
-    "image": "ref-47-e00-v00",
+    "image": "ref-48-e00-v00",
     "controls": [
       {
         "id": 86,
@@ -9417,98 +9506,9 @@
     ]
   },
   {
-    "page_id": 48,
-    "family": "GLO",
-    "title": "PEDAL MAP",
-    "engine": "All applicable engines",
-    "variant": -1,
-    "scope": 7,
-    "image": "ref-48-e00-v00",
-    "controls": [
-      {
-        "id": 63,
-        "label": "TYPE",
-        "min": 0,
-        "max": 2,
-        "default": 0,
-        "format": 8,
-        "formatted": [
-          "OFF",
-          "PC",
-          "OFF"
-        ],
-        "choices": [
-          "OFF",
-          "CC",
-          "PC"
-        ]
-      },
-      {
-        "id": 64,
-        "label": "NUMBER",
-        "min": 0,
-        "max": 127,
-        "default": 0,
-        "format": 0,
-        "formatted": [
-          "0",
-          "127",
-          "0"
-        ],
-        "choices": []
-      },
-      {
-        "id": 65,
-        "label": "VALUE",
-        "min": 0,
-        "max": 127,
-        "default": 127,
-        "format": 0,
-        "formatted": [
-          "0",
-          "127",
-          "127"
-        ],
-        "choices": []
-      },
-      {
-        "id": 66,
-        "label": "CH",
-        "min": 0,
-        "max": 16,
-        "default": 0,
-        "format": 8,
-        "formatted": [
-          "IN CH",
-          "16",
-          "IN CH"
-        ],
-        "choices": [
-          "IN CH",
-          "1",
-          "2",
-          "3",
-          "4",
-          "5",
-          "6",
-          "7",
-          "8",
-          "9",
-          "10",
-          "11",
-          "12",
-          "13",
-          "14",
-          "15",
-          "16"
-        ]
-      }
-    ]
-  },
-  {
     "page_id": 49,
     "family": "GLO",
-    "title": "PATCH UP",
+    "title": "PEDAL MAP",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
@@ -9597,7 +9597,7 @@
   {
     "page_id": 50,
     "family": "GLO",
-    "title": "PATCH DOWN",
+    "title": "PATCH UP",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
@@ -9686,7 +9686,7 @@
   {
     "page_id": 51,
     "family": "GLO",
-    "title": "BANK UP",
+    "title": "PATCH DOWN",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
@@ -9775,7 +9775,7 @@
   {
     "page_id": 52,
     "family": "GLO",
-    "title": "BANK DOWN",
+    "title": "BANK UP",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
@@ -9864,11 +9864,100 @@
   {
     "page_id": 53,
     "family": "GLO",
-    "title": "USB ROLE",
+    "title": "BANK DOWN",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
     "image": "ref-53-e00-v00",
+    "controls": [
+      {
+        "id": 63,
+        "label": "TYPE",
+        "min": 0,
+        "max": 2,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "PC",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "CC",
+          "PC"
+        ]
+      },
+      {
+        "id": 64,
+        "label": "NUMBER",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 65,
+        "label": "VALUE",
+        "min": 0,
+        "max": 127,
+        "default": 127,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "127"
+        ],
+        "choices": []
+      },
+      {
+        "id": 66,
+        "label": "CH",
+        "min": 0,
+        "max": 16,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "IN CH",
+          "16",
+          "IN CH"
+        ],
+        "choices": [
+          "IN CH",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 54,
+    "family": "GLO",
+    "title": "USB ROLE",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-54-e00-v00",
     "controls": [
       {
         "id": 67,
@@ -9893,13 +9982,13 @@
     ]
   },
   {
-    "page_id": 54,
+    "page_id": 55,
     "family": "GLO",
     "title": "LAYER ROUTE",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
-    "image": "ref-54-e00-v00",
+    "image": "ref-55-e00-v00",
     "controls": [
       {
         "id": 69,
@@ -9969,13 +10058,13 @@
     ]
   },
   {
-    "page_id": 55,
+    "page_id": 56,
     "family": "GLO",
     "title": "LAYER MIX",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
-    "image": "ref-55-e00-v00",
+    "image": "ref-56-e00-v00",
     "controls": [
       {
         "id": 73,
@@ -10042,13 +10131,13 @@
     ]
   },
   {
-    "page_id": 56,
+    "page_id": 57,
     "family": "GLO",
     "title": "LAYER PITCH",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 7,
-    "image": "ref-56-e00-v00",
+    "image": "ref-57-e00-v00",
     "controls": [
       {
         "id": 77,
@@ -10086,13 +10175,13 @@
     ]
   },
   {
-    "page_id": 57,
+    "page_id": 58,
     "family": "SAVE",
     "title": "PROGRAM",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 1,
-    "image": "ref-57-e00-v00",
+    "image": "ref-58-e00-v00",
     "controls": [
       {
         "id": 16,
@@ -10161,13 +10250,13 @@
     ]
   },
   {
-    "page_id": 58,
+    "page_id": 59,
     "family": "SAVE",
     "title": "TOOLS",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 1,
-    "image": "ref-58-e00-v00",
+    "image": "ref-59-e00-v00",
     "controls": [
       {
         "id": 22,
@@ -10224,13 +10313,13 @@
     ]
   },
   {
-    "page_id": 59,
+    "page_id": 60,
     "family": "ARP",
     "title": "ARP",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 0,
-    "image": "ref-59-e00-v00",
+    "image": "ref-60-e00-v00",
     "controls": [
       {
         "id": 17,
@@ -10315,13 +10404,13 @@
     ]
   },
   {
-    "page_id": 60,
+    "page_id": 61,
     "family": "ARP",
     "title": "ARP 2",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 0,
-    "image": "ref-60-e00-v00",
+    "image": "ref-61-e00-v00",
     "controls": [
       {
         "id": 21,
@@ -10388,13 +10477,13 @@
     ]
   },
   {
-    "page_id": 61,
+    "page_id": 62,
     "family": "ARP",
     "title": "SPICE",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 0,
-    "image": "ref-61-e00-v00",
+    "image": "ref-62-e00-v00",
     "controls": [
       {
         "id": 87,
@@ -10442,13 +10531,13 @@
     ]
   },
   {
-    "page_id": 62,
+    "page_id": 63,
     "family": "SEQ",
     "title": "NOTES",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 3,
-    "image": "ref-62-e00-v00",
+    "image": "ref-63-e00-v00",
     "controls": [
       null,
       null,
@@ -10457,13 +10546,13 @@
     ]
   },
   {
-    "page_id": 63,
+    "page_id": 64,
     "family": "SEQ",
     "title": "PATTERN",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 0,
-    "image": "ref-63-e00-v00",
+    "image": "ref-64-e00-v00",
     "controls": [
       {
         "id": 29,
@@ -10534,13 +10623,13 @@
     ]
   },
   {
-    "page_id": 67,
+    "page_id": 68,
     "family": "CHORDS",
     "title": "CHORDS",
     "engine": "All applicable engines",
     "variant": -1,
     "scope": 0,
-    "image": "ref-67-e00-v00",
+    "image": "ref-68-e00-v00",
     "controls": [
       {
         "id": 49,

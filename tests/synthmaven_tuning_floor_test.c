@@ -26,7 +26,7 @@ int main(void){
  *v=3;syn_changed(X_TFLOOR,v);check(tune_floor_note()==48 && !tun_tab[40] && tun_tab[52]==-2048,"C3 means MIDI 48 inclusive; E2 is equal and E3 is Rast");
  open_family(FAM_GLO);while(cur_page()->id[0]!=X_TSYS)open_family(FAM_GLO);
  check(cur_page()->id[1]==X_TFLOOR,"physical Knob 2 controls FROM on TUNING");
- program_t a;program_packed_t packed;program_capture(&a);check(program_pack(&packed,&a,"OCTAVE"),"threshold fits existing named-program storage");
+ program_t a;program_packed_t packed;program_save_tuning=1;program_capture(&a);check(program_pack(&packed,&a,"OCTAVE"),"threshold fits existing named-program storage");
  tune_floor_octave=0;program_apply(&a);check(tune_floor_octave==3,"program restores its octave threshold");
  tune_floor_octave=0;check(program_unpack(&a,&packed),"named program with threshold unpacks");program_apply(&a);check(tune_floor_octave==3,"named program preserves threshold");
  sm_scene_capture(0);tune_floor_octave=0;sm_scene_apply(0);check(tune_floor_octave==3,"scene restores threshold");
