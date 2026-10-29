@@ -24,9 +24,15 @@ int main(void){
  FILE *raw=fopen("build/host/factory-programs.bin","wb"),*json=fopen("build/host/factory-programs.json","w");if(!raw||!json)return 1;
  fprintf(json,"[");
  for(uint32_t i=0;i<8;i++){
-  factory_prepare(i);program_t p;program_packed_t packed;program_capture(&p);if(!program_valid(&p)||!program_pack(&packed,&p,"FACTORY"))return 2;
+  program_t p;program_packed_t packed;
+#ifdef FACTORY_CAPTURED
+  memcpy(&packed,FACTORY_CAPTURE[i],sizeof packed);if(!program_unpack(&p,&packed))return 2;
+  program_packed_t roundtrip;if(!program_pack(&roundtrip,&p,packed.name)||memcmp(&roundtrip,&packed,sizeof packed))return 3;
+#else
+  factory_prepare(i);program_capture(&p);if(!program_valid(&p)||!program_pack(&packed,&p,"FACTORY"))return 2;
+#endif
   const char *names[]=FACTORY_RECIPE_NAMES;memset(packed.name,0,13);memcpy(packed.name,names[i],strlen(names[i]));fwrite(&packed,1,sizeof packed,raw);
-  fprintf(json,"%s{\"layer\":1,\"selected\":0,\"tuning\":{\"sys\":0,\"root\":0,\"floor\":0,\"a4\":440},\"parts\":[",i?",":"");
+  fprintf(json,"%s{\"layer\":%u,\"selected\":%u,\"tuning\":{\"sys\":%u,\"root\":%u,\"floor\":%u,\"a4\":%d},\"parts\":[",i?",":"",p.layer,p.active,p.tuning.sys,p.tuning.root,p.reserved[1]>>4,440+p.tuning.a4);
   for(uint32_t j=0;j<4;j++){program_sound_t *s=&p.sound[j];program_route_t *r=&p.route[j];fprintf(json,"%s{\"engine\":%u,\"preset\":%u,\"solo_gain_db\":%u,\"p\":[",j?",":"",s->engine,s->preset,(s->reserved>>2)?(s->reserved>>2)-1u:0u);for(uint32_t k=0;k<P_COUNT;k++)fprintf(json,"%s%d",k?",":"",s->p[k]);fprintf(json,"],\"patch\":[");for(uint32_t k=0;k<156;k++)fprintf(json,"%s%u",k?",":"",s->patch[k]);fprintf(json,"],\"route\":[%u,%u,%u,%u,%d]}",r->enabled,r->split,r->upper,r->point,r->transpose);}
   fprintf(json,"],\"scenes\":[");for(uint32_t k=0;k<4;k++){fprintf(json,"%s[",k?",":"");for(uint32_t z=0;z<sizeof(sm_scene_t);z++)fprintf(json,"%s%u",z?",":"",((uint8_t*)&p.scenes[k])[z]);fprintf(json,"]");}fprintf(json,"]}");
  }fprintf(json,"]\n");fclose(json);fclose(raw);return 0;

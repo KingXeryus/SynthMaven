@@ -2,7 +2,7 @@
 
 SynthMaven 2.2 builds on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1) with four-part programs, a layer/split mixer, learned USB pedal controls and an instrument-style visual editor. Its 23 synthesis engines provide 557 factory entries: 556 level-matched sounds and an intentionally empty USER WT slot, including 64 Vital-derived translations, 44 Oriental/Middle Eastern sounds and nine XD compatibility sounds.
 
-[Installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [Illustrated PDF guide](docs/SynthMaven-2.2.3-User-Guide.pdf) · [User manual](docs/USER_MANUAL.md) · [Quick start](QUICKSTART.md) · [Release notes](docs/release-2.2.3.md)
+[Installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [Illustrated PDF guide](docs/SynthMaven-2.2.4-User-Guide.pdf) · [User manual](docs/USER_MANUAL.md) · [Quick start](QUICKSTART.md) · [Release notes](docs/release-2.2.4.md)
 
 ## What SynthMaven adds
 
@@ -18,7 +18,7 @@ SynthMaven 2.2 builds on [Clipper by 3dSam](https://github.com/isod89/clipper-fm
 - **Engine-aware filter access and output control.** Model, cutoff, resonance and envelope amount are grouped together; unavailable controls are disabled or omitted. HYBRID retains its own two-filter architecture. Optional estimated output compensation attenuates resonance/drive level changes, up to 12 dB, and defaults OFF; it is not measured loudness normalization. Output trim uses half-decibel steps. See the [filter capability map](docs/FILTER_CAPABILITIES.md).
 - **Ready-to-use modulation templates.** Start with velocity-to-brightness, pressure-to-vibrato, wheel-to-vibrato or envelope swell. HYBRID pressure/wheel templates use a free matrix slot and set LFO1 to sine, rate 64; a full matrix is left unchanged.
 - **Maqam, custom scales and tuning control.** Select among 46 Arabic maqam reference tunings with any root, four saved custom chromatic scales and Scala imports. Custom scales keep the chromatic keyboard mapping and adjust only the selected pitch classes. Each key press cycles 0 → −25 → −50 → −75 → 0 cents. QNT ALL applies the chosen scale/root to all four parts and incoming MIDI. Apply master tuning is enabled by default and can be bypassed independently per part.
-- **Calibrated factory levels.** The 556 audible presets pass the reference audit within ±0.5 LU; USER WT stays silent until a user wavetable is uploaded. The −14 LUFS reference method and its limits are documented in the [release notes](docs/release-2.2.3.md).
+- **Calibrated factory levels.** The 556 audible presets pass the reference audit within ±0.5 LU; USER WT stays silent until a user wavetable is uploaded. The −14 LUFS reference method and its limits are documented in the [release notes](docs/release-2.2.4.md).
 
 These performance, tuning, editor and workflow additions build on the inherited synthesis foundation. JUNO, VECTOR, FMX, WSEQ, MACRO, the filter models, TURNG and SPICE / DICE remain credited to Clipper; their design inspirations do not establish SynthMaven authorship.
 

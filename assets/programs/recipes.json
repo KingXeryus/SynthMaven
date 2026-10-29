@@ -10,12 +10,12 @@
     {
       "name": "STAGE PIANO",
       "style": "Piano",
-      "play": "Piano remains the foreground instrument. Use three- or four-note voicings; the three quiet mono supports colour the last played note while the main piano stays polyphonic. This is a synthesized stage piano, not a sampled acoustic grand.",
+      "play": "The owner-configured four-part program captured from the FM-1: a polyphonic HYBRID main sound with three mono backing parts. Mixer levels, embedded patch, modulation, routing and stored scenes are preserved exactly.",
       "layers": [
         {
           "engine": 1,
           "preset": 21,
-          "role": "Main stage piano",
+          "role": "Captured HYBRID main sound",
           "level": 101,
           "pan": 0,
           "transpose": 0,
@@ -1010,5 +1010,6 @@
         0
       ]
     }
-  ]
+  ],
+  "capture": "assets/programs/device-capture.json"
 }

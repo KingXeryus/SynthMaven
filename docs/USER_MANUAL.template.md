@@ -454,6 +454,8 @@ USB PEDAL/HOST mode automatically identifies supported Alesis, Novation, Arturia
 
 ## Factory performance programs and loudness ({{version}})
 
+Version 2.2.4 copies the eight-program configuration captured from the connected FM-1. P1 STAGE PIANO uses the captured HYBRID main sound; P2–P8 are unchanged from 2.2.3. Embedded patches, parameters, mix levels, pan, routes, tuning and stored scenes are preserved byte for byte. The original 2.2.3 firmware remains available. No synthesis, navigation, loader or loudness-processing changes are included. Offline checks validate the imported records and audio; no additional device timing tests or firmware installs were performed for this release.
+
 See the [illustrated PDF guide](SynthMaven-{{version}}-User-Guide.pdf) for every device menu and control, and [factory program design](FACTORY_PROGRAM_DESIGN.md) for source research and layer roles. Protocol {{protocol}} adds read-only factory-program recall (command 118). Eight four-part ROM programs fill unused named slots; saved user data and working autosave take precedence.
 
 Solo sounds retain their calibrated levels and stored solo compensation. Factory programs use three lightweight mono backing parts with one oscillator and no drive, while the main part keeps the instrument focus. P5/P6/P7 simplify duplicated oscillator registrations; the original standalone presets remain available. The previous 12 dB layered attenuation is removed. Layered mixes retain sample look-ahead limiting. Autosave waits for quiet audio before copying program state, and simultaneous mono backing-note restarts are combined within one audio block. The eight-voice budget is shared across all parts.

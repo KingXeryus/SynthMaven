@@ -40,18 +40,18 @@ Spectrasonics distinguishes live switching/layering from stack arrangements. The
 
 ## Adaptation to FM-1 constraints
 
-These principles are interpreted for this firmware's eight shared synthesis voices. There are four enabled parts, not four independent eight-voice synths. P1 and P5 retain a polyphonic main instrument with three quieter monophonic followers. P2, P6 and P7 use two polyphonic parts and two mono supports. P3, P4 and P8 are fully monophonic combinations. A mono support follows its own last-held-note behavior; it does not reproduce every note of a chord. This is a deliberate voicing choice to leave more room for the main instrument. Release tails still consume voices, and larger chords can steal voices.
+These principles are interpreted for this firmware's eight shared synthesis voices. There are four enabled parts, not four independent eight-voice synths. P1 and P5 retain a polyphonic main instrument with three quieter monophonic followers. P2, P6 and P7 also use a polyphonic main part and three mono supports. P3, P4 and P8 are fully monophonic combinations. A mono support follows its own last-held-note behavior; it does not reproduce every note of a chord. This is a deliberate voicing choice to leave more room for the main instrument. Release tails still consume voices, and larger chords can steal voices.
 
 All transpositions are octaves, with no automatic fifths or thirds that would fight a chosen maqam. The bank starts in equal temperament, chord generation and arpeggiation OFF, master tuning applied to all parts, and layering ON. Users choose a maqam/root explicitly. Factory loading preserves existing custom-scale definitions. The 557 sound presets and 64 Vital-derived entries remain available without moving their IDs.
 
 ## Data and validation
 
-- `assets/programs/recipes.json` is the editable source of all eight designs.
+- `assets/programs/device-capture.json` is the exact 2.2.4 factory-bank source, captured from the owner’s FM-1. `recipes.json` retains the earlier design recipes and supplies descriptive metadata; the capture takes precedence. Generation checks every checksum and lossless pack/unpack round trip.
 - `tools/gen_factory_programs.py` runs the production sound loader and emits complete packed programs plus the editor catalogue. The firmware and editor preview use the same generated data.
 - Eight ROM defaults sit underneath the eight saved slots. Existing saved programs and working-program autosaves take precedence; loading/saving does not automatically overwrite them. Factory defaults do not require flash writes.
 - MAIN, INTIMATE, AIR and DRY are four stored scene variants. Scenes change the existing supported controls; they are not extra synthesis engines or extra voices.
 - Audio checks render the actual firmware DSP and routing. They measure programme loudness, oversampled peaks, mono retention and isolated-part audibility. They also check the eight-voice limit and stress input at high velocity. Measurements are engineering checks, not a substitute for listening or physical-device validation.
-- All 556 audible factory sounds are recalibrated to −14 LUFS on documented references (±0.5 LU, ≤−1 dBTP). Each isolated program part and layered scene is matched to the same target. USER WT remains silent until populated. Fixed solo gains preserve the intended quieter support balance when layered.
+- All 556 audible factory sounds are recalibrated to −14 LUFS on documented references (±0.5 LU, ≤−1 dBTP). Program parts and scenes retain their configured gains; their loudness is reported, not forced to the same target. USER WT remains silent until populated. Fixed solo gains preserve the intended quieter support balance when layered.
 - Short support articulations are long enough to function as solo sounds as well as accents; the shortest click-like envelopes were lengthened before matching. INTIMATE reduces ambience and bright support; AIR emphasizes the backing texture; DRY removes shared effect sends. Their level offsets keep the scene mixes comparable.
 - Each factory sound is rendered in an isolated process to reset effect tails, limiter history and random state. A sample-rate-correct BS.1770-4 meter at 44.1 kHz uses absolute/relative gating and 4× peak measurement; an independent pyloudnorm DeMan meter cross-check covers all 23 engines and the transient references.
 - Explicit short/transient sound references use a 16 Hz roll. Sustained, bass, comping and melody references remain distinct. Actual loudness changes with the performance; gain does not follow a live loudness measurement.
@@ -59,3 +59,7 @@ All transpositions are octaves, with no automatic fifths or thirds that would fi
 Physical FM-1/controller validation remains pending. The downloadable previews are host renders of the production synthesis code, not recordings from an FM-1 audio output.
 
 Reproducible reports: [factory sounds](../assets/factory-level-audit.json), [programs/scenes/solos](../assets/programs/audit.json). The release includes the eight-program WAV preview archive and fresh CI audio audits.
+
+## 2.2.4 captured bank
+
+Version 2.2.4 copies the eight-program configuration captured from the connected FM-1. P1 STAGE PIANO uses the captured HYBRID main sound; P2–P8 are unchanged from 2.2.3. Embedded patches, parameters, mix levels, pan, routes, tuning and stored scenes are preserved byte for byte. The original 2.2.3 firmware remains available. No synthesis, navigation, loader or loudness-processing changes are included. Offline checks validate the imported records and audio; no additional device timing tests or firmware installs were performed for this release.

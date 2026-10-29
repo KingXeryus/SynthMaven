@@ -35,7 +35,7 @@ int main(void){outdir="build/host";bank_resolve();panel=PANEL_DEFAULT;layers_ini
  apply_preset_to(&trk[0],0);wn=0;ed_performance(116,0,0);check(wire[0]==0&&wn>50&&wn<sizeof wire,"native filter descriptor reply fits bounded editor buffer");
  uint8_t factory_request[]={0};song.playing=transport_req=0;for(uint32_t j=0;j<4;j++)for(uint32_t k=0;k<NVOICE;k++)trk[j].v[k].active=0;
  str_cpy(program_names[0],"MY SAVED",13);custom_scale[1]=0x123456u;wn=0;
- check(ed_performance(118,factory_request,1)&&wire[0]==0&&program_layer&&trk[0].eng_req==1&&trk[0].preset==21,"native factory recall loads the complete P1 instrument-led program");
+ check(ed_performance(118,factory_request,1)&&wire[0]==0&&program_layer&&trk[0].eng_req==12&&trk[0].preset==51,"native factory recall loads the complete P1 instrument-led program");
  check(!strcmp(program_names[0],"MY SAVED")&&custom_scale[1]==0x123456u,"factory recall leaves saved names and custom-scale definitions intact");
  song.playing=1;wn=0;ed_performance(118,factory_request,1);check(wire[0]==3,"factory recall refuses while transport is playing");song.playing=transport_req=0;factory_request[0]=8;wn=0;ed_performance(118,factory_request,1);check(wire[0]==1,"factory recall rejects invalid slot");
  printf("Performance controls: %s\n",fails?"FAIL":"PASS");return fails!=0;}

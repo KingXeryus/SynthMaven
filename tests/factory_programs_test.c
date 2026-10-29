@@ -19,7 +19,7 @@ int main(void){
  }
  custom_scale[2]=0x654321u;check(sm_factory_program(&p,0)&&p.custom[2]==0x654321u,"factory loading preserves existing custom-scale definitions");
  check(!sm_factory_program(&p,8),"out-of-range factory slot rejected");
- check(sm_factory_program(&p,0)&&p.sound[0].engine==1&&p.sound[0].preset==21,"P1 main instrument is piano");
+ check(sm_factory_program(&p,0)&&p.sound[0].engine==12&&p.sound[0].preset==51,"P1 preserves the captured HYBRID main instrument");
  check(sm_factory_program(&p,1)&&p.sound[0].engine==1&&p.sound[0].preset==0,"P2 main instrument is electric piano");
  check(sm_factory_program(&p,7)&&p.sound[0].engine==0&&p.sound[0].p[P_VOICE]==V_MONO,"P8 main instrument is mono bass");
  printf("Eight researched instrument-led four-part programs, scenes and non-destructive factory fallback %s\n",fails?"FAIL":"PASS");return fails?1:0;
