@@ -10,3 +10,6 @@ output/
 tmp/
 docs/screenshots/2.2/*.ppm
 docs/screenshots/2.2/*.png
+
+docs/screenshots/2.2.1/*.ppm
+docs/screenshots/2.2.1/*.png

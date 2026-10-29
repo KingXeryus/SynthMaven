@@ -1,7 +1,7 @@
 name: SynthMaven build and website
 on:
   push:
-    branches: [main, synthmaven-korg-ble, usb-midi-performance, oriental-factory-bank, fm1-control-fixes, vital-preset-import, release-2.2]
+    branches: [main, synthmaven-korg-ble, usb-midi-performance, oriental-factory-bank, fm1-control-fixes, vital-preset-import, release-2.2, release-2.2.1]
   workflow_dispatch:
 permissions:
   contents: read
