@@ -5,3 +5,5 @@
 *.wav binary
 *.png binary
 *.ttf binary
+
+*.pdf binary

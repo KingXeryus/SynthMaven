@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../firmware/hal/fm1_loader_ranges.h"
 
 #define FELUCCA_ID "ota-FM-1_900"
 #define FELUCCA_OTA_DRYRUN 0
@@ -16,6 +17,7 @@ static uint8_t nor[0x100000], *logical;
 static size_t logical_len;
 static uint8_t rx[1024];
 static uint32_t rx_len, rx_full, now_ms, requests, erases, bad_range, record_cleared, f0_asked;
+static uint32_t watchdog_ms,watchdog_late,fail_erase;
 static uint32_t corrupt_at, corrupt_once, no_finish;   /* the host serves a damaged byte / never says "success" */
 
 static uint32_t pack7(const uint8_t *in, uint32_t n, uint8_t *out)
@@ -90,8 +92,10 @@ static void ota_commit(const uint8_t *parm) { (void)parm; }
 static int ldr_fread(uint32_t off, void *p, uint32_t n) { memcpy(p, nor + off, n); return 0; }
 static int ldr_erase(uint32_t off)
 {
-    if (off < 0x4000u || off >= 0xFF000u || (off & 0xFFFu)) bad_range++;
+    if (!FM1_LOADER_RANGE_OK(off,0x1000u) || (off & 0xFFFu)) { bad_range++; return -1; }
     if (off < 0x4000u) { printf("ERASE IN THE HEAD %#x\n", off); exit(1); }
+    if(off==fail_erase)return -1;
+    watchdog_ms+=400;if(watchdog_ms>8000)watchdog_late++;
     erases++;
     memset(nor + off, 0xFF, 0x1000);
     return 0;
@@ -107,7 +111,7 @@ static int ldr_prog(uint32_t off, const void *p, uint32_t n)
 static void ldr_record_clear(void) { record_cleared++; }
 static uint32_t flash_unknown;
 static int ldr_flash_known(void) { return !flash_unknown; }
-static void ldr_progress(uint32_t done, uint32_t total) { (void)done; (void)total; }
+static void ldr_progress(uint32_t done, uint32_t total) { (void)done; (void)total; watchdog_ms=0; }
 #include "../firmware/loader/ldr_core.c"
 
 static uint8_t *load_logical(const char *path, size_t *len)
@@ -174,6 +178,9 @@ int main(int argc, char **argv)
     rc = ldr_session();
     printf("  rc %d, %u requests, %u sector erases\n", rc, requests, erases);
     bad += check("install completes", rc == 0);
+    bad += check("hardware guard permits settings reset", FM1_LOADER_RANGE_OK(0xFC000,0x3000));
+    bad += check("hardware guard preserves factory head and tail", !FM1_LOADER_RANGE_OK(0,0x1000) && !FM1_LOADER_RANGE_OK(0xFF000,0x1000));
+    bad += check("slow reset erases service the watchdog", watchdog_late==0);
     bad += check("all user storage erased", erased(0x97000,0xE0000) && erased(0xE5000,0xFB000) && erased(0xFC000,0xFF000));
     bad += check("app area == the new package's flash.bin", !memcmp(nor + 0x4000, logical + nfo + 0x4000, 0x93000 - 0x4000));
     bad += check("flash head [0, 0x4000) untouched", !memcmp(nor, head, sizeof head));
@@ -185,6 +192,11 @@ int main(int argc, char **argv)
     nor[0x97000] = 0;
     rc = ldr_session();
     bad += check("re-run with the same package resets user data", rc == 0 && nor[0x97000] == 0xFF);
+    put_record();record_cleared=0;fail_erase=0xFC000u;
+    rc=ldr_session();
+    bad+=check("settings erase failure keeps recovery record",rc==-9&&!record_cleared&&nor[0xE4F06]==0x41);
+    fail_erase=0;rc=ldr_session();
+    bad+=check("retry after settings erase failure completes",rc==0&&record_cleared);
     /* a package for another chip key is refused before any erase */
     {
         uint8_t save = logical[nfo + 0x4000 + 5];

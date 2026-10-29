@@ -459,3 +459,7 @@ See the [illustrated PDF guide](SynthMaven-{{version}}-User-Guide.pdf) for every
 Version {{version}} retains calibrated solo levels and stored solo compensation. When multiple program parts are enabled, 12 dB of headroom is applied before part summing and effect sends. Solo and Layer OFF playback bypass that attenuation. Layered mixes use fixed limiter timing and sample look-ahead; solo playback retains its prior limiter behavior. Audits report loudness and verify clipping, peaks, audible parts and mono compatibility. Flashing firmware clears user settings, programs, presets, samples and autosave after update verification; back up before installation.
 
 Saved PRG3/PBK2 records retain their size and addresses. Sound flag bits 2–7 encode zero for legacy unity or 1–63 for calibrated unity through +62 dB, in whole-dB steps. Trim supports −32 to +63.5 dB in half-dB steps. Backups written by this release require protocol {{protocol}} before restore, so an older reader cannot silently omit the new gain behavior. Older saved sounds retain their stored gains until reloaded from factory.
+
+## 2.2.2 loader correction and hardware limitation
+
+The loader now permits erasing the settings sectors and services the watchdog between reset erases. Layered playback has been reported at 135% CPU on the FM-1, causing crackles at low volume. Lowering the output level does not fix a missed audio deadline. Use Layer OFF for affected programs while the performance issue is investigated. Host audio audits do not establish hardware deadline compliance.

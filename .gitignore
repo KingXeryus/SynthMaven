@@ -13,3 +13,6 @@ docs/screenshots/2.2/*.png
 
 docs/screenshots/2.2.1/*.ppm
 docs/screenshots/2.2.1/*.png
+
+docs/screenshots/*/*.ppm
+docs/screenshots/*/*.png
