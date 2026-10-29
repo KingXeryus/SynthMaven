@@ -38,5 +38,5 @@ static void sm_ble_poll(void){
 static void sm_ble_diagnostics(uint32_t *d){
  const uint32_t *c=(const uint32_t *)&fm1_crash;for(uint32_t i=0;i<11;i++)d[i]=c[i];
  d[11]=fm1_ble_bc.now;d[12]=fm1_crash.axi_write_id;d[13]=fm1_crash.axi_read_id;d[14]=fm1_ble_bc.addr;
- d[15]=fm1_ble_bc.prev;d[16]=fm1_ble_bc.prev_irqs;d[17]=fm1_ble_bc.prev_stop;d[18]=fm1_ble_bc.prev_addr;d[19]=fm1_boot.p3_rst;d[20]=fm1_boot.rst_src;
+ d[15]=fm1_ble_bc.prev;d[16]=fm1_ble_bc.prev_irqs;d[17]=fm1_ble_bc.prev_stop;d[18]=fm1_ble_bc.prev_addr;d[19]=fm1_boot.p3_rst;d[20]=fm1_boot.rst_src;for(uint32_t i=0;i<16;i++)d[21+i]=fm1_crash.registers[i];for(uint32_t i=0;i<4;i++)d[37+i]=fm1_crash.etm[i];d[41]=cpu1_stack_free();
 }

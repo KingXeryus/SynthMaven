@@ -29,23 +29,60 @@ extern void fm1_c1_entry(void);
 extern uint32_t _c1_ustack[];
 #define FM1_C1_STACK_WORDS (4096u / 4u)             /* (SynthMaven 0.7: fm1_cpu1.S, 4 KB) */
 #define FM1_C1_MARK 0x43314D4Bu                  /* "C1MK": how deep core 1's stack has gone */
-static volatile uint32_t fm1_c1_alive, fm1_c1_job, fm1_c1_done, fm1_c1_arg;
+/* Keep each writer on its own cache line. Validate the entire published job
+ * before CPU1 follows a shared function pointer (fm1-base/Melodee worker pattern). */
+static struct {
+    volatile uint32_t job, arg, check;
+    void (*volatile fn)(uint32_t);
+    volatile uint32_t alive __attribute__((aligned(32)));
+    volatile uint32_t done, rejected;
+} fm1_c1_mailbox __attribute__((aligned(32)));
+#define fm1_c1_alive fm1_c1_mailbox.alive
+#define fm1_c1_job fm1_c1_mailbox.job
+#define fm1_c1_done fm1_c1_mailbox.done
+#define fm1_c1_arg fm1_c1_mailbox.arg
+#define fm1_c1_fn fm1_c1_mailbox.fn
+#define FM1_C1_CHECK(fn,arg,job) ((uint32_t)(uintptr_t)(fn) ^ (arg) ^ (job)*0x9E3779B1u)
 volatile uint32_t fm1_c1_trace;                 /* breadcrumbs (fm1_cpu1.S, fm1_c1_main) */
-static void (*volatile fm1_c1_fn)(uint32_t);
+
 static uint8_t fm1_c1_on;                       /* started and answering: core 0 may hand it work */
 
 void fm1_c1_main(void);
 void __attribute__((section(".c1_text"), noreturn, used)) fm1_c1_main(void)
 {
+    uint32_t done = fm1_c1_done;
+    /* CPU1 has a separate EMU bank; do not inherit the ROM's stack/FPU flags.
+     * Keep the existing stack size and trap before an overflow reaches RAM code. */
+    uint32_t lo=(uint32_t)(uintptr_t)_c1_ustack;
+    uint32_t hi=lo+FM1_C1_STACK_WORDS*4u+256u;
+    *(volatile uint32_t *)0x1EEF2D8u=hi;
+    *(volatile uint32_t *)0x1EEF2DCu=lo;
+    *(volatile uint32_t *)0x1EEF2E0u=hi;
+    *(volatile uint32_t *)0x1EEF2E4u=lo;
+    *(volatile uint32_t *)0x1EEF2D0u=(*(volatile uint32_t *)0x1EEF2D0u & ~((1u<<2)|(0x1Fu<<16)))|(1u<<3);
     fm1_c1_trace = 0xC1000002;
     fm1_c1_alive = 1;
     FM1_C1_SYNC();
     for (;;) {
         uint32_t j = fm1_c1_job;
         FM1_C1_SYNC();
-        if (j != fm1_c1_done) {
-            fm1_c1_fn(fm1_c1_arg);              /* the work itself runs from the flash */
+        if (j == done) {
+            /* Bound idle SRAM polling traffic while the radio DMA shares the bus.
+             * The 64 NOPs run only between jobs; active rendering is unchanged. */
+            __asm__ volatile(".rept 64\n\tnop\n\t.endr" ::: "memory");
+            continue;
+        }
+        if (j != done) {
+            void (*fn)(uint32_t) = fm1_c1_fn;
+            uint32_t arg = fm1_c1_arg;
+            if (j != done + 1u || fm1_c1_mailbox.check != FM1_C1_CHECK(fn,arg,j)) {
+                fm1_c1_mailbox.rejected++;
+                FM1_C1_SYNC();
+                continue;
+            }
+            fn(arg);              /* the work itself runs from the flash */
             FM1_C1_SYNC();
+            done = j;
             fm1_c1_done = j;
             FM1_C1_SYNC();
         }
@@ -99,6 +136,7 @@ static inline int fm1_cpu1_run(void (*fn)(uint32_t), uint32_t arg)
         return 0;
     fm1_c1_fn = fn;
     fm1_c1_arg = arg;
+    fm1_c1_mailbox.check = FM1_C1_CHECK(fn,arg,fm1_c1_job+1u);
     FM1_C1_SYNC();
     fm1_c1_job = fm1_c1_job + 1u;
     FM1_C1_SYNC();

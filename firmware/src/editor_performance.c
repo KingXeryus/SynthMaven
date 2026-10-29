@@ -25,7 +25,7 @@ static int ed_performance(uint32_t cmd,const uint8_t *a,uint32_t n){
   for(uint32_t j=0;j<4;j++)for(uint32_t k=0;k<5;k++)ed_b(sm_part_us_max[j]>>(7u*k));
   for(uint32_t k=0;k<5;k++)ed_b(sm_mono_coalesced>>(7u*k));
   #if SM_BLE
-  uint32_t radio[21];sm_ble_diagnostics(radio);for(uint32_t j=0;j<21;j++)for(uint32_t k=0;k<5;k++)ed_b(radio[j]>>(7u*k));
+  uint32_t radio[42];sm_ble_diagnostics(radio);for(uint32_t j=0;j<42;j++)for(uint32_t k=0;k<5;k++)ed_b(radio[j]>>(7u*k));
   #endif
   return 1;
  }

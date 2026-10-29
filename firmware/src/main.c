@@ -256,7 +256,7 @@ static void fm1_main(void)
     healthy_since = fm1_ms;
     for (;;) {
         uint32_t m = fm1_ms;
-        if(fm1_c1_fault_pending){fm1_irq_off();fm1_cpu1_halt();fm1_fault(&fm1_crash);}
+        if(fm1_c1_fault_pending){fm1_irq_off();fm1_cpu1_halt();fm1_crash=fm1_c1_crash;fm1_fault(&fm1_crash);}
 #if SM_BLE
         sm_ble_poll();
 #endif

@@ -42,6 +42,7 @@ static inline void fm1_irq_on(void) { __asm__ volatile("csync\n\tsti" ::: "memor
 typedef struct {
     uint32_t magic, count, vec, pc, rets, emu, dbg, sp, psr, icfg, uptime_ms;
     uint32_t etm[4];
+    uint32_t registers[16];
     uint32_t axi_write_id, axi_read_id;
     uint32_t early;                          /* consecutive crashes < 3 s after boot */
 } fm1_crash_t;
@@ -53,6 +54,7 @@ fm1_crash_t fm1_crash __attribute__((section(".noinit")));
 /* CPU1 must never run the reboot path: it would hold itself and freeze CPU0.
  * Publish the captured fault; CPU0 performs the reset from its main loop. */
 static volatile uint32_t fm1_c1_fault_pending;
+static fm1_crash_t fm1_c1_crash;
 extern const char fm1_fatal_stubs[];
 static void fm1_fault(const fm1_crash_t *c);   /* application: report, then reset */
 
@@ -102,15 +104,32 @@ void fm1_fault_c(uint32_t *f)
     uint32_t i, count = fm1_crash.magic == FM1_CRASH_MAGIC ? fm1_crash.count : 0;
     uint32_t early = fm1_crash.magic == FM1_CRASH_MAGIC ? fm1_crash.early : 0;
     fm1_irq_off();
+    uint32_t cpu;__asm__ volatile("%0 = cnum" : "=r"(cpu));
+    /* Both cores can see a shared bus fault. Keep CPU1's report separate so
+     * it cannot overwrite the original CPU0 fault while CPU0 records it. */
+    if(cpu){
+        for(i=0;i<16u;i++)fm1_c1_crash.registers[i]=f[i];
+        fm1_c1_crash.magic=FM1_CRASH_MAGIC;fm1_c1_crash.count=count+1u;
+        fm1_c1_crash.vec=0x100u+(f[19]-(uint32_t)(uintptr_t)fm1_fatal_stubs)/6u-1u;
+        fm1_c1_crash.pc=f[16];fm1_c1_crash.rets=f[25];
+        fm1_c1_crash.emu=*(volatile uint32_t *)0x1EEF2D4u;
+        fm1_c1_crash.dbg=FM1_DBG_MSG;fm1_c1_crash.sp=f[24];
+        fm1_c1_crash.psr=f[20];fm1_c1_crash.icfg=f[21];
+        fm1_c1_crash.axi_write_id=*(volatile uint32_t *)0x1EEE374u;
+        fm1_c1_crash.axi_read_id=*(volatile uint32_t *)0x1EEE370u;
+        fm1_c1_crash.uptime_ms=*(volatile uint32_t *)0x10804u/24000u;
+        __asm__ volatile("csync" ::: "memory");fm1_c1_fault_pending=1;
+        __asm__ volatile("csync" ::: "memory");for(;;);
+    }
     if (in_fault++)                           /* fault while reporting: reset at once */
         *(volatile uint32_t *)0x10000u |= 1u << 4;
+    for(i=0;i<16u;i++)fm1_crash.registers[i]=f[i];
     fm1_crash.magic = FM1_CRASH_MAGIC;
     fm1_crash.count = count + 1u;
     fm1_crash.vec = (f[19] - (uint32_t)(uintptr_t)fm1_fatal_stubs) / 6u - 1u;
     fm1_crash.pc = f[16];
     fm1_crash.rets = f[25];
-    uint32_t cpu;__asm__ volatile("%0 = cnum" : "=r"(cpu));
-    fm1_crash.emu = cpu ? *(volatile uint32_t *)0x1EEF2D4u : FM1_EMU_MSG;
+    fm1_crash.emu = FM1_EMU_MSG;
     fm1_crash.dbg = FM1_DBG_MSG;
     fm1_crash.axi_write_id = *(volatile uint32_t *)0x1EEE374u;
     fm1_crash.axi_read_id = *(volatile uint32_t *)0x1EEE370u;
@@ -121,7 +140,6 @@ void fm1_fault_c(uint32_t *f)
     for (i = 0; i < 4u; i++)
         fm1_crash.etm[i] = FM1_ETM_PC(i);
     fm1_crash.early = fm1_crash.uptime_ms < 3000u ? early + 1u : 0u;
-    if(cpu){fm1_c1_fault_pending=1;__asm__ volatile("csync" ::: "memory");for(;;);}
     fm1_fault(&fm1_crash);
     for (;;)
         ;
