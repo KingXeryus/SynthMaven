@@ -1,6 +1,22 @@
 /* Protocol 22: staged pedal learning, scenes, setlists and native filter capabilities. */
 static int ed_performance(uint32_t cmd,const uint8_t *a,uint32_t n){
  uint32_t i,op=n?a[0]:0,rc=0;
+ /* Read-only realtime diagnostics: rc, four unsigned 35-bit values, layer, core label. */
+ if(cmd==119u){
+  if(n){ed_b(1);return 1;}
+  uint32_t d[4]={song.cpu_q8,diag_peak,diag_late,voices_busy()};
+  ed_b(0);for(uint32_t j=0;j<4;j++)for(uint32_t k=0;k<5;k++)ed_b(d[j]>>(7u*k));
+  ed_b(program_layer);
+#if FELUCCA_CPU1
+  ed_str(cpu1_label(),12);
+#else
+  ed_str("HOST",12);
+#endif
+  for(uint32_t j=0;j<4;j++)for(uint32_t k=0;k<5;k++)ed_b(sm_part_us_q8[j]>>(7u*k));
+  for(uint32_t j=0;j<4;j++)for(uint32_t k=0;k<5;k++)ed_b(sm_part_us_max[j]>>(7u*k));
+  for(uint32_t k=0;k<5;k++)ed_b(sm_mono_coalesced>>(7u*k));
+  return 1;
+ }
  if(cmd==118u){rc=n==1u?sm_factory_load(a[0]):1u;ed_b(rc);ed_b(n?a[0]:127u);return 1;}
  if(cmd==117u){
   if(op==1u){if(n!=3u||a[1]>3u||a[2]>16u)rc=1;else{fm1_irq_off();sm_controller_port=a[2];sm_controller_mode(a[1]);panic_req|=(1u<<NTRK)-1u;fm1_irq_on();settings_later=1;}}

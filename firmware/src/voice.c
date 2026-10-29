@@ -11,6 +11,11 @@
  * over one block (stage 4: the envelope goes to 0, the block's amplitude ramp
  * declicks it); one of the part's own is restarted in place. Extra UNISON
  * voices only start when there is room. The drum track has its own voices (drums.c). */
+#if SYNTHMAVEN_SYNTH
+static uint8_t sm_mono_batch,sm_mono_pending;
+static uint32_t sm_mono_coalesced;
+static struct {uint8_t note,vel,retrig,glide,ch;} sm_mono_request[4];
+#endif
 static uint32_t vage;                                   /* voice ages: one clock for every part */
 /* engines that play recorded material (a position, not a phase): no phases kept or spread */
 #if FELUCCA_SLICE
@@ -93,6 +98,9 @@ static uint32_t voices_busy(void)                       /* sounding voices of al
     for (p = 0; p < NPART; p++)
         for (i = 0; i < NVOICE; i++)
             n += trk[p].v[i].active && trk[p].v[i].stage != 4u;
+#if SYNTHMAVEN_SYNTH
+    for(p=1;p<4u;p++)if((sm_mono_pending&(1u<<p)) && (!trk[p].v[0].active || trk[p].v[0].stage==4u))n++;
+#endif
     return n;
 }
 
@@ -366,6 +374,17 @@ static void voice_start(track_t *t, voice_t *v, uint32_t note, uint32_t vel, int
 static void mono_play(track_t *t, uint32_t note, uint32_t vel, int retrig, int glide)
 {
     uint32_t mode = (uint32_t)t->p[P_VOICE], nv = mode == V_UNISON ? trk_nvoice(t) : 1u, i;
+#if SYNTHMAVEN_SYNTH
+    uint32_t part=(uint32_t)(t-trk);
+    if(sm_mono_batch && part>0u && part<4u && mode==V_MONO){
+        uint32_t bit=1u<<part,again=(sm_mono_pending&bit)!=0;
+        if(again)sm_mono_coalesced++;
+        sm_mono_request[part].note=(uint8_t)note;sm_mono_request[part].vel=(uint8_t)vel;
+        sm_mono_request[part].retrig=(uint8_t)(retrig||(again&&sm_mono_request[part].retrig));
+        sm_mono_request[part].glide=(uint8_t)glide;sm_mono_request[part].ch=mpe_cur_ch;
+        sm_mono_pending|=(uint8_t)bit;t->mono_note=(uint8_t)note;return;
+    }
+#endif
     for (i = 0; i < nv; i++) {
         voice_t *v = &t->v[i];
         int32_t k = 2 * (int32_t)i - (int32_t)(nv - 1u);   /* -7 .. 7 */
@@ -396,6 +415,26 @@ static void mono_play(track_t *t, uint32_t note, uint32_t vel, int retrig, int g
     }
     t->mono_note = (uint8_t)note;
 }
+
+#if SYNTHMAVEN_SYNTH
+static void sm_mono_batch_begin(void){
+    uint32_t count=0;sm_mono_pending=0;sm_mono_batch=0;
+    if(!program_mode||!program_layer||song.solo)return;
+    for(uint32_t p=0;p<4u;p++)count+=program_route[p].enabled&&!trk[p].p[P_MUTE]&&trk[p].p[P_LEVEL]>0;
+    sm_mono_batch=(uint8_t)(count>1u);
+}
+static void sm_mono_batch_end(void){
+    sm_mono_batch=0;
+    for(uint32_t p=1;p<4u;p++)if(sm_mono_pending&(1u<<p)){
+        sm_mono_pending&=(uint8_t)~(1u<<p);track_t*t=&trk[p];
+        if(t->nmono&&t->mono_note&&t->p[P_VOICE]==V_MONO){
+            uint8_t channel=mpe_cur_ch;mpe_cur_ch=sm_mono_request[p].ch;
+            mono_play(t,sm_mono_request[p].note,sm_mono_request[p].vel,sm_mono_request[p].retrig,sm_mono_request[p].glide);
+            mpe_cur_ch=channel;
+        }
+    }
+}
+#endif
 
 /* the note the mono stack asks for (PRIO: LAST / LOW / HIGH), 0 = none */
 static uint32_t mono_pick(const track_t *t)
@@ -541,7 +580,11 @@ static void trk_note_on1(track_t *t, uint32_t note, uint32_t vel)
         return;
     }
     {
-        uint32_t sounding = t->mono_note && t->v[0].active && t->v[0].gate, want;
+        uint32_t sounding = t->mono_note && ((t->v[0].active && t->v[0].gate)
+#if SYNTHMAVEN_SYNTH
+            || (sm_mono_pending & (1u << ((uint32_t)(t-trk)%4u)))
+#endif
+            ), want;
         mono_remove(t, note);
         if (t->nmono >= 8u)
             mono_remove(t, t->mono_stack[0]);
@@ -582,6 +625,9 @@ static void trk_note_off1(track_t *t, uint32_t note)
     t->xp_n = (uint8_t)k;
     mono_remove(t, note);                               /* in any mode: a key let go after a VOICE change must
                                                          * not stay in the MONO stack (after Felucca 1.0) */
+#if SYNTHMAVEN_SYNTH
+    if(!t->nmono && (uint32_t)(t-trk)<4u)sm_mono_pending&=(uint8_t)~(1u<<(uint32_t)(t-trk));
+#endif
     if (!voice_poly((int)mode)) {
         uint32_t nv = mode == V_UNISON ? trk_nvoice(t) : 1u;
         if (t->mono_note == note) {

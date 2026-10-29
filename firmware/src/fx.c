@@ -1293,9 +1293,6 @@ static void mix_part1(track_t *t, uint32_t n)
         /* Independent half-dB factory trim: preserve boosts above the LEVEL control range. */
         lvl = (int32_t)(((int64_t)LEVEL_Q12[clamp(t->p[P_LEVEL], 0, 127)] *
                          SM_TRIM_GAIN_Q12[clamp(t->p[P_ED_FX]-sm_filter_comp_steps(t), -64, 127) + 64]) >> 12);
-        /* Reserve 12 dB before sends and summing when multiple program parts
-         * are enabled. Single-part/solo playback retains its calibrated level. */
-        if(program_mode && program_layer && sm_solo_part()<0)lvl>>=2;
         {   /* (1.0) the expression (CC 11): x (cc + 1)^2 / 128^2, 127 unchanged */
             int32_t ex = 128 - part_ctl[ctl_part(t)].exoff;
             lvl = (int32_t)(((int64_t)lvl * ex * ex) >> 14);
@@ -1543,10 +1540,26 @@ static void mix_block(int32_t *out, uint32_t n)
     int32_t m0, m1;
     for (i = 0; i < n; i++)
         send_c[i] = send_d[i] = send_r[i] = mix_l[i] = mix_r[i] = 0;
+#if SYNTHMAVEN_SYNTH
+    sm_mono_batch_begin();
+#endif
     events_block(n);
+#if SYNTHMAVEN_SYNTH
+    sm_mono_batch_end();
+#endif
     duck_block(n * (uint32_t)song.g[G_BPM]);
-    for (i = 0; i < NPART; i++)
+    for (i = 0; i < NPART; i++) {
+#if SYNTHMAVEN_SYNTH && defined(FM1_TICKS_PER_US)
+        uint32_t part_start=fm1_ticks();
+#endif
         mix_part(&trk[i], n);
+#if SYNTHMAVEN_SYNTH && defined(FM1_TICKS_PER_US)
+        if(i<4u){uint32_t us=(fm1_ticks()-part_start)/FM1_TICKS_PER_US;
+            sm_part_us_q8[i]=(sm_part_us_q8[i]*15u+(us<<8))/16u;
+            if(us>sm_part_us_max[i])sm_part_us_max[i]=us;
+        }
+#endif
+    }
     drums.a0 = TDRUM->att;                              /* the drum track's mute / solo fade */
     drums.a1 = 32767 - gain_next(TDRUM);
     {

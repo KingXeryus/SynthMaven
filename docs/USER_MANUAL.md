@@ -1,6 +1,6 @@
-# SynthMaven 2.2.2 — FM1 user manual
+# SynthMaven 2.2.3 — FM1 user manual
 
-Generated from release metadata: firmware **2.2.2**, protocol **24**, shared synth voice limit **8**.
+Generated from release metadata: firmware **2.2.3**, protocol **24**, shared synth voice limit **8**.
 
 ## Sound presets, programs and library entries
 
@@ -11,7 +11,7 @@ Generated from release metadata: firmware **2.2.2**, protocol **24**, shared syn
 
 SynthMaven is an open-source firmware based on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1).
 This manual covers the **M-VAVE FM1 hardware firmware**, its web installer and
-web editor. Version 2.2.2 provides **23 engines and 557 factory presets**. The Mac
+web editor. Version 2.2.3 provides **23 engines and 557 factory presets**. The Mac
 software instrument has a separate feature set; its eight-layer interface and
 DAW formats are not features of this hardware firmware.
 
@@ -57,12 +57,12 @@ The FM1 port cannot act as host and computer device at the same time. This host 
    in Chrome or Edge with the FM1 connected over USB.
 2. Close other programs using the FM1 MIDI ports if connection fails.
 3. Follow the installer prompts and keep power connected until it finishes.
-4. Check the splash/About screen for **SYNTHMAVEN 2.2.2**.
+4. Check the splash/About screen for **SYNTHMAVEN 2.2.3**.
 5. Open the [editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/),
    click **Connect**, grant MIDI/SysEx access when prompted and choose the FM1.
 
 Use the matching online editor after updating. The firmware/editor wire protocol
-is version **24**; that protocol number is independent of product version 2.2.2.
+is version **24**; that protocol number is independent of product version 2.2.3.
 A URL ending in `?mock=1` uses a simulated device for previewing the editor.
 It does not communicate with or validate a physical FM1.
 
@@ -304,7 +304,7 @@ USER sound presets store individual sounds. Export user banks and backups before
 |---|---|
 | Editor does not connect | Chrome/Edge, USB data cable, MIDI/SysEx permission, correct port; close competing MIDI applications |
 | Only highlight changes | Use KNOB 3 to load or KNOB 4 to load and edit |
-| Oriental collection missing | Verify SYNTHMAVEN 2.2.2, refresh the matching editor, select ORIENTAL on the hardware |
+| Oriental collection missing | Verify SYNTHMAVEN 2.2.3, refresh the matching editor, select ORIENTAL on the hardware |
 | USB keyboard is silent | Confirm a MIDI host exists; separate power alone is insufficient; check KEY IN and channel |
 | TRS keyboard is silent | Check MIDI direction, compatible cable/adapter, channel and KEY IN |
 | Pedal scans but does not switch | Wait for MIDI READY; enable PROG; check PORT, channel and actual Program Change/CC0 data |
@@ -320,7 +320,7 @@ For recovery tooling, see the [build/install guide](../BUILDING.md#install).
 
 ## Version, validation and support
 
-Version 2.2.2 uses editor protocol 24. See [release notes](release-1.9.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
+Version 2.2.3 uses editor protocol 24. See [release notes](release-1.9.md), [USB MIDI status](USB_MIDI_STATUS.md) and [build instructions](../BUILDING.md). USB-host simulations cover direct connections, hubs, disconnect/reconnect and transfer error handling. Hardware validation of direct Chocolate Plus use and audio timing remains outstanding.
 
 
 
@@ -388,7 +388,7 @@ EDIT now has four standard pages: EDIT 1, EDIT 2, VOICE and CHARACTER. FMX keeps
 
 Hold EDIT for two seconds to preview the four-sound mixer. KNOBS 1–4 control the volumes of sounds 1–4. SELECT cycles the selected part; ALGORITHM sets that part’s split point from A1 to A6 (shown as note and octave), and PRESET/parameter controls its pan. Editing a split point enables the selected part’s existing Lower/Upper zone. GLO → LAYER ROUTE or the editor can choose the zone or restore full-keyboard layering. At three seconds the mixer latches and stays open after release. Tap EDIT or HOME to exit; save a program to keep the mix. The keyboard still plays and EDIT no longer erases sequence notes. Short presses never show a held-layer screen. HOME opens its menu after three seconds.
 
-### Performance workflow (2.2.2, protocol 24)
+### Performance workflow (2.2.3, protocol 24)
 
 A **sound preset** describes one engine sound. A **four-part program** stores four sounds with routing, mix, tuning and four scenes. An **editor library entry** is a computer-side sound record. These names are not interchangeable.
 
@@ -426,7 +426,7 @@ On a fresh start or reset, **P1 STAGE PIANO** loads with four enabled parts and 
 
 Selection uses compatibility checks and native waveform spectral fitting, with no duplicate translated parameter sets. Listening comparison and device validation remain pending. See the [selection record](../assets/vital/README.md) for source attribution and conversion limits.
 
-## Device graphics and chords in 2.2.2
+## Device graphics and chords in 2.2.3
 
 The device uses Rubik typography and compact cards with a black/white/red palette and blue/grey accents. Hold ENV for three seconds to open the persistent CHORDS menu: assignable knobs 1–3 control CHORD, VOIC and STRUM. Nothing opens before three seconds; releasing ENV keeps CHORDS open. A short ENV press opens the envelope pages, and HOME returns home. Other navigation and shortcuts are retained. The twelve chromatic tuning cells visualize the current offsets without changing the microtuning mapping.
 
@@ -452,14 +452,14 @@ The matching editor control is **Apply from octave**. The threshold saves with s
 
 USB PEDAL/HOST mode automatically identifies supported Alesis, Novation, Arturia, Akai and Mackie controller families. MCU/HUI can control four program parts and transport; unknown class-compliant devices retain standard MIDI. See the [controller compatibility guide](MIDI_CONTROLLERS.md) for mappings, powered USB requirements and hardware-validation limits. Return to COMPUTER mode for the editor or installer.
 
-## Factory performance programs and loudness (2.2.2)
+## Factory performance programs and loudness (2.2.3)
 
-See the [illustrated PDF guide](SynthMaven-2.2.2-User-Guide.pdf) for every device menu and control, and [factory program design](FACTORY_PROGRAM_DESIGN.md) for source research and layer roles. Protocol 24 adds read-only factory-program recall (command 118). Eight four-part ROM programs fill unused named slots; saved user data and working autosave take precedence.
+See the [illustrated PDF guide](SynthMaven-2.2.3-User-Guide.pdf) for every device menu and control, and [factory program design](FACTORY_PROGRAM_DESIGN.md) for source research and layer roles. Protocol 24 adds read-only factory-program recall (command 118). Eight four-part ROM programs fill unused named slots; saved user data and working autosave take precedence.
 
-Version 2.2.2 retains calibrated solo levels and stored solo compensation. When multiple program parts are enabled, 12 dB of headroom is applied before part summing and effect sends. Solo and Layer OFF playback bypass that attenuation. Layered mixes use fixed limiter timing and sample look-ahead; solo playback retains its prior limiter behavior. Audits report loudness and verify clipping, peaks, audible parts and mono compatibility. Flashing firmware clears user settings, programs, presets, samples and autosave after update verification; back up before installation.
+Solo sounds retain their calibrated levels and stored solo compensation. Factory programs use three lightweight mono backing parts with one oscillator and no drive, while the main part keeps the instrument focus. P5/P6/P7 simplify duplicated oscillator registrations; the original standalone presets remain available. The previous 12 dB layered attenuation is removed. Layered mixes retain sample look-ahead limiting. Autosave waits for quiet audio before copying program state, and simultaneous mono backing-note restarts are combined within one audio block. The eight-voice budget is shared across all parts.
 
-Saved PRG3/PBK2 records retain their size and addresses. Sound flag bits 2–7 encode zero for legacy unity or 1–63 for calibrated unity through +62 dB, in whole-dB steps. Trim supports −32 to +63.5 dB in half-dB steps. Backups written by this release require protocol 24 before restore, so an older reader cannot silently omit the new gain behavior. Older saved sounds retain their stored gains until reloaded from factory.
+Hardware tests before the final note-batching change showed 64–75% average CPU peaks across the eight factory programs. Regular one- through five-note patterns had no missed deadlines; dense eight-note bursts still produced one missed deadline in P5 and P7. The final batching correction passes host tests but has not been retested on hardware, at the user's request. Custom heavy layers can still overload the processor; host renders do not establish hardware timing compliance.
 
-## 2.2.2 loader correction and hardware limitation
+Installation resets settings, programs, user presets, samples and autosave, including same-version reinstalls. Back up first. The corrected loader successfully restarted the connected FM-1 automatically during candidate installs.
 
-The loader now permits erasing the settings sectors and services the watchdog between reset erases. Layered playback has been reported at 135% CPU on the FM-1, causing crackles at low volume. Lowering the output level does not fix a missed audio deadline. Use Layer OFF for affected programs while the performance issue is investigated. Host audio audits do not establish hardware deadline compliance.
+Saved PRG3/PBK2 records retain their size and addresses. Sound flag bits 2–7 encode zero for legacy unity or 1–63 for calibrated unity through +62 dB, in whole-dB steps. Trim supports −32 to +63.5 dB in half-dB steps. Backups require protocol 24 before restore.

@@ -914,26 +914,7 @@ static int audio_quiet(void)
     return 1;
 }
 
-static void autosave_tick(void)                /* main loop */
-{
-#if FELUCCA_FLASH
-    uint32_t h, now = fm1_ms;
-    if (!flash_ok || song.playing || transport_req || rec_wait || ft_on || ui.menu ||
-        now - ui_input_ms < AUTOSAVE_IDLE || now - autosave_ms < AUTOSAVE_GAP || now - autosave_checked < 1000u)
-        return;
-    autosave_checked = now;
-#if SYNTHMAVEN_SYNTH
-    program_capture(&autosave_work.program);h=autosave_work.program.sum;
-#else
-    proj_capture(&autosave_buf);h=autosave_buf.sum;
-#endif
-    if (h == autosave_hash || !audio_quiet())
-        return;
-    if (st_save(OBJ_AUTOSAVE, &autosave_buf, AUTOSAVE_SIZE) == 0)
-        autosave_hash = h;
-    autosave_ms = fm1_ms;
-#endif
-}
+#include "autosave_tick.h"
 
 static void autosave_resume(void)              /* power-on: the project as it was left (felucca_init) */
 {

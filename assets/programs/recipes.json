@@ -37,59 +37,76 @@
           "solo_gain_db": 1
         },
         {
-          "engine": 10,
-          "preset": 4,
-          "role": "Felt and hammer",
-          "level": 85,
-          "pan": 0,
+          "engine": 0,
+          "preset": 21,
+          "role": "Sine body support",
+          "level": 75,
+          "pan": -12,
           "transpose": 0,
           "voice": 1,
-          "reverb": 8,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
-          "highpass": 19,
-          "params": {},
+          "highpass": 0,
+          "params": {
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
+          },
           "envelope": [
             0,
             80,
             0,
             36
           ],
-          "trim_half_db": 10,
+          "trim_half_db": 8,
+          "solo_gain_db": 30
+        },
+        {
+          "engine": 0,
+          "preset": 13,
+          "role": "Warm harmonic support",
+          "level": 75,
+          "pan": 0,
+          "transpose": 0,
+          "voice": 1,
+          "reverb": 0,
+          "chorus": 0,
+          "delay": 0,
+          "highpass": 0,
+          "params": {
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
+          },
+          "trim_half_db": 8,
           "solo_gain_db": 20
         },
         {
-          "engine": 9,
-          "preset": 15,
-          "role": "Quiet piano overtones",
-          "level": 83,
-          "pan": 6,
+          "engine": 0,
+          "preset": 14,
+          "role": "Dark string support",
+          "level": 75,
+          "pan": 12,
           "transpose": 0,
           "voice": 1,
-          "reverb": 14,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
-          "highpass": 21,
-          "params": {},
-          "trim_half_db": 20,
-          "solo_gain_db": 10
-        },
-        {
-          "engine": 21,
-          "preset": 3,
-          "role": "Soft string resonance",
-          "level": 76,
-          "pan": -6,
-          "transpose": 0,
-          "voice": 1,
-          "reverb": 18,
-          "chorus": 0,
-          "delay": 0,
-          "highpass": 24,
+          "highpass": 0,
           "params": {
-            "P_E5": 64,
-            "P_E6": 8,
-            "P_E7": 0
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
           },
           "envelope": [
             37,
@@ -97,8 +114,8 @@
             38,
             56
           ],
-          "trim_half_db": 26,
-          "solo_gain_db": 19
+          "trim_half_db": 8,
+          "solo_gain_db": 24
         }
       ],
       "trim_half_db": -8,
@@ -139,39 +156,47 @@
           "solo_gain_db": 1
         },
         {
-          "engine": 9,
-          "preset": 0,
-          "role": "Tine sparkle",
-          "level": 85,
-          "pan": 6,
+          "engine": 0,
+          "preset": 21,
+          "role": "Sine body support",
+          "level": 75,
+          "pan": -12,
           "transpose": 0,
           "voice": 1,
-          "reverb": 15,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
-          "highpass": 20,
-          "params": {},
-          "trim_half_db": 8,
-          "solo_gain_db": 9
-        },
-        {
-          "engine": 21,
-          "preset": 4,
-          "role": "Warm poly undertone",
-          "level": 86,
-          "pan": -8,
-          "transpose": 0,
-          "voice": 0,
-          "reverb": 16,
-          "chorus": 0,
-          "delay": 0,
-          "highpass": 18,
+          "highpass": 0,
           "params": {
             "P_E2": 0,
-            "P_E4": 2,
-            "P_E5": 60,
-            "P_E6": 10,
-            "P_E7": 0
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
+          },
+          "trim_half_db": -2,
+          "solo_gain_db": 23
+        },
+        {
+          "engine": 0,
+          "preset": 13,
+          "role": "Warm harmonic support",
+          "level": 75,
+          "pan": 0,
+          "transpose": 0,
+          "voice": 1,
+          "reverb": 0,
+          "chorus": 0,
+          "delay": 0,
+          "highpass": 0,
+          "params": {
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
           },
           "envelope": [
             8,
@@ -179,30 +204,37 @@
             41,
             46
           ],
-          "trim_half_db": 0,
-          "solo_gain_db": 15
+          "trim_half_db": -2,
+          "solo_gain_db": 23
         },
         {
-          "engine": 1,
-          "preset": 11,
-          "role": "Upper glass resonance",
+          "engine": 0,
+          "preset": 14,
+          "role": "Dark string support",
           "level": 75,
-          "pan": 8,
+          "pan": 12,
           "transpose": 12,
           "voice": 1,
-          "reverb": 18,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
-          "highpass": 12,
-          "params": {},
+          "highpass": 0,
+          "params": {
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
+          },
           "envelope": [
             24,
             76,
             18,
             48
           ],
-          "trim_half_db": 10,
-          "solo_gain_db": 27
+          "trim_half_db": -2,
+          "solo_gain_db": 33
         }
       ],
       "trim_half_db": 2,
@@ -246,22 +278,24 @@
           "solo_gain_db": 1
         },
         {
-          "engine": 21,
-          "preset": 14,
-          "role": "Octave sheen",
-          "level": 84,
-          "pan": 8,
+          "engine": 0,
+          "preset": 21,
+          "role": "Sine body support",
+          "level": 75,
+          "pan": -12,
           "transpose": 12,
           "voice": 1,
-          "reverb": 18,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
           "highpass": 0,
           "params": {
             "P_E2": 0,
-            "P_E5": 66,
-            "P_E6": 16,
-            "P_E7": 0
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
           },
           "envelope": [
             9,
@@ -269,52 +303,66 @@
             70,
             36
           ],
-          "trim_half_db": 0,
-          "solo_gain_db": 10
+          "trim_half_db": -6,
+          "solo_gain_db": 23
         },
         {
-          "engine": 1,
-          "preset": 26,
-          "role": "FM presence",
-          "level": 85,
-          "pan": -6,
+          "engine": 0,
+          "preset": 13,
+          "role": "Warm harmonic support",
+          "level": 75,
+          "pan": 0,
           "transpose": 0,
           "voice": 1,
-          "reverb": 16,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
-          "highpass": 20,
-          "params": {},
+          "highpass": 0,
+          "params": {
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
+          },
           "envelope": [
             5,
             78,
             76,
             36
           ],
-          "trim_half_db": 0,
-          "solo_gain_db": 9
+          "trim_half_db": -6,
+          "solo_gain_db": 20
         },
         {
-          "engine": 10,
-          "preset": 1,
-          "role": "Quiet attack detail",
-          "level": 76,
-          "pan": 0,
+          "engine": 0,
+          "preset": 14,
+          "role": "Dark string support",
+          "level": 75,
+          "pan": 12,
           "transpose": 12,
           "voice": 1,
-          "reverb": 12,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
-          "highpass": 28,
-          "params": {},
+          "highpass": 0,
+          "params": {
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
+          },
           "envelope": [
             0,
             80,
             0,
             36
           ],
-          "trim_half_db": 13,
-          "solo_gain_db": 10
+          "trim_half_db": -6,
+          "solo_gain_db": 34
         }
       ],
       "trim_half_db": 6,
@@ -355,22 +403,24 @@
           "solo_gain_db": 2
         },
         {
-          "engine": 21,
-          "preset": 17,
-          "role": "Shabi saw support",
-          "level": 85,
-          "pan": -6,
+          "engine": 0,
+          "preset": 21,
+          "role": "Sine body support",
+          "level": 75,
+          "pan": -12,
           "transpose": 0,
           "voice": 1,
-          "reverb": 14,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
-          "highpass": 20,
+          "highpass": 0,
           "params": {
             "P_E2": 0,
-            "P_E5": 65,
-            "P_E6": 16,
-            "P_E7": 0
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
           },
           "envelope": [
             9,
@@ -378,46 +428,60 @@
             87,
             32
           ],
-          "trim_half_db": 0,
-          "solo_gain_db": 8
+          "trim_half_db": -3,
+          "solo_gain_db": 22
         },
         {
-          "engine": 9,
-          "preset": 41,
-          "role": "Ney air",
-          "level": 78,
-          "pan": 6,
-          "transpose": 0,
-          "voice": 1,
-          "reverb": 19,
-          "chorus": 0,
-          "delay": 0,
-          "highpass": 26,
-          "params": {},
-          "trim_half_db": 0,
-          "solo_gain_db": 9
-        },
-        {
-          "engine": 10,
-          "preset": 33,
-          "role": "Oud articulation",
+          "engine": 0,
+          "preset": 13,
+          "role": "Warm harmonic support",
           "level": 75,
           "pan": 0,
           "transpose": 0,
           "voice": 1,
-          "reverb": 13,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
-          "highpass": 22,
-          "params": {},
+          "highpass": 0,
+          "params": {
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
+          },
+          "trim_half_db": -3,
+          "solo_gain_db": 17
+        },
+        {
+          "engine": 0,
+          "preset": 14,
+          "role": "Dark string support",
+          "level": 75,
+          "pan": 12,
+          "transpose": 0,
+          "voice": 1,
+          "reverb": 0,
+          "chorus": 0,
+          "delay": 0,
+          "highpass": 0,
+          "params": {
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
+          },
           "envelope": [
             0,
             80,
             0,
             36
           ],
-          "trim_half_db": -4,
-          "solo_gain_db": 25
+          "trim_half_db": -3,
+          "solo_gain_db": 28
         }
       ],
       "trim_half_db": 3,
@@ -446,13 +510,14 @@
           "delay": 0,
           "highpass": 0,
           "params": {
-            "P_E2": 15,
+            "P_E2": 0,
             "P_E4": 1,
             "P_E5": 78,
             "P_E6": 21,
             "P_E7": 1,
             "P_ED_FLT": 28,
-            "P_VELF": 20
+            "P_VELF": 20,
+            "P_E0": 0
           },
           "envelope": [
             0,
@@ -465,20 +530,23 @@
         },
         {
           "engine": 0,
-          "preset": 25,
-          "role": "Brass accent",
-          "level": 85,
-          "pan": -8,
+          "preset": 21,
+          "role": "Sine body support",
+          "level": 75,
+          "pan": -12,
           "transpose": 0,
           "voice": 1,
-          "reverb": 12,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
-          "highpass": 20,
+          "highpass": 0,
           "params": {
-            "P_E1": 3,
-            "P_E4": 70,
-            "P_E5": 18
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
           },
           "envelope": [
             0,
@@ -486,52 +554,66 @@
             22,
             36
           ],
-          "trim_half_db": 16,
-          "solo_gain_db": 11
+          "trim_half_db": -12,
+          "solo_gain_db": 29
         },
         {
-          "engine": 7,
-          "preset": 8,
-          "role": "Percussive organ",
-          "level": 77,
-          "pan": 7,
+          "engine": 0,
+          "preset": 13,
+          "role": "Warm harmonic support",
+          "level": 75,
+          "pan": 0,
           "transpose": 0,
           "voice": 1,
-          "reverb": 8,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
-          "highpass": 26,
-          "params": {},
+          "highpass": 0,
+          "params": {
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
+          },
           "envelope": [
             0,
             80,
             0,
             36
           ],
-          "trim_half_db": 16,
-          "solo_gain_db": 14
+          "trim_half_db": -12,
+          "solo_gain_db": 27
         },
         {
-          "engine": 15,
+          "engine": 0,
           "preset": 14,
-          "role": "Quiet string lift",
+          "role": "Dark string support",
           "level": 75,
-          "pan": 8,
+          "pan": 12,
           "transpose": 0,
           "voice": 1,
-          "reverb": 15,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
-          "highpass": 23,
-          "params": {},
+          "highpass": 0,
+          "params": {
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
+          },
           "envelope": [
             14,
             67,
             27,
             36
           ],
-          "trim_half_db": 16,
-          "solo_gain_db": 19
+          "trim_half_db": -12,
+          "solo_gain_db": 31
         }
       ],
       "trim_half_db": 12,
@@ -560,7 +642,7 @@
           "delay": 0,
           "highpass": 0,
           "params": {
-            "P_E2": 18,
+            "P_E2": 0,
             "P_E5": 72,
             "P_E6": 21,
             "P_ED_FLT": 34,
@@ -577,20 +659,23 @@
         },
         {
           "engine": 0,
-          "preset": 11,
-          "role": "Lower brass body",
-          "level": 86,
-          "pan": -5,
+          "preset": 21,
+          "role": "Sine body support",
+          "level": 75,
+          "pan": -12,
           "transpose": -12,
           "voice": 1,
-          "reverb": 15,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
           "highpass": 0,
           "params": {
-            "P_E1": 3,
-            "P_E4": 66,
-            "P_E5": 15
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
           },
           "envelope": [
             17,
@@ -598,52 +683,66 @@
             86,
             39
           ],
-          "trim_half_db": 0,
-          "solo_gain_db": 11
+          "trim_half_db": -3,
+          "solo_gain_db": 23
         },
         {
-          "engine": 1,
-          "preset": 25,
-          "role": "FM brass edge",
-          "level": 83,
-          "pan": 6,
+          "engine": 0,
+          "preset": 13,
+          "role": "Warm harmonic support",
+          "level": 75,
+          "pan": 0,
           "transpose": 0,
           "voice": 1,
-          "reverb": 16,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
-          "highpass": 24,
-          "params": {},
+          "highpass": 0,
+          "params": {
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
+          },
           "envelope": [
             17,
             75,
             72,
             37
           ],
-          "trim_half_db": 20,
-          "solo_gain_db": 8
+          "trim_half_db": -3,
+          "solo_gain_db": 21
         },
         {
-          "engine": 15,
-          "preset": 10,
-          "role": "Upper string accent",
-          "level": 77,
-          "pan": 8,
+          "engine": 0,
+          "preset": 14,
+          "role": "Dark string support",
+          "level": 75,
+          "pan": 12,
           "transpose": 12,
-          "voice": 0,
-          "reverb": 18,
+          "voice": 1,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
-          "highpass": 26,
-          "params": {},
+          "highpass": 0,
+          "params": {
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
+          },
           "envelope": [
             12,
             70,
             35,
             38
           ],
-          "trim_half_db": -6,
-          "solo_gain_db": 21
+          "trim_half_db": -3,
+          "solo_gain_db": 32
         }
       ],
       "trim_half_db": 3,
@@ -671,7 +770,12 @@
           "chorus": 0,
           "delay": 0,
           "highpass": 6,
-          "params": {},
+          "params": {
+            "P_E6": 0,
+            "P_E0": 0,
+            "P_E1": 127,
+            "P_E2": 0
+          },
           "envelope": [
             57,
             96,
@@ -682,22 +786,24 @@
           "solo_gain_db": 1
         },
         {
-          "engine": 21,
-          "preset": 3,
-          "role": "Warm string double",
-          "level": 89,
-          "pan": 8,
+          "engine": 0,
+          "preset": 21,
+          "role": "Sine body support",
+          "level": 75,
+          "pan": -12,
           "transpose": 0,
-          "voice": 0,
-          "reverb": 24,
+          "voice": 1,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
-          "highpass": 18,
+          "highpass": 0,
           "params": {
             "P_E2": 0,
-            "P_E5": 78,
-            "P_E6": 9,
-            "P_E7": 1
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
           },
           "envelope": [
             66,
@@ -705,52 +811,66 @@
             103,
             72
           ],
-          "trim_half_db": 0,
-          "solo_gain_db": 12
+          "trim_half_db": -3,
+          "solo_gain_db": 19
         },
         {
-          "engine": 10,
-          "preset": 15,
-          "role": "Low bowed body",
-          "level": 79,
+          "engine": 0,
+          "preset": 13,
+          "role": "Warm harmonic support",
+          "level": 75,
           "pan": 0,
           "transpose": -12,
           "voice": 1,
-          "reverb": 18,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
-          "highpass": 10,
-          "params": {},
+          "highpass": 0,
+          "params": {
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
+          },
           "envelope": [
             65,
             93,
             88,
             64
           ],
-          "trim_half_db": 30,
-          "solo_gain_db": 13
+          "trim_half_db": -3,
+          "solo_gain_db": 16
         },
         {
-          "engine": 5,
-          "preset": 0,
-          "role": "Quiet choral air",
+          "engine": 0,
+          "preset": 14,
+          "role": "Dark string support",
           "level": 75,
-          "pan": 10,
+          "pan": 12,
           "transpose": 12,
           "voice": 1,
-          "reverb": 24,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
-          "highpass": 28,
-          "params": {},
+          "highpass": 0,
+          "params": {
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
+          },
           "envelope": [
             78,
             96,
             89,
             69
           ],
-          "trim_half_db": 26,
-          "solo_gain_db": 7
+          "trim_half_db": -3,
+          "solo_gain_db": 16
         }
       ],
       "trim_half_db": 3,
@@ -795,11 +915,11 @@
           "solo_gain_db": 0
         },
         {
-          "engine": 21,
-          "preset": 2,
-          "role": "Pulse definition",
-          "level": 90,
-          "pan": 0,
+          "engine": 0,
+          "preset": 21,
+          "role": "Sine body support",
+          "level": 75,
+          "pan": -12,
           "transpose": 0,
           "voice": 1,
           "reverb": 0,
@@ -807,10 +927,12 @@
           "delay": 0,
           "highpass": 0,
           "params": {
-            "P_E2": 28,
-            "P_E5": 55,
-            "P_E6": 16,
-            "P_E7": 0
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
           },
           "envelope": [
             0,
@@ -818,52 +940,66 @@
             78,
             24
           ],
-          "trim_half_db": 0,
-          "solo_gain_db": 11
+          "trim_half_db": 9,
+          "solo_gain_db": 25
         },
         {
-          "engine": 22,
-          "preset": 6,
-          "role": "Upper midrange",
-          "level": 81,
+          "engine": 0,
+          "preset": 13,
+          "role": "Warm harmonic support",
+          "level": 75,
           "pan": 0,
           "transpose": 12,
           "voice": 1,
-          "reverb": 3,
+          "reverb": 0,
           "chorus": 0,
           "delay": 0,
-          "highpass": 26,
-          "params": {},
+          "highpass": 0,
+          "params": {
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
+          },
           "envelope": [
             0,
             55,
             45,
             22
           ],
-          "trim_half_db": 0,
-          "solo_gain_db": 17
+          "trim_half_db": 9,
+          "solo_gain_db": 24
         },
         {
-          "engine": 10,
-          "preset": 12,
-          "role": "Plucked edge",
-          "level": 76,
-          "pan": 0,
+          "engine": 0,
+          "preset": 14,
+          "role": "Dark string support",
+          "level": 75,
+          "pan": 12,
           "transpose": 0,
           "voice": 1,
           "reverb": 0,
           "chorus": 0,
           "delay": 0,
-          "highpass": 25,
-          "params": {},
+          "highpass": 0,
+          "params": {
+            "P_E2": 0,
+            "P_E3": 0,
+            "P_E6": 0,
+            "P_ITYPE": 0,
+            "P_SPREAD": 0,
+            "P_VINT": 0
+          },
           "envelope": [
             0,
             82,
             0,
             36
           ],
-          "trim_half_db": 0,
-          "solo_gain_db": 31
+          "trim_half_db": 9,
+          "solo_gain_db": 25
         }
       ],
       "trim_half_db": -9,

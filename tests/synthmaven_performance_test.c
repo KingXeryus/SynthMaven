@@ -12,6 +12,9 @@ static void ed_pack7(const uint8_t*p,uint32_t n){while(n){uint32_t k=n<7?n:7,h=0
 static uint32_t ed_unpack7(const uint8_t*p,uint32_t n,uint8_t*out,uint32_t max){uint32_t k=0;while(n&&k<max){uint8_t h=*p++;n--;for(uint32_t i=0;i<7&&n&&k<max;i++,n--)out[k++]=*p++|((h>>i&1)<<7);}return k;}
 #include "../firmware/src/editor_performance.c"
 int main(void){outdir="build/host";bank_resolve();panel=PANEL_DEFAULT;layers_init();host_tracks_init();go_home();frames(2);
+ wn=0;song.cpu_q8=300;diag_peak=135;diag_late=921;
+ check(ed_performance(119,0,0)&&wire[0]==0&&wire[1]==(300&127)&&wire[2]==(300>>7)&&wire[11]==(921&127)&&wire[12]==(921>>7),"realtime diagnostics expose actual CPU and missed deadlines");
+ wn=0;uint8_t bad_diag[1]={1};check(ed_performance(119,bad_diag,1)&&wn==1&&wire[0]==1,"diagnostic writes are rejected");
  memset(sm_pedal,0,sizeof sm_pedal);sm_action_w=sm_action_r=0;sm_repeat_ms=0;fm1_ms=100;
  check(!sm_learn_arm(4),"arm program-next learn");sm_pedal_receive(0xB0,2,64,127,0,1);
  check(sm_learn_state==2&&sm_candidate[3]==3&&!sm_pedal[4][0]&&sm_action_w==sm_action_r,"learning stages message without assigning or triggering");

@@ -14,6 +14,7 @@
 #endif
 /* SynthMaven 0.5.1 (the crackle hunt): written by the audio interrupt (audio.c), shown in GLO > SYSTEM's CPU column
  * (ui_draw.c) */
+static volatile uint32_t sm_part_us_q8[4], sm_part_us_max[4];
 static volatile uint32_t diag_late;      /* halves the DMA had already moved past: since power-on */
 static volatile uint32_t diag_peak;      /* the worst half (render + TIMER5 in it), % of its deadline, since shown */
 #ifndef NVOICE
