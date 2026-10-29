@@ -34,9 +34,6 @@
   button#go:disabled { background: var(--tile); color: var(--dim); cursor: default; }
   #status { margin-top: 14px; min-height: 1.7em; font-variant-numeric: tabular-nums; }
   .small { color: var(--dim); font-size: 12.5px; }
-  .exp { border: 1px solid var(--yellow); border-left: 4px solid var(--yellow); padding: 12px 16px; margin: 0 0 24px; }
-  .exp b { color: var(--yellow); letter-spacing: 0.08em; display: block; margin-bottom: 6px; }
-  .exp p { margin: 0; line-height: 1.75; }
   .small a, a { color: inherit; }
   progress { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; margin-top: 16px; border: 0; background: var(--tile); }
   progress::-webkit-progress-bar { background: var(--tile); }
@@ -103,12 +100,13 @@ html[data-sm-app=installer] .tiles{grid-template-columns:repeat(auto-fit,minmax(
     <span aria-hidden="true"> · </span>
     <a href="../../docs/maqam-scales.html">Arabic maqam catalogue</a>
   </nav>
-  <div class="exp" role="note"><b data-t="expTitle"></b><p data-t="expText"></p></div>
   <h1 data-t="kicker"></h1>
   <section data-l="en">
   <p class="lead">Build a performance from four sounds: layer them together or split the keyboard, balance their levels and pan, then save the complete mix. Built on Clipper by 3dSam, SynthMaven adds a four-part performance workflow to the FM-1’s 23 synthesis engines and 557-entry factory bank.</p>
   <h2>What SynthMaven adds</h2>
   <ul>
+    <li><strong>Expanded sounds and performance controls.</strong> 64 Vital-derived HYBRID approximations, eight instrument-led four-part factory programs, scale-aware AUTO/AUTO2 chords, voicings and tempo strums. Hold ENV for three seconds for CHORDS; choose neutral harmony for microtonal scales and a C0–C8 master-tuning boundary.</li>
+    <li><strong>Connected, visual workflow.</strong> Automatic identification of supported USB controllers, Mackie Control/HUI mixing and transport, refreshed high-contrast device graphics and an illustrated guide covering menus, controls and holds. Existing HOME navigation is preserved.</li>
     <li><strong>Four-sound programs and mixer.</strong> Switch layering ON/OFF; give each part its own split zone, split point, octave shift, volume, pan, mute and solo. Save eight named programs, each holding four loaded sounds and their mix.</li>
     <li><strong>USB pedal MIDI Learn.</strong> Choose an action, Learn a pedal press, review the captured CC/PC and accept it. Assign patch/bank switching, program changes, scenes or setlist navigation. Diagnostics show USB role, device/interface detection, the last message and assignment matches; optional duplicate suppression preserves deliberate CC taps through release re-arming.</li>
     <li><strong>Scenes and setlists.</strong> Capture four compact scenes per program for levels, mutes, effect sends, macros and selected tuning settings. Arrange up to 32 references to saved programs in a pedal-navigable setlist.</li>
@@ -123,6 +121,8 @@ html[data-sm-app=installer] .tiles{grid-template-columns:repeat(auto-fit,minmax(
   <p class="lead">Crée une performance avec quatre sons superposés ou répartis sur le clavier, règle leurs volumes et panoramiques, puis sauvegarde le programme complet. Basé sur Clipper de 3dSam, SynthMaven ajoute ce fonctionnement à quatre parties aux 23 moteurs et 557 entrées d’usine de la FM-1.</p>
   <h2>Les ajouts de SynthMaven</h2>
   <ul>
+    <li><strong>Sons et jeu enrichis :</strong> 64 approximations HYBRID dérivées de Vital, huit programmes de quatre parties, accords AUTO/AUTO2 adaptés à la gamme, voicings et strums synchronisés. ENV maintenu trois secondes ouvre CHORDS ; harmonie neutre et limite d’accordage C0–C8.</li>
+    <li><strong>Un fonctionnement visuel et connecté :</strong> identification automatique des contrôleurs USB pris en charge, mixage et transport Mackie Control/HUI, graphismes contrastés et guide illustré des menus et commandes. Navigation HOME conservée.</li>
     <li><strong>Quatre parties et mixeur :</strong> superposition activable, zones et points de split, octaves, volume, panoramique, mute et solo indépendants ; huit programmes nommés.</li>
     <li><strong>Pédalier USB et MIDI Learn :</strong> sélectionne une action, capture un message CC/PC, vérifie-le puis accepte-le. Change les sons, banques, programmes, scènes et entrées de setlist ; consulte les diagnostics et règle la suppression des doublons.</li>
     <li><strong>Scènes et setlists :</strong> quatre scènes par programme pour niveaux, mutes, effets, macros et certains réglages d’accordage ; jusqu’à 32 références à des programmes sauvegardés, parcourables au pédalier.</li>
@@ -137,6 +137,8 @@ html[data-sm-app=installer] .tiles{grid-template-columns:repeat(auto-fit,minmax(
   <p class="lead">4 つの音色を重ねたり鍵盤を分割したりして演奏し、各パートの音量とパンを調整してプログラムに保存できます。3dSam の Clipper を基に、SynthMaven は FM-1 の 23 エンジンと 557 のファクトリー項目に、4 パートの演奏ワークフローを追加します。</p>
   <h2>SynthMaven で追加された機能</h2>
   <ul>
+    <li><strong>音色と演奏機能の拡充：</strong>Vital 由来の HYBRID 近似音色 64 種、4 パートのファクトリープログラム 8 種、音階に沿う AUTO/AUTO2 コード、ボイシングとテンポ同期ストラム。ENV を 3 秒保持すると CHORDS。微分音向けのニュートラル和音と C0–C8 の音律適用境界。</li>
+    <li><strong>接続と表示の改善：</strong>対応 USB コントローラーの自動識別、Mackie Control/HUI のミキシングとトランスポート、高コントラスト表示、メニューと操作を網羅する図解ガイド。HOME の操作は維持。</li>
     <li><strong>4 音色のレイヤーとミキサー：</strong>レイヤーの ON/OFF、各パートのスプリット範囲・分割点・オクターブ・音量・パン・ミュート・ソロ。名前付きプログラムを 8 個保存できます。</li>
     <li><strong>USB ペダルと MIDI Learn：</strong>操作を選び、ペダルの CC/PC を取り込み、内容を確認して確定。音色・バンク・プログラム・シーン・セットリストを切り替えます。USB 状態、受信メッセージ、割り当ての一致、重複抑制も確認できます。</li>
     <li><strong>シーンとセットリスト：</strong>プログラムごとに 4 シーン。音量、ミュート、エフェクト量、マクロ、一部のチューニング設定を記録します。保存済みプログラムを参照する最大 32 項目の演奏順をペダルで移動できます。</li>
@@ -330,8 +332,6 @@ const $ = (id) => document.getElementById(id);
 const TEXT = {
   ja: {
     kicker: "M-VAVE FM-1 のためのシンセサイザー・ファームウェア",
-    expTitle: "実験版 — SYNTHMAVEN 2.2.3",
-    expText: "SynthMaven 2.2.3 refreshes device typography and cards in black, white and red, adds AUTO/AUTO2 chords, voicings and tempo strums, with automatic USB controller identification, four-part Mackie Control / HUI mixing and transport, C0–C8 octave-selective master tuning, scale-aware chords on all keys, selectable neutral harmony for microtonal scales and a three-second ENV shortcut to CHORDS, and retains existing HOME navigation and microtuning. It includes four-sound layering and splits, a volume/pan mixer, USB pedal MIDI Learn and patch switching, four scenes per program, and 32-entry setlists. The instrument-style editor adds visual controls, modulation templates and engine-aware filters with optional estimated output compensation. Includes 64 Vital-derived HYBRID approximations, with eight instrument-led four-part programs and unchanged HOME controls. Solo sounds and layered programs target −14 LUFS on reference performances; true peaks are limited to −1 dBTP. The illustrated PDF guide covers every device menu, control and hold. Explore 23 engines and 557 factory entries: 556 level-matched sounds plus an intentionally empty USER WT slot. Direct USB pedals require a powered adapter or hub and hardware validation. Back up before installing.",
     tEng: "音源エンジン", tSnd: "音色、レベル調整済み", tHy: "フィルター・モデル", tMx: "チューニング＋自分の Scala 音階",
     intro: "FM-1 を USB で接続してください。（Chrome か Edge で使えます）",
     warn: "書き込み中は USB を抜かないでください。",
@@ -367,8 +367,6 @@ const TEXT = {
   },
   en: {
     kicker: "Synthesizer firmware for the M-VAVE FM-1",
-    expTitle: "EXPERIMENTAL — SYNTHMAVEN 2.2.3",
-    expText: "SynthMaven 2.2.3 refreshes device typography and cards in black, white and red, adds AUTO/AUTO2 chords, voicings and tempo strums, with automatic USB controller identification, four-part Mackie Control / HUI mixing and transport, C0–C8 octave-selective master tuning, scale-aware chords on all keys, selectable neutral harmony for microtonal scales and a three-second ENV shortcut to CHORDS, and retains existing HOME navigation and microtuning. It includes four-sound layering and splits, a volume/pan mixer, USB pedal MIDI Learn and patch switching, four scenes per program, and 32-entry setlists. The instrument-style editor adds visual controls, modulation templates and engine-aware filters with optional estimated output compensation. Includes 64 Vital-derived HYBRID approximations, with eight instrument-led four-part programs and unchanged HOME controls. Solo sounds and layered programs target −14 LUFS on reference performances; true peaks are limited to −1 dBTP. The illustrated PDF guide covers every device menu, control and hold. Explore 23 engines and 557 factory entries: 556 level-matched sounds plus an intentionally empty USER WT slot. Direct USB pedals require a powered adapter or hub and hardware validation. Back up before installing.",
     tEng: "synthesis engines", tSnd: "entries: 556 matched + USER WT", tHy: "filter models", tMx: "tunings + your own Scala scales",
     intro: "Connect the FM-1 by USB. (Works in Chrome or Edge.)",
     warn: "Do not unplug the USB cable while writing.",
@@ -404,8 +402,6 @@ const TEXT = {
   },
   fr: {
     kicker: "Firmware synthétiseur pour la M-VAVE FM-1",
-    expTitle: "EXPÉRIMENTAL — SYNTHMAVEN 2.2.3",
-    expText: "SynthMaven 2.2.3 refreshes device typography and cards in black, white and red, adds AUTO/AUTO2 chords, voicings and tempo strums, with automatic USB controller identification, four-part Mackie Control / HUI mixing and transport, C0–C8 octave-selective master tuning, scale-aware chords on all keys, selectable neutral harmony for microtonal scales and a three-second ENV shortcut to CHORDS, and retains existing HOME navigation and microtuning. It includes four-sound layering and splits, a volume/pan mixer, USB pedal MIDI Learn and patch switching, four scenes per program, and 32-entry setlists. The instrument-style editor adds visual controls, modulation templates and engine-aware filters with optional estimated output compensation. Includes 64 Vital-derived HYBRID approximations, with eight instrument-led four-part programs and unchanged HOME controls. Solo sounds and layered programs target −14 LUFS on reference performances; true peaks are limited to −1 dBTP. The illustrated PDF guide covers every device menu, control and hold. Explore 23 engines and 557 factory entries: 556 level-matched sounds plus an intentionally empty USER WT slot. Direct USB pedals require a powered adapter or hub and hardware validation. Back up before installing.",
     tEng: "moteurs de synthèse", tSnd: "sons, niveaux égalisés", tHy: "modèles de filtre", tMx: "accordages + tes gammes Scala",
     intro: "Branche la FM-1 en USB. (Fonctionne dans Chrome ou Edge.)",
     warn: "Ne débranche pas le câble USB pendant l'écriture.",
