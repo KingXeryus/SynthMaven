@@ -1,0 +1,27 @@
+// !$*UTF8*$!
+{ archiveVersion = 1; classes = {}; objectVersion = 56; objects = {
+4411227784337DBB3AE28994 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthMavenEditor/App.swift; sourceTree = "<group>";};
+C009BA55A495B382C9BE1A6D = {isa = PBXBuildFile; fileRef = 4411227784337DBB3AE28994;};
+F8CF96D5230D25EEE134A9C0 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthMavenEditor/MIDITransport.swift; sourceTree = "<group>";};
+5616AFE94ADE09B0573F21F8 = {isa = PBXBuildFile; fileRef = F8CF96D5230D25EEE134A9C0;};
+7D1CA43A1ED7A23C5F8EDA3B = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthMavenEditor/MIDIStream.swift; sourceTree = "<group>";};
+C08B7B68C77C716B190F7789 = {isa = PBXBuildFile; fileRef = 7D1CA43A1ED7A23C5F8EDA3B;};
+1545140A9F9836D791E3BFDE = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = SynthMavenEditor/MIDIBridge.js; sourceTree = "<group>";};
+5AF48CFDB4F072187FA9DEF5 = {isa = PBXBuildFile; fileRef = 1545140A9F9836D791E3BFDE;};
+C7E9FB2EA6C3B8C3CE97645E = {isa = PBXFileReference; lastKnownFileType = folder; path = Generated/Editor; sourceTree = "<group>";};
+A61DF3738B44B3155B8A4887 = {isa = PBXBuildFile; fileRef = C7E9FB2EA6C3B8C3CE97645E;};
+DD3B86D1EF21B9FB2E1EDC30 = {isa = PBXFileReference; explicitFileType = wrapper.application; path = SynthMavenEditor.app; sourceTree = BUILT_PRODUCTS_DIR;};
+FE0A091FDBFB3E9C31B7A1BD = {isa = PBXGroup; children = (DD3B86D1EF21B9FB2E1EDC30,); name = Products; sourceTree = "<group>";};
+171A0606F7C74580FD3982CF = {isa = PBXGroup; children = (4411227784337DBB3AE28994,F8CF96D5230D25EEE134A9C0,7D1CA43A1ED7A23C5F8EDA3B,1545140A9F9836D791E3BFDE,C7E9FB2EA6C3B8C3CE97645E,FE0A091FDBFB3E9C31B7A1BD,); sourceTree = "<group>";};
+2EB56BE3C2D93CDAB0C52E67 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (C009BA55A495B382C9BE1A6D,5616AFE94ADE09B0573F21F8,C08B7B68C77C716B190F7789,); runOnlyForDeploymentPostprocessing = 0;};
+87DF60DE337FB58864343E39 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (5AF48CFDB4F072187FA9DEF5,A61DF3738B44B3155B8A4887,); runOnlyForDeploymentPostprocessing = 0;};
+AF39DD055C3EF8226FBE929D = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0;};
+7082CC0B6FC1282FCEABD07A = {isa = XCBuildConfiguration; name = Debug; buildSettings = {SWIFT_VERSION = 5.0; IPHONEOS_DEPLOYMENT_TARGET = 16.0; TARGETED_DEVICE_FAMILY = "1,2"; SDKROOT = iphoneos; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; PRODUCT_BUNDLE_IDENTIFIER = com.synthmaven.fm1editor; PRODUCT_NAME = "$(TARGET_NAME)"; INFOPLIST_FILE = SynthMavenEditor/Info.plist; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; MARKETING_VERSION = 0.1.0; ENABLE_USER_SCRIPT_SANDBOXING = YES; SWIFT_OPTIMIZATION_LEVEL = "-Onone";};};
+89E1FD6268CC0F221A2BE178 = {isa = XCBuildConfiguration; name = Debug; buildSettings = { CLANG_ENABLE_MODULES = YES; };};
+639A7CA24D39909E713B47F7 = {isa = XCBuildConfiguration; name = Release; buildSettings = {SWIFT_VERSION = 5.0; IPHONEOS_DEPLOYMENT_TARGET = 16.0; TARGETED_DEVICE_FAMILY = "1,2"; SDKROOT = iphoneos; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; PRODUCT_BUNDLE_IDENTIFIER = com.synthmaven.fm1editor; PRODUCT_NAME = "$(TARGET_NAME)"; INFOPLIST_FILE = SynthMavenEditor/Info.plist; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; MARKETING_VERSION = 0.1.0; ENABLE_USER_SCRIPT_SANDBOXING = YES; SWIFT_OPTIMIZATION_LEVEL = "-O";};};
+E6DE6C99132752C914FEF632 = {isa = XCBuildConfiguration; name = Release; buildSettings = { CLANG_ENABLE_MODULES = YES; };};
+985A88054A989B74ABCFFD47 = {isa = XCConfigurationList; buildConfigurations = (7082CC0B6FC1282FCEABD07A,639A7CA24D39909E713B47F7,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+12ECB39C0EE5375B90DDFB36 = {isa = XCConfigurationList; buildConfigurations = (89E1FD6268CC0F221A2BE178,E6DE6C99132752C914FEF632,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+61AD50A9B9189CC3CF187456 = {isa = PBXNativeTarget; buildConfigurationList = 985A88054A989B74ABCFFD47; buildPhases = (2EB56BE3C2D93CDAB0C52E67,AF39DD055C3EF8226FBE929D,87DF60DE337FB58864343E39,); buildRules = (); dependencies = (); name = SynthMavenEditor; productName = SynthMavenEditor; productReference = DD3B86D1EF21B9FB2E1EDC30; productType = "com.apple.product-type.application";};
+F6F4DA8D93E88A08220E03B7 = {isa = PBXProject; attributes = { LastUpgradeCheck = 1600; }; buildConfigurationList = 12ECB39C0EE5375B90DDFB36; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base,); mainGroup = 171A0606F7C74580FD3982CF; productRefGroup = FE0A091FDBFB3E9C31B7A1BD; projectDirPath = ""; projectRoot = ""; targets = (61AD50A9B9189CC3CF187456,);};
+}; rootObject = F6F4DA8D93E88A08220E03B7; }

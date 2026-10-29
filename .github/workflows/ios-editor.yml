@@ -1,0 +1,24 @@
+name: iOS editor
+on:
+  workflow_dispatch:
+  push:
+    branches: [ios-editor]
+    paths: ['ios/**', 'web/**', '.github/workflows/ios-editor.yml']
+  pull_request:
+    paths: ['ios/**', 'web/**', '.github/workflows/ios-editor.yml']
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: sh ios/test.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SynthMaven-iOS-simulator
+          path: build/ios/Build/Products/Debug-iphonesimulator/SynthMavenEditor.app

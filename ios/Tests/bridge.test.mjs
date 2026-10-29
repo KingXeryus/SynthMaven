@@ -1,0 +1,15 @@
+import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
+const sent=[],events=[];let disconnected=0;
+const w={};w.top=w;w.window=w;w.navigator={};w.webkit={messageHandlers:{midi:{postMessage:async b=>{sent.push(b);return {connected:false,session:0};}}}};
+w.document={addEventListener:(name,fn)=>events.push([name,fn])};w.performance={now:()=>100};w.dispatchEvent=()=>{};w.CustomEvent=class{};w.Uint8Array=Uint8Array;
+vm.runInNewContext(fs.readFileSync('ios/SynthMavenEditor/MIDIBridge.js','utf8'),w);
+const access=await w.navigator.requestMIDIAccess({sysex:true});assert.equal(access.inputs.size,0);
+access.onstatechange=e=>{if(e.port.state==='disconnected')disconnected++;};w.SynthMavenNative.state({connected:true,session:1});
+const input=[...access.inputs.values()][0],output=[...access.outputs.values()][0];let received;
+input.onmidimessage=e=>received=Array.from(e.data);w.SynthMavenNative.receive([240,125,70,76,1,247]);assert.deepEqual(received,[240,125,70,76,1,247]);
+output.send(new Uint8Array([240,125,70,76,1,247]));await Promise.resolve();assert.equal(sent.at(-1).action,'send');
+assert.throws(()=>output.send([144,60,90],1000),/Scheduled/);
+w.SynthMavenNative.state({connected:false,session:2});assert.equal(access.inputs.size,0);assert.equal(disconnected,2);assert.throws(()=>output.send([144,60,90]),/disconnected/);
+w.SynthMavenNative.state({connected:true,session:1});assert.equal(access.inputs.size,1);assert.notEqual([...access.inputs.values()][0],input);
+assert.throws(()=>output.send([144,60,90]),/disconnected/);
+console.log('PASS: native Web MIDI access, framing, disconnect and reconnect');
