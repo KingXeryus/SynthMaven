@@ -5,6 +5,7 @@
  * Build: see tools/audit_factory_levels.sh. USER WT intentionally has no user data. */
 #define UI_PAGES_HARNESS_ONLY
 #include "ui_pages_test.c"
+#include "../firmware/src/loudness.h" /* reference-phrase metadata only */
 
 static void factory_mix(int32_t *o,uint32_t n){fm6_poll();mix_block(o,n);}
 #undef mix_block
