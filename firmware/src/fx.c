@@ -165,7 +165,7 @@ static void lim_block(lim_t *s, int32_t *l, int32_t *r, uint32_t n)
     int32_t pk = 0, a, g0 = s->g, g1, dg, e = s->env;
     uint32_t hold_blocks=LIM_HOLD,rel_shift=LIM_REL;
 #if SYNTHMAVEN_SYNTH
-    /* Fixed conservative hold/release avoids rapid gain modulation. */
+    if(!program_mode || !program_layer || sm_solo_part()>=0)sm_limit_times(&hold_blocks,&rel_shift);
 #endif
     for (i = 0; i < CTL; i++) {                         /* the samples going out now and the ones after them (the
                                                          * rest of the delay, then this block): CTL ahead */
@@ -177,7 +177,7 @@ static void lim_block(lim_t *s, int32_t *l, int32_t *r, uint32_t n)
         a = r[i] < 0 ? -r[i] : r[i], pk = a > pk ? a : pk;
     }
 #if SYNTHMAVEN_SYNTH
-    /* Sample look-ahead only: avoid oversampling work in the realtime mixer. */
+    if(!program_mode || !program_layer || sm_solo_part()>=0)pk=sm_true_peak(s,l,r,n,pk);
 #endif
     if ((int64_t)pk * 17 >= (int64_t)e * 16)           /* a peak within ~0.5 dB of the envelope: the hold again */
         s->hold = hold_blocks;
