@@ -34,12 +34,14 @@
       access.inputs.set(input.id,input);access.outputs.set(output.id,output);
       access.onstatechange?.({port:input});access.onstatechange?.({port:output});
     },
+    connect(){window.SynthMavenConnect?.();},
     receive(bytes){input?.onmidimessage?.({data:Uint8Array.from(bytes),receivedTime:performance.now(),target:input});},
     error(text){disconnected(text);}
   };
   Object.defineProperty(navigator,'requestMIDIAccess',{value:async()=>{window.SynthMavenNative.state(await native({action:'status'}));return access;}});
   // Keep native export in the same file workflows as the existing editor.
   document.addEventListener('click',async event=>{
+    if(event.target.closest?.('#connect') && !input){event.preventDefault();event.stopImmediatePropagation();await native({action:'connect'});return;}
     const a=event.target.closest?.('a[download]');
     if(!a || !a.href.startsWith('blob:'))return;
     event.preventDefault();

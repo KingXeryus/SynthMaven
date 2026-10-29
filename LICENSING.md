@@ -72,7 +72,7 @@ by those owners.
 
 ## Radio
 
-Bluetooth is removed from the current SynthMaven release. Historical BLE vendor sources and notices remain in `firmware/vendor/fm1-base` (Charles Vestal, MPL-2.0); the current build does not enable the radio. Wi-Fi is not enabled.
+SynthMaven 3.0 includes the experimental fm1-base / Optimist BLE MIDI stack, pinned in `firmware/vendor/fm1-ble-own/UPSTREAM.md`. The dual GPL-3.0-only OR MPL-2.0 stack is used under GPL-3.0-only; HAL files retain their individual notices, including Apache-2.0 radio calibration and register tables. Complete licence texts and local modifications are included in that directory. No proprietary JieLi Bluetooth stack libraries are linked. The radio is OFF at every boot. Wi-Fi and Bluetooth audio are not enabled. Historical vendor sources and notices remain in `firmware/vendor/fm1-base`.
 
 Lossless factory wavetable decoding uses Jibsen tinf, zlib licence; source and notice are in `firmware/vendor/tinf`.
 

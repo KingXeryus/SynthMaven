@@ -19,6 +19,22 @@ int main(void){
  memset(&b,0,sizeof b);check(st_load(OBJ_PROJECT0,&b,sizeof b)==sizeof b && program_valid(&b) && !memcmp(&a,&b,sizeof a),"four-sound program round trips through flash");
  custom_scale[2]=0;memset(program_solo_gain,0,sizeof program_solo_gain);program_apply(&b);check(program_solo_gain[0]==17&&program_solo_gain[1]==23,"fixed solo compensation survives flash save/restore");check(custom_scale[2]==0x654321u && program_layer && song.sel==3,"program restores custom definitions, layer mode and focus");
  check(b.route[1].split&&b.route[1].upper&&b.route[1].point==61&&b.route[1].transpose==-12&&trk[1].p[P_LEVEL]==80&&trk[1].p[P_PAN]==-32&&song.solo==2,"program restores split zone, transpose, level, pan and solo");
+ /* Exact-cent scales survive settings and both packed and working programs. */
+ custom_set_cents(1,3,-37);custom_set_cents(1,8,62);
+ fine_scale_record_t fr;fine_scale_fill(&fr);memset(&fine_scale,0,sizeof fine_scale);
+ check(!fine_scale_take(&fr)&&custom_cents(1,3)==-37&&custom_cents(1,8)==62,"one-cent offsets survive settings reload");
+ fr.crc^=1;check(fine_scale_take(&fr)&&custom_cents(1,3)==-37,"bad fine-scale checksum leaves tuning unchanged");
+ program_capture(&b);program_packed_t fp;program_t fine_work;
+ check(program_pack(&fp,&b,"FINE")&&program_unpack(&fine_work,&fp)&&fine_work.fine.cents[1][3]==-37&&fine_work.fine.cents[1][8]==62,"exact cents survive packed program round trip");
+ fp.fine.cents[1][3]=101;check(!program_unpack(&fine_work,&fp),"unsafe cents rejected when unpacking");
+ program_v3_t v3;memcpy(&v3,&a,sizeof v3-4);v3.magic=0x33475250u;v3.size=sizeof v3;v3.sum=program_hash(&v3,sizeof v3-4);
+ check(program_import(&b,&v3,sizeof v3)&&!b.fine.valid&&!memcmp(b.custom,a.custom,sizeof a.custom),"PRG3 keeps legacy offsets without fine overrides");
+ program_bank_v2_t pb2;memset(&pb2,0,sizeof pb2);pb2.magic=0x324B4250u;
+ program_pack(&fp,&a,"LEGACY ONE");memcpy(&pb2.slot[0],&fp,sizeof pb2.slot[0]);
+ program_pack(&fp,&a,"LEGACY TWO");memcpy(&pb2.slot[1],&fp,sizeof pb2.slot[1]);
+ program_bank_t upgraded;memcpy(&upgraded,&pb2,sizeof pb2);
+ check(program_bank_import(&upgraded,&upgraded,sizeof pb2,&b)&&!strcmp(upgraded.slot[0].name,"LEGACY ONE")&&!strcmp(upgraded.slot[1].name,"LEGACY TWO")&&!upgraded.slot[1].fine.valid,"PBK2 in-place migration preserves both named programs");
+ memset(&fine_scale,0,sizeof fine_scale);
  program_v1_t old;memcpy(&old,&a,sizeof old-4);old.magic=0x31475250u;old.size=sizeof old;old.sum=program_hash(&old,sizeof old-4);
  check(program_import(&b,&old,sizeof old)&&b.route[1].enabled&&!b.route[1].split&&b.route[1].transpose==0&&b.sound[1].p[P_LEVEL]==80&&b.sound[1].p[P_PAN]==-32,"PRG1 import preserves sounds and mix, initializes full keyboard routing");
  old.sum^=1;check(!program_import(&b,&old,sizeof old),"corrupt legacy program is rejected");
@@ -40,6 +56,7 @@ int main(void){
  program_bank_v1_t oldbank;memset(&oldbank,0,sizeof oldbank);oldbank.magic=0x314B4250u;
  program_bank_t migration;memset(&migration,0,sizeof migration);migration.magic=PROGRAM_BANK_MAGIC;check(program_pack(&migration.slot[0],&a,"OLD PROGRAM"),"prepare named legacy fixture");memcpy(&oldbank.slot[0],&migration.slot[0],sizeof oldbank.slot[0]);
  check(program_bank_import(&migration,&oldbank,sizeof oldbank,&b)&&program_unpack(&b,&migration.slot[0])&&!b.scenes[0].valid&&b.sound[1].p[P_LEVEL]==80,"real PBK1 named pair migrates without touching sample regions");
+ memcpy(&migration,&oldbank,sizeof oldbank);check(program_bank_import(&migration,&migration,sizeof oldbank,&b)&&program_unpack(&b,&migration.slot[0])&&b.sound[1].p[P_LEVEL]==80,"PBK1 in-place migration does not erase its source");
  program_bank_t bank,loaded;memset(&bank,0,sizeof bank);bank.magic=PROGRAM_BANK_MAGIC;
  for(uint32_t e=0;e<NENGINES;e++)for(uint32_t k=0;k<8;k++){const param_desc_t *d=&ENGINES[e]->edit[k];check(d->min>=-128&&d->max<=127,"engine parameter range fits lossless packed program storage");}
  for(uint32_t k=0;k<P_E0;k++)check(TP[k].min>=-128&&TP[k].max<=127,"shared parameter range fits lossless packed program storage");

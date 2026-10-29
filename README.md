@@ -1,24 +1,28 @@
 # SynthMaven for M-VAVE FM-1
 
-SynthMaven 2.2 builds on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1) with four-part programs, a layer/split mixer, learned USB pedal controls and an instrument-style visual editor. Its 23 synthesis engines provide 557 factory entries: 556 level-matched sounds and an intentionally empty USER WT slot, including 64 Vital-derived translations, 44 Oriental/Middle Eastern sounds and nine XD compatibility sounds.
+SynthMaven 3.0 builds on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1) with four-part programs, a layer/split mixer, learned USB pedal controls and an instrument-style visual editor. Its 23 synthesis engines provide 557 factory entries: 556 level-matched sounds and an intentionally empty USER WT slot, including 64 Vital-derived translations, 44 Oriental/Middle Eastern sounds and nine XD compatibility sounds.
 
-[Installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [Illustrated PDF guide](docs/SynthMaven-2.2.4-User-Guide.pdf) · [User manual](docs/USER_MANUAL.md) · [Quick start](QUICKSTART.md) · [Release notes](docs/release-2.2.4.md)
+[Installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [Illustrated PDF guide](docs/SynthMaven-3.0-User-Guide.pdf) · [User manual](docs/USER_MANUAL.md) · [Quick start](QUICKSTART.md) · [Release notes](docs/release-3.0.md)
 
 ## What SynthMaven adds
 
+- **Modern device screens.** Rounded cards, rotary knob graphics and a piano tuning display: normal white/black keys, red adjusted notes, grey excluded notes and a blue played-key marker. Existing navigation stays intact.
+- **iPhone/iPad editor.** The existing interface bundled offline, USB Core MIDI editing. [Build and connection instructions](ios/README.md); available to invited TestFlight testers; building from source requires Apple signing. Firmware 3.0 has no Bluetooth radio support; connect by USB.
+- **Global tuning and direct modulation controls.** Tuning persists across programs unless explicitly saved as a program override. LFO FILTER groups cutoff, depth, rate and waveform; EDIT latches the mixer after two seconds.
+
 - **Eight instrument-led four-part factory programs.** Piano, Epiano, Lead Synth, Oriental Lead, Disco Synth, Brass, Strings and Bass. Saved user slots and resumed work take precedence; the editor can recall read-only factory programs separately.
-- **−14 LUFS reference calibration.** Solo factory sounds, isolated program parts and layered program scenes are measured through the production DSP, with a −1 dBTP ceiling and no post-render normalization. Loudness depends on the played notes, articulation and velocity; see the release audit.
-- **Complete illustrated guide.** The PDF documents all 65 device menus, engine/effect variants, holds, controls, settings and step-by-step workflows.
+- **Preserved solo loudness and audited layered mixes.** Production-DSP checks cover solo parts, layered scenes, peaks and clipping. The reverted −14 LUFS normalization stays removed; stored levels and calibrated solo sound are preserved. Loudness depends on notes, articulation and velocity.
+- **Complete illustrated guide.** The PDF documents all 67 device menus, engine/effect variants, holds, controls, settings and step-by-step workflows.
 
 
 - **Four-sound layering, keyboard splits and mixing.** Layer enabled parts together or play only the selected part. Each part has its own split zone and point, octave shift, volume, pan, mute and solo. Eight named program slots store four sounds together with their routing, mix and tuning; names can contain up to 12 characters.
 - **USB pedal MIDI Learn and switching.** Choose Patch Up/Down, Bank Up/Down, Program Next/Previous, Scene Next/Previous or Setlist Next/Previous; choose Learn, press the pedal, review the captured CC/PC and accept it. Diagnostics distinguish USB device detection from a MIDI interface and show COMPUTER/PEDAL role, the last message, assignment matches and trigger feedback. Configurable duplicate suppression defaults OFF; a CC release immediately re-arms intentional taps. Identical PC taps inside an enabled suppression window are also suppressed, so keep the window shorter than your fastest tap.
 - **Compact scenes and setlists.** Four scenes per program capture levels, mutes, effect sends, four macros per part and selected tuning settings, including master-tuning and compensation switches. Save the program to retain its scenes. A global setlist orders up to 32 references to the eight saved programs, including repeated entries, for pedal navigation. Scenes change the current program; setlists load saved programs.
-- **Visual editor with the standalone instrument’s look and feel.** Shared controls and graphics include oscillator, envelope, filter and EQ visual previews, a four-part layer mixer, split routing, sound libraries and backups. The editor and installer share the SynthMaven logo palette, matching fonts and Dark, Light or System appearance.
+- **Visual editor with the standalone instrument’s look and feel.** Shared controls and graphics include oscillator, envelope, filter and EQ visual previews, a four-part layer mixer, split routing, sound libraries and backups. The web and iOS editors use a consistent dark appearance with the SynthMaven logo palette and matching fonts. The installer retains its appearance selector.
 - **Engine-aware filter access and output control.** Model, cutoff, resonance and envelope amount are grouped together; unavailable controls are disabled or omitted. HYBRID retains its own two-filter architecture. Optional estimated output compensation attenuates resonance/drive level changes, up to 12 dB, and defaults OFF; it is not measured loudness normalization. Output trim uses half-decibel steps. See the [filter capability map](docs/FILTER_CAPABILITIES.md).
 - **Ready-to-use modulation templates.** Start with velocity-to-brightness, pressure-to-vibrato, wheel-to-vibrato or envelope swell. HYBRID pressure/wheel templates use a free matrix slot and set LFO1 to sine, rate 64; a full matrix is left unchanged.
 - **Maqam, custom scales and tuning control.** Select among 46 Arabic maqam reference tunings with any root, four saved custom chromatic scales and Scala imports. Custom scales keep the chromatic keyboard mapping and adjust only the selected pitch classes. Each key press cycles 0 → −25 → −50 → −75 → 0 cents. QNT ALL applies the chosen scale/root to all four parts and incoming MIDI. Apply master tuning is enabled by default and can be bypassed independently per part.
-- **Calibrated factory levels.** The 556 audible presets pass the reference audit within ±0.5 LU; USER WT stays silent until a user wavetable is uploaded. The −14 LUFS reference method and its limits are documented in the [release notes](docs/release-2.2.4.md).
+- **Calibrated factory levels.** The 556 audible presets pass the reference audit within ±0.5 LU; USER WT stays silent until a user wavetable is uploaded. The −14 LUFS reference method and its limits are documented in the [release notes](docs/release-3.0.md).
 
 These performance, tuning, editor and workflow additions build on the inherited synthesis foundation. JUNO, VECTOR, FMX, WSEQ, MACRO, the filter models, TURNG and SPICE / DICE remain credited to Clipper; their design inspirations do not establish SynthMaven authorship.
 
@@ -30,26 +34,28 @@ These performance, tuning, editor and workflow additions build on the inherited 
 | HOME → PRESET | Cycle presets within the selected engine. |
 | HOME → SELECT | Select one of the four program parts. |
 | Hold GLO for 2 seconds | Toggle layering once; show **Layered ON** or **Layered OFF**. Release to return. GLO does not latch. Layering also remains available in GLO. |
-| Hold EDIT for 2 seconds / 3 seconds | Preview / latch the four-part mixer. KNOBS 1–4 control part volumes; SELECT chooses the part, ALGORITHM sets its split point from A1 to A6, and PRESET adjusts its pan. Tap EDIT or HOME to exit. Choose Lower/Upper or full-keyboard routing in GLO or the editor. |
+| Hold EDIT for 2 seconds | Open and latch the four-part mixer. KNOBS 1–4 control part volumes; SELECT chooses the part, ALGORITHM sets its split point from A1 to A6, and PRESET adjusts its pan. Tap EDIT or HOME to exit. Choose Lower/Upper or full-keyboard routing in GLO or the editor. |
 | Tap SEL | Open the scale browser; SELECT cycles scales, PRESET or KNOB 1 changes ROOT. |
 | Hold SEL for 3 seconds | Latch custom-scale editing: SELECT chooses CUSTOM 1–4, PRESET chooses ROOT, keys cycle detuning, SAVE stores the scale. Press SEL to leave. |
 | SAVE → SELECT | Browse eight saved program slots. ALGORITHM selects a name character; PRESET or KNOB 2 edits it. |
 | GLO → PEDAL LEARN / SCENES / SETLIST | Learn and accept a pedal assignment, capture/recall scenes or edit the program order. |
 | Hold OCT− at power-on | Enter USB recovery. |
 
-Short taps do not flash long-press screens. The mixer preview appears after two seconds and latches at three; other function buttons retain their three-second hold behavior. Save a program to keep its mix and scenes.
+Short taps do not flash long-press screens. The mixer opens and latches after two seconds; other function buttons retain their three-second hold behavior. Save a program to keep its mix and scenes.
 
 ## Voice budget and USB connections
 
+With three or four enabled, unmuted parts at nonzero level, each part is limited to two synthesis voices while layered. The overall eight-voice limit still applies. Layer OFF, solo, and one/two-part setups retain the normal engine voice limits. Dense chords therefore steal older notes sooner instead of allowing every layer to grow independently; stored sounds and volume settings are unchanged.
+
 The four parts share **eight synth voices total**, not eight voices per part. A note played by four layered parts normally consumes four voices, so two such notes fill the budget before unison or release tails. Extra notes can steal existing voices.
 
-Bluetooth is removed. GLO → USB ROLE → **PEDAL** enables direct class-compliant USB MIDI host operation using a powered adapter or hub. Learn a directly connected pedal on the FM1 itself. Return to **COMPUTER** for the web editor, USB audio, backups and firmware updates; the USB port has one role at a time. Direct Chocolate Plus operation and audio timing still require physical hardware validation.
+Direct Bluetooth is not included in firmware 3.0. GLO → USB ROLE → **PEDAL** enables direct class-compliant USB MIDI host operation using a powered adapter or hub. Learn a directly connected pedal on the FM1 itself. Return to **COMPUTER** for the web editor, USB audio, backups and firmware updates; the USB port has one role at a time. Direct Chocolate Plus operation and audio timing still require physical hardware validation.
 
 Back up before installing. See [USB MIDI status](docs/USB_MIDI_STATUS.md), the [maqam catalogue](docs/MAQAM_SCALES.md) and the [preset catalogue](docs/release-1.0.md) for details and limits.
 
 ## Building and verification
 
-See [BUILDING.md](BUILDING.md). Linux x86-64 runs the JieLi toolchain directly; macOS requires Docker. Run `sh tools/test_synthmaven.sh`, then `sh build.sh --release 2.2`. The build enables USB host support and excludes Bluetooth. Source and licence notices are published alongside the installer.
+See [BUILDING.md](BUILDING.md). Linux x86-64 runs the JieLi toolchain directly; macOS requires Docker. Run `sh tools/test_synthmaven.sh`, then `sh build.sh --release 3.0`. The build enables USB host support and includes the open fm1-base BLE editor stack, with its radio OFF at startup. Source and licence notices are published alongside the installer.
 
 ## Credits and licence
 

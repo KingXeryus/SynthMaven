@@ -68,9 +68,15 @@ static void ed_str(const char *s, uint32_t max)   /* ASCII, 0-terminated */
         ed_b((uint8_t)s[i] & 0x7Fu);
     ed_b(0);
 }
+#if SM_BLE
+static uint8_t ed_ble_route;
+#endif
 static void ed_send(void)
 {
     ed_out[ed_n++] = 0xF7;
+#if SM_BLE
+    if(ed_ble_route){sm_ble_editor_send(ed_out,ed_n);return;}
+#endif
     ota_wire_send(ed_out, ed_n);
 }
 static int32_t ed_rv(const uint8_t *p) { return (int32_t)(p[0] | p[1] << 7) - 8192; }
@@ -716,8 +722,9 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         if (cmd == 101u) {
             if (na != 4u || a[0] > 1u) rc = 1;
             else {
+                uint32_t persist = midi_pc_off != !a[0] || sm_key_port != a[2];
                 rc = sm_set(a[1], a[2], a[3]);
-                if (!rc) { midi_pc_off = !a[0]; settings_later = 1; ui.force = 1; }
+                if (!rc) { midi_pc_off = !a[0]; if (persist) settings_later = 1; ui.force = 1; }
             }
         }
         if(cmd==102u || cmd==104u || cmd==105u) {
@@ -766,13 +773,19 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         if(!rc && na)program_layer_set(a[0]);
         ed_begin(cmd);ed_b(rc);ed_b(song.sel);ed_b(program_layer);ed_send();return;
     }
+    if(cmd==121u) {
+        uint32_t slot=na?a[0]:4u,rc=slot>=4u || (na!=1u && na!=25u),k;
+        if(!rc && na==25u){for(k=0;k<12;k++){int32_t v=ed_rv(a+1+2*k);if(v< -100 || v>100)rc=1;}
+            if(!rc){for(k=0;k<12;k++)custom_set_cents(slot,k,ed_rv(a+1+2*k));custom_scale_dirty=1;settings_later=1;tune_build();ui.force=1;}}
+        ed_begin(cmd);ed_b(rc);ed_b(slot);if(!rc)for(k=0;k<12;k++)ed_v(custom_cents(slot,k));ed_send();return;
+    }
     if(cmd==107u) {
         uint32_t slot=na?a[0]:4u,rc=0,k;
         if(slot>=4u || (na!=1u && na!=13u))rc=1;
         if(!rc && na==13u) {
             uint32_t mask=0;
             for(k=0;k<12u;k++){if(a[k+1]>3u)rc=1;mask|=(a[k+1]&3u)<<(k*2u);}
-            if(!rc){custom_scale[slot]=mask;custom_scale_dirty=1;settings_later=1;tune_build();ui.force=1;}
+            if(!rc){custom_scale[slot]=mask;fine_scale.valid&=~(1u<<slot);custom_scale_dirty=1;settings_later=1;tune_build();ui.force=1;}
         }
         ed_begin(cmd);ed_b(rc);ed_b(slot);
         if(!rc)for(k=0;k<12u;k++)ed_b((custom_scale[slot]>>(k*2u))&3u);
@@ -1055,6 +1068,9 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         if (na < 1u)
             return;
         ed_w.on = a[0] & 1u;
+#if SM_BLE
+        if(ed_ble_route)ed_w.on=0; /* Bounded request/reply only on the radio. */
+#endif
         ed_w.v4 = (uint8_t)(ed_w.on && (a[0] & 2u));     /* v4: also TRACK_CHANGED; the reply says it is known */
         ed_w.resets = usb.resets;
         if (ed_w.on)
@@ -1287,6 +1303,13 @@ static void ed_service(void)
 {
     const uint8_t *p;
     uint32_t n;
+#if SM_BLE
+    if(sm_ble_editor_busy())return; /* ed_out remains immutable until IRQ packetizer drains it. */
+    if(sm_ble_editor_frame(&p,&n)){
+        ed_ble_route=1;ed_w.on=0;ed_handle(p,n);sm_ble_editor_done();return;
+    }
+    ed_ble_route=0;
+#endif
     ed_sync();                                             /* v2 pushes (while watched) */
     if (!ota_frame_get(&p, &n) || n < 4u || p[0] != ED_HDR0 || p[1] != ED_HDR1 || p[2] != ED_HDR2)
         return;

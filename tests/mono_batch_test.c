@@ -12,5 +12,7 @@ int main(void){bank_resolve();panel=PANEL_DEFAULT;layers_init();setup();uint32_t
  setup();sm_mono_batch_begin();trk_note_on1(&trk[1],60,90);trk_note_off1(&trk[1],60);sm_mono_batch_end();check(!trk[1].v[0].active&&!sm_mono_pending,"note-off before flush cancels the unsounded note");
  setup();program_layer=0;song.sel=1;sm_mono_batch_begin();trk_note_on1(&trk[1],60,90);check(trk[1].v[0].active&&!sm_mono_pending,"Layer OFF keeps immediate note behavior");sm_mono_batch_end();
  setup();song.solo=2;sm_mono_batch_begin();trk_note_on1(&trk[1],60,90);check(trk[1].v[0].active&&!sm_mono_pending,"solo keeps immediate note behavior");sm_mono_batch_end();
+ setup();trk[0].p[P_VOICE]=V_MONO;before=vage;sm_mono_batch_begin();for(uint32_t n=60;n<68;n++)for(uint32_t p=0;p<4;p++)trk_note_on1(&trk[p],n,100);sm_mono_batch_end();check(vage-before==4 && trk[0].v[0].note==67 && trk[0].nmono==8,"mono main sound coalesces chord bursts with its backing parts");
+ setup();check(trk_nvoice(&trk[0])==2,"three/four enabled layers bound each part to two voices");program_layer=0;check(trk_nvoice(&trk[0])>2,"layer OFF preserves solo polyphony");program_layer=1;song.solo=1;check(trk_nvoice(&trk[0])>2,"solo bypasses layered voice cap");
  printf("Layered mono burst batching %s\n",fails?"FAIL":"PASS");return fails?1:0;
 }

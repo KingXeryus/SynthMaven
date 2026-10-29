@@ -39,7 +39,7 @@ DAW formats are not features of this hardware firmware.
 
 ## Before installation
 
-Back up the FM1 before installing custom firmware. Bluetooth is removed. Direct USB host mode has software test coverage but still needs Chocolate Plus hardware validation.
+Back up the FM1 before installing custom firmware. Direct Bluetooth is not included in firmware 3.0. Use USB for editing. Direct USB host mode has software test coverage but still needs Chocolate Plus hardware validation.
 
 ### Connection options
 
@@ -229,7 +229,7 @@ help prevent hanging notes. See the [MIDI reference](midi.md) for the complete l
 
 ## USB pedals and patch switching
 
-Bluetooth is removed. For a pedal directly connected to the FM1, choose GLO → USB ROLE → PEDAL and use a powered USB adapter or hub. A class-compliant USB MIDI pedal is required. USB MIDI CONNECTED indicates enumeration; USB DEVICE NOT MIDI means no supported MIDI interface was found. A disconnect releases notes. To return to the editor, choose COMPUTER and reconnect the USB cable. Recovery always uses device mode.
+Direct Bluetooth is not included in firmware 3.0. Use USB for editing. For a pedal directly connected to the FM1, choose GLO → USB ROLE → PEDAL and use a powered USB adapter or hub. A class-compliant USB MIDI pedal is required. USB MIDI CONNECTED indicates enumeration; USB DEVICE NOT MIDI means no supported MIDI interface was found. A disconnect releases notes. To return to the editor, choose COMPUTER and reconnect the USB cable. Recovery always uses device mode.
 
 GLO → PATCH MIDI → PROG enables/disables patch switching. The source is fixed to USB. GLO → KEY MIDI independently chooses USB, TRS or BOTH for keyboard notes.
 
@@ -294,7 +294,7 @@ files outside browser storage, which can be cleared by the browser.
 
 SAVE → PROGRAM provides eight persistent named program slots. SELECT chooses SLOT 1–8. ALGORITHM chooses a name character; PRESET or KNOB 2 edits it. Turn SAVE twice to store the current four sounds and name, or LOAD twice to restore a saved program. Release held keys and stop the transport first. An unused slot recalls its matching read-only factory program. Existing saved user programs take precedence. The editor can recall any ROM factory program without overwriting a saved slot.
 
-Programs contain each sound’s engine, preset identity, edited parameters, modulation sequence and HYBRID/FMX/FM6 patch, plus selected sound, tuning configuration and layer mode. The working program autosaves after an idle period when stopped and quiet. Custom-scale definitions persist in settings and are also included in programs and working-program backups. Loading a program restores its custom scales.
+Programs contain each sound’s engine, preset identity, edited parameters, modulation sequence and HYBRID/FMX/FM6 patch, plus selected sound, tuning configuration and layer mode. The working program autosaves after an idle period when stopped and quiet. Custom-scale definitions persist in settings and are also included in programs and working-program backups. Loading a program restores its custom scales only when that program includes saved tuning; otherwise global tuning remains unchanged.
 
 USER sound presets store individual sounds. Export user banks and backups before updates. Older four-track project records remain readable; PRG1 programs from 1.4 upgrade automatically; new PRG2 records require firmware 1.6 or later. Do not overwrite valuable slots while testing custom firmware.
 
@@ -335,17 +335,21 @@ setting, variant, reference degrees and tuning limitations.
 
 ## Custom chromatic scales
 
-Tap SEL to open the scale browser, then turn SELECT to cycle scales. Hold SEL for three seconds to enter the latched editor. SELECT chooses CUSTOM 1–4; PRESET selects ROOT C–B. Each chromatic key press cycles its offset through −25, −50, −75 and 0 cents. Other pitch classes stay unchanged. The offsets repeat across octaves relative to ROOT. Press SAVE and wait for SCALE SAVED; press SEL to leave. These custom scales appear in the tuning list alongside the 46 maqam reference tunings and Scala USER scale.
+Tap SEL to open the scale browser, then turn SELECT to cycle scales. Hold SEL for three seconds to enter the latched editor. SELECT chooses CUSTOM 1–4; PRESET selects ROOT C–B. Each chromatic key press selects that note and cycles its offset through −25, −50, −75 and 0 cents. Turn KNOB 3 to refine the selected note in 10-cent steps, within −100 to +100 cents. Other pitch classes stay unchanged. The offsets repeat across octaves relative to ROOT. Press SAVE and wait for SCALE SAVED; press SEL to leave. These custom scales appear in the tuning list alongside the 46 maqam reference tunings and Scala USER scale.
 
 ## Appearance and factory levels (1.6)
 
-Use **Appearance** in the editor or installer to choose Dark, Light or System. The browser remembers this choice. The editor uses the standalone instrument’s system sans-serif font, rounded panels, rotary controls and gridded parameter previews, with the logo’s red accent. Under Sound, choose Sound, Modulation, Effects, Layers, Tuning or All parameters. Drag a knob vertically, use Shift for fine pointer adjustment, use arrow keys when focused, or double-click to reset. Envelope graph handles edit attack, decay, sustain and release. Parameter diagrams are previews rather than live audio measurements.
+The web and iOS editors always use dark mode, regardless of a previous appearance preference or the operating system setting. The installer retains its **Appearance** selector for Dark, Light or System. The editor uses the standalone instrument’s system sans-serif font, rounded panels, rotary controls and gridded parameter previews, with the logo’s red accent. Under Sound, choose Sound, Modulation, Effects, Layers, Tuning or All parameters. Drag a knob vertically, use Shift for fine pointer adjustment, use arrow keys when focused, or double-click to reset. Envelope graph handles edit attack, decay, sustain and release. Parameter diagrams are previews rather than live audio measurements.
 
 The 557-entry catalogue has **556 audible, level-matched factory sounds plus USER WT**. USER WT deliberately stays silent until a wavetable is uploaded. Factory matching uses the complete stereo firmware mix and a −14 LUFS reference target on role-appropriate phrases. Playing different notes, changing velocity/effects or layering sounds changes loudness. Saved sounds keep their stored trim; reload the factory preset to use the new calibration.
 
-The Tuning page includes a chromatic keyboard with the selected root and each key’s cents offset. Altered keys use the logo accent. In CUSTOM1–4, click a key or its note button to cycle 0 / −25 / −50 / −75 cents and save the change on the FM1.
+The Tuning page includes a chromatic keyboard with the selected root and each key’s cents offset. Altered keys use the logo accent. Click or tap once to select a key without changing its pitch. The horizontal tuning wheel adjusts that key in 1-cent increments: left lowers it and right raises it, within −100 to +100 cents. You can also enter an exact cents value. Double-click or double-tap an untuned key to set −50 cents; double-click or double-tap a tuned key to reset it to 0. When starting from a factory scale, choose which CUSTOM 1–4 destination to replace before making an adjustment. The chromatic offsets are copied into that custom scale and the selected note is changed. Fine tuning requires protocol 26 or newer. In both editors, Quick microtuning places the borderless wheel to the left, aligned with the bottom of the keyboard. The full Tuning page places it centered below the keyboard. Close Quick microtuning to expand the performance controls into the available space. The selected key displays the current cents value while you adjust it. Changes persist on the FM-1 and can be included in a program using Save tuning.
 
 ## Four-sound layers, splits and mixer (1.6)
+
+The editor’s **Scale & Maqam** page follows SynthMaven Hybrid: search the scale list, choose a root and starting octave, select a piano key, then use the fine-tuning wheel or the twelve root-relative offset sliders. **Half-flat** sets the selected note to −50 cents; **Reset note** returns it to zero. **Master / all layers** enables or bypasses global tuning for all four parts; **Bypass tuning** affects the selected part. **Apply to master** enables the current global scale for every part. The FM-1 has one global scale, with per-part bypass; it does not provide Hybrid’s independent layer scales or an upper octave limit.
+
+**Show tuning keyboard** hides the keyboard and wheel and releases their space. Perform keeps its tuning controls and keyboard side by side on tablets; narrower screens stack them. **24 custom scales / editor library** stores named scale snapshots in this browser or app’s local storage. Save scale does not overwrite a device slot. Load scale recalls the snapshot; a custom snapshot replaces the chosen **CUSTOM 1–4** device slot. These editor entries are separate from the four device custom scales and are not included in firmware backups. Clearing browser/app data removes the editor library. Scala import accepts `.scl`; Hybrid’s `.kbm` mapping controls are not available on the FM-1.
 
 Open **Sound → Layers** in the editor. The four mixer strips adapt the standalone instrument’s controls to the FM1’s four loaded sounds. L1–L4 selects the sound to edit; Edit sound opens its Sound controls. **On** enables a slot; **M** mutes it; **S** solos it. Multiple solos can play together. The Pan knob places a sound left, centre or right, and the vertical Level fader balances its volume without changing its calibrated factory trim. Double-click Pan for centre or Level for its factory mixer level.
 
@@ -454,19 +458,19 @@ USB PEDAL/HOST mode automatically identifies supported Alesis, Novation, Arturia
 
 ## Factory performance programs and loudness ({{version}})
 
-Version 2.2.4 copies the eight-program configuration captured from the connected FM-1. P1 STAGE PIANO uses the captured HYBRID main sound; P2–P8 are unchanged from 2.2.3. Embedded patches, parameters, mix levels, pan, routes, tuning and stored scenes are preserved byte for byte. The original 2.2.3 firmware remains available. No synthesis, navigation, loader or loudness-processing changes are included. Offline checks validate the imported records and audio; no additional device timing tests or firmware installs were performed for this release.
+With three or four enabled, unmuted parts at nonzero level, each part is limited to two synthesis voices while layered. The overall eight-voice limit still applies. Layer OFF, solo, and one/two-part setups retain the normal engine voice limits. Dense chords therefore steal older notes sooner instead of allowing every layer to grow independently; stored sounds and volume settings are unchanged.
 
-See the [illustrated PDF guide](SynthMaven-{{version}}-User-Guide.pdf) for every device menu and control, and [factory program design](FACTORY_PROGRAM_DESIGN.md) for source research and layer roles. Protocol {{protocol}} adds read-only factory-program recall (command 118). Eight four-part ROM programs fill unused named slots; saved user data and working autosave take precedence.
+Version {{version}} preserves the eight-program configuration captured from the connected FM-1. P1 STAGE PIANO keeps its HYBRID main sound; embedded patches, mix levels, pan, routes, tuning and stored scenes are retained. Solo calibration remains unchanged. Layered mono chord bursts are coalesced for the main sound as well as backing parts, avoiding repeated voice initialization within the same audio block. This changes no stored sound settings.
+See the [illustrated PDF guide](SynthMaven-{{version}}-User-Guide.pdf) for every device menu and control, and [factory program design](FACTORY_PROGRAM_DESIGN.md) for source research and layer roles. Protocol {{protocol}} includes read-only factory-program recall (command 118) and the BLE editor capability. Eight four-part ROM programs fill unused named slots; saved user data and working autosave take precedence.
 
 Solo sounds retain their calibrated levels and stored solo compensation. Factory programs use three lightweight mono backing parts with one oscillator and no drive, while the main part keeps the instrument focus. P5/P6/P7 simplify duplicated oscillator registrations; the original standalone presets remain available. The previous 12 dB layered attenuation is removed. Layered mixes retain sample look-ahead limiting. Autosave waits for quiet audio before copying program state, and simultaneous mono backing-note restarts are combined within one audio block. The eight-voice budget is shared across all parts.
 
-Hardware tests before the final note-batching change showed 64–75% average CPU peaks across the eight factory programs. Regular one- through five-note patterns had no missed deadlines; dense eight-note bursts still produced one missed deadline in P5 and P7. The final batching correction passes host tests but has not been retested on hardware, at the user's request. Custom heavy layers can still overload the processor; host renders do not establish hardware timing compliance.
-
+Hardware timing results and the tested Bluetooth conditions are recorded in the release notes. Custom heavy layers can still exceed the processor budget; eight voices are shared across all four parts, and host audio renders alone do not establish real-time performance.
 Installation resets settings, programs, user presets, samples and autosave, including same-version reinstalls. Back up first. The corrected loader successfully restarted the connected FM-1 automatically during candidate installs.
 
 Saved PRG3/PBK2 records retain their size and addresses. Sound flag bits 2–7 encode zero for legacy unity or 1–63 for calibrated unity through +62 dB, in whole-dB steps. Trim supports −32 to +63.5 dB in half-dB steps. Backups require protocol {{protocol}} before restore.
 
-## Firmware interface refinements (development)
+## Firmware interface refinements
 
 The same menu navigation now uses colored parameter cards and consistent red, blue, white and ice-blue part accents. Text remains high contrast. These are cached display updates, not additional audio processing.
 
@@ -484,6 +488,32 @@ Tap LFO and select **LFO FILTER**. KNOB 1 changes the engine's base cutoff; KNOB
 
 Hold EDIT for **two seconds**, then release: the four-part mixer stays open. A short press does not flash the mixer. KNOBS 1–4 control part volumes, SELECT chooses the part, PRESET controls its pan, and ALGORITHM controls its split point. Tap EDIT or HOME to exit.
 
-### TRS polarity
+### Piano tuning display
 
-KEY IN selects USB, TRS or BOTH. Type A/B polarity swaps the physical tip and ring conductors; the current FM-1 driver exposes only a fixed PH8 UART receive input, with no documented switch for the jack wiring. A firmware polarity toggle is not implemented. Use a compatible TRS MIDI adapter or a tip/ring crossover adapter for opposite Type A/B wiring. UART bit inversion is not a substitute for rewiring the MIDI current loop.
+The tuning screen shows an actual C–B keyboard. Included unadjusted white keys are white and black keys are black; included microtonally adjusted keys are red; keys outside the selected scale are grey. A blue marker identifies the played key without replacing its tuning color. Cents are displayed at the selected FROM octave. FROM selects C0–C8; notes below this boundary remain equal-tempered. The view uses the existing tuning and quantization rules.
+
+## iOS editor: USB connection
+
+Firmware 3.0 does not include Bluetooth. The iPhone/iPad app bundles the existing editor offline and connects using USB Core MIDI. Invited TestFlight testers can install the app; source builds require Apple signing. See the [iOS guide](../ios/README.md).
+
+Set GLO → USB ROLE to COMPUTER. Connect a data cable and powered adapter if required, then tap Connect → USB cable. The wizard selects matching FM-1 ports automatically. Imports use Files; exports use the share sheet. Export your library before removing the app. The app may offer Bluetooth pairing for other MIDI devices, but this firmware does not advertise or accept direct Bluetooth connections.
+
+### iPad Perform and Edit
+
+SynthMaven FM1 opens in Perform. Program Up/Down recalls saved programs and skips empty slots;
+Scene Up/Down recalls captured scenes. The current program name and Scene 1–4 label stay visible.
+Scenes currently use numbered labels, not custom names. No scene selected means no scene has
+been recalled since loading the program. Program recall stops notes/transport before loading.
+
+Macros shows twelve selected-part controls: Macro 1–4, Tone, Distortion, Delay, Reverb,
+LFO rate/filter depth, and envelope attack/release. Tone is unavailable on filterless engines.
+Layers is a four-strip mixer; open a strip's routing disclosure for splits and transposition.
+Tuning shows the FM-1 master scale, root, octave threshold, A4 and a colored keyboard.
+
+Edit contains Vital, DX7 and Minilogue XD loaders and Assign Macros 1–4. Select a destination
+and signed amount, then Add route or Apply. Existing routes are retained; a full matrix is
+reported instead of overwritten. Non-HYBRID macros keep their native brightness/timbre/motion/
+space behavior in addition to assigned routes. Save sound to library preserves the selected
+sound, including HYBRID patch routing. Save program opens the named slots for all four parts.
+Assignments are not permanent until saved. Sound Tools and the duplicate inline Vital importer
+are omitted from iOS. Preset imports retain compatibility previews and explicit send actions.

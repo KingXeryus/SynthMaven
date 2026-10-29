@@ -73,3 +73,101 @@ html[data-sm-app=editor] input.sm-layer-fader{writing-mode:vertical-lr;direction
 .sm-layer-routing{position:relative;margin:10px 0}.sm-layer-routing summary{padding:7px 6px;border:1px solid var(--sm-line);border-radius:4px;background:var(--sm-panel);color:var(--sm-accent);cursor:pointer;font-size:11px;text-align:center}.sm-layer-routing>div{position:absolute;z-index:10;right:0;top:36px;min-width:230px;max-width:80vw;padding:12px;background:var(--sm-raised);border:1px solid var(--sm-line);border-radius:6px;box-shadow:0 8px 25px #0006}.sm-layer-routing[open] summary{background:var(--sm-active)}
 /* Mixer strips use the compact proportions of the standalone instrument. */
 html[data-sm-app=editor] .sm-layer-strip .knob{min-height:108px;padding:4px!important;gap:4px;margin:4px auto}html[data-sm-app=editor] .sm-layer-strip .knob .kl{min-height:0}.sm-layer-strip .sm-dial-wrap{width:60px;height:60px}.sm-layer-strip .sm-layer-name{min-height:28px;margin:8px 0}.sm-layer-strip>.sm-layer-field{flex-direction:row;align-items:center;gap:8px;margin:6px 0}.sm-layer-routing{margin:6px 0}.sm-layer-zone{margin:6px 0}.sm-layer-level{height:180px}html[data-sm-app=editor] input.sm-layer-fader{height:150px}.sm-layer-ms{margin:8px 0}
+/* Exact-cent microtuning: keyboard selection never changes the pitch. */
+.sm-tuning-graphic [role=button]{touch-action:manipulation;outline:none}
+.sm-tuning-graphic .sm-key-selected rect,.sm-tuning-graphic [role=button]:focus-visible rect{stroke:var(--sm-focus,#9ed3f0);stroke-width:5}
+.sm-cent-controls{display:grid;grid-template-columns:auto minmax(160px,1fr);align-items:center;gap:8px 16px;color:var(--sm-ink)}
+.sm-cent-label{display:flex;align-items:center;gap:8px}.sm-cent-label input{width:90px!important}
+.sm-cent-controls small{grid-column:1/-1}.sm-cent-controls select{grid-column:1/-1;max-width:100%}
+input.sm-cent-wheel{appearance:none;-webkit-appearance:none;width:100%;height:44px;cursor:ew-resize;touch-action:pan-y;border:0!important;border-radius:0;box-shadow:none!important;background:linear-gradient(0deg,rgba(0,0,0,.5),transparent 45%,rgba(255,255,255,.15)),repeating-linear-gradient(90deg,var(--sm-raised) 0 5px,var(--sm-muted) 5px 6px)}
+input.sm-cent-wheel::-webkit-slider-thumb{-webkit-appearance:none;width:8px;height:40px;background:var(--sm-accent);border:1px solid var(--sm-ink);border-radius:3px}
+input.sm-cent-wheel::-moz-range-thumb{width:8px;height:40px;background:var(--sm-accent);border:1px solid var(--sm-ink);border-radius:3px}
+
+#sm-tuning-keyboard{display:grid;grid-template-columns:minmax(130px,1fr) minmax(0,2fr);gap:16px;align-items:end}
+#sm-tuning-keyboard .sm-tuning-graphic{margin:0;max-height:none}
+#sm-tuning-keyboard .sm-cent-controls{display:flex;flex-direction:column;align-items:stretch;gap:8px;border:0;background:none;padding:0}
+#sm-tuning-keyboard .sm-cent-wheel{margin:0;padding:0;flex:none}
+#sm-tuning-keyboard .sm-key-selected .sm-key-cents{font-size:18px;font-weight:600}
+input.sm-cent-wheel::-webkit-slider-runnable-track{height:44px;background:transparent;border:0;border-radius:0}
+input.sm-cent-wheel::-webkit-slider-thumb{margin:2px 0 0}
+input.sm-cent-wheel::-moz-range-track{height:44px;background:transparent;border:0;border-radius:0}
+
+/* Shared precision wheel: tapered graphite body, bright center grip and red index. */
+.sm-keyboard-layout{display:flex!important;flex-direction:column;gap:12px;min-width:0}
+.sm-keyboard-layout .sm-tuning-graphic{width:100%;margin:0;max-height:240px}
+.sm-keyboard-layout .sm-cent-controls{display:flex!important;flex-direction:column;align-self:center;width:min(520px,100%);gap:8px;border:0;background:none;padding:0}
+.sm-keyboard-layout .sm-cent-label{font-weight:600;justify-content:space-between}
+.sm-keyboard-layout .sm-cent-label input{width:74px!important;min-height:32px!important;padding:4px!important}
+.sm-keyboard-layout .sm-cent-controls small{font-size:12px;line-height:1.25;text-align:center;order:5}
+html[data-sm-app=editor] input.sm-cent-wheel{height:54px!important;min-height:54px;box-sizing:border-box;background:radial-gradient(ellipse at center,transparent 20%,#000a 100%),radial-gradient(circle,#ffffff18 .6px,transparent .9px) 0 0/4px 4px,linear-gradient(#343438,#17171b 55%,#28282d);clip-path:polygon(0 14%,18% 5%,50% 0,82% 5%,100% 14%,100% 86%,82% 95%,50% 100%,18% 95%,0 86%);border:0!important;border-radius:0;box-shadow:none!important;padding:0;margin:0}
+input.sm-cent-wheel::-webkit-slider-runnable-track{height:54px;background:transparent}
+input.sm-cent-wheel::-webkit-slider-thumb{width:34px;height:54px;margin:0;border:0;border-radius:0;background:linear-gradient(90deg,#101013,#66676c 55%,#303136);box-shadow:inset 0 3px var(--sm-accent)}
+input.sm-cent-wheel::-moz-range-track{height:54px;background:transparent}
+input.sm-cent-wheel::-moz-range-thumb{width:34px;height:54px;border:0;border-radius:0;background:linear-gradient(90deg,#101013,#66676c 55%,#303136);box-shadow:inset 0 3px var(--sm-accent)}
+.sm-tuning-graphic text{font-size:17px;font-weight:600}.sm-tuning-graphic .sm-key-cents{visibility:hidden}.sm-tuning-graphic .sm-key-selected .sm-key-cents{visibility:visible;font-size:17px}.sm-tuning-graphic .sm-key-selected rect{stroke:#fff;stroke-width:4}
+#sm-quick-tuning{margin:8px 0;padding:8px 0;min-width:0}#sm-quick-tuning>summary{min-height:36px;cursor:pointer;font-weight:600}
+.sm-keyboard-quick{display:grid!important;grid-template-columns:minmax(130px,1fr) minmax(0,3fr);align-items:end;gap:16px}
+.sm-keyboard-quick .sm-cent-controls{grid-column:1;grid-row:1;width:100%;align-self:end}.sm-keyboard-quick .sm-tuning-graphic{grid-column:2;grid-row:1;max-height:180px}.sm-keyboard-quick small{display:none}
+html[data-sm-section]:not([data-sm-section=sound]):not([data-sm-section=all]) #sm-quick-tuning{display:none}
+[hidden]{display:none!important}html[data-sm-app=editor] .app,html[data-sm-app=editor] main{min-width:0}html[data-sm-app=editor] .card{min-width:0}html[data-sm-app=editor] .bar{flex-wrap:wrap}
+@media(max-width:600px){.sm-keyboard-quick{grid-template-columns:minmax(110px,1fr) minmax(0,2fr);gap:8px}.sm-cent-label{font-size:11px}.sm-keyboard-layout .sm-cent-label input{width:55px!important}.sm-keyboard-layout .sm-cent-controls small{font-size:11px}}
+/* SynthMaven Hybrid tuning layout: shared desktop and touch controls. */
+html[data-sm-app=editor] #tupanel{background:#16161a;color:#f2f2f2;padding:12px;border-radius:6px}
+#tupanel h2{font-size:15px!important;color:#f2f2f2;margin:0 0 12px;padding:0!important}
+#tupanel>p[data-t],#tupanel>#sm-quantize-help{display:none}
+.sm-hybrid-tuning{display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr);gap:16px}
+#sm-scale-library,#sm-scale-body{min-width:0}
+#sm-scale-library>input{width:100%;box-sizing:border-box;margin-bottom:8px}
+#sm-scale-list{height:400px;overflow:auto;background:#000;scrollbar-color:#36a2be #16161a}
+#sm-scale-list button{display:block;width:100%;text-align:left;border:0;border-radius:0;min-height:40px!important;padding:8px 10px!important;font-size:13px!important;background:#000;color:#f2f2f2}
+#sm-scale-list button[aria-selected=true]{background:#310f18;color:#ff2c34}
+#sm-scale-body>.bar{display:flex;align-items:end;flex-wrap:wrap;gap:8px;margin:8px 0}
+#sm-scale-body>.bar>label{display:flex;flex-direction:column;gap:5px;flex:1;min-width:100px}
+#tupanel button,#tupanel select{background:#263238;color:#f2f2f2;border:1px solid #8a969a;border-radius:5px;font-size:14px!important;min-height:40px!important;padding:7px 10px!important}
+#tupanel .sm-tuning-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
+#tupanel .sm-tuning-actions>button{flex:1}
+#tupanel #sm-tuning-keyboard{display:flex!important;flex-direction:column;gap:8px;padding:0;border:0;background:none}
+#tupanel #sm-tuning-keyboard .sm-tuning-graphic{height:112px;max-height:112px;background:none}
+#tupanel #sm-tuning-keyboard .sm-cent-controls{display:flex!important;flex-direction:column;width:min(360px,100%);gap:4px;align-self:center}
+#tupanel #sm-tuning-keyboard .sm-cent-controls small{display:none}
+#tupanel .sm-cent-label{font-size:12px;justify-content:space-between}
+#tupanel .sm-cent-label input{border:0;background:transparent;width:64px;padding:0;min-height:24px;text-align:right}
+#tupanel .sm-cent-controls select{min-height:30px!important;font-size:12px!important;padding:4px!important}
+#tupanel .sm-cent-wheel{height:44px;min-height:44px}
+#sm-tuning-selected{display:block;margin:10px 0;font-size:13px}
+#sm-note-offsets summary,#sm-scale-bank summary{font-size:12px;padding:10px 0;cursor:pointer}
+#sm-note-offset-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px}
+#sm-note-offset-grid label{display:flex;align-items:center;flex-direction:column;gap:6px;min-width:0;font-size:10px}
+#sm-note-offset-grid input{writing-mode:vertical-lr;direction:rtl;height:70px;width:24px;min-height:0;padding:0;accent-color:#36a2be}
+#sm-note-offset-grid output{font-size:11px;border:1px solid #8a8a92;width:100%;text-align:center}
+#sm-tuning-footer{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:16px}
+#sm-tuning-footer button{flex:1}#sm-tuning-footer #tuinfo{flex-basis:100%;font-size:12px}
+#sm-scale-bank .sm-tuning-actions input{flex:1;min-width:130px}#sm-scale-bank p{font-size:12px}
+#sm-scale-body.sm-keyboard-collapsed #sm-note-offset-grid input{height:160px}
+@media(max-width:700px){.sm-hybrid-tuning{grid-template-columns:1fr}#sm-scale-list{height:150px}#sm-note-offset-grid{grid-template-columns:repeat(6,minmax(0,1fr))}#sm-tuning-footer button{min-width:120px}}
+.sm-tuning-graphic text,.sm-tuning-graphic .sm-key-selected .sm-key-cents{font-size:12px}.sm-tuning-graphic .sm-key-cents{font-size:11px}.sm-key-altered .sm-key-cents{visibility:visible}
+.sm-tuning-graphic .sm-key-selected.sm-key-white:not(.sm-key-altered) rect{stroke:#16161a;stroke-width:2.5}.sm-tuning-graphic .sm-key-selected rect{stroke-width:2.5}
+html[data-sm-app=editor] input.sm-cent-wheel{touch-action:none;background:linear-gradient(#ff2c34,#ff2c34) center top/3px 6px no-repeat,linear-gradient(90deg,#0b0b0f,#55555c 60%,#29292f) center/28px 100% no-repeat,radial-gradient(ellipse at center,transparent 20%,#000a 100%),radial-gradient(circle,#ffffff18 .6px,transparent .9px) 0 0/4px 4px,linear-gradient(#343438,#17171b 55%,#28282d)}
+input.sm-cent-wheel::-webkit-slider-thumb{opacity:0}input.sm-cent-wheel::-moz-range-thumb{opacity:0}
+#tupanel .sm-tuning-actions>label{white-space:normal;min-width:0}#sm-tuning-apply-row label{display:flex;gap:6px;align-items:center;white-space:normal}
+#tupanel #sm-tuning-keyboard[hidden]{display:none!important}
+#tupanel #sm-tuning-apply-row{display:none!important}#sm-master-tuning-row label{display:flex;gap:6px;align-items:center;font-size:13px}
+@media(max-width:700px){html[data-sm-app=editor] label{white-space:normal;max-width:100%;overflow-wrap:anywhere}html[data-sm-app=editor] .bar>label{min-width:0}html[data-sm-app=editor] select{max-width:100%}}
+html[data-sm-app=editor][data-sm-section=tuning] #p-sound{grid-template-columns:minmax(0,1fr)}
+html[data-sm-app=editor][data-sm-section=tuning] .sm-factory-library{display:none}
+html[data-sm-app=editor][data-sm-section=tuning] .sm-instrument-stage>:not(.sm-sections):not(#tupanel){display:none!important}
+html[data-sm-app=editor][data-sm-section=tuning] #tupanel{margin-top:8px}
+html[data-sm-app=editor][data-sm-section=tuning] #p-vital{display:none!important}
+#tupanel,#tupanel button,#tupanel select,#tupanel input,#tupanel label{font-family:"Helvetica Neue",Arial,sans-serif}
+#tupanel #sm-scale-list button{background:#000;border:0;border-radius:0;font-size:13px!important}
+#tupanel #sm-scale-list button[aria-selected=true]{background:#310f18;color:#ff2c34}
+#sm-performance-scale-recall{display:none}
+/* Match Hybrid's compact tuning controls, including touch-wrapper overrides. */
+html[data-sm-app=editor] #tupanel input::placeholder{color:#a6a6ae;opacity:1}
+html[data-sm-app=editor] #tupanel input[type=checkbox]{appearance:auto;-webkit-appearance:auto;inline-size:18px;block-size:18px;min-width:18px;min-height:18px;padding:0;margin:0;accent-color:#64646e}
+html[data-sm-app=editor] #sm-note-offset-grid input[type=range]{appearance:none;-webkit-appearance:none;background:transparent;width:24px;height:70px;min-height:0;border:0;border-radius:0;box-shadow:none}
+html[data-sm-app=editor] #sm-note-offset-grid input[type=range]::-webkit-slider-runnable-track{width:6px;height:100%;background:#263238;border-radius:3px}
+html[data-sm-app=editor] #sm-note-offset-grid input[type=range]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:12px;height:12px;margin:0 0 0 -3px;background:#36a2be;border:0;border-radius:50%;box-shadow:none}
+html[data-sm-app=editor] #sm-note-offset-grid input[type=range]::-moz-range-track{width:6px;height:100%;background:#263238;border-radius:3px}
+html[data-sm-app=editor] #sm-note-offset-grid input[type=range]::-moz-range-thumb{width:12px;height:12px;background:#36a2be;border:0;border-radius:50%}
+html[data-sm-app=editor] #sm-scale-body.sm-keyboard-collapsed #sm-note-offset-grid input[type=range]{height:160px}

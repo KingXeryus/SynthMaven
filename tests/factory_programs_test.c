@@ -6,7 +6,8 @@ int main(void){
  program_t p,q;program_packed_t saved={0};const char *names[]=SM_FACTORY_PROGRAM_NAMES;
  for(uint32_t slot=0;slot<8;slot++){
   check(sm_factory_program(&p,slot)&&program_valid(&p),"factory four-part program validates");
-  check(!strcmp(names[slot],SM_FACTORY_PROGRAMS[slot].packed.name),"factory slot has its exact curated name");
+  program_packed_t decoded;check(sm_factory_unpack(&decoded,slot),"compressed factory record decodes");
+  check(!strcmp(names[slot],decoded.name),"factory slot has its exact curated name");
   check(p.layer==1 && !p.active && !p.reserved[0] && !p.reserved[1],"four layers enabled, main instrument focused, standard tuning defaults");
   check(sm_program_slot(&q,&saved,slot)&&q.sum==p.sum,"unused slot resolves to its factory program without a flash write");
   for(uint32_t j=0;j<4;j++)check(p.route[j].enabled&&!p.sound[j].p[P_MUTE]&&p.sound[j].p[P_LEVEL]>0,"all four parts are present and audible");

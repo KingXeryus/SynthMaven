@@ -580,6 +580,9 @@ static const page_t PAGES[] = {
     {"MIDI 2", FAM_GLO, SC_SYN, GR_NONE, {54, 55, 56, 0xFF}},
     {"PATCH MIDI", FAM_GLO, SC_SYN, GR_NONE, {54, 57, 0xFF, 0xFF}},
     {"KEY MIDI", FAM_GLO, SC_SYN, GR_NONE, {58, 50, 0xFF, 0xFF}},
+#if SM_BLE
+    {"BLE EDITOR", FAM_GLO, SC_SYN, GR_NONE, {59, 0xFF, 0xFF, 0xFF}},
+#endif
     {"PEDAL LEARN", FAM_GLO, SC_SYN, GR_PEDAL, {79,80,81,82}},
     {"SCENES", FAM_GLO, SC_SYN, GR_SCENE, {83,84,85,0xFF}},
     {"SETLIST", FAM_GLO, SC_SYN, GR_SETLIST, {86,87,88,89}},

@@ -137,8 +137,14 @@ def main(out):
                   f"the {bname} bitmaps at {scale}x (0 B)")
             continue
         data, offs = [], []
+        identical = {}  # Share identical glyph pixels without changing any rendered character.
         one = all(v in (0, 15) for _, _, g in glyphs for v in g)   # on / off only: 1 bit a pixel
         for adv, bw, g in glyphs:
+            key = (bw, tuple(g))
+            if key in identical:
+                offs.append(identical[key])
+                continue
+            identical[key] = len(data)
             offs.append(len(data))
             if one:
                 acc = 0

@@ -7,17 +7,22 @@ static uint8_t sm_controller_override,sm_controller_port;
 #define SM_CAP_TRS 2u
 #define SM_CAP_BLE_CENTRAL 4u
 #define SM_CAP_USB_HOST 8u
-#undef SM_BLE
+#define SM_CAP_BLE_EDITOR 16u
+#ifndef SM_BLE
 #define SM_BLE 0
+#endif
 #ifndef FELUCCA_USB_HOST
 #define FELUCCA_USB_HOST 0
 #endif
-#define SM_CAPS (SM_CAP_USB_DEVICE | SM_CAP_TRS | (FELUCCA_USB_HOST ? SM_CAP_USB_HOST : 0u))
+#define SM_CAPS (SM_CAP_USB_DEVICE | SM_CAP_TRS | (SM_BLE ? SM_CAP_BLE_EDITOR : 0u) | (FELUCCA_USB_HOST ? SM_CAP_USB_HOST : 0u))
 #if SM_BLE
 static int sm_ble_pending(void), sm_ble_read(uint32_t *);
+static int sm_ble_editor_busy(void), sm_ble_editor_frame(const uint8_t **,uint32_t *);
+static void sm_ble_editor_done(void), sm_ble_editor_send(const uint8_t *,uint32_t);
 static uint32_t sm_ble_state(void), sm_ble_scan_start(void), sm_ble_connect_device(uint32_t);
 static int sm_ble_device(uint32_t, char *, int *);
 static void sm_ble_poll(void), sm_ble_disconnect_device(void);
+static void sm_ble_diagnostics(uint32_t *);
 #endif
 static uint8_t sm_patch_port; /* USB only; old routing values migrate on load. */
 static uint8_t sm_usb_host; /* 0 COMPUTER/device, 1 PEDAL/host */
@@ -69,7 +74,7 @@ static int sm_pedal_receive(uint32_t st,uint32_t ch,uint32_t n,uint32_t v,uint32
 static uint32_t sm_set(uint32_t patch_port, uint32_t key_port, uint32_t bluetooth)
 {
     if (patch_port > 2u || key_port > 2u || bluetooth > 1u) return 1;
-    if (patch_port == 1u || bluetooth) return 4;
+    if (patch_port == 1u || (bluetooth && !SM_BLE)) return 4;
     sm_patch_port = 0;
     sm_key_port = (uint8_t)key_port;
     sm_bluetooth = (uint8_t)bluetooth;

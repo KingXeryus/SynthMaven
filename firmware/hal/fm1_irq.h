@@ -42,6 +42,7 @@ static inline void fm1_irq_on(void) { __asm__ volatile("csync\n\tsti" ::: "memor
 typedef struct {
     uint32_t magic, count, vec, pc, rets, emu, dbg, sp, psr, icfg, uptime_ms;
     uint32_t etm[4];
+    uint32_t axi_write_id, axi_read_id;
     uint32_t early;                          /* consecutive crashes < 3 s after boot */
 } fm1_crash_t;
 /* Not static: .noinit holds whatever the last run (or power-on) left, and a
@@ -49,6 +50,9 @@ typedef struct {
  * fold the magic check away. */
 fm1_crash_t fm1_crash __attribute__((section(".noinit")));
 
+/* CPU1 must never run the reboot path: it would hold itself and freeze CPU0.
+ * Publish the captured fault; CPU0 performs the reset from its main loop. */
+static volatile uint32_t fm1_c1_fault_pending;
 extern const char fm1_fatal_stubs[];
 static void fm1_fault(const fm1_crash_t *c);   /* application: report, then reset */
 
@@ -81,6 +85,7 @@ static void fm1_irq_attach(uint32_t n, void (*h)(void), uint32_t prio)   /* IRQs
     FM1_ICFG(n) = (FM1_ICFG(n) & ~(0xFu << sh)) | ((((prio & 7u) << 1) | 1u) << sh);
 }
 static void fm1_irq_mask(uint32_t n) { FM1_ICFG(n) &= ~(1u << ((n & 7u) * 4u)); }
+static void fm1_irq_unmask(uint32_t n) { FM1_ICFG(n) |= 1u << ((n & 7u) * 4u); }
 
 static void fm1_irq_enable_all(void)
 {
@@ -104,8 +109,11 @@ void fm1_fault_c(uint32_t *f)
     fm1_crash.vec = (f[19] - (uint32_t)(uintptr_t)fm1_fatal_stubs) / 6u - 1u;
     fm1_crash.pc = f[16];
     fm1_crash.rets = f[25];
-    fm1_crash.emu = FM1_EMU_MSG;
+    uint32_t cpu;__asm__ volatile("%0 = cnum" : "=r"(cpu));
+    fm1_crash.emu = cpu ? *(volatile uint32_t *)0x1EEF2D4u : FM1_EMU_MSG;
     fm1_crash.dbg = FM1_DBG_MSG;
+    fm1_crash.axi_write_id = *(volatile uint32_t *)0x1EEE374u;
+    fm1_crash.axi_read_id = *(volatile uint32_t *)0x1EEE370u;
     fm1_crash.sp = f[24];
     fm1_crash.psr = f[20];
     fm1_crash.icfg = f[21];
@@ -113,6 +121,7 @@ void fm1_fault_c(uint32_t *f)
     for (i = 0; i < 4u; i++)
         fm1_crash.etm[i] = FM1_ETM_PC(i);
     fm1_crash.early = fm1_crash.uptime_ms < 3000u ? early + 1u : 0u;
+    if(cpu){fm1_c1_fault_pending=1;__asm__ volatile("csync" ::: "memory");for(;;);}
     fm1_fault(&fm1_crash);
     for (;;)
         ;

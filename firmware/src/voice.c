@@ -88,7 +88,18 @@ static void track_lfo_tick(track_t *t)
 static uint32_t trk_nvoice(const track_t *t)
 {
     uint32_t c = ENGINES[t->engine] == &ENG_PHYS ? phys_poly(t) : ENGINES[t->engine]->poly;   /* (PHYS: by MODEL) */
-    return c && c < NPOLY ? c : NPOLY;
+    c = c && c < NPOLY ? c : NPOLY;
+#if SYNTHMAVEN_SYNTH
+    /* Three/four simultaneous engines need bounded per-part work. Keep two
+     * voices per part (eight total for four parts), without changing solo mode
+     * or any stored patch, level or articulation setting. */
+    if(program_mode && program_layer && !song.solo){
+        uint32_t enabled=0;
+        for(uint32_t p=0;p<4u;p++)enabled+=program_route[p].enabled&&!trk[p].p[P_MUTE]&&trk[p].p[P_LEVEL]>0;
+        if(enabled>=3u && c>2u)c=2u;
+    }
+#endif
+    return c;
 }
 
 /* ------------------------------------------------- the shared voice budget --- */
@@ -99,7 +110,7 @@ static uint32_t voices_busy(void)                       /* sounding voices of al
         for (i = 0; i < NVOICE; i++)
             n += trk[p].v[i].active && trk[p].v[i].stage != 4u;
 #if SYNTHMAVEN_SYNTH
-    for(p=1;p<4u;p++)if((sm_mono_pending&(1u<<p)) && (!trk[p].v[0].active || trk[p].v[0].stage==4u))n++;
+    for(p=0;p<4u;p++)if((sm_mono_pending&(1u<<p)) && (!trk[p].v[0].active || trk[p].v[0].stage==4u))n++;
 #endif
     return n;
 }
@@ -376,7 +387,7 @@ static void mono_play(track_t *t, uint32_t note, uint32_t vel, int retrig, int g
     uint32_t mode = (uint32_t)t->p[P_VOICE], nv = mode == V_UNISON ? trk_nvoice(t) : 1u, i;
 #if SYNTHMAVEN_SYNTH
     uint32_t part=(uint32_t)(t-trk);
-    if(sm_mono_batch && part>0u && part<4u && mode==V_MONO){
+    if(sm_mono_batch && part<4u && mode==V_MONO){
         uint32_t bit=1u<<part,again=(sm_mono_pending&bit)!=0;
         if(again)sm_mono_coalesced++;
         sm_mono_request[part].note=(uint8_t)note;sm_mono_request[part].vel=(uint8_t)vel;
@@ -425,7 +436,7 @@ static void sm_mono_batch_begin(void){
 }
 static void sm_mono_batch_end(void){
     sm_mono_batch=0;
-    for(uint32_t p=1;p<4u;p++)if(sm_mono_pending&(1u<<p)){
+    for(uint32_t p=0;p<4u;p++)if(sm_mono_pending&(1u<<p)){
         sm_mono_pending&=(uint8_t)~(1u<<p);track_t*t=&trk[p];
         if(t->nmono&&t->mono_note&&t->p[P_VOICE]==V_MONO){
             uint8_t channel=mpe_cur_ch;mpe_cur_ch=sm_mono_request[p].ch;
@@ -1080,10 +1091,15 @@ static int32_t maqam_cents(uint32_t sys,uint32_t pc)
 }
 /* Four user scales: two bits per chromatic key, 0/-25/-50/-75 cents. */
 static uint32_t custom_scale[4];
-static uint8_t custom_scale_dirty;
+typedef struct {uint32_t valid;int8_t cents[4][12];} fine_scale_t;
+static fine_scale_t fine_scale;
+static int fine_scale_valid(const fine_scale_t *f){if(f->valid>15u)return 0;for(uint32_t i=0;i<48;i++)if(((const int8_t *)f->cents)[i]<-100 || ((const int8_t *)f->cents)[i]>100)return 0;return 1;}
+static int32_t custom_cents(uint32_t slot,uint32_t pc){return (fine_scale.valid&(1u<<slot))?fine_scale.cents[slot][pc]:-25*(int32_t)((custom_scale[slot]>>(2u*pc))&3u);}
+static void custom_set_cents(uint32_t slot,uint32_t pc,int32_t cents){if(!(fine_scale.valid&(1u<<slot))){for(uint32_t k=0;k<12;k++)fine_scale.cents[slot][k]=(int8_t)custom_cents(slot,k);fine_scale.valid|=1u<<slot;}fine_scale.cents[slot][pc]=(int8_t)clamp(cents,-100,100);}
+static uint8_t custom_scale_dirty,custom_key_pc;
 static int tune_is_chromatic(uint32_t sys) { return tune_is_maqam(sys) || (sys>=TU_CUSTOM1 && sys<TU_N); }
 static int32_t tuning_cents(uint32_t sys,uint32_t pc) {
-    return sys>=TU_CUSTOM1 && sys<TU_N ? -25*(int32_t)((custom_scale[sys-TU_CUSTOM1]>>(2u*pc))&3u) : maqam_cents(sys,pc);
+    return sys>=TU_CUSTOM1 && sys<TU_N ? custom_cents(sys-TU_CUSTOM1,pc) : maqam_cents(sys,pc);
 }
 #define TU_MAXDEG 48u
 typedef struct {

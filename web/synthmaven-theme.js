@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Shared SynthMaven instrument controls, diagrams and appearance preferences. */
 (() => {
- const root=document.documentElement, key='synthmaven-appearance';
+ const root=document.documentElement, key='synthmaven-appearance', editorOnlyDark=root.dataset.smApp==='editor';
  let preference='dark';try{preference=localStorage.getItem(key)||'dark';}catch{}
  const media=matchMedia('(prefers-color-scheme: dark)');
- function theme(){root.dataset.theme=preference==='system'?(media.matches?'dark':'light'):preference;window.dispatchEvent(new Event('resize'));}
+ function theme(){root.dataset.theme=editorOnlyDark?'dark':preference==='system'?(media.matches?'dark':'light'):preference;window.dispatchEvent(new Event('resize'));}
  theme();media.addEventListener('change',theme);
  const NS='http://www.w3.org/2000/svg';
  const svg=(tag,attrs={})=>{const e=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);return e;};
@@ -30,6 +30,7 @@
  const labels={ATK:'Attack',DEC:'Decay',SUS:'Sustain',REL:'Release',LVL:'Level',LEVEL:'Level',PAN:'Pan',TRIM:'Level trim',RATE:'Rate',WAVE:'Waveform',FADE:'Fade-in',PIT:'Pitch',FILT:'Filter',VOL:'Volume',CUT:'Cutoff',RES:'Resonance',DST:'Distortion',CHO:'Chorus',DLY:'Delay',REV:'Reverb',GLD:'Portamento time',VCE:'Voice mode',DETUNE:'Detune'};
  function category(title){title=title.replace(/[\uE000-\uF8FF]/g,'').trim();return /^(LFO|MOD|MATRIX)/.test(title)?'modulation':/^(FX|SPACE|MASTER)/.test(title)?'effects':/^(SEL|TUN)/.test(title)?'tuning':/^LAYER/.test(title)?'layers':'sound';}
  function filterSections(){
+  root.dataset.smSection=section;
   for(const group of document.querySelectorAll('#groups>.group')){const title=group.dataset.smTitle||group.querySelector('h2')?.textContent||'';group.dataset.smSectionHidden=String(section!=='all'&&category(title)!==section);}
   const special={hypanel:'sound',fm6panel:'sound',fxpanel:'sound',mspanel:'modulation',lypanel:'layers',tupanel:'tuning','sm-patches':'sound','sm-layer-mixer':'layers'};
   for(const[id,cat]of Object.entries(special)){const e=document.getElementById(id);if(e)e.dataset.smSectionHidden=String(section!=='all'&&cat!==section);}
@@ -81,7 +82,7 @@
   for(const e of document.querySelectorAll('.knob .kl'))if(labels[e.textContent])e.textContent=e.textContent==='DST'&&e.parentElement.querySelector('select')?'Destination':labels[e.textContent];filterSections();
  }
  function ready(){
-  const appearance=document.createElement('label');appearance.className='sm-theme';appearance.textContent='Appearance';const select=document.createElement('select');select.setAttribute('aria-label','Appearance');for(const [value,label]of [['dark','Dark'],['light','Light'],['system','System']]){const o=new Option(label,value);select.add(o);}select.value=preference;select.addEventListener('change',()=>{preference=select.value;try{localStorage.setItem(key,preference);}catch{}theme();});appearance.append(select);(document.querySelector('.side')||document.querySelector('.top')||document.body).append(appearance);
+  if(!editorOnlyDark){const appearance=document.createElement('label');appearance.className='sm-theme';appearance.textContent='Appearance';const select=document.createElement('select');select.setAttribute('aria-label','Appearance');for(const [value,label]of [['dark','Dark'],['light','Light'],['system','System']]){const o=new Option(label,value);select.add(o);}select.value=preference;select.addEventListener('change',()=>{preference=select.value;try{localStorage.setItem(key,preference);}catch{}theme();});appearance.append(select);(document.querySelector('.side')||document.querySelector('.top')||document.body).append(appearance);}
   if(root.dataset.smApp==='editor'){
    const sound=document.getElementById('p-sound'),stage=document.createElement('div');stage.className='sm-instrument-stage';if(sound){sound.classList.add('sm-instrument-layout');const first=sound.firstElementChild;first?.classList.add('sm-factory-library');for(const child of Array.from(sound.children).slice(1))stage.append(child);sound.append(stage);}
    const nav=document.createElement('nav');nav.className='sm-sections';nav.setAttribute('aria-label','Instrument pages');

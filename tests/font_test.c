@@ -59,7 +59,10 @@ int main(int argc, char **argv)
     for(uint32_t f=0;f<2;f++) {
         const felucca_font_t *face=faces[f];uint32_t count=face->last-face->first+1;
         for(uint32_t g=0;g<count;g++) {
-            static uint8_t raw[4096];static uint16_t off[224];uint32_t total=face->bw[g]*face->h,pos=0,at=face->off[g],limit=g+1<count?face->off[g+1]:(f?sizeof FONT_L_DATA:sizeof FONT_S_DATA);
+            static uint8_t raw[4096];static uint16_t off[224];uint32_t total=face->bw[g]*face->h,pos=0,at=face->off[g],limit=f?sizeof FONT_L_DATA:sizeof FONT_S_DATA;
+            /* Shared glyphs need not have monotonic offsets. The next distinct
+             * stored glyph bounds the stream, not the next character. */
+            for(uint32_t k=0;k<count;k++)if(face->off[k]>at && face->off[k]<limit)limit=face->off[k];
             while(pos<total && at<limit){uint32_t code=face->data[at++],run=(code>>4)+1;for(uint32_t j=0;j<run && pos<total;j++)raw[pos++]=code&15;}
             if(pos!=total || at!=limit){printf("decode f%u g%u pos%u/%u at%u/%u\n",f,g,pos,total,at,limit);bad++;}
             /* Decode independently into the legacy nibble renderer, then compare

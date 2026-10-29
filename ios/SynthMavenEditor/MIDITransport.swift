@@ -84,7 +84,8 @@ final class MIDITransport {
         guard destination != 0, let bytes = scheduler.take(now: ProcessInfo.processInfo.systemUptime) else { return }
         let list = packetStorage.bindMemory(to: MIDIPacketList.self, capacity: 1)
         let first = MIDIPacketListInit(list)
-        _ = bytes.withUnsafeBufferPointer { buffer in MIDIPacketListAdd(list, 16384, first, 0, buffer.count, buffer.baseAddress!) }
+        let added = bytes.withUnsafeBufferPointer { buffer in MIDIPacketListAdd(list, 16384, first, 0, buffer.count, buffer.baseAddress!) }
+        guard added != nil else { fail("MIDI frame exceeds packet capacity"); return }
         let result = MIDISend(output, destination, list)
         if result != noErr { fail("MIDI send failed (\(result))") }
     }

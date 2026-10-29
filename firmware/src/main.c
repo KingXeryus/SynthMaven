@@ -225,6 +225,9 @@ static void fm1_main(void)
     fm1_adc_init();
     panel_init();
     felucca_init();
+#if SM_BLE
+    sm_ble_prepare();
+#endif
     cpu1_boot();                                        /* (0.7) the second core: at power-on, before the audio and the
                                                          * timers (X0X: started later it never reaches its entry);
                                                          * if it does not answer, SynthMaven runs on one core (cpu1.c) */
@@ -253,6 +256,7 @@ static void fm1_main(void)
     healthy_since = fm1_ms;
     for (;;) {
         uint32_t m = fm1_ms;
+        if(fm1_c1_fault_pending){fm1_irq_off();fm1_cpu1_halt();fm1_fault(&fm1_crash);}
 #if SM_BLE
         sm_ble_poll();
 #endif
@@ -402,6 +406,9 @@ static void fm1_main(void)
 UI_SMALL void fm1_cstart(void)
 {
     uint32_t *s, *d, p3, src, wdt, boot_mode;
+    /* A watchdog reset can leave CPU1 running its old RAM loop. Hold it before
+     * clearing the mailbox, stacks or code that the other core can still read. */
+    fm1_cpu1_halt();
     fm1_time_init();
     fm1_supplies_stock();                       /* (2.7) VDC14 1.60 V, SYSVDD 1.38 V, as M-VAVE's firmware: both cores
                                                  * read the flash and SRAM right on every unit (fm1_sys.h) */

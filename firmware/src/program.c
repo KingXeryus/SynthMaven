@@ -2,10 +2,24 @@
 #include "factory_programs.h"
 static const char sm_factory_program_names[8][13]=SM_FACTORY_PROGRAM_NAMES;
 static char program_names[8][13]=SM_FACTORY_PROGRAM_NAMES;
+static int sm_factory_unpack(program_packed_t *packed,uint32_t slot){
+ if(slot>=SM_FACTORY_PROGRAM_COUNT)return 0;
+ uint8_t *dst=(uint8_t *)packed;
+ uint32_t pos=SM_FACTORY_OFFSETS[slot],end=SM_FACTORY_OFFSETS[slot+1],used=0;
+ while(pos<end){
+  uint32_t c=SM_FACTORY_DATA[pos++],n=(c&127u)+1u;
+  if(used+n>sizeof *packed)return 0;
+  if(c&128u)memset(dst+used,0,n);
+  else {if(pos+n>end)return 0;memcpy(dst+used,SM_FACTORY_DATA+pos,n);pos+=n;}
+  used+=n;
+ }
+ return used==sizeof *packed;
+}
 static int sm_factory_program(program_t *out,uint32_t slot){
- if(slot>=SM_FACTORY_PROGRAM_COUNT || !program_unpack(out,&SM_FACTORY_PROGRAMS[slot].packed))return 0;
+ program_packed_t packed;
+ if(!sm_factory_unpack(&packed,slot) || !program_unpack(out,&packed))return 0;
  /* ROM programs do not erase the player's four custom-scale definitions. */
- memcpy(out->custom,custom_scale,sizeof out->custom);out->sum=program_hash(out,sizeof *out-4u);return 1;
+ memcpy(out->custom,custom_scale,sizeof out->custom);out->fine=fine_scale;out->sum=program_hash(out,sizeof *out-4u);return 1;
 }
 /* A saved record always wins, including a damaged record: never silently replace it. */
 static int sm_program_slot(program_t *out,const program_packed_t *saved,uint32_t slot){return saved->used?program_unpack(out,saved):sm_factory_program(out,slot);}
@@ -24,7 +38,7 @@ static void program_name_edit(int32_t delta){
 /* Four loaded synth parts are the working program; the selected part is UI focus. */
 static void program_capture(program_t *p) {
     uint32_t i;memset(p,0,sizeof *p);p->magic=PROGRAM_MAGIC;p->size=sizeof *p;
-    fm1_irq_off();p->active=song.sel%4u;p->layer=program_layer;p->reserved[0]=(song.solo&15u)|(program_save_tuning?PROGRAM_TUNE_SAVED:PROGRAM_TUNE_GLOBAL);p->reserved[1]=(master_tuning_bypass&15u)|(tune_floor_octave<<4);memcpy(p->route,program_route,sizeof p->route);p->tuning=tune_cfg;memcpy(p->custom,custom_scale,sizeof p->custom);memcpy(p->scenes,sm_scenes,sizeof p->scenes);
+    fm1_irq_off();p->active=song.sel%4u;p->layer=program_layer;p->reserved[0]=(song.solo&15u)|(program_save_tuning?PROGRAM_TUNE_SAVED:PROGRAM_TUNE_GLOBAL);p->reserved[1]=(master_tuning_bypass&15u)|(tune_floor_octave<<4);memcpy(p->route,program_route,sizeof p->route);p->tuning=tune_cfg;p->fine=fine_scale;memcpy(p->custom,custom_scale,sizeof p->custom);memcpy(p->scenes,sm_scenes,sizeof p->scenes);
     for(i=0;i<4;i++) {
         const track_t *t=&trk[i];program_sound_t *s=&p->sound[i];
         memcpy(s->p,t->p,sizeof s->p);memcpy(s->ms,t->ms,sizeof s->ms);
@@ -47,7 +61,7 @@ static void program_apply(const program_t *p) {
     uint32_t i;transport_req=2;panic_req=(1u<<NPART)-1u;
     fm1_irq_off();program_mode=1;program_layer=p->layer;song.sel=p->active;song.solo=p->reserved[0]&15u;master_tuning_bypass=p->reserved[1]&15u;memcpy(program_route,p->route,sizeof program_route);
     program_save_tuning=(uint8_t)program_has_tuning(p);
-    if(program_save_tuning){tune_floor_octave=p->reserved[1]>>4;tune_cfg=p->tuning;memcpy(custom_scale,p->custom,sizeof custom_scale);custom_scale_dirty=1;}
+    if(program_save_tuning){tune_floor_octave=p->reserved[1]>>4;tune_cfg=p->tuning;fine_scale=p->fine;memcpy(custom_scale,p->custom,sizeof custom_scale);custom_scale_dirty=1;}
     sm_filter_comp_mask=0;memcpy(sm_scenes,p->scenes,sizeof sm_scenes);sm_scene_index=255;
     for(i=0;i<4;i++) {
         track_t *t=&trk[i];const program_sound_t *s=&p->sound[i];sound_fade_begin(t);

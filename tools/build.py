@@ -180,12 +180,8 @@ def build_loader():
 # ---- app
 
 def build_app():
-    ble = False  # Radio removed: pedal MIDI uses the USB host.
+    ble = os.environ.get("SM_BLE", "0") == "1"  # Explicit experimental radio build.
     radio_units, radio_objs, radio_libs = [], [], []
-    if ble:
-        import synthmaven_radio_build as radio
-        radio.configure(SRC, OUT, tc)
-        radio_units, radio_objs, radio_libs = radio.radio_units()
     flags = [*CFLAGS, "-Ifirmware/hal", "-Ifirmware/src", "-Ibuild/gen"]
     for flag in ("FELUCCA_FLASH", "FELUCCA_OTA", "FELUCCA_OTA_DRYRUN", "FELUCCA_CDC", "FELUCCA_UART",
                  "FELUCCA_ICONS", "FELUCCA_SLICE", "FELUCCA_CPU1", "NVOICE"):   # (SynthMaven: NVOICE=12 ./build.sh, the CPU trials)
@@ -194,7 +190,7 @@ def build_app():
             flags.append(f"-D{flag}={v}")
     flags += ["-DSM_PACKED_WT=1", "-DFELUCCA_USB_HOST=1"]
     if ble:
-        flags += ["-DSM_BLE=1", "-DFELUCCA_CDC=0", "-Ifirmware/vendor/fm1-base/shim"]
+        flags += ["-flto", "-DSM_BLE=1", "-DFELUCCA_CDC=0", "-Ifirmware/vendor/fm1-ble-own/ble"]
     flags.append(f'-DFELUCCA_ID="{PRODUCT}"')
     if VERSION:
         flags.append(f'-DFELUCCA_VERSION="{VERSION}"')
@@ -203,6 +199,9 @@ def build_app():
            ("cc", "-c", FW / "hal" / "fm1_isr.S", "-o", OUT / "fm1_isr.o"),
            ("cc", "-c", FW / "hal" / "fm1_cpu1.S", "-o", OUT / "fm1_cpu1.o"),
            ("cc", *flags, "-c", FW / "src" / "felucca.c", "-o", OUT / "felucca.o"))
+    if ble:
+        tc("cc", "-c", FW / "hal/fm1_ble_isr.S", "-o", OUT / "fm1_ble_isr.o")
+        radio_objs.append(OUT / "fm1_ble_isr.o")
     if radio_units: tc_all(*radio_units)
     tc("cc", "-Oz", "-DNDEBUG", "-DSM_TINF_FREESTANDING", "-c", FW / "vendor/tinf/tinflate.c", "-o", OUT / "tinflate.o")
     elf = OUT / "felucca.elf"
@@ -254,6 +253,14 @@ def check(img, syms, dis, rt):
         errors.append(f".ram_text contains calls: {rt_calls[:3]}")
     else:
         notes.append(f".ram_text: {len([ln for ln in rt.splitlines() if LINE.match(ln)])} insns, no calls")
+    if "Disassembly of section .radio_ram:" in dis:
+        radio_dis = dis.split("Disassembly of section .radio_ram:", 1)[1].split("Disassembly of section", 1)[0]
+        for ln in radio_dis.splitlines():
+            for decimal, address in re.findall(r"= (-?\d+) <|call -?\d+ <[^:>]*: ([0-9a-f]+) >", ln):
+                value = (int(decimal) & 0xffffffff) if decimal else int(address, 16)
+                if APP_XIP <= value < APP_XIP + 0x100000:
+                    errors.append("radio calibration references XIP: " + ln.strip())
+        notes.append("radio calibration: SRAM code/data references checked against XIP")
     mc1 = [re.search(r"^([0-9a-f]+) .*\s" + n + r"$", syms, re.M) for n in ("_c1_start", "_c1_end")]
     if all(mc1):
         notes.append(f".c1_text: {int(mc1[1].group(1), 16) - int(mc1[0].group(1), 16)} B, the second core's loop in RAM")

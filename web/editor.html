@@ -7,7 +7,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SynthMaven 2.2.4 Editor</title>
+<title>SynthMaven 3.0 Editor</title>
 <style>
   /* SLOOP 2.4 editor: the FM-1's screen on a big display. Black, the four track colours, the device's own
      Terminus pixel font (tools/gen_webfont.py, inlined: the editor also runs from file://), 16 px and 32 px only
@@ -488,7 +488,7 @@
 <div class="app">
   <aside class="side">
     <a class="brand" href="#sound" aria-label="SynthMaven"><img src="synthmaven-logo.svg" alt="SynthMaven" style="width:160px;height:130px;object-fit:contain;background:white"></a>
-    <p class="dim" style="margin:0">Version 2.2.4 · 23 engines · 557 factory entries</p>
+    <p class="dim" style="margin:0">Version 3.0 · 23 engines · 557 factory entries</p>
     <nav class="tabs" id="tabs" role="tablist" aria-orientation="vertical">
       <div class="navh" id="navtrack" data-t="navTrack"></div>
       <button role="tab" data-tab="sound" data-t="sound" data-ic="symbol_audio"></button>
@@ -559,6 +559,7 @@
         <details id="stdiffbox"><summary data-t="stDiff"></summary><div id="stdiff" class="dim"></div></details>
       </div>
       <div class="groups" id="groups"></div>
+      <details id="sm-quick-tuning"><summary>Quick microtuning</summary><div id="sm-quick-keyboard" class="sm-keyboard-layout sm-keyboard-quick"></div></details>
       <!-- the FM6 engine's patch (firmware protocol v9): only while the selected track plays FM6 -->
       <div class="card" id="sm-patches"><h2>SynthMaven · four-patch browser</h2><div id="sm-patch-cards" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px"></div><p class="bar"><button id="sm-prev">Previous four</button><span id="sm-page"></span><button id="sm-next">Next four</button></p></div>
       <div class="card" id="fm6panel" hidden>
@@ -617,7 +618,7 @@
         <p class="bar"><label><span data-t="tuSystem"></span> <select id="tusys"></select></label>
           <label id="tufloorbox" hidden>Apply from octave <select id="tufloor" aria-label="Apply tuning from octave"></select></label>
           <label><span data-t="tuRoot"></span> <select id="turoot"></select></label>
-          <label id="tua4box" hidden>A4 <input type="number" id="tua4" min="400" max="480" step="1" style="width:5em"> Hz</label>
+          <label id="tua4box" hidden>A4 (Hz) <input type="number" id="tua4" min="400" max="480" step="1" style="width:5em"></label>
           <button id="tuscl" data-t="tuLoad" data-ic="symbol_upload"></button>
           <input type="file" id="tufile" accept=".scl,text/plain" hidden>
           <button id="tusend" class="pri" data-t="tuSendBtn"></button></p>
@@ -894,7 +895,7 @@
 <script>
 "use strict";
 /*PROTO-BEGIN*/
-const SM_RELEASE = {"version": "2.2.4", "protocol": 24, "shared_voices": 8};
+const SM_RELEASE = {"version": "3.0", "protocol": 26, "shared_voices": 8};
 const SM_FILTER_MAP = [{"engine": 0, "name": "ANALOG", "architecture": "multi", "cutoff": "P_E4", "resonance": "P_E5", "envelope": "P_ED_FLT", "drive": "P_E6", "notes": "Selectable native model"}, {"engine": 1, "name": "DIGITAL", "architecture": "none", "cutoff": "-1", "resonance": "-1", "envelope": "-1", "drive": "-1", "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"}, {"engine": 2, "name": "PHASE", "architecture": "none", "cutoff": "-1", "resonance": "-1", "envelope": "-1", "drive": "-1", "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"}, {"engine": 3, "name": "LOFI", "architecture": "ONE POLE", "cutoff": "P_E7", "resonance": "-1", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 4, "name": "SAMPLE", "architecture": "ONE POLE", "cutoff": "P_E4", "resonance": "-1", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 5, "name": "VOICE", "architecture": "none", "cutoff": "-1", "resonance": "-1", "envelope": "-1", "drive": "-1", "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"}, {"engine": 6, "name": "TRIO", "architecture": "TRIO", "cutoff": "P_E5", "resonance": "P_E6", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Selectable native model"}, {"engine": 7, "name": "WHEEL", "architecture": "none", "cutoff": "-1", "resonance": "-1", "envelope": "-1", "drive": "-1", "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"}, {"engine": 8, "name": "GRAIN", "architecture": "ONE POLE", "cutoff": "P_E7", "resonance": "-1", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 9, "name": "FM6", "architecture": "none", "cutoff": "-1", "resonance": "-1", "envelope": "-1", "drive": "-1", "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"}, {"engine": 10, "name": "PHYS", "architecture": "none", "cutoff": "-1", "resonance": "-1", "envelope": "-1", "drive": "-1", "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"}, {"engine": 11, "name": "NOISE", "architecture": "SVF", "cutoff": "P_E2", "resonance": "P_E3", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 12, "name": "HYBRID", "architecture": "HYBRID", "cutoff": "P_E0", "resonance": "P_E1", "envelope": "P_E2", "drive": "-1", "notes": "HYBRID filter 1 base controls; filter 2 and serial/parallel/split architecture remain in editor"}, {"engine": 13, "name": "WAVE", "architecture": "multi", "cutoff": "P_E4", "resonance": "P_E5", "envelope": "P_ED_FLT", "drive": "P_E6", "notes": "Selectable native model"}, {"engine": 14, "name": "ACID", "architecture": "LADDER", "cutoff": "P_E1", "resonance": "P_E2", "envelope": "P_E3", "drive": "P_E6", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 15, "name": "STRINGS", "architecture": "SVF", "cutoff": "P_E4", "resonance": "P_E7", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 16, "name": "MACRO", "architecture": "LPG", "cutoff": "P_E4", "resonance": "-1", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 17, "name": "VPS", "architecture": "SVF", "cutoff": "P_E4", "resonance": "P_E5", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 18, "name": "TERRAIN", "architecture": "SVF", "cutoff": "P_E6", "resonance": "P_E7", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 19, "name": "FMX", "architecture": "none", "cutoff": "-1", "resonance": "-1", "envelope": "-1", "drive": "-1", "notes": "Brightness is timbre/FM/formant/physical-model shaping, not an exposed subtractive filter"}, {"engine": 20, "name": "WSEQ", "architecture": "SVF", "cutoff": "P_E6", "resonance": "P_E7", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 21, "name": "JUNO", "architecture": "LADDER", "cutoff": "P_E5", "resonance": "P_E6", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Fixed architecture; unavailable controls are disabled"}, {"engine": 22, "name": "VECTOR", "architecture": "multi", "cutoff": "P_E7", "resonance": "-1", "envelope": "P_ED_FLT", "drive": "-1", "notes": "Selectable native model"}];
 /* Compact performance protocol. All writes are explicit and capability gated. */
 const PERF={
@@ -2980,6 +2981,8 @@ function makeMockDevice(opt = {}) {
   }
   function perfScene(op,slot){const p=st.performance;if(slot>3)return 1;if(op===1){const x=new Uint8Array(48);x[0]=1;const t=st.tune||{};x[1]=t.sys||0;x[2]=t.root||0;x[3]=((t.a4||440)-440)&255;x[4]=(st.masterTuning||[1,1,1,1]).reduce((m,v,i)=>m|(!v<<i),0);x[5]=p.comp;x[6]=st.tune?.floor??0;for(let i=0;i<4;i++){const q=st.tracks[i].p,at=8+10*i;x.set([q[0],q[40],q[33],q[34],q[35],q[36],...Array.from({length:4},(_,k)=>{const id=st.tracks[i].engine===12?P_E0+4+k:TP.findIndex(d=>d.label===["BRITE","TIMBR","MOTN","SPACE"][k]);return id>=0?q[id]-tdesc(st.tracks[i],id).min:0;})],at);}p.scenes[slot]=Array.from(x);p.scene=slot;return 0;}if(op===3){p.scenes[slot]=null;if(p.scene===slot)p.scene=127;return 0;}const x=p.scenes[slot];if(!x)return 1;for(let i=0;i<4;i++){const q=st.tracks[i].p,at=8+10*i;[0,40,33,34,35,36].forEach((id,k)=>q[id]=x[at+k]);for(let k=0;k<4;k++){const id=st.tracks[i].engine===12?P_E0+4+k:TP.findIndex(d=>d.label===["BRITE","TIMBR","MOTN","SPACE"][k]);if(id>=0)q[id]=x[at+6+k]+tdesc(st.tracks[i],id).min;}}st.tune={...(st.tune||{}),sys:x[1],root:x[2],floor:x[6],a4:440+(x[3]>127?x[3]-256:x[3])};st.masterTuning=Array.from({length:4},(_,i)=>+!(x[4]&(1<<i)));p.comp=x[5];p.scene=slot;return 0;}
   function perfHandle(cmd,a,out,b,v,s){const p=st.performance,op=a[0]||0;let rc=0;
+    if(cmd===120){const rc=a.length>1||(a.length&&(op<4||op>7))?1:a.length?perfAction(op):0;[rc,p.current<8?p.current:127,p.scene<4?p.scene:127,127,0,p.scenes.reduce((m,x,i)=>m|(x?1<<i:0),0)].forEach(b);s(st.programNames?.[p.current]||('Program '+(p.current+1)));return true;}
+
     if(cmd===118){
       let rc=a.length!==1||a[0]>7||!factoryDefaults?1:st.playing?3:0;
       if(!rc){const custom=st.custom;Object.assign(st,JSON.parse(JSON.stringify(factoryDefaults[a[0]])));st.custom=custom;st.performance.scenes=st.perfScenes;st.performance.comp=st.perfComp;st.performance.current=a[0];st.performance.scene=127;st.performance.pos=127;}
@@ -3022,7 +3025,7 @@ function makeMockDevice(opt = {}) {
   }
 
   let factoryDefaults=null;
-  const project = () => JSON.parse(JSON.stringify({tracks:st.tracks,sel:st.sel,g:st.g,layer:st.layer||0,solo:st.solo||0,layerMix:st.layerMix,tune:st.tune,masterTuning:st.masterTuning,custom:st.custom,soloGains:st.soloGains,perfScenes:st.performance.scenes,perfComp:st.performance.comp}));
+  const project = () => JSON.parse(JSON.stringify({tracks:st.tracks,sel:st.sel,g:st.g,layer:st.layer||0,solo:st.solo||0,layerMix:st.layerMix,tune:st.tune,masterTuning:st.masterTuning,custom:st.custom,fine:st.fine,soloGains:st.soloGains,perfScenes:st.performance.scenes,perfComp:st.performance.comp}));
   /* The same generated four-part factory data as the device; saved slots replace these copies. */
   if(opt.modern&&opt.oriental&&opt.factoryPrograms!==false){
     st.programNames=SM_FACTORY_PROGRAM_BANK.map(f=>f.name);
@@ -3056,7 +3059,7 @@ function makeMockDevice(opt = {}) {
     if (opt.v7 && cmd >= CMD.FILL_GET) return null;         /* (a v7 device: no fill conditions) */
     if (!v9 && cmd >= CMD.FM6_GET) return null;             /* (a v8 device: no FM6 patches) */
     if (!v10 && cmd >= CMD.DSYN_LIST) return null;          /* (a v9 device: no SYN kits) */
-    if(opt.modern&&cmd>=112&&cmd<=118){perfHandle(cmd,a,out,b,v,s);return frame(cmd,out);}
+    if(opt.modern&&((cmd>=112&&cmd<=118)||cmd===120)){perfHandle(cmd,a,out,b,v,s);return frame(cmd,out);}
     const NB = st.bank.length;
     switch (cmd) {
       case CMD.UP_LIST: {
@@ -3128,11 +3131,18 @@ function makeMockDevice(opt = {}) {
       case CMD.PING:
         b(0);
         break;
+      case 121: {
+        if(!opt.modern)return null;
+        st.custom=st.custom||Array.from({length:4},()=>Array(12).fill(0));st.fine=st.fine||{};
+        const slot=a[0],values=a.slice(1).filter((_,i)=>!(i%2)).map((_,i)=>v14dec(a[1+2*i],a[2+2*i]));
+        const rc=slot==null||slot>3||(a.length!==1&&a.length!==25)||values.some(v=>v< -100||v>100)?1:0;
+        b(rc);b(slot??4);if(!rc){if(a.length===25)st.fine[slot]=values;(st.fine[slot]||st.custom[slot].map(v=>-25*v)).forEach(v=>v14enc(v).forEach(b));}break;
+      }
       case 107: {
         if(!opt.modern)return null;
         st.custom=st.custom||Array.from({length:4},()=>Array(12).fill(0));
         const slot=a[0],rc=slot>3||(a.length!==1&&a.length!==13)||a.slice(1).some(v=>v>3)?1:0;
-        b(rc);b(slot);if(!rc){if(a.length===13)st.custom[slot]=a.slice(1);st.custom[slot].forEach(b);}break;
+        b(rc);b(slot);if(!rc){if(a.length===13){st.custom[slot]=a.slice(1);if(st.fine)delete st.fine[slot];}st.custom[slot].forEach(b);}break;
       }
       case 111: {
         if(!opt.modern)return null;st.programNames=st.programNames||Array.from({length:8},(_,i)=>"PROGRAM "+(i+1));
@@ -3171,7 +3181,7 @@ function makeMockDevice(opt = {}) {
         break;
       }
       case CMD.INFO:
-        s(opt.modern ? "FELUCCA SYNTHMAVEN 2.2.4 (MOCK)" : opt.synthmaven ? "FELUCCA SYNTHMAVEN 1.3 (MOCK)" : opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : (opt.synthmaven ? "FELUCCA SYNTHMAVEN 1.3 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)")); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
+        s(opt.modern ? "FELUCCA SYNTHMAVEN 3.0 (MOCK)" : opt.synthmaven ? "FELUCCA SYNTHMAVEN 1.3 (MOCK)" : opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : (opt.synthmaven ? "FELUCCA SYNTHMAVEN 1.3 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)")); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
         ENG.forEach((e) => s(e.name));
         if (!opt.legacy) b(NTRK);
         if (v5) b(opt.synthmaven ? (opt.modern?SM_RELEASE.protocol:opt.maqam?18:opt.oriental?16:15) : opt.noBackup ? 5 : opt.v7 ? 7 : opt.v8 ? 8 : opt.v9 ? 9 : opt.synthmaven ? (JU_E >= 0 ? (opt.synthmaven === "0.8" ? 13 : 14) : FX_E >= 0 ? 12 : 11) : 10);   /* v10: SYN kits (v9: FM6 patches, v8: fill conditions, v7: nudges and locks, v6: backup) */
@@ -10282,6 +10292,37 @@ let tuv = null;
 let tuCustom = null;
 const tuSystems = () => TU_NAMES.slice(0, dev?.info?.proto >= 18 ? TU_NAMES.length : dev?.info?.proto >= 17 ? 58 : 14);
 const tuOk = () => !!dev && !!dev.info && dev.info.proto >= 14;
+function tuHybridInit(){
+ if($('sm-scale-library'))return;
+ const panel=$('tupanel'),bar=panel.querySelector('.bar');
+ const heading=panel.querySelector('h2');heading.removeAttribute('data-t');heading.textContent='SCALE & MAQAM';
+ const layout=el('div',{class:'sm-hybrid-tuning'}),library=el('aside',{id:'sm-scale-library'}),body=el('div',{id:'sm-scale-body'});
+ const search=el('input',{type:'search',placeholder:'Search scales / maqams…','aria-label':'Search scales and maqams'}),list=el('div',{id:'sm-scale-list',role:'listbox','aria-label':'Scales and maqams'});
+ const filter=()=>{const q=search.value.toLowerCase();list.replaceChildren(...tuSystems().flatMap((name,i)=>name.toLowerCase().includes(q)?[el('button',{type:'button',role:'option','aria-selected':String(tuv?.sys===i),'data-system':i,text:name,onclick:()=>{if(tuv){tuv.sys=i;op(tuSend);}}})]:[]));};search.oninput=filter;library.append(search,list);layout.append(library,body);panel.append(layout);
+ const masterRow=el('div',{id:'sm-master-tuning-row',class:'sm-tuning-actions'}),master=el('input',{type:'checkbox',id:'sm-tuning-all'}),bypass=el('input',{type:'checkbox',id:'sm-tuning-bypass'});
+ master.onchange=()=>op(async()=>{for(let i=0;i<4;i++){const r=await rq([110,[i,+master.checked]]);checkRc(r[0]);smMasterTuning[i]=r[2];}tuRender();smLayerRender();});
+ bypass.onchange=()=>{$('sm-tuning-apply').checked=!bypass.checked;$('sm-tuning-apply').dispatchEvent(new Event('change'));};
+ masterRow.append(el('label',{},master,document.createTextNode(' MASTER / ALL LAYERS')),el('label',{},bypass,document.createTextNode(' BYPASS TUNING')));body.append($('sm-tuning-apply-row'),masterRow,bar);
+ const controls=el('div',{class:'sm-tuning-actions'}),all=el('button',{type:'button',text:'APPLY TO MASTER',onclick:()=>op(async()=>{for(let i=0;i<4;i++){const r=await rq([110,[i,1]]);checkRc(r[0]);smMasterTuning[i]=r[2];}tuRender();smLayerRender();})});all.title='Enable the current global tuning for all four parts';
+ const show=el('input',{type:'checkbox',checked:true,id:'sm-show-tuning-keyboard'});show.onchange=()=>{const visible=show.checked;body.classList.toggle('sm-keyboard-collapsed',!visible);$('sm-tuning-keyboard').hidden=!visible;};controls.append(all,el('label',{},show,document.createTextNode(' SHOW TUNING KEYBOARD')));body.append(controls);
+ const keyboard=el('div',{id:'sm-tuning-keyboard',class:'sm-keyboard-layout'});body.append(keyboard);let keyboardWidth=0;new ResizeObserver(entries=>{const width=entries[0].contentRect.width;if(width>0&&Math.abs(width-keyboardWidth)>1){keyboardWidth=width;requestAnimationFrame(()=>{if(tuv)tuKeyboard();});}}).observe(keyboard);
+ const selected=el('output',{id:'sm-tuning-selected'}),noteActions=el('div',{class:'sm-tuning-actions sm-note-actions'});noteActions.append(el('button',{type:'button',text:'HALF-FLAT',onclick:()=>op(()=>tuFineWrite(-50))}),el('button',{type:'button',text:'RESET NOTE',onclick:()=>op(()=>tuFineWrite(0))}));body.append(selected,noteActions);
+ const offsets=el('details',{id:'sm-note-offsets',open:true}),summary=el('summary',{text:'ROOT-RELATIVE NOTE OFFSETS'}),grid=el('div',{id:'sm-note-offset-grid'});offsets.append(summary,grid);body.append(offsets);
+ const footer=el('div',{id:'sm-tuning-footer'}),reset=el('button',{type:'button',text:'RESET SCALE',onclick:()=>op(async()=>{if(!tuv)return;tuv.sys=0;await tuSend();})});footer.append($('tua4box'),$('tuscl'),reset,$('tusend'),$('tuinfo'));panel.append(footer);
+ const bank=el('details',{id:'sm-scale-bank'});bank.append(el('summary',{text:'24 CUSTOM SCALES / EDITOR LIBRARY'}));const row=el('div',{class:'sm-tuning-actions'}),slot=el('select',{id:'sm-scale-slot','aria-label':'Saved scale slot'}),name=el('input',{id:'sm-scale-name',placeholder:'Name your custom scale','aria-label':'Custom scale name',maxlength:48});
+ let perfSlot=null,saved;try{saved=JSON.parse(localStorage.getItem('synthmaven-fm1-scale-library')||'[]');if(!Array.isArray(saved))saved=[];}catch{saved=[];}
+ const refresh=()=>{const current=slot.value||'0';slot.replaceChildren(...Array.from({length:24},(_,i)=>el('option',{value:i,text:String(i+1).padStart(2,'0')+' / '+(saved[i]?.name||'Empty')})));slot.value=current;if(perfSlot){perfSlot.replaceChildren(...[...slot.options].map(o=>o.cloneNode(true)));perfSlot.value=current;}};refresh();
+ const recall=()=>op(async()=>{const x=saved[+slot.value];if(!x)return;const valid=x.tune&&Number.isInteger(x.tune.root)&&x.tune.root>=0&&x.tune.root<12&&Number.isInteger(x.tune.sys)&&x.tune.sys>=0&&x.tune.sys<tuSystems().length;if(!valid)throw Error('Invalid saved scale');if(x.offsets){if(!Array.isArray(x.offsets)||x.offsets.length!==12||x.offsets.some(v=>!Number.isInteger(v)||v< -100||v>100))throw Error('Invalid saved offsets');const r=await rq([121,[tuFineTarget,...x.offsets.flatMap(v14enc)]]);checkRc(r[0]);}tuv={...x.tune,sys:x.offsets?58+tuFineTarget:x.tune.sys};await tuSend();name.value=x.name;});
+ row.append(slot,name,el('button',{type:'button',text:'SAVE SCALE',onclick:()=>{if(!tuv)return;const copy={name:name.value.trim()||TU_NAMES[tuv.sys],tune:structuredClone(tuv),offsets:tuFine?.slice()||null};const next=saved.slice();next[+slot.value]=copy;try{localStorage.setItem('synthmaven-fm1-scale-library',JSON.stringify(next));saved=next;refresh();}catch{say('Scale could not be saved: editor storage is unavailable.');}}}),el('button',{type:'button',text:'LOAD SCALE',onclick:recall}));bank.append(row,el('p',{class:'dim',text:'Saved in this editor. Loading a custom scale replaces the selected CUSTOM 1–4 device slot.'}));panel.append(bank);const recallRow=el('div',{id:'sm-performance-scale-recall'});perfSlot=el('select',{'aria-label':'Recall saved scale'});perfSlot.onchange=()=>{slot.value=perfSlot.value;};slot.onchange=()=>{perfSlot.value=slot.value;};recallRow.append(perfSlot,el('button',{type:'button',text:'RECALL SCALE',onclick:recall}));body.append(recallRow);refresh();tuHybridInit.filter=filter;filter();
+}
+function tuHybridRender(){
+ tuHybridInit();tuHybridInit.filter();
+ $('sm-tuning-all').checked=smMasterTuning.every(Boolean);$('sm-tuning-bypass').checked=!smMasterTuning[dev.sel];
+ $('sm-tuning-selected').textContent='SELECTED '+tuNotes[tuSelectedKey]+' / '+Math.round(tuOffsets[tuSelectedKey])+' ct';
+ const grid=$('sm-note-offset-grid');grid.replaceChildren(...Array.from({length:12},(_,i)=>{const pc=(i+tuv.root)%12,value=Math.round(tuOffsets[pc]),label=el('label',{text:tuNotes[pc]}),slider=el('input',{type:'range',min:-100,max:100,step:1,value,'aria-label':tuNotes[pc]+' offset in cents'}),out=el('output',{text:value+' ct'});slider.disabled=dev.info.proto<26;slider.oninput=()=>out.textContent=slider.value+' ct';slider.onchange=()=>{tuSelectedKey=pc;op(()=>tuFineWrite(+slider.value));};label.append(slider,out);return label;}));
+ const perform=document.documentElement.classList.contains('ios-perform');$('tupanel').classList.toggle('sm-tuning-performance',perform);$('tupanel').querySelector('h2').textContent=perform?TU_NAMES[tuv.sys]:'MASTER SCALE & MAQAM';
+}
+
 function tuShow() {
   const on = tuOk();
   $("tupanel").hidden = !on;
@@ -10292,32 +10333,69 @@ function tuShow() {
   }
   if (tuShow.dev !== dev) { tuShow.dev = dev; op(tuRead); }
 }
-function tuKeyboard() {
+let tuSelectedKey=0,tuFine=null,tuFineTarget=0,tuWheelBusy=false;
+const tuNotes=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+async function tuFineWrite(value){
+ if(tuWheelBusy||!tuv||dev.info.proto<26)return;
+ const slot=tuv.sys>=58&&tuv.sys<=61?tuv.sys-58:tuFineTarget;
+ const offsets=Array.from({length:12},(_,i)=>Math.round(tuOffsets[(i+tuv.root)%12]));
+ if(offsets.some(c=>c< -100||c>100))throw Error('This scale cannot be represented as a ±100-cent chromatic custom scale.');
+ offsets[(tuSelectedKey-tuv.root+12)%12]=Math.max(-100,Math.min(100,Math.round(value)));
+ tuWheelBusy=true;
+ try{const reply=await rq([121,[slot,...offsets.flatMap(v14enc)]]);checkRc(reply[0]);
+  tuFine=offsets;tuCustom=offsets.map(c=>Math.max(0,Math.min(3,Math.round(-c/25))));
+  if(tuv.sys!==58+slot){tuv.sys=58+slot;await tuSend();}else tuRender();
+ }finally{tuWheelBusy=false;}
+}
+let tuOffsets=Array(12).fill(0);
+$("sm-quick-tuning").addEventListener('toggle',()=>{if($("sm-quick-tuning").open)op(tuRead);});
+function tuWheel(box){
+ const wrap=el('div',{class:'sm-cent-controls'}),label=el('label',{class:'sm-cent-label',text:tuNotes[tuSelectedKey]+' / FINE TUNE'});
+ const value=Math.round(tuOffsets[tuSelectedKey]),enabled=dev.info.proto>=26;
+ const wheel=el('input',{type:'range',min:-100,max:100,step:1,value,class:'sm-cent-wheel','aria-label':'Selected key tuning in cents'});
+ const exact=el('input',{type:'number',min:-100,max:100,step:1,value,'aria-label':'Exact tuning in cents'});wheel.disabled=exact.disabled=!enabled;
+ const show=()=>{exact.value=wheel.value;wheel.setAttribute('aria-valuetext',wheel.value+' cents');const key=box.querySelector('.sm-key-selected');if(key){const cents=Number(wheel.value);key.querySelector('.sm-key-cents').textContent=(cents>0?'+':'')+cents+' ct';key.classList.toggle('sm-key-altered',cents!==0);key.setAttribute('aria-label',tuNotes[tuSelectedKey]+' '+cents+' cents');}};show();
+ let drag=null;wheel.onpointerdown=e=>{if(wheel.disabled)return;e.preventDefault();drag={x:e.clientX,value:+wheel.value};wheel.setPointerCapture(e.pointerId);wheel.focus();};wheel.onpointermove=e=>{if(!drag)return;wheel.value=Math.max(-100,Math.min(100,drag.value+Math.round((e.clientX-drag.x)/2)));show();};wheel.onpointerup=()=>{if(!drag)return;drag=null;op(()=>tuFineWrite(+wheel.value));};wheel.onpointercancel=()=>{drag=null;tuRender();};
+ wheel.oninput=show;wheel.onchange=()=>op(()=>tuFineWrite(+wheel.value));exact.onchange=()=>{if(exact.checkValidity())op(()=>tuFineWrite(+exact.value));else exact.reportValidity();};
+ label.append(exact);wrap.append(label,wheel);
+ if(tuv.sys<58||tuv.sys>61){const target=el('select',{'aria-label':'Custom scale destination'});for(let i=0;i<4;i++)target.append(el('option',{value:i,text:'Edits replace Custom '+(i+1)}));target.value=tuFineTarget;target.onchange=()=>{tuFineTarget=+target.value;};wrap.append(target);}
+ const help=el('small',{text:enabled?'Select a key. Drag left/right by 1 cent. Double-tap: −50 / 0 cents.':'Fine tuning requires firmware protocol 26 or newer.'});wrap.append(help,wheel);return wrap;
+}
+function tuKeyboard(boxId='sm-tuning-keyboard') {
  if(!tuv)return;
- let box=$("sm-tuning-keyboard");if(!box){box=el("div",{id:"sm-tuning-keyboard"});$("tuinfo").before(box);}
+ let box=$(boxId);if(!box){box=el("div",{id:boxId,class:"sm-keyboard-layout"});$("tuinfo").before(box);}
  const notes=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"],sys=tuv.sys,root=tuv.root%12;
  const maqam=TU_MAQAM.find(m=>m.sys===sys),custom=sys>=58&&sys<=61&&tuCustom;
  const utility=[[0,117,39,156,-137,-20,-98,20,137,-156,176,-117],[0,-98,39,-59,78,-20,117,20,-78,59,-39,98],[0,-240,-68,103,-137,34,-205,-34,-274,-103,68,-171],[0,-98,-78,-59,-98,-20,-117,-39,-78,-117,-39,-78],[0,-98,-68,-59,-137,-20,-98,-34,-78,-103,-39,-117]];
- function offset(pc){const rel=(pc-root+12)%12;if(maqam)return maqam.offsets[rel];if(custom)return -25*tuCustom[rel];if(sys===0)return 0;if(sys>=1&&sys<=5)return utility[sys-1][rel]/10;
+ function offset(pc){const rel=(pc-root+12)%12;if(maqam)return maqam.offsets[rel];if(custom)return tuFine?tuFine[rel]:-25*tuCustom[rel];if(sys===0)return 0;if(sys>=1&&sys<=5)return utility[sys-1][rel]/10;
   let deg=sys===8?[0,231,474,717,955]:sys===9?[0,120,258,539,675,785,943]:sys>=10&&sys<=12?Array.from({length:[19,24,31][sys-10]},(_,i)=>Math.floor(i*19200/[19,24,31][sys-10])/16):tuv.deg.map(d=>d/16);
   const n=deg.length,period=sys===13?tuv.period/16:1200;if(!n)return 0;const d=pc-root,oct=Math.floor(d/n),k=d-oct*n;return Math.max(-10000,Math.min(10000,oct*period+deg[k]-d*100));
  }
+ tuOffsets=Array.from({length:12},(_,pc)=>offset(pc));
  const make=(tag,attrs={})=>{const e=document.createElementNS("http://www.w3.org/2000/svg",tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);return e;};
- const g=make("svg",{viewBox:"0 0 640 210",role:"img","aria-label":"Chromatic tuning keyboard: root "+notes[root]+"; altered keys show their cents offset",class:"sm-tuning-graphic"});
- const white=[0,2,4,5,7,9,11],black=[1,3,6,8,10],boundary=[1,2,4,5,6],w=640/7;
+ const g=make("svg",{viewBox:"0 0 640 200",preserveAspectRatio:"none",role:"img","aria-label":"Chromatic tuning keyboard: root "+notes[root]+"; altered keys show their cents offset",class:"sm-tuning-graphic"});
+ box.replaceChildren(g,tuWheel(box));
+ const width=Math.max(280,g.getBoundingClientRect().width),height=112;g.setAttribute("viewBox",`0 0 ${width} ${height}`);
+ const white=[0,2,4,5,7,9,11],black=[1,3,6,8,10],boundary=[1,2,4,5,6],w=width/7;
  function key(pc,x,width,height,isBlack){const change=offset(pc),altered=Math.abs(change)>.05,k=make("g",{class:(altered?"sm-key-altered ":"")+(isBlack?"sm-key-black":"sm-key-white")});
   k.append(make("rect",{x:x+1,y:1,width:width-2,height:height-2,rx:5}));
   const label=(y,value)=>{const t=make("text",{x:x+width/2,y,"text-anchor":"middle"});t.textContent=value;k.append(t);};
-  label(height-12,notes[pc]);label(height-34,(change>0?"+":"")+(Math.round(change*10)/10)+" ct");if(pc===root)k.append(make("circle",{cx:x+width/2,cy:14,r:3}));
-  if(custom){k.style.cursor="pointer";k.addEventListener("click",()=>op(async()=>{const next=tuCustom.slice(),i=(pc-root+12)%12;next[i]=(next[i]+1)%4;const r=await rq([107,[sys-58,...next]]);checkRc(r[0]);tuCustom=Array.from(r.slice(2));tuRender();}));}
+  label(height-12,notes[pc]);label(isBlack?14:height-28,(change>0?"+":"")+(Math.round(change*10)/10)+" ct");k.lastChild.classList.add("sm-key-cents");k.append(make("path",{d:`M ${x+1} 2 H ${x+width-1}`,stroke:"#9ed3f0","stroke-width":3}));
+  k.style.cursor="pointer";k.setAttribute('role','button');k.setAttribute('tabindex','0');k.setAttribute('aria-label',notes[pc]+' '+change+' cents');k.setAttribute('aria-pressed',String(pc===tuSelectedKey));if(pc===tuSelectedKey)k.classList.add('sm-key-selected');
+  const select=()=>{tuSelectedKey=pc;for(const item of g.children){item.classList.remove('sm-key-selected');item.setAttribute('aria-pressed','false');}k.classList.add('sm-key-selected');k.setAttribute('aria-pressed','true');box.querySelector('.sm-cent-controls')?.replaceWith(tuWheel(box));if($('sm-tuning-selected'))$('sm-tuning-selected').textContent='SELECTED '+tuNotes[pc]+' / '+Math.round(offset(pc))+' ct';};
+  let lastTap=0,touchTap=false;
+  k.addEventListener('pointerdown',e=>{touchTap=e.pointerType==='touch';});
+  k.addEventListener('click',e=>{select();const now=performance.now();if(e.detail===2 || (touchTap && lastTap>0 && now-lastTap<350)){lastTap=0;op(()=>tuFineWrite(Math.abs(offset(pc))>.05?0:-50));}else lastTap=now;});
+  k.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select();}if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();select();op(()=>tuFineWrite(offset(pc)+(e.key==='ArrowLeft'?-1:1)));}});
   g.append(k);
  }
- white.forEach((pc,i)=>key(pc,i*w,w,200,false));black.forEach((pc,i)=>key(pc,(boundary[i]-.31)*w,.62*w,124,true));box.replaceChildren(g);
+ white.forEach((pc,i)=>key(pc,i*w,w,height,false));black.forEach((pc,i)=>key(pc,(boundary[i]-.32)*w,.64*w,height*.62,true));
 }
 
 function tuRender() {
   if (!tuv) return;
-  tuKeyboard();smChordRefresh();
+  tuHybridInit();
+  tuKeyboard();if($("sm-quick-tuning")?.open)tuKeyboard("sm-quick-keyboard");tuHybridRender();smChordRefresh();
   $("sm-quantize-help").hidden=dev.info.proto<20;$("sm-tuning-apply-row").hidden=dev.info.proto<20;$("sm-tuning-apply").checked=!!smMasterTuning[dev.sel];
   $("tusys").value = String(tuv.sys);
   $("turoot").value = String(tuv.root);
@@ -10327,12 +10405,7 @@ function tuRender() {
   $("tua4box").hidden = tuv.a4 == null;                /* (SynthMaven 1.0: the reference pitch) */
   if (tuv.a4 != null && document.activeElement !== $("tua4")) $("tua4").value = String(tuv.a4);
   if(tuv.sys>=58 && tuv.sys<=61 && tuCustom) {
-    const notes=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-    const buttons=tuCustom.map((step,i)=>el("button",{text:notes[(i+tuv.root)%12]+" "+(-25*step)+" ct",onclick:()=>op(async()=>{
-      const next=tuCustom.slice();next[i]=(next[i]+1)%4;
-      const r=await rq([107,[tuv.sys-58,...next]]);checkRc(r[0]);tuCustom=Array.from(r.slice(2));tuRender();
-    })}));
-    $("tuinfo").replaceChildren(el("p",{text:"Custom chromatic scale: click a note to cycle 0 / −25 / −50 / −75 cents. Changes save to the FM1 settings."}),...buttons);
+    $("tuinfo").textContent="Custom chromatic scale. Exact-cent edits save to FM-1 settings; save tuning with a program to retain a program-specific copy.";
     return;
   }
   const maqam=TU_MAQAM.find(m=>m.sys===tuv.sys);
@@ -10349,8 +10422,8 @@ async function tuRead() {
   if (r.rc) return;
   tuv = { ...r, desc: tuv && tuv.desc };
   if(dev.info.proto>=20){const a=await rq([110,[dev.sel]]);checkRc(a[0]);smMasterTuning[dev.sel]=a[2];}
-  tuCustom=null;
-  if(tuv.sys>=58 && tuv.sys<=61 && dev.info.proto>=18){const c=await rq([107,[tuv.sys-58]]);checkRc(c[0]);tuCustom=Array.from(c.slice(2));}
+  tuCustom=null;tuFine=null;
+  if(tuv.sys>=58 && tuv.sys<=61 && dev.info.proto>=18){const c=await rq([107,[tuv.sys-58]]);checkRc(c[0]);tuCustom=Array.from(c.slice(2));if(dev.info.proto>=26){const f=await rq([121,[tuv.sys-58]]);checkRc(f[0]);tuFine=Array.from({length:12},(_,i)=>v14dec(f[2+2*i],f[3+2*i]));}}
   tuRender();
 }
 async function tuSend() {

@@ -139,7 +139,7 @@ python3 tools/make_synthmaven_site.py --package build/felucca.fwsc
 
 ## SynthMaven 1.5 USB host release
 
-Run `sh tools/test_synthmaven.sh`, then `sh build.sh --release 1.5`. USB host support is enabled for the app and disabled for the rescue loader. Bluetooth is excluded. The AC79 SDK remains a packaging dependency. Linux CI checks target flash, static RAM, low SRAM and pool limits before deployment. macOS requires Docker for the Linux toolchain.
+Run `sh tools/test_synthmaven.sh`, then `sh build.sh --release 3.0`. USB host support is enabled for the app and disabled for the rescue loader. The release excludes Bluetooth (SM_BLE=0, the default). SM_BLE=1 is an unreleased research build with a known dual-core fault; do not distribute it as production firmware. Target checks enforce flash/RAM budgets and reject XIP references from SRAM calibration code. The AC79 SDK remains a packaging dependency. Linux CI checks target flash, static RAM, low SRAM and pool limits before deployment. macOS requires Docker for the Linux toolchain.
 
 ## Rebuild the illustrated guide
 

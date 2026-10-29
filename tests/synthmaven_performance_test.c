@@ -15,6 +15,10 @@ int main(void){outdir="build/host";bank_resolve();panel=PANEL_DEFAULT;layers_ini
  wn=0;song.cpu_q8=300;diag_peak=135;diag_late=921;
  check(ed_performance(119,0,0)&&wire[0]==0&&wire[1]==(300&127)&&wire[2]==(300>>7)&&wire[11]==(921&127)&&wire[12]==(921>>7),"realtime diagnostics expose actual CPU and missed deadlines");
  wn=0;uint8_t bad_diag[1]={1};check(ed_performance(119,bad_diag,1)&&wn==1&&wire[0]==1,"diagnostic writes are rejected");
+ wn=0;sm_current_program=2;sm_scene_index=1;sm_pending_program=255;strcpy(program_names[2],"TEST PROGRAM");sm_scenes[1].valid=1;
+ check(ed_performance(120,0,0)&&wire[0]==0&&wire[1]==2&&wire[2]==1&&wire[3]==127&&(wire[5]&2)&&!strcmp((char *)wire+6,"TEST PROGRAM"),"performance navigation reports program name and scene");
+ wn=0;uint8_t bad_nav[2]={4,0};ed_performance(120,bad_nav,2);check(wire[0]==1&&sm_pending_program==255,"malformed navigation cannot load a program");
+ wn=0;bad_nav[0]=3;ed_performance(120,bad_nav,1);check(wire[0]==1,"navigation only accepts four bounded actions");
  memset(sm_pedal,0,sizeof sm_pedal);sm_action_w=sm_action_r=0;sm_repeat_ms=0;fm1_ms=100;
  check(!sm_learn_arm(4),"arm program-next learn");sm_pedal_receive(0xB0,2,64,127,0,1);
  check(sm_learn_state==2&&sm_candidate[3]==3&&!sm_pedal[4][0]&&sm_action_w==sm_action_r,"learning stages message without assigning or triggering");

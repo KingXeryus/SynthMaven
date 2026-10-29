@@ -1,4 +1,4 @@
-# SynthMaven 2.2.4 — quick start
+# SynthMaven 3.0 — quick start
 
 Every firmware installation clears user settings, saved programs, user presets, samples and autosave, including same-version reinstalls. Back up before installing. Open the [installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) in Chrome or Edge. Connect the FM1 by USB in COMPUTER mode and follow the prompts. For rescue, hold OCT− while powering on.
 
@@ -8,13 +8,13 @@ Tap SAVE for PROGRAM. SELECT chooses SLOT 1–8; ALGORITHM chooses a name charac
 
 Tap SEL to open the scale browser, then turn SELECT to cycle tuning scales. Hold SEL for three seconds, then release, to edit CUSTOM 1–4. SELECT chooses the custom slot; PRESET chooses ROOT. Repeated presses of a key cycle −25/−50/−75/0 cents for that pitch class. SAVE stores it; SEL exits. Except GLO, function layers latch after a three-second hold; tap their button or HOME to exit.
 
-For a pedal directly into the FM1, choose GLO → USB ROLE → PEDAL. Use a powered USB adapter or hub with a class-compliant USB MIDI pedal. This host implementation does not supply 5 V VBUS. Direct Chocolate Plus operation still needs hardware validation. Bluetooth is removed.
+For a pedal directly into the FM1, choose GLO → USB ROLE → PEDAL. Use a powered USB adapter or hub with a class-compliant USB MIDI pedal. This host implementation does not supply 5 V VBUS. Direct Chocolate Plus operation still needs hardware validation. Direct Bluetooth is not included in firmware 3.0.
 
 Set GLO → PATCH MIDI → PROG ON, then configure PATCH UP/DOWN and BANK UP/DOWN as CC or PC messages. Patch actions cycle presets within the selected engine; bank actions cycle engines. Set KEY MIDI independently for the keyboard.
 
 Choose USB ROLE → COMPUTER before reconnecting the web editor or installer. The USB port supports one role at a time.
 
-Read the [illustrated PDF guide](docs/SynthMaven-2.2.4-User-Guide.pdf), [user manual](docs/USER_MANUAL.md), [release notes](docs/release-2.2.4.md), and [maqam catalogue](docs/MAQAM_SCALES.md).
+Read the [illustrated PDF guide](docs/SynthMaven-3.0-User-Guide.pdf), [user manual](docs/USER_MANUAL.md), [release notes](docs/release-3.0.md), and [maqam catalogue](docs/MAQAM_SCALES.md).
 
 Choose **Appearance → Dark / Light / System** in the installer or editor. In the editor’s Sound page, use the instrument tabs and rotary controls; drag an envelope handle to edit its shape. The 557-entry bank contains 556 level-matched audible sounds and USER WT, which stays silent until you upload a wavetable.
 
@@ -59,7 +59,7 @@ Selection uses compatibility checks and native waveform spectral fitting, with n
 
 ## Chord controls in 2.1
 
-Use the existing SEL page CHORD control to choose a legacy or new chord mode. SEL 2 provides VOIC and STRUM. AUTO follows in-scale harmony; AUTO2 places harmony below your melody. When microtonal master tuning applies, the selector offers OPEN 5 and NEUTRAL instead; incompatible saved AUTO modes play OPEN 5. See [the current chord reference](docs/release-2.2.4.md). Hold ENV for three seconds to open CHORDS, with CHORD, VOIC and STRUM on the first three assignable knobs. Release ENV to keep editing; tap ENV for envelopes or HOME to return. The chord screen appears only after the full three seconds.
+Use the existing SEL page CHORD control to choose a legacy or new chord mode. SEL 2 provides VOIC and STRUM. AUTO follows in-scale harmony; AUTO2 places harmony below your melody. When microtonal master tuning applies, the selector offers OPEN 5 and NEUTRAL instead; incompatible saved AUTO modes play OPEN 5. See [the current chord reference](docs/release-3.0.md). Hold ENV for three seconds to open CHORDS, with CHORD, VOIC and STRUM on the first three assignable knobs. Release ENV to keep editing; tap ENV for envelopes or HOME to return. The chord screen appears only after the full three seconds.
 
 ## Scale-aware chords in 2.1.2
 
@@ -80,3 +80,7 @@ On SAVE > PROGRAM, SELECT browses slots 1–8. Turn LOAD twice to confirm. Unuse
 P1 Piano · P2 Epiano · P3 Lead Synth · P4 Oriental Lead · P5 Disco Synth · P6 Brass · P7 Strings · P8 Bass. Each contains one foreground instrument and three supports. All four parts share eight voices total; release tails and unison consume that shared budget.
 
 The release targets −14 LUFS on documented reference performances, including solo parts and layered scenes, with true peaks at or below −1 dBTP. It is not constant loudness for arbitrary playing. USER WT remains silent until populated.
+
+## iPhone/iPad over USB
+
+Use the [iOS editor and setup instructions](ios/README.md). Select COMPUTER mode on the FM-1, connect it by USB, and choose Connect → USB cable in the app. Firmware 3.0 excludes Bluetooth. The app is available to invited TestFlight testers; source builds require Apple signing.

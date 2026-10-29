@@ -464,7 +464,7 @@ static uint32_t graph_signature(void)
 #if SYNTHMAVEN_SYNTH
     if(!ui.home && pg->graph==GR_PEDAL)h^=sm_last_at+sm_last_result*137u+sm_last_match*7919u+sm_learn_state*333u+sm_trigger_count+((fm1_ms-sm_trigger_at)<1000u?0x777u:0);
     if(!ui.home && pg->graph==GR_SETLIST)h^=sm_setlist_active*7919u+sm_setlist_pos*137u+sm_setlist_len+sm_pending_program*333u;
-    if(!ui.home && pg->scope==SC_SYN && pg->id[0]==X_TSYS)h^=tune_cfg.sys*7777u+tune_cfg.root*131u+tune_floor_octave*977u+last_note*31u+custom_scale[0]+custom_scale[1]+custom_scale[2]+custom_scale[3];
+    if(!ui.home && pg->scope==SC_SYN && pg->id[0]==X_TSYS)h^=tune_cfg.sys*7777u+tune_cfg.root*131u+tune_floor_octave*977u+last_note*31u+custom_scale[0]+custom_scale[1]+custom_scale[2]+custom_scale[3]+(uint32_t)program_hash(&fine_scale,sizeof fine_scale);
 #endif
     if (ui.hot_t && settings.zoom)
         h = str_hash(str_hash(str_hash(h ^ 0x5555u, ui.focus_v), ui.focus_l), ui.focus_u);
@@ -1027,6 +1027,16 @@ static void draw_graph(void)
                 cv_oy = 0;
                 graph_big();
 #if SYNTHMAVEN_SYNTH
+                if(pg->scope==SC_SYN && pg->id[0]==X_SMBT){
+                    cv_text(8,0,&FONT_S,"EXPERIMENTAL EDITOR",C_WHITE);
+#if SM_BLE
+                    cv_text(8,94,&FONT_S,sm_ble_state()==6u?"CONNECTED":sm_ble_state()==1u?"RELEASE KEYS TO START":sm_bluetooth?"PAIR FROM IOS APP":"OFF AT EVERY START",C_GRAY);
+#elif defined(SM_BLE_PREVIEW)
+                    cv_text(8,94,&FONT_S,"OFF AT EVERY START",C_GRAY);
+#else
+                    cv_text(8,94,&FONT_S,"RADIO NOT IN BUILD",C_GRAY);
+#endif
+                }
                 if(pg->scope==SC_SYN && pg->id[0]==X_TA4){
                     cv_text(8,72,&FONT_S,program_save_tuning?"SAVE TUNING IN PROGRAM":"FOLLOW GLOBAL TUNING",C_WHITE);
                     cv_text(8,96,&FONT_S,"APPLIES WHEN YOU SAVE",C_GRAY);

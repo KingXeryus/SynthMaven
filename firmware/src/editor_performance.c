@@ -1,6 +1,15 @@
 /* Protocol 22: staged pedal learning, scenes, setlists and native filter capabilities. */
 static int ed_performance(uint32_t cmd,const uint8_t *a,uint32_t n){
  uint32_t i,op=n?a[0]:0,rc=0;
+ /* Protocol 25 performance navigation: no args reads; 4/5 program +/-; 6/7 scene +/-. */
+ if(cmd==120u){
+  if(n>1 || (n && (a[0]<4 || a[0]>7)))rc=1;
+  else if(n)rc=sm_performance_action(a[0]);
+  uint32_t mask=0;for(i=0;i<4;i++)if(sm_scenes[i].valid)mask|=1u<<i;
+  ed_b(rc);ed_b(sm_current_program<8?sm_current_program:127);ed_b(sm_scene_index<4?sm_scene_index:127);
+  ed_b(sm_pending_program<8?sm_pending_program:127);ed_b(sm_action_rc);ed_b(mask);
+  ed_str(sm_current_program<8?program_names[sm_current_program]:"UNSAVED",13);ui.force=1;return 1;
+ }
  /* Read-only realtime diagnostics: rc, four unsigned 35-bit values, layer, core label. */
  if(cmd==119u){
   if(n){ed_b(1);return 1;}
@@ -15,6 +24,9 @@ static int ed_performance(uint32_t cmd,const uint8_t *a,uint32_t n){
   for(uint32_t j=0;j<4;j++)for(uint32_t k=0;k<5;k++)ed_b(sm_part_us_q8[j]>>(7u*k));
   for(uint32_t j=0;j<4;j++)for(uint32_t k=0;k<5;k++)ed_b(sm_part_us_max[j]>>(7u*k));
   for(uint32_t k=0;k<5;k++)ed_b(sm_mono_coalesced>>(7u*k));
+  #if SM_BLE
+  uint32_t radio[21];sm_ble_diagnostics(radio);for(uint32_t j=0;j<21;j++)for(uint32_t k=0;k<5;k++)ed_b(radio[j]>>(7u*k));
+  #endif
   return 1;
  }
  if(cmd==118u){rc=n==1u?sm_factory_load(a[0]):1u;ed_b(rc);ed_b(n?a[0]:127u);return 1;}

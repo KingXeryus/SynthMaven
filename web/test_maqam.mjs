@@ -26,7 +26,17 @@ for(const modern of [false,true]){
  const input=[...mock.access.inputs.values()][0],output=[...mock.access.outputs.values()][0];
  const link=new E.Link(d=>output.send(d),{timeout:500});input.onmidimessage=e=>link.receive(e.data);const rq=r=>link.request(r);
  try{
-  const info=E.parse[E.CMD.INFO](await rq(E.req.info()));assert.equal(info.proto,modern?24:16);
+  const info=E.parse[E.CMD.INFO](await rq(E.req.info()));assert.equal(info.proto,modern?26:16);
+  if(modern){
+   const encode=n=>[(n+8192)&127,(n+8192)>>7],decode=(a,i)=>a[i]+128*a[i+1]-8192;
+   const cents=[-100,-75,-51,-37,-1,0,1,17,49,62,99,100];
+   let r=await rq([121,[2,...cents.flatMap(encode)]]);assert.equal(r[0],0);
+   r=await rq([121,[2]]);assert.deepEqual(Array.from({length:12},(_,i)=>decode(r,2+2*i)),cents);
+   r=await rq([121,[2,...[101,...cents.slice(1)].flatMap(encode)]]);assert.equal(r[0],1);
+   r=await rq([121,[2]]);assert.equal(decode(r,2),-100,'bad write is atomic');
+   r=await rq([107,[2,...Array(12).fill(2)]]);assert.equal(r[0],0);
+   r=await rq([121,[2]]);assert.equal(decode(r,2),-50,'legacy write clears precise override');
+  }
   for(const sys of [6,7,13,14,57,58,61,62]){
    const rc=E.parse[E.CMD.TUNE_PUT](await rq(E.req.tunePut(sys,11,[0,1600,3200],19200,432))).rc;
    assert.equal(rc,sys<(modern?62:14)?0:1);

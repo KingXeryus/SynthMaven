@@ -1,0 +1,1014 @@
+{
+  "version": "3.0",
+  "protocol": 26,
+  "bluetooth": false,
+  "engines": 23,
+  "factory_entries": 557,
+  "audible_factory_sounds": 556,
+  "program_audio_renders": 136,
+  "hardware_programs": [
+    {
+      "slot": 1,
+      "max_average_cpu": 71.09375,
+      "global_peak": 89,
+      "missed_deadlines": 0,
+      "max_busy_voices": 5,
+      "core": "2 CORES",
+      "phases": [
+        {
+          "notes": [
+            60
+          ],
+          "velocity": 80,
+          "hold_cpu": 68.75,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            359,
+            113,
+            120,
+            75
+          ]
+        },
+        {
+          "notes": [
+            60,
+            64,
+            67
+          ],
+          "velocity": 100,
+          "hold_cpu": 70.703125,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            365,
+            113,
+            124,
+            76
+          ]
+        },
+        {
+          "notes": [
+            57,
+            60,
+            64,
+            69
+          ],
+          "velocity": 127,
+          "hold_cpu": 70.703125,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            375,
+            113,
+            124,
+            76
+          ]
+        },
+        {
+          "notes": [
+            53,
+            57,
+            60,
+            65
+          ],
+          "velocity": 112,
+          "hold_cpu": 71.09375,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            375,
+            113,
+            129,
+            76
+          ]
+        },
+        {
+          "notes": [
+            60,
+            64,
+            67,
+            71,
+            74
+          ],
+          "velocity": 110,
+          "hold_cpu": 71.09375,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            113,
+            129,
+            76
+          ]
+        },
+        {
+          "notes": [
+            48,
+            55,
+            60,
+            64,
+            67,
+            71,
+            74,
+            79
+          ],
+          "velocity": 100,
+          "hold_cpu": 71.09375,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            113,
+            129,
+            76
+          ]
+        }
+      ],
+      "part_us": [
+        163.5390625,
+        76.03515625,
+        88.18359375,
+        69.72265625
+      ]
+    },
+    {
+      "slot": 2,
+      "max_average_cpu": 63.28125,
+      "global_peak": 89,
+      "missed_deadlines": 0,
+      "max_busy_voices": 5,
+      "core": "2 CORES",
+      "phases": [
+        {
+          "notes": [
+            60
+          ],
+          "velocity": 80,
+          "hold_cpu": 60.546875,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            193,
+            129,
+            76
+          ]
+        },
+        {
+          "notes": [
+            60,
+            64,
+            67
+          ],
+          "velocity": 100,
+          "hold_cpu": 62.890625,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            193,
+            129,
+            76
+          ]
+        },
+        {
+          "notes": [
+            57,
+            60,
+            64,
+            69
+          ],
+          "velocity": 127,
+          "hold_cpu": 62.890625,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            193,
+            129,
+            76
+          ]
+        },
+        {
+          "notes": [
+            53,
+            57,
+            60,
+            65
+          ],
+          "velocity": 112,
+          "hold_cpu": 62.5,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            193,
+            129,
+            76
+          ]
+        },
+        {
+          "notes": [
+            60,
+            64,
+            67,
+            71,
+            74
+          ],
+          "velocity": 110,
+          "hold_cpu": 62.5,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            195,
+            129,
+            76
+          ]
+        },
+        {
+          "notes": [
+            48,
+            55,
+            60,
+            64,
+            67,
+            71,
+            74,
+            79
+          ],
+          "velocity": 100,
+          "hold_cpu": 62.890625,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            195,
+            129,
+            76
+          ]
+        }
+      ],
+      "part_us": [
+        111.81640625,
+        79.1484375,
+        80.671875,
+        69.94140625
+      ]
+    },
+    {
+      "slot": 3,
+      "max_average_cpu": 66.40625,
+      "global_peak": 89,
+      "missed_deadlines": 0,
+      "max_busy_voices": 4,
+      "core": "2 CORES",
+      "phases": [
+        {
+          "notes": [
+            60
+          ],
+          "velocity": 80,
+          "hold_cpu": 66.015625,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            129,
+            76
+          ]
+        },
+        {
+          "notes": [
+            60,
+            64,
+            67
+          ],
+          "velocity": 100,
+          "hold_cpu": 66.40625,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            129,
+            76
+          ]
+        },
+        {
+          "notes": [
+            57,
+            60,
+            64,
+            69
+          ],
+          "velocity": 127,
+          "hold_cpu": 66.40625,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            129,
+            76
+          ]
+        },
+        {
+          "notes": [
+            53,
+            57,
+            60,
+            65
+          ],
+          "velocity": 112,
+          "hold_cpu": 66.40625,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            129,
+            76
+          ]
+        },
+        {
+          "notes": [
+            60,
+            64,
+            67,
+            71,
+            74
+          ],
+          "velocity": 110,
+          "hold_cpu": 66.40625,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            129,
+            76
+          ]
+        },
+        {
+          "notes": [
+            48,
+            55,
+            60,
+            64,
+            67,
+            71,
+            74,
+            79
+          ],
+          "velocity": 100,
+          "hold_cpu": 66.40625,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            129,
+            76
+          ]
+        }
+      ],
+      "part_us": [
+        161.9140625,
+        67.765625,
+        80.1640625,
+        68.69921875
+      ]
+    },
+    {
+      "slot": 4,
+      "max_average_cpu": 66.015625,
+      "global_peak": 89,
+      "missed_deadlines": 0,
+      "max_busy_voices": 4,
+      "core": "2 CORES",
+      "phases": [
+        {
+          "notes": [
+            60
+          ],
+          "velocity": 80,
+          "hold_cpu": 65.234375,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            204,
+            76
+          ]
+        },
+        {
+          "notes": [
+            60,
+            64,
+            67
+          ],
+          "velocity": 100,
+          "hold_cpu": 65.234375,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            207,
+            76
+          ]
+        },
+        {
+          "notes": [
+            57,
+            60,
+            64,
+            69
+          ],
+          "velocity": 127,
+          "hold_cpu": 65.625,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            208,
+            76
+          ]
+        },
+        {
+          "notes": [
+            53,
+            57,
+            60,
+            65
+          ],
+          "velocity": 112,
+          "hold_cpu": 65.234375,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            76
+          ]
+        },
+        {
+          "notes": [
+            60,
+            64,
+            67,
+            71,
+            74
+          ],
+          "velocity": 110,
+          "hold_cpu": 64.84375,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            48,
+            55,
+            60,
+            64,
+            67,
+            71,
+            74,
+            79
+          ],
+          "velocity": 100,
+          "hold_cpu": 66.015625,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        }
+      ],
+      "part_us": [
+        132.421875,
+        70.7578125,
+        92.203125,
+        69.46875
+      ]
+    },
+    {
+      "slot": 5,
+      "max_average_cpu": 69.140625,
+      "global_peak": 89,
+      "missed_deadlines": 0,
+      "max_busy_voices": 5,
+      "core": "2 CORES",
+      "phases": [
+        {
+          "notes": [
+            60
+          ],
+          "velocity": 80,
+          "hold_cpu": 66.40625,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            60,
+            64,
+            67
+          ],
+          "velocity": 100,
+          "hold_cpu": 69.140625,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            57,
+            60,
+            64,
+            69
+          ],
+          "velocity": 127,
+          "hold_cpu": 68.75,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            53,
+            57,
+            60,
+            65
+          ],
+          "velocity": 112,
+          "hold_cpu": 69.140625,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            60,
+            64,
+            67,
+            71,
+            74
+          ],
+          "velocity": 110,
+          "hold_cpu": 68.75,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            48,
+            55,
+            60,
+            64,
+            67,
+            71,
+            74,
+            79
+          ],
+          "velocity": 100,
+          "hold_cpu": 68.75,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        }
+      ],
+      "part_us": [
+        163.95703125,
+        69.5625,
+        80.30078125,
+        68.54296875
+      ]
+    },
+    {
+      "slot": 6,
+      "max_average_cpu": 62.890625,
+      "global_peak": 89,
+      "missed_deadlines": 0,
+      "max_busy_voices": 5,
+      "core": "2 CORES",
+      "phases": [
+        {
+          "notes": [
+            60
+          ],
+          "velocity": 80,
+          "hold_cpu": 60.546875,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            60,
+            64,
+            67
+          ],
+          "velocity": 100,
+          "hold_cpu": 62.890625,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            57,
+            60,
+            64,
+            69
+          ],
+          "velocity": 127,
+          "hold_cpu": 62.890625,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            53,
+            57,
+            60,
+            65
+          ],
+          "velocity": 112,
+          "hold_cpu": 62.890625,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            60,
+            64,
+            67,
+            71,
+            74
+          ],
+          "velocity": 110,
+          "hold_cpu": 62.5,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            48,
+            55,
+            60,
+            64,
+            67,
+            71,
+            74,
+            79
+          ],
+          "velocity": 100,
+          "hold_cpu": 62.5,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        }
+      ],
+      "part_us": [
+        125.078125,
+        69.73046875,
+        80.55859375,
+        70.06640625
+      ]
+    },
+    {
+      "slot": 7,
+      "max_average_cpu": 67.96875,
+      "global_peak": 89,
+      "missed_deadlines": 0,
+      "max_busy_voices": 5,
+      "core": "2 CORES",
+      "phases": [
+        {
+          "notes": [
+            60
+          ],
+          "velocity": 80,
+          "hold_cpu": 65.234375,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            60,
+            64,
+            67
+          ],
+          "velocity": 100,
+          "hold_cpu": 67.578125,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            57,
+            60,
+            64,
+            69
+          ],
+          "velocity": 127,
+          "hold_cpu": 67.1875,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            53,
+            57,
+            60,
+            65
+          ],
+          "velocity": 112,
+          "hold_cpu": 67.578125,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            60,
+            64,
+            67,
+            71,
+            74
+          ],
+          "velocity": 110,
+          "hold_cpu": 67.1875,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            48,
+            55,
+            60,
+            64,
+            67,
+            71,
+            74,
+            79
+          ],
+          "velocity": 100,
+          "hold_cpu": 67.1875,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        }
+      ],
+      "part_us": [
+        152.9453125,
+        68.69921875,
+        80.29296875,
+        68.66796875
+      ]
+    },
+    {
+      "slot": 8,
+      "max_average_cpu": 62.5,
+      "global_peak": 89,
+      "missed_deadlines": 0,
+      "max_busy_voices": 4,
+      "core": "2 CORES",
+      "phases": [
+        {
+          "notes": [
+            60
+          ],
+          "velocity": 80,
+          "hold_cpu": 62.5,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            60,
+            64,
+            67
+          ],
+          "velocity": 100,
+          "hold_cpu": 62.109375,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            57,
+            60,
+            64,
+            69
+          ],
+          "velocity": 127,
+          "hold_cpu": 62.5,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            53,
+            57,
+            60,
+            65
+          ],
+          "velocity": 112,
+          "hold_cpu": 62.109375,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            60,
+            64,
+            67,
+            71,
+            74
+          ],
+          "velocity": 110,
+          "hold_cpu": 62.5,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        },
+        {
+          "notes": [
+            48,
+            55,
+            60,
+            64,
+            67,
+            71,
+            74,
+            79
+          ],
+          "velocity": 100,
+          "hold_cpu": 62.5,
+          "hold_misses": 0,
+          "tail_misses": 0,
+          "part_max_us": [
+            377,
+            196,
+            209,
+            77
+          ]
+        }
+      ],
+      "part_us": [
+        131.6015625,
+        67.68359375,
+        80.1953125,
+        68.9140625
+      ]
+    }
+  ],
+  "hardware_peak_cpu_percent": 89,
+  "hardware_max_average_cpu_percent": 71.09375,
+  "hardware_missed_deadlines": 0
+}

@@ -53,3 +53,8 @@ for packed in 0 1; do
 done
 cmp build/host/wt_render_0.txt build/host/wt_render_1.txt
 echo 'WAVE render: every table/mip buffer matches unpacked ROM PASS'
+
+for t in own_ble_midi_test own_ble_stack_test synthmaven_ble_editor_test; do
+ $CC -fsanitize=undefined -fno-sanitize-recover=all -o "build/host/$t" "tests/$t.c"
+ "build/host/$t"
+done

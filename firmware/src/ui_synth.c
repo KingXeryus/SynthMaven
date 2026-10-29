@@ -122,7 +122,7 @@ static const param_desc_t XD[X_COUNT] = {
     [X_PGTRANS] = PD("TRANS", F_SEMI, -24, 24, 0),
     [X_USBROLE] = PE("USB ROLE", N_USBROLE, 0),
     [X_SMKEY] = PE("KEY IN", N_SM_KEY, 2),
-    [X_SMBT] = PE("BT MIDI", N_ONOFF, 0),
+    [X_SMBT] = PE("RADIO", N_ONOFF, 0),
     [X_SMPAIR] = PE("SCAN", N_GO, 0),
     [X_SMDEV] = PD("PEDAL", F_INT, 0, 7, 0),
     [X_SMCON] = PE("LINK", N_GO, 0),
@@ -896,7 +896,7 @@ static void syn_changed(uint32_t id, int16_t *vp)
         break;
     case X_SMBT:
         if (sm_set(sm_patch_port, sm_key_port, *vp)) ui_message("BLE NOT AVAILABLE");
-        else settings_later = 1;
+        /* Radio state is deliberately session-only; do not write flash here. */
         break;
     case X_SMPAIR:
         *vp = 0;

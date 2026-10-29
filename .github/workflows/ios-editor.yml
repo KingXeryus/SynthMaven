@@ -2,7 +2,7 @@ name: iOS editor
 on:
   workflow_dispatch:
   push:
-    branches: [ios-editor]
+    branches: [ios-editor, release-3.0, firmware-ui-tuning]
     paths: ['ios/**', 'web/**', '.github/workflows/ios-editor.yml']
   pull_request:
     paths: ['ios/**', 'web/**', '.github/workflows/ios-editor.yml']

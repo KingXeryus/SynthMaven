@@ -3,7 +3,7 @@
 #define PROGRAM_TUNE_SAVED 0x20u
 static uint8_t program_save_tuning; /* OFF by default; GLO > TUNING 2 > SAVE. */
 static int program_tuning_flags_valid(uint32_t v){return !(v&0xC0u) && (v&0x30u)!=0x30u;}
-#define PROGRAM_MAGIC 0x33475250u /* PRG3: scenes; PRG1/2 remain importable */
+#define PROGRAM_MAGIC 0x34475250u /* PRG4: exact-cent custom scales; PRG1/2/3 importable */
 typedef struct {
     int16_t p[P_COUNT];
     int8_t ms[MSEQ_LANES][MSEQ_STEPS];
@@ -34,6 +34,17 @@ typedef struct {
     program_route_t route[4];
     sm_scene_t scenes[SM_SCENES];
     uint32_t sum;
+} program_v3_t;
+typedef struct {
+    uint32_t magic,size;
+    uint8_t active,layer,reserved[2];
+    tune_t tuning;
+    uint32_t custom[4];
+    program_sound_t sound[4];
+    program_route_t route[4];
+    sm_scene_t scenes[SM_SCENES];
+    fine_scale_t fine;
+    uint32_t sum;
 } program_t;
 typedef struct {
     uint32_t magic,size;
@@ -50,7 +61,7 @@ static uint32_t program_hash(const void *data,uint32_t n) {
 static int program_valid(const program_t *p) {
     uint32_t i,k;
     if(p->magic!=PROGRAM_MAGIC || p->size!=sizeof *p || p->active>=4u || p->layer>1u || !program_tuning_flags_valid(p->reserved[0]) || (p->reserved[1]>>4)>8u ||
-       p->tuning.sys>=TU_N || p->tuning.root>11 || p->tuning.a4< -40 || p->tuning.a4>40 ||
+       !fine_scale_valid(&p->fine) || p->tuning.sys>=TU_N || p->tuning.root>11 || p->tuning.a4< -40 || p->tuning.a4>40 ||
        p->tuning.n<1 || p->tuning.n>TU_MAXDEG || p->sum!=program_hash(p,sizeof *p-4u))return 0;
     for(i=0;i<4;i++)if(p->custom[i]&0xFF000000u)return 0;
     for(i=0;i<4;i++) {
@@ -74,17 +85,23 @@ static int program_import(program_t *out,const void *raw,uint32_t n) {
         if(out!=raw)memcpy(out,raw,n);
         return 1;
     }
+    if(n==sizeof(program_v3_t)) {
+        const program_v3_t *old=(const program_v3_t *)raw;
+        if(old->magic!=0x33475250u || old->size!=sizeof *old || old->sum!=program_hash(old,sizeof *old-4u))return 0;
+        if(out!=raw)memcpy(out,raw,sizeof *old-4u);
+        memset(&out->fine,0,sizeof out->fine);out->magic=PROGRAM_MAGIC;out->size=sizeof *out;out->sum=program_hash(out,sizeof *out-4u);return program_valid(out);
+    }
     if(n==sizeof(program_v2_t)) {
         const program_v2_t *old=(const program_v2_t *)raw;
         if(old->magic!=0x32475250u || old->size!=sizeof *old || old->sum!=program_hash(old,sizeof *old-4u))return 0;
         if(out!=raw)memcpy(out,raw,sizeof *old-4u);
-        memset(out->scenes,0,sizeof out->scenes);for(i=0;i<4;i++)out->sound[i].reserved&=(uint8_t)~1u;out->magic=PROGRAM_MAGIC;out->size=sizeof *out;out->sum=program_hash(out,sizeof *out-4u);return program_valid(out);
+        memset(&out->fine,0,sizeof out->fine);memset(out->scenes,0,sizeof out->scenes);for(i=0;i<4;i++)out->sound[i].reserved&=(uint8_t)~1u;out->magic=PROGRAM_MAGIC;out->size=sizeof *out;out->sum=program_hash(out,sizeof *out-4u);return program_valid(out);
     }
     if(n==sizeof(program_v1_t)) {
         const program_v1_t *old=(const program_v1_t *)raw;
         if(old->magic!=0x31475250u || old->size!=sizeof *old || old->sum!=program_hash(old,sizeof *old-4u))return 0;
         if(out!=raw)memcpy(out,raw,sizeof *old-4u);
-        out->magic=PROGRAM_MAGIC;out->size=sizeof *out;out->reserved[0]=out->reserved[1]=0;memset(out->scenes,0,sizeof out->scenes);
+        out->magic=PROGRAM_MAGIC;out->size=sizeof *out;out->reserved[0]=out->reserved[1]=0;memset(&out->fine,0,sizeof out->fine);memset(out->scenes,0,sizeof out->scenes);
         for(i=0;i<4;i++){out->sound[i].reserved&=(uint8_t)~1u;memset(&out->route[i],0,sizeof out->route[i]);out->route[i].enabled=1;out->route[i].point=60;}
         out->sum=program_hash(out,sizeof *out-4u);return program_valid(out);
     }
@@ -95,23 +112,25 @@ static int program_import(program_t *out,const void *raw,uint32_t n) {
  * Parameter ranges fit signed bytes; validate before narrowing. No sample space is reclaimed. */
 #define PROGRAM_SLOTS 8u
 #define PROGRAM_NAME_LEN 12u
-#define PROGRAM_BANK_MAGIC 0x324B4250u /* PBK1 */
+#define PROGRAM_BANK_MAGIC 0x334B4250u /* PBK3: fine custom scales */
 typedef struct {int8_t p[P_COUNT];int8_t ms[MSEQ_LANES][MSEQ_STEPS];uint8_t engine,preset,user,reserved;uint8_t patch[156];} program_packed_sound_t;
 typedef struct {uint8_t used,active,layer,solo,bypass;char name[13];tune_t tuning;uint32_t custom[4];program_packed_sound_t sound[4];program_route_t route[4];} program_packed_v1_t;
 typedef struct {uint32_t magic;program_packed_v1_t slot[2];} program_bank_v1_t;
-typedef struct {uint8_t used,active,layer,solo,bypass;char name[13];tune_t tuning;uint32_t custom[4];program_packed_sound_t sound[4];program_route_t route[4];sm_scene_t scenes[SM_SCENES];} program_packed_t;
+typedef struct {uint8_t used,active,layer,solo,bypass;char name[13];tune_t tuning;uint32_t custom[4];program_packed_sound_t sound[4];program_route_t route[4];sm_scene_t scenes[SM_SCENES];} program_packed_v2_t;
+typedef struct {uint32_t magic;program_packed_v2_t slot[2];} program_bank_v2_t;
+typedef struct {uint8_t used,active,layer,solo,bypass;char name[13];tune_t tuning;uint32_t custom[4];program_packed_sound_t sound[4];program_route_t route[4];sm_scene_t scenes[SM_SCENES];fine_scale_t fine;} program_packed_t;
 typedef struct {uint32_t magic;program_packed_t slot[2];} program_bank_t;
 _Static_assert(sizeof(program_bank_t)<=3840u,"two named programs fit the existing A/B flash object");
 static int program_name_valid(const char *name){uint32_t i;for(i=0;i<=12u;i++){uint8_t c=(uint8_t)name[i];if(!c)return 1;if(i==12u || c<32u || c>126u)return 0;}return 0;}
 static int program_pack(program_packed_t *out,const program_t *p,const char *name){
  uint32_t i,k;if(!program_valid(p)||!program_name_valid(name))return 0;
  for(i=0;i<4;i++)for(k=0;k<P_COUNT;k++)if(p->sound[i].p[k]<-128 || p->sound[i].p[k]>127)return 0;
- memset(out,0,sizeof *out);out->used=1;out->active=p->active;out->layer=p->layer;out->solo=p->reserved[0];out->bypass=p->reserved[1];for(i=0;i<12u && name[i];i++)out->name[i]=name[i];out->tuning=p->tuning;memcpy(out->custom,p->custom,sizeof out->custom);memcpy(out->route,p->route,sizeof out->route);memcpy(out->scenes,p->scenes,sizeof out->scenes);
+ memset(out,0,sizeof *out);out->used=1;out->active=p->active;out->layer=p->layer;out->solo=p->reserved[0];out->bypass=p->reserved[1];for(i=0;i<12u && name[i];i++)out->name[i]=name[i];out->tuning=p->tuning;memcpy(out->custom,p->custom,sizeof out->custom);memcpy(out->route,p->route,sizeof out->route);memcpy(out->scenes,p->scenes,sizeof out->scenes);out->fine=p->fine;
  for(i=0;i<4;i++){const program_sound_t *a=&p->sound[i];program_packed_sound_t *b=&out->sound[i];for(k=0;k<P_COUNT;k++)b->p[k]=(int8_t)a->p[k];memcpy(b->ms,a->ms,sizeof b->ms);b->engine=a->engine;b->preset=a->preset;b->user=a->user;b->reserved=a->reserved;memcpy(b->patch,a->patch,sizeof b->patch);}return 1;
 }
 static int program_unpack(program_t *out,const program_packed_t *p){
  uint32_t i,k;if(p->used!=1u || !program_name_valid(p->name) || !program_tuning_flags_valid(p->solo) || (p->bypass>>4)>8u)return 0;
- memset(out,0,sizeof *out);out->magic=PROGRAM_MAGIC;out->size=sizeof *out;out->active=p->active;out->layer=p->layer;out->reserved[0]=p->solo;out->reserved[1]=p->bypass;out->tuning=p->tuning;memcpy(out->custom,p->custom,sizeof out->custom);memcpy(out->route,p->route,sizeof out->route);memcpy(out->scenes,p->scenes,sizeof out->scenes);
+ memset(out,0,sizeof *out);out->magic=PROGRAM_MAGIC;out->size=sizeof *out;out->active=p->active;out->layer=p->layer;out->reserved[0]=p->solo;out->reserved[1]=p->bypass;out->tuning=p->tuning;memcpy(out->custom,p->custom,sizeof out->custom);memcpy(out->route,p->route,sizeof out->route);memcpy(out->scenes,p->scenes,sizeof out->scenes);out->fine=p->fine;
  for(i=0;i<4;i++){program_sound_t *a=&out->sound[i];const program_packed_sound_t *b=&p->sound[i];for(k=0;k<P_COUNT;k++)a->p[k]=b->p[k];memcpy(a->ms,b->ms,sizeof a->ms);a->engine=b->engine;a->preset=b->preset;a->user=b->user;a->reserved=b->reserved;memcpy(a->patch,b->patch,sizeof a->patch);}
  out->sum=program_hash(out,sizeof *out-4u);return program_valid(out);
 }
@@ -119,8 +138,16 @@ static int program_bank_valid(const program_bank_t *b,program_t *scratch){uint32
 
 static int program_bank_import(program_bank_t *out,const void *raw,uint32_t n,program_t *scratch){
  uint32_t i;if(n==sizeof(program_bank_t)&&((const program_bank_t *)raw)->magic==PROGRAM_BANK_MAGIC){if(out!=raw)memcpy(out,raw,n);return program_bank_valid(out,scratch);}
+ if(n==sizeof(program_bank_v2_t)&&((const program_bank_v2_t *)raw)->magic==0x324B4250u){
+ const program_bank_v2_t *old=(const program_bank_v2_t *)raw;
+ /* Move the upper slot first so an in-place upgrade cannot overwrite its source. */
+ for(uint32_t j=2;j--;){uint8_t *d=(uint8_t *)&out->slot[j];const uint8_t *a=(const uint8_t *)&old->slot[j];for(uint32_t k=sizeof(program_packed_v2_t);k--;)d[k]=a[k];}
+ memset(&out->slot[0].fine,0,sizeof(fine_scale_t));memset(&out->slot[1].fine,0,sizeof(fine_scale_t));out->magic=PROGRAM_BANK_MAGIC;return program_bank_valid(out,scratch);}
  if(n!=sizeof(program_bank_v1_t)||((const program_bank_v1_t *)raw)->magic!=0x314B4250u)return 0;
- const program_bank_v1_t *old=(const program_bank_v1_t *)raw;memset(out,0,sizeof *out);out->magic=PROGRAM_BANK_MAGIC;for(i=0;i<2;i++){memcpy(&out->slot[i],&old->slot[i],sizeof(program_packed_v1_t));for(uint32_t k=0;k<4;k++)out->slot[i].sound[k].reserved&=(uint8_t)~1u;}return program_bank_valid(out,scratch);
+ const program_bank_v1_t *old=(const program_bank_v1_t *)raw;
+ for(uint32_t j=2;j--;){uint8_t *d=(uint8_t *)&out->slot[j];const uint8_t *a=(const uint8_t *)&old->slot[j];for(uint32_t k=sizeof(program_packed_v1_t);k--;)d[k]=a[k];}
+ out->magic=PROGRAM_BANK_MAGIC;
+ for(i=0;i<2;i++){memset(out->slot[i].scenes,0,sizeof out->slot[i].scenes);memset(&out->slot[i].fine,0,sizeof out->slot[i].fine);for(uint32_t k=0;k<4;k++)out->slot[i].sound[k].reserved&=(uint8_t)~1u;}return program_bank_valid(out,scratch);
 }
 
 _Static_assert(__builtin_offsetof(program_packed_t,scenes)==sizeof(program_packed_v1_t),"PBK1 prefix migration");

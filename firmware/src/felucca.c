@@ -197,6 +197,6 @@ static void ota_commit(const uint8_t *parm)
 #endif
 #include "splash.c"          /* SLOOP boot logo (build/gen/sloop_logo.h) */
 #if SM_BLE
-#include "synthmaven_ble.c"
+#include "synthmaven_ble_own.c"
 #endif
 #include "main.c"

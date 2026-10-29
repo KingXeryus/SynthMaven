@@ -359,9 +359,10 @@ static void layer_key(uint32_t layer, uint32_t k, uint32_t down)
     case LY_SCALE: {
 #if SYNTHMAVEN_SYNTH
         if(scale_edit && tune_cfg.sys>=TU_CUSTOM1 && tune_cfg.sys<TU_N) {
-            uint32_t pc=(53u+k+12u-tune_cfg.root)%12u,shift=2u*pc;
+            uint32_t pc=(53u+k+12u-tune_cfg.root)%12u,shift=2u*pc;custom_key_pc=(uint8_t)pc;
             uint32_t *v=&custom_scale[tune_cfg.sys-TU_CUSTOM1];
             *v=(*v&~(3u<<shift))|((((*v>>shift)+1u)&3u)<<shift);
+            custom_set_cents(tune_cfg.sys-TU_CUSTOM1,pc,-25*(int32_t)((*v>>shift)&3u));
             tune_build();custom_scale_dirty=1;settings_later=1;ui.force=1;
         }
 #else
@@ -501,7 +502,7 @@ static void layer_knobs(uint32_t layer)
             if(scale_edit) {
                 if(k==0)tune_cfg.sys=(uint8_t)(TU_CUSTOM1+((tune_cfg.sys-TU_CUSTOM1+s%4+4)%4));
                 if(k==1)tune_cfg.root=(uint8_t)((tune_cfg.root+s%12+12)%12);
-                if(k==2){custom_scale_dirty=1;ui_message("SCALE SAVE PENDING");}
+                if(k==2){uint32_t slot=tune_cfg.sys-TU_CUSTOM1;custom_set_cents(slot,custom_key_pc,custom_cents(slot,custom_key_pc)+s*10);custom_scale_dirty=1;}
             } else if(k==0)tune_cfg.sys=(uint8_t)((tune_cfg.sys+s%TU_N+TU_N)%TU_N);
             tune_build();settings_later=1;ui.force=1;
         }
@@ -719,7 +720,7 @@ static void layer_screen_draw(void)
         cv_text(4,4,&FONT_S,scale_edit?"CUSTOM SCALE EDIT":"SCALE",C_HI);cv_blit(0,0);
         cv_begin(240,124,C_BLACK);graph_tuning();cv_blit(0,24);
         cv_begin(240,92,C_BLACK);
-        cv_text(4,2,&FONT_S,scale_edit?"KEY: -25 -50 -75 0":"HOLD SEL 3s TO EDIT",C_GRAY);
+        cv_text(4,2,&FONT_S,scale_edit?"K3: SELECTED KEY 10ct":"HOLD SEL 3s TO EDIT",C_GRAY);
         cv_text(4,24,&FONT_S,scale_edit?"SELECT: CUSTOM SLOT":"KNOB 1: SCALE",C_GRAY);
         cv_text(4,46,&FONT_S,scale_edit?"PRESETS: ROOT":"",C_GRAY);
         cv_text(4,68,&FONT_S,scale_edit?"SAVE: STORE  SEL: EXIT":"",C_GRAY);

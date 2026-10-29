@@ -13,3 +13,8 @@ static int custom_scale_take(const custom_scale_record_t *r) {
  for(i=0;i<4;i++)if(r->step[i]&0xFF000000u)return 1;
  memcpy(custom_scale,r->step,sizeof r->step);return 0;
 }
+
+#define FINE_SCALE_OFF (100u+sizeof(sm_performance_record_t))
+typedef struct {uint32_t magic;fine_scale_t fine;uint32_t crc;} fine_scale_record_t;
+static void fine_scale_fill(fine_scale_record_t *r){r->magic=0x324C4353u;r->fine=fine_scale;r->crc=st_crc32(r,sizeof *r-4u);}
+static int fine_scale_take(const fine_scale_record_t *r){if(r->magic!=0x324C4353u || r->crc!=st_crc32(r,sizeof *r-4u) || !fine_scale_valid(&r->fine))return 1;fine_scale=r->fine;return 0;}
