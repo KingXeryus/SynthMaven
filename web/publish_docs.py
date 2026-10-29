@@ -1,5 +1,6 @@
 """Publish readable, version-matched documentation alongside the installer."""
 import html
+import shutil
 import os
 import json
 import posixpath
@@ -10,6 +11,7 @@ import markdown
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_REF = os.environ.get('GITHUB_REF_NAME', 'release-'+json.loads((ROOT/'release.json').read_text())['version'])
 PAGES = {
+    'docs/FACTORY_PROGRAM_DESIGN.md': 'factory-programs.html',
     'docs/MIDI_CONTROLLERS.md': 'midi-controllers.html',
     'docs/USER_MANUAL.md': 'user-manual.html',
     'QUICKSTART.md': 'quick-start.html',
@@ -35,6 +37,9 @@ PAGES = {
 def publish_docs(out):
     dest = Path(out) / 'docs'
     dest.mkdir(parents=True, exist_ok=True)
+    version=json.loads((ROOT/'release.json').read_text())['version']
+    guide=f'SynthMaven-{version}-User-Guide.pdf'
+    shutil.copyfile(ROOT/'docs'/guide,dest/guide)
     for source, name in PAGES.items():
         text = (ROOT / source).read_text()
         def link(match):
@@ -43,7 +48,7 @@ def publish_docs(out):
                 return match[0]
             path, sep, fragment = target.partition('#')
             resolved = posixpath.normpath(posixpath.join(posixpath.dirname(source), path))
-            url = PAGES.get(resolved)
+            url = guide if resolved == 'docs/'+guide else PAGES.get(resolved)
             if not url:
                 url = 'https://github.com/KingXeryus/SynthMaven/blob/'+SOURCE_REF+'/' + resolved
             return '](' + url + (sep + fragment if sep else '') + ')'
@@ -58,6 +63,6 @@ def publish_docs(out):
 a{{color:#70b3ff}}nav{{display:flex;flex-wrap:wrap;gap:10px 24px;padding-bottom:20px;border-bottom:1px solid #444}}
 h1,h2,h3{{line-height:1.25;margin-top:1.6em}}h1{{font-size:2em}}table{{border-collapse:collapse;display:block;overflow:auto}}td,th{{border:1px solid #555;padding:8px 12px;text-align:left}}code{{background:#25252c;padding:2px 5px}}pre{{overflow:auto;background:#25252c;padding:15px}}pre code{{padding:0}}img{{max-width:100%}}
 </style>
-<nav aria-label="Documentation"><a href="../webapp/installer/">Installer</a><a href="../webapp/editor/">Editor</a><a href="user-manual.html">User manual</a><a href="quick-start.html">Quick-start guide</a><a href="release-notes.html">Release notes</a><a href="maqam-scales.html">Maqam catalogue</a></nav>
+<nav aria-label="Documentation"><a href="../webapp/installer/">Installer</a><a href="../webapp/editor/">Editor</a><a href="{guide}">PDF guide</a><a href="user-manual.html">User manual</a><a href="quick-start.html">Quick-start guide</a><a href="release-notes.html">Release notes</a><a href="maqam-scales.html">Maqam catalogue</a></nav>
 <main>{body}</main></html>'''
         (dest / name).write_text(page)

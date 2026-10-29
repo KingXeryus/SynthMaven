@@ -581,6 +581,9 @@ static int up_load_to(track_t *t, uint32_t k)
     panic_req |= (uint8_t)(1u << trk_index(t));
     fm1_irq_off();                                      /* the audio ISR must not see half a sound */
     t->eng_req = r->engine;
+#if SYNTHMAVEN_SYNTH
+    program_solo_gain[trk_index(t)%4u]=0; /* a newly loaded sound has no curated-program solo calibration */
+#endif
     for (i = 0; i < P_COUNT; i++)
         t->p[i] = v[i];
 #if SYNTHMAVEN_SYNTH

@@ -743,8 +743,8 @@ static program_bank_t program_bank_work __attribute__((section(".pool")));
 static void program_bank_sync(uint32_t bank){
  uint32_t i;for(i=0;i<2;i++){uint32_t slot=bank+4u*i;const program_packed_t *p=&program_bank_work.slot[i];
  if(i)program_extra_used=(uint8_t)((program_extra_used&~(1u<<bank))|((p->used!=0u)<<bank));
- if(p->used)memcpy(program_names[slot],p->name,13);else{memset(program_names[slot],0,13);memcpy(program_names[slot],"PROGRAM ",8);program_names[slot][8]=(char)('1'+slot);}
- if(!i){memset(&proj_slot[bank],0,sizeof proj_slot[bank]);if(p->used&&program_unpack(&proj_tmp.pg,p))memcpy(&proj_slot[bank],&proj_tmp.pg,sizeof(program_t));}
+ memcpy(program_names[slot],sm_program_slot_name(p,slot),13);
+ if(!i){memset(&proj_slot[bank],0,sizeof proj_slot[bank]);if(sm_program_slot(&proj_tmp.pg,p,slot))memcpy(&proj_slot[bank],&proj_tmp.pg,sizeof(program_t));}
  }
 }
 static int program_bank_read(uint32_t bank){
@@ -860,10 +860,13 @@ static void project_load(uint32_t slot)
 #if SYNTHMAVEN_SYNTH
     if(flash_ok && slot<8u && program_bank_read(slot&3u)){
         program_bank_sync(slot&3u);
-        if(program_unpack(&proj_tmp.pg,&program_bank_work.slot[slot/4u])){program_apply(&proj_tmp.pg);sm_current_program=(uint8_t)slot;sm_setlist_active=0;program_editor_name_mask&=(uint8_t)~(1u<<slot);program_draft_slot=255;song.g[G_SLOT]=(int16_t)(slot+1u);ui_message("PROGRAM LOADED");return;}
+        if(sm_program_slot(&proj_tmp.pg,&program_bank_work.slot[slot/4u],slot)){program_apply(&proj_tmp.pg);sm_current_program=(uint8_t)slot;sm_setlist_active=0;program_editor_name_mask&=(uint8_t)~(1u<<slot);program_draft_slot=255;song.g[G_SLOT]=(int16_t)(slot+1u);ui_message("PROGRAM LOADED");return;}
         program_io_rc=2;ui_message("EMPTY SLOT");return;
     }
-    if(slot>=4u){program_io_rc=2;ui_message("EMPTY SLOT");return;}
+    if(slot>=4u){
+        if(!flash_ok && sm_factory_program(&proj_tmp.pg,slot)){program_apply(&proj_tmp.pg);sm_current_program=(uint8_t)slot;sm_setlist_active=0;song.g[G_SLOT]=(int16_t)(slot+1u);ui_message("FACTORY PROGRAM");return;}
+        program_io_rc=2;ui_message("PROGRAM READ ERROR");return;
+    }
 #endif
     if (flash_ok && !proj_ok(p))
         proj_fetch(slot);
@@ -1151,8 +1154,7 @@ static void persist_boot(void)                    /* before settings_init / pane
 static int project_used(uint32_t slot) {
 #if SYNTHMAVEN_SYNTH
  if(slot>=8u)return 0;
- if(slot>=4u)return (program_extra_used>>(slot-4u))&1u;
- if(program_valid((const program_t *)&proj_slot[slot&3u]))return 1;
+ return 1; /* Eight ROM programs remain available beneath saved overrides. */
 #endif
  return proj_ok(&proj_slot[slot & 3u]);
 }

@@ -10,7 +10,7 @@ static void factory_mix(int32_t *o,uint32_t n){fm6_poll();mix_block(o,n);}
 #undef mix_block
 #define mix_block factory_mix
 
-enum { R_BASS, R_HELD, R_COMP, R_MELODY, R_ONE };
+enum { R_BASS, R_HELD, R_COMP, R_MELODY, R_ONE, R_BURST };
 static int has(const char *n, const char *w) { return strstr(n, w) != 0; }
 static int role_of(const char *n)
 {
@@ -70,6 +70,9 @@ int main(int argc, char **argv)
                 role = R_ONE;
 #endif
             if(e==ENGI_HYBRID && pi>=SM_VITAL_PRESET_FIRST && pi<SM_VITAL_PRESET_FIRST+SM_VITAL_COUNT)role=SM_VITAL_ROLES[pi-SM_VITAL_PRESET_FIRST];
+            if(getenv("SM_AUDIT_LIST")){printf("%u %u %s\n",e,pi,name);continue;}
+            if(SM_FACTORY_ROLL[e][pi])role=R_BURST; /* Documented 16 Hz roll for short/transient material. */
+            if(getenv("SM_AUDIT_SELECT")){char key[32];snprintf(key,sizeof key,",%u:%u,",e,pi);if(!strstr(getenv("SM_AUDIT_SELECT"),key))continue;}
             host_tracks_init();
             song.g[G_BPM] = 100;
             program_mode=1;program_layer=0;set_engine_of(&trk[0],e);apply_preset_to(&trk[0],pi);
@@ -106,6 +109,7 @@ int main(int argc, char **argv)
                                     play(CHORD[st / 16u][i], 95, at + 2u * step - step / 3u);
                     }
                 }
+                if(role==R_BURST && b<nb && s0/(FS/16u)!=((s0+CTL)/(FS/16u))){for(uint32_t q=0;q<128;q++)if(held[q]){trk_note_off(&trk[0],q);held[q]=0;}play(72,100,s0+FS/20u);}
                 mix_block(o, CTL);
                 for (i = 0; i < CTL; i++) {
                     int32_t stereo[2]={o[2*i],o[2*i+1]};

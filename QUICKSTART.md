@@ -1,4 +1,4 @@
-# SynthMaven 2.1.3 — quick start
+# SynthMaven 2.2 — quick start
 
 Back up before installing. Open the [installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) in Chrome or Edge. Connect the FM1 by USB in COMPUTER mode and follow the prompts. For rescue, hold OCT− while powering on.
 
@@ -14,7 +14,7 @@ Set GLO → PATCH MIDI → PROG ON, then configure PATCH UP/DOWN and BANK UP/DOW
 
 Choose USB ROLE → COMPUTER before reconnecting the web editor or installer. The USB port supports one role at a time.
 
-Read the [user manual](docs/USER_MANUAL.md), [release notes](docs/release-2.1.3.md), and [maqam catalogue](docs/MAQAM_SCALES.md).
+Read the [illustrated PDF guide](docs/SynthMaven-2.2-User-Guide.pdf), [user manual](docs/USER_MANUAL.md), [release notes](docs/release-2.2.md), and [maqam catalogue](docs/MAQAM_SCALES.md).
 
 Choose **Appearance → Dark / Light / System** in the installer or editor. In the editor’s Sound page, use the instrument tabs and rotary controls; drag an envelope handle to edit its shape. The 557-entry bank contains 556 level-matched audible sounds and USER WT, which stays silent until you upload a wavetable.
 
@@ -53,13 +53,13 @@ The regional bank has 44 selectable sounds, with Dry/Expressive variations in th
 
 The development bank adds **64 native HYBRID translations** selected from 68 supplied Vital presets, for **557 factory entries: 556 calibrated audible sounds plus the intentionally silent USER WT**. These are approximations using the FM1 engines, not Vital playback. Unsupported effects, wavetable motion and modulation can change the sound substantially.
 
-On a fresh start or reset, the four program parts contain **V01 STROBE, V02 DARK, V03 REESE and V04 PLUCK**, with the first part selected and layering off. Existing autosaved work takes precedence. HOME navigation is unchanged: ALGORITHM selects the engine, PRESET cycles its sounds, and SELECT chooses one of the four parts. Within HYBRID, the 64 new sounds come first, followed by the existing HYBRID sounds in the same cycle. Existing preset IDs remain stable.
+On a fresh start or reset, **P1 STAGE PIANO** loads with four enabled parts and layering ON. P1–P8 foreground Piano, Epiano, Lead Synth, Oriental Lead, Disco Synth, Brass, Strings and Bass respectively. Existing autosaved work takes precedence. HOME navigation is unchanged: ALGORITHM selects the engine, PRESET cycles its sounds, and SELECT chooses one of the four parts. Within HYBRID, the 64 new sounds come first, followed by the existing HYBRID sounds in the same cycle. Existing preset IDs remain stable.
 
 Selection uses compatibility checks and native waveform spectral fitting, with no duplicate translated parameter sets. Listening comparison and device validation remain pending. See the [selection record](assets/vital/README.md) for source attribution and conversion limits.
 
 ## Chord controls in 2.1
 
-Use the existing SEL page CHORD control to choose a legacy or new chord mode. SEL 2 provides VOIC and STRUM. AUTO follows in-scale harmony; AUTO2 places harmony below your melody. When microtonal master tuning applies, the selector offers OPEN 5 and NEUTRAL instead; incompatible saved AUTO modes play OPEN 5. See [the current chord reference](docs/release-2.1.3.md). Hold ENV for three seconds to open CHORDS, with CHORD, VOIC and STRUM on the first three assignable knobs. Release ENV to keep editing; tap ENV for envelopes or HOME to return. The chord screen appears only after the full three seconds.
+Use the existing SEL page CHORD control to choose a legacy or new chord mode. SEL 2 provides VOIC and STRUM. AUTO follows in-scale harmony; AUTO2 places harmony below your melody. When microtonal master tuning applies, the selector offers OPEN 5 and NEUTRAL instead; incompatible saved AUTO modes play OPEN 5. See [the current chord reference](docs/release-2.2.md). Hold ENV for three seconds to open CHORDS, with CHORD, VOIC and STRUM on the first three assignable knobs. Release ENV to keep editing; tap ENV for envelopes or HOME to return. The chord screen appears only after the full three seconds.
 
 ## Scale-aware chords in 2.1.2
 
@@ -72,3 +72,11 @@ GLO > TUNING: Knob 2 (FROM) selects C0–C8 in octave steps. C3 means the select
 ## Automatic USB controllers
 
 USB PEDAL/HOST mode automatically identifies supported Alesis, Novation, Arturia, Akai and Mackie controller families. MCU/HUI can control four program parts and transport; unknown class-compliant devices retain standard MIDI. See the [controller compatibility guide](docs/MIDI_CONTROLLERS.md) for mappings, powered USB requirements and hardware-validation limits. Return to COMPUTER mode for the editor or installer.
+
+## Factory programs in 2.2
+
+On SAVE > PROGRAM, SELECT browses slots 1–8. Turn LOAD twice to confirm. Unused slots fall back to the matching factory program; existing user saves are preserved. Use Editor > Programs > Factory programs to recall any factory recipe without overwriting a saved slot. Save explicitly to retain edits.
+
+P1 Piano · P2 Epiano · P3 Lead Synth · P4 Oriental Lead · P5 Disco Synth · P6 Brass · P7 Strings · P8 Bass. Each contains one foreground instrument and three supports. All four parts share eight voices total; release tails and unison consume that shared budget.
+
+The release targets −14 LUFS on documented reference performances, including solo parts and layered scenes, with true peaks at or below −1 dBTP. It is not constant loudness for arbitrary playing. USER WT remains silent until populated.

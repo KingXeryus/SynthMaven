@@ -1,0 +1,10616 @@
+[
+  {
+    "page_id": 0,
+    "family": "ENV",
+    "title": "ENV",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-00-e00-v00",
+    "controls": [
+      {
+        "id": 1,
+        "label": "ATK",
+        "min": 0,
+        "max": 127,
+        "default": 10,
+        "format": 3,
+        "formatted": [
+          "1.0 ms",
+          "10.0 s",
+          "2.1 ms"
+        ],
+        "choices": []
+      },
+      {
+        "id": 2,
+        "label": "DEC",
+        "min": 0,
+        "max": 127,
+        "default": 70,
+        "format": 3,
+        "formatted": [
+          "1.0 ms",
+          "10.0 s",
+          "160 ms"
+        ],
+        "choices": []
+      },
+      {
+        "id": 3,
+        "label": "SUS",
+        "min": 0,
+        "max": 127,
+        "default": 90,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "71 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 4,
+        "label": "REL",
+        "min": 0,
+        "max": 127,
+        "default": 60,
+        "format": 3,
+        "formatted": [
+          "1.0 ms",
+          "10.0 s",
+          "78 ms"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 1,
+    "family": "ENV",
+    "title": "ENV DEST",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-01-e00-v00",
+    "controls": [
+      {
+        "id": 5,
+        "label": "FLT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 6,
+        "label": "PIT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 7,
+        "label": "SHP",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 2,
+    "family": "ENV",
+    "title": "ENV 2",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-02-e00-v00",
+    "controls": [
+      {
+        "id": 56,
+        "label": "ATK",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 3,
+        "formatted": [
+          "1.0 ms",
+          "10.0 s",
+          "1.0 ms"
+        ],
+        "choices": []
+      },
+      {
+        "id": 57,
+        "label": "DEC",
+        "min": 0,
+        "max": 127,
+        "default": 70,
+        "format": 3,
+        "formatted": [
+          "1.0 ms",
+          "10.0 s",
+          "160 ms"
+        ],
+        "choices": []
+      },
+      {
+        "id": 58,
+        "label": "SUS",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 59,
+        "label": "REL",
+        "min": 0,
+        "max": 127,
+        "default": 60,
+        "format": 3,
+        "formatted": [
+          "1.0 ms",
+          "10.0 s",
+          "78 ms"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 3,
+    "family": "ENV",
+    "title": "ENV 2 LOOP",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-03-e00-v00",
+    "controls": [
+      {
+        "id": 95,
+        "label": "LOOP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "ONE",
+          "LOOP",
+          "ONE"
+        ],
+        "choices": [
+          "ONE",
+          "LOOP"
+        ]
+      },
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "page_id": 4,
+    "family": "ENV",
+    "title": "OP ENV",
+    "engine": "FMX",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-04-e20-v00",
+    "controls": [
+      {
+        "id": 27,
+        "label": "ATK",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 3,
+        "formatted": [
+          "1.0 ms",
+          "10.0 s",
+          "1.0 ms"
+        ],
+        "choices": []
+      },
+      {
+        "id": 28,
+        "label": "DEC",
+        "min": 0,
+        "max": 127,
+        "default": 70,
+        "format": 3,
+        "formatted": [
+          "1.0 ms",
+          "10.0 s",
+          "160 ms"
+        ],
+        "choices": []
+      },
+      {
+        "id": 29,
+        "label": "SUS",
+        "min": 0,
+        "max": 127,
+        "default": 127,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "100 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 30,
+        "label": "REL",
+        "min": 0,
+        "max": 127,
+        "default": 40,
+        "format": 3,
+        "formatted": [
+          "1.0 ms",
+          "10.0 s",
+          "18 ms"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 5,
+    "family": "LFO",
+    "title": "LFO",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-05-e00-v00",
+    "controls": [
+      {
+        "id": 9,
+        "label": "RATE",
+        "min": 0,
+        "max": 127,
+        "default": 60,
+        "format": 4,
+        "formatted": [
+          ".05 Hz",
+          "40.0 Hz",
+          "1.18 Hz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 10,
+        "label": "WAVE",
+        "min": 0,
+        "max": 4,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "SIN",
+          "S&H",
+          "SIN"
+        ],
+        "choices": [
+          "SIN",
+          "TRI",
+          "SAW",
+          "SQR",
+          "S&H"
+        ]
+      },
+      {
+        "id": 11,
+        "label": "PHS",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 12,
+        "label": "FADE",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 3,
+        "formatted": [
+          "1.0 ms",
+          "10.0 s",
+          "1.0 ms"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 6,
+    "family": "LFO",
+    "title": "LFO DEST",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-06-e00-v00",
+    "controls": [
+      {
+        "id": 13,
+        "label": "PIT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 14,
+        "label": "FLT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 15,
+        "label": "SHP",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 16,
+        "label": "AMP",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 7,
+    "family": "LFO",
+    "title": "MOD PRESET",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-07-e00-v00",
+    "controls": [
+      {
+        "id": 97,
+        "label": "MOD",
+        "min": 0,
+        "max": 3,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "VEL B",
+          "ENV S",
+          "VEL B"
+        ],
+        "choices": [
+          "VEL BRIGHT",
+          "PRESS VIB",
+          "WHEEL VIB",
+          "ENV SWELL"
+        ]
+      },
+      {
+        "id": 98,
+        "label": "APPLY",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "1",
+          "0"
+        ],
+        "choices": []
+      },
+      null,
+      null
+    ]
+  },
+  {
+    "page_id": 8,
+    "family": "LFO",
+    "title": "MOD",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-08-e00-v00",
+    "controls": [
+      {
+        "id": 45,
+        "label": "VEL>F",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 47,
+        "label": "MW>",
+        "min": 0,
+        "max": 5,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "TREM",
+          "VIB"
+        ],
+        "choices": [
+          "OFF",
+          "VIB",
+          "CUT",
+          "SHP",
+          "WAH",
+          "TREM"
+        ]
+      },
+      {
+        "id": 48,
+        "label": "AT>",
+        "min": 0,
+        "max": 5,
+        "default": 2,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "TREM",
+          "CUT"
+        ],
+        "choices": [
+          "OFF",
+          "VIB",
+          "CUT",
+          "SHP",
+          "WAH",
+          "TREM"
+        ]
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 9,
+    "family": "LFO",
+    "title": "LFO 2",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-09-e00-v00",
+    "controls": [
+      {
+        "id": 53,
+        "label": "RATE",
+        "min": 0,
+        "max": 127,
+        "default": 60,
+        "format": 4,
+        "formatted": [
+          ".05 Hz",
+          "40.0 Hz",
+          "1.18 Hz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 54,
+        "label": "WAVE",
+        "min": 0,
+        "max": 4,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "SIN",
+          "S&H",
+          "SIN"
+        ],
+        "choices": [
+          "SIN",
+          "TRI",
+          "SAW",
+          "SQR",
+          "S&H"
+        ]
+      },
+      {
+        "id": 55,
+        "label": "MODE",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "FREE",
+          "KEY",
+          "FREE"
+        ],
+        "choices": [
+          "FREE",
+          "KEY"
+        ]
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 10,
+    "family": "LFO",
+    "title": "LFO 3",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-10-e00-v00",
+    "controls": [
+      {
+        "id": 92,
+        "label": "RATE",
+        "min": 0,
+        "max": 127,
+        "default": 40,
+        "format": 4,
+        "formatted": [
+          ".05 Hz",
+          "40.0 Hz",
+          ".41 Hz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 93,
+        "label": "WAVE",
+        "min": 0,
+        "max": 4,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "SIN",
+          "S&H",
+          "SIN"
+        ],
+        "choices": [
+          "SIN",
+          "TRI",
+          "SAW",
+          "SQR",
+          "S&H"
+        ]
+      },
+      {
+        "id": 94,
+        "label": "MODE",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "FREE",
+          "KEY",
+          "FREE"
+        ],
+        "choices": [
+          "FREE",
+          "KEY"
+        ]
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 11,
+    "family": "LFO",
+    "title": "MATRIX",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-11-e00-v00",
+    "controls": [
+      {
+        "id": 15,
+        "label": "SLOT",
+        "min": 1,
+        "max": 12,
+        "default": 1,
+        "format": 0,
+        "formatted": [
+          "1",
+          "12",
+          "1"
+        ],
+        "choices": []
+      },
+      {
+        "id": 16,
+        "label": "SRC",
+        "min": 0,
+        "max": 19,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "MAC4",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "LFO1",
+          "LFO2",
+          "ENV1",
+          "ENV2",
+          "VEL",
+          "KEY",
+          "MW",
+          "AT",
+          "RAND",
+          "SLIDE",
+          "SEQ1",
+          "SEQ2",
+          "SEQ3",
+          "SEQ4",
+          "LFO3",
+          "MAC1",
+          "MAC2",
+          "MAC3",
+          "MAC4"
+        ]
+      },
+      {
+        "id": 17,
+        "label": "DST",
+        "min": 0,
+        "max": 14,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "KTR",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "PITCH",
+          "CUT",
+          "SHAPE",
+          "AMP",
+          "PAN",
+          "LFO2",
+          "WAVE",
+          "DTN",
+          "MIX",
+          "NOIS",
+          "CUT",
+          "RES",
+          "DRV",
+          "KTR"
+        ]
+      },
+      {
+        "id": 18,
+        "label": "AMT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 12,
+    "family": "LFO",
+    "title": "MOD SEQ",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-12-e00-v00",
+    "controls": [
+      {
+        "id": 43,
+        "label": "LANE",
+        "min": 1,
+        "max": 4,
+        "default": 1,
+        "format": 0,
+        "formatted": [
+          "1",
+          "4",
+          "1"
+        ],
+        "choices": []
+      },
+      {
+        "id": 44,
+        "label": "STEP",
+        "min": 1,
+        "max": 16,
+        "default": 1,
+        "format": 0,
+        "formatted": [
+          "1",
+          "16",
+          "1"
+        ],
+        "choices": []
+      },
+      {
+        "id": 45,
+        "label": "VALUE",
+        "min": -8,
+        "max": 7,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "-8",
+          "7",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 46,
+        "label": "SHAPE",
+        "min": 0,
+        "max": 9,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "SHIFT",
+          "--"
+        ],
+        "choices": [
+          "--",
+          "RAMP+",
+          "RAMP-",
+          "TRI",
+          "SINE",
+          "SQR",
+          "RND",
+          "FLAT",
+          "INVRT",
+          "SHIFT"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 13,
+    "family": "LFO",
+    "title": "MOD SEQ 2",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-13-e00-v00",
+    "controls": [
+      {
+        "id": 83,
+        "label": "RATE",
+        "min": 0,
+        "max": 8,
+        "default": 2,
+        "format": 8,
+        "formatted": [
+          "1/32",
+          "2 BAR",
+          "1/16"
+        ],
+        "choices": [
+          "1/32",
+          "16T",
+          "1/16",
+          "8T",
+          "1/8",
+          "1/4",
+          "1/2",
+          "BAR",
+          "2 BAR"
+        ]
+      },
+      {
+        "id": 84,
+        "label": "LEN",
+        "min": 1,
+        "max": 16,
+        "default": 16,
+        "format": 0,
+        "formatted": [
+          "1",
+          "16",
+          "16"
+        ],
+        "choices": []
+      },
+      {
+        "id": 85,
+        "label": "SMTH",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 86,
+        "label": "START",
+        "min": 0,
+        "max": 1,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          "SYNC",
+          "KEY",
+          "KEY"
+        ],
+        "choices": [
+          "SYNC",
+          "KEY"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 14,
+    "family": "FX",
+    "title": "FX",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-14-e00-v00",
+    "controls": [
+      {
+        "id": 33,
+        "label": "DST",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 34,
+        "label": "CHO",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 35,
+        "label": "DLY",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 36,
+        "label": "REV",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 15,
+    "family": "FX",
+    "title": "PART FILTER",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-15-e00-v00",
+    "controls": [
+      {
+        "id": 50,
+        "label": "FILT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 15,
+        "formatted": [
+          "LP100 %",
+          "HP100 %",
+          "OFF"
+        ],
+        "choices": []
+      },
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "page_id": 16,
+    "family": "FX",
+    "title": "INSERT",
+    "engine": "All applicable engines",
+    "variant": 0,
+    "scope": 0,
+    "image": "ref-16-e00-v01",
+    "controls": [
+      {
+        "id": 78,
+        "label": "INSRT",
+        "min": 0,
+        "max": 11,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "JUN12",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "SOFT",
+          "HARD",
+          "FOLD",
+          "FUZZ",
+          "CRUSH",
+          "PHASR",
+          "FLANG",
+          "CHOR",
+          "JUNO1",
+          "JUNO2",
+          "JUN12"
+        ]
+      },
+      {
+        "id": 79,
+        "label": "INS A",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 80,
+        "label": "INS B",
+        "min": 0,
+        "max": 127,
+        "default": 96,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "76 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 81,
+        "label": "INS C",
+        "min": 0,
+        "max": 127,
+        "default": 96,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "76 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 16,
+    "family": "FX",
+    "title": "INSERT",
+    "engine": "All applicable engines",
+    "variant": 1,
+    "scope": 0,
+    "image": "ref-16-e00-v02",
+    "controls": [
+      {
+        "id": 78,
+        "label": "INSRT",
+        "min": 0,
+        "max": 11,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "JUN12",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "SOFT",
+          "HARD",
+          "FOLD",
+          "FUZZ",
+          "CRUSH",
+          "PHASR",
+          "FLANG",
+          "CHOR",
+          "JUNO1",
+          "JUNO2",
+          "JUN12"
+        ]
+      },
+      {
+        "id": 79,
+        "label": "DRIVE",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 80,
+        "label": "TONE",
+        "min": 0,
+        "max": 127,
+        "default": 96,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "3.4 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 81,
+        "label": "LEVEL",
+        "min": 0,
+        "max": 127,
+        "default": 96,
+        "format": 6,
+        "formatted": [
+          "OFF",
+          "7.5 dB",
+          "-8.0 dB"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 16,
+    "family": "FX",
+    "title": "INSERT",
+    "engine": "All applicable engines",
+    "variant": 5,
+    "scope": 0,
+    "image": "ref-16-e00-v06",
+    "controls": [
+      {
+        "id": 78,
+        "label": "INSRT",
+        "min": 0,
+        "max": 11,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "JUN12",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "SOFT",
+          "HARD",
+          "FOLD",
+          "FUZZ",
+          "CRUSH",
+          "PHASR",
+          "FLANG",
+          "CHOR",
+          "JUNO1",
+          "JUNO2",
+          "JUN12"
+        ]
+      },
+      {
+        "id": 79,
+        "label": "BITS",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 0,
+        "formatted": [
+          "1",
+          "16",
+          "9"
+        ],
+        "choices": []
+      },
+      {
+        "id": 80,
+        "label": "RATE",
+        "min": 0,
+        "max": 127,
+        "default": 96,
+        "format": 0,
+        "formatted": [
+          "689 Hz",
+          "44k Hz",
+          "11k Hz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 81,
+        "label": "LPF",
+        "min": 0,
+        "max": 127,
+        "default": 96,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "3.4 kHz"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 16,
+    "family": "FX",
+    "title": "INSERT",
+    "engine": "All applicable engines",
+    "variant": 6,
+    "scope": 0,
+    "image": "ref-16-e00-v07",
+    "controls": [
+      {
+        "id": 78,
+        "label": "INSRT",
+        "min": 0,
+        "max": 11,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "JUN12",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "SOFT",
+          "HARD",
+          "FOLD",
+          "FUZZ",
+          "CRUSH",
+          "PHASR",
+          "FLANG",
+          "CHOR",
+          "JUNO1",
+          "JUNO2",
+          "JUN12"
+        ]
+      },
+      {
+        "id": 79,
+        "label": "RATE",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 4,
+        "formatted": [
+          ".05 Hz",
+          "40.0 Hz",
+          "1.45 Hz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 80,
+        "label": "DEPTH",
+        "min": 0,
+        "max": 127,
+        "default": 96,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "76 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 81,
+        "label": "FDBK",
+        "min": 0,
+        "max": 127,
+        "default": 96,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "76 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 16,
+    "family": "FX",
+    "title": "INSERT",
+    "engine": "All applicable engines",
+    "variant": 9,
+    "scope": 0,
+    "image": "ref-16-e00-v10",
+    "controls": [
+      {
+        "id": 78,
+        "label": "INSRT",
+        "min": 0,
+        "max": 11,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "JUN12",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "SOFT",
+          "HARD",
+          "FOLD",
+          "FUZZ",
+          "CRUSH",
+          "PHASR",
+          "FLANG",
+          "CHOR",
+          "JUNO1",
+          "JUNO2",
+          "JUN12"
+        ]
+      },
+      {
+        "id": 79,
+        "label": "WIDTH",
+        "min": 0,
+        "max": 127,
+        "default": 127,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "100 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 80,
+        "label": "TONE",
+        "min": 0,
+        "max": 127,
+        "default": 100,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "4.2 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 81,
+        "label": "NOISE",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 17,
+    "family": "FX",
+    "title": "INSERT 2",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-17-e00-v00",
+    "controls": [
+      {
+        "id": 82,
+        "label": "MIX",
+        "min": 0,
+        "max": 127,
+        "default": 127,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "100 %"
+        ],
+        "choices": []
+      },
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "page_id": 18,
+    "family": "FX",
+    "title": "DLY",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 1,
+    "image": "ref-18-e00-v00",
+    "controls": [
+      {
+        "id": 4,
+        "label": "TIME",
+        "min": 0,
+        "max": 7,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          "1/4",
+          "1/16D",
+          "1/8"
+        ],
+        "choices": [
+          "1/4",
+          "1/8",
+          "1/16",
+          "1/32",
+          "8T",
+          "16T",
+          "1/8D",
+          "1/16D"
+        ]
+      },
+      {
+        "id": 5,
+        "label": "FDBK",
+        "min": 0,
+        "max": 120,
+        "default": 60,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 6,
+        "label": "COLR",
+        "min": 0,
+        "max": 127,
+        "default": 70,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "55 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 7,
+        "label": "MIX",
+        "min": 0,
+        "max": 127,
+        "default": 90,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "71 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 19,
+    "family": "FX",
+    "title": "DLY 2",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 1,
+    "image": "ref-19-e00-v00",
+    "controls": [
+      {
+        "id": 33,
+        "label": "MODE",
+        "min": 0,
+        "max": 2,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "MONO",
+          "TAPE",
+          "MONO"
+        ],
+        "choices": [
+          "MONO",
+          "PING",
+          "TAPE"
+        ]
+      },
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "page_id": 20,
+    "family": "FX",
+    "title": "REVERB",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 1,
+    "image": "ref-20-e00-v00",
+    "controls": [
+      {
+        "id": 28,
+        "label": "TYPE",
+        "min": 0,
+        "max": 3,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "ROOM",
+          "SHIMR",
+          "ROOM"
+        ],
+        "choices": [
+          "ROOM",
+          "PLATE",
+          "HALL",
+          "SHIMR"
+        ]
+      },
+      {
+        "id": 8,
+        "label": "SIZE",
+        "min": 0,
+        "max": 127,
+        "default": 90,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "71 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 9,
+        "label": "DAMP",
+        "min": 0,
+        "max": 127,
+        "default": 60,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "47 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 30,
+        "label": "PRE",
+        "min": 0,
+        "max": 100,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0 ms",
+          "100 ms",
+          "0 ms"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 21,
+    "family": "FX",
+    "title": "CHORUS",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 1,
+    "image": "ref-21-e00-v00",
+    "controls": [
+      {
+        "id": 10,
+        "label": "CRT",
+        "min": 0,
+        "max": 127,
+        "default": 40,
+        "format": 4,
+        "formatted": [
+          ".05 Hz",
+          "40.0 Hz",
+          ".41 Hz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 11,
+        "label": "CDP",
+        "min": 0,
+        "max": 127,
+        "default": 60,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "47 %"
+        ],
+        "choices": []
+      },
+      null,
+      null
+    ]
+  },
+  {
+    "page_id": 22,
+    "family": "FX",
+    "title": "EQ+COMP",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 1,
+    "image": "ref-22-e00-v00",
+    "controls": [
+      {
+        "id": 25,
+        "label": "LOW",
+        "min": 88,
+        "max": 112,
+        "default": 100,
+        "format": 16,
+        "formatted": [
+          "-12 dB",
+          "+12 dB",
+          "0 dB"
+        ],
+        "choices": []
+      },
+      {
+        "id": 24,
+        "label": "MID",
+        "min": 0,
+        "max": 20,
+        "default": 10,
+        "format": 16,
+        "formatted": [
+          "-10 dB",
+          "+10 dB",
+          "0 dB"
+        ],
+        "choices": []
+      },
+      {
+        "id": 26,
+        "label": "HIGH",
+        "min": 4,
+        "max": 28,
+        "default": 16,
+        "format": 16,
+        "formatted": [
+          "-12 dB",
+          "+12 dB",
+          "0 dB"
+        ],
+        "choices": []
+      },
+      {
+        "id": 32,
+        "label": "COMP",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 23,
+    "family": "SEL",
+    "title": "SEL",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-23-e00-v00",
+    "controls": [
+      {
+        "id": 25,
+        "label": "ROOT",
+        "min": 0,
+        "max": 11,
+        "default": 0,
+        "format": 10,
+        "formatted": [
+          "C",
+          "B",
+          "C"
+        ],
+        "choices": []
+      },
+      {
+        "id": 26,
+        "label": "SCL",
+        "min": 0,
+        "max": 15,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "CHR",
+          "DIMWH",
+          "CHR"
+        ],
+        "choices": [
+          "CHR",
+          "MAJ",
+          "MIN",
+          "DOR",
+          "MIX",
+          "PEN",
+          "MPEN",
+          "HARM",
+          "PHRY",
+          "LYD",
+          "LOC",
+          "MEL",
+          "BLUES",
+          "WHOLE",
+          "DIMHW",
+          "DIMWH"
+        ]
+      },
+      {
+        "id": 27,
+        "label": "QNT",
+        "min": 0,
+        "max": 3,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "ALL",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "SNAP",
+          "WHITE",
+          "ALL"
+        ]
+      },
+      {
+        "id": 49,
+        "label": "CHORD",
+        "min": 0,
+        "max": 17,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "NEUTR",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "TRIAD",
+          "7TH",
+          "9TH",
+          "SUS4",
+          "POWER",
+          "MAJ",
+          "MIN",
+          "DOM7",
+          "MAJ7",
+          "MIN7",
+          "SUS2",
+          "DIM",
+          "AUG",
+          "AUTO",
+          "AUTO2",
+          "OPEN 5",
+          "NEUTRAL"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 24,
+    "family": "SEL",
+    "title": "SEL 2",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-24-e00-v00",
+    "controls": [
+      {
+        "id": 28,
+        "label": "TRN",
+        "min": -24,
+        "max": 24,
+        "default": 0,
+        "format": 7,
+        "formatted": [
+          "-24 st",
+          "+24 st",
+          "0 st"
+        ],
+        "choices": []
+      },
+      {
+        "id": 51,
+        "label": "STRUM",
+        "min": -60,
+        "max": 69,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "-60",
+          "A32",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 52,
+        "label": "VOIC",
+        "min": 0,
+        "max": 5,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "CLOSE",
+          "+OCT",
+          "CLOSE"
+        ],
+        "choices": [
+          "CLOSE",
+          "SMOOTH",
+          "OPEN",
+          "INV1",
+          "INV2",
+          "+OCT"
+        ]
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 25,
+    "family": "EDIT",
+    "title": "FILTER",
+    "engine": "ANALOG",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-25-e01-v00",
+    "controls": [
+      {
+        "id": 90,
+        "label": "MODEL",
+        "min": 1,
+        "max": 8,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          "SVF",
+          "HP",
+          "SVF"
+        ],
+        "choices": [
+          "SVF",
+          "MOOG",
+          "MS20",
+          "DIODE",
+          "SEM",
+          "NOTCH",
+          "BP",
+          "HP"
+        ]
+      },
+      {
+        "id": 91,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 90,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "2.5 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 92,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 30,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "24 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 93,
+        "label": "FLT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 25,
+    "family": "EDIT",
+    "title": "FILTER",
+    "engine": "LOFI",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-25-e04-v00",
+    "controls": [
+      {
+        "id": 90,
+        "label": "MODEL",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "ONE P",
+          "ONE P",
+          "ONE P"
+        ],
+        "choices": [
+          "ONE POLE"
+        ]
+      },
+      {
+        "id": 91,
+        "label": "TONE",
+        "min": 0,
+        "max": 127,
+        "default": 127,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "100 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 92,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 93,
+        "label": "FLT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 25,
+    "family": "EDIT",
+    "title": "FILTER",
+    "engine": "SAMPLE",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-25-e05-v00",
+    "controls": [
+      {
+        "id": 90,
+        "label": "MODEL",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "ONE P",
+          "ONE P",
+          "ONE P"
+        ],
+        "choices": [
+          "ONE POLE"
+        ]
+      },
+      {
+        "id": 91,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 127,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "127"
+        ],
+        "choices": []
+      },
+      {
+        "id": 92,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 93,
+        "label": "FLT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 25,
+    "family": "EDIT",
+    "title": "FILTER",
+    "engine": "TRIO",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-25-e07-v00",
+    "controls": [
+      {
+        "id": 90,
+        "label": "MODEL",
+        "min": 0,
+        "max": 3,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "LP",
+          "NOT",
+          "LP"
+        ],
+        "choices": [
+          "LP",
+          "BP",
+          "HP",
+          "NOT"
+        ]
+      },
+      {
+        "id": 91,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 80,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "1.5 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 92,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 40,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "31 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 93,
+        "label": "FLT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 25,
+    "family": "EDIT",
+    "title": "FILTER",
+    "engine": "GRAIN",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-25-e09-v00",
+    "controls": [
+      {
+        "id": 90,
+        "label": "MODEL",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "ONE P",
+          "ONE P",
+          "ONE P"
+        ],
+        "choices": [
+          "ONE POLE"
+        ]
+      },
+      {
+        "id": 91,
+        "label": "TONE",
+        "min": 0,
+        "max": 127,
+        "default": 127,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "100 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 92,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 93,
+        "label": "FLT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 25,
+    "family": "EDIT",
+    "title": "FILTER",
+    "engine": "NOISE",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-25-e12-v00",
+    "controls": [
+      {
+        "id": 90,
+        "label": "MODEL",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "SVF",
+          "SVF",
+          "SVF"
+        ],
+        "choices": [
+          "SVF"
+        ]
+      },
+      {
+        "id": 91,
+        "label": "FREQ",
+        "min": 0,
+        "max": 127,
+        "default": 80,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "1.5 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 92,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 30,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "24 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 93,
+        "label": "FLT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 25,
+    "family": "EDIT",
+    "title": "FILTER",
+    "engine": "HYBRID",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-25-e13-v00",
+    "controls": [
+      {
+        "id": 90,
+        "label": "F1 MODEL",
+        "min": 0,
+        "max": 7,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "MOOG",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "LP12",
+          "LP24",
+          "BP",
+          "HP",
+          "NOTCH",
+          "PEAK",
+          "MOOG"
+        ]
+      },
+      {
+        "id": 91,
+        "label": "F1 CUT",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "30 Hz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 92,
+        "label": "F1 RES",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 93,
+        "label": "FENV",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 25,
+    "family": "EDIT",
+    "title": "FILTER",
+    "engine": "WAVE",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-25-e14-v00",
+    "controls": [
+      {
+        "id": 90,
+        "label": "MODEL",
+        "min": 1,
+        "max": 8,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          "SVF",
+          "HP",
+          "SVF"
+        ],
+        "choices": [
+          "SVF",
+          "MOOG",
+          "MS20",
+          "DIODE",
+          "SEM",
+          "NOTCH",
+          "BP",
+          "HP"
+        ]
+      },
+      {
+        "id": 91,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 110,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "6.9 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 92,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 10,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "8 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 93,
+        "label": "FLT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 25,
+    "family": "EDIT",
+    "title": "FILTER",
+    "engine": "ACID",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-25-e15-v00",
+    "controls": [
+      {
+        "id": 90,
+        "label": "MODEL",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "LADDE",
+          "LADDE",
+          "LADDE"
+        ],
+        "choices": [
+          "LADDER"
+        ]
+      },
+      {
+        "id": 91,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 30,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "132 Hz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 92,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 100,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "79 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 93,
+        "label": "ENV",
+        "min": 0,
+        "max": 127,
+        "default": 70,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "55 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 25,
+    "family": "EDIT",
+    "title": "FILTER",
+    "engine": "STRINGS",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-25-e16-v00",
+    "controls": [
+      {
+        "id": 90,
+        "label": "MODEL",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "SVF",
+          "SVF",
+          "SVF"
+        ],
+        "choices": [
+          "SVF"
+        ]
+      },
+      {
+        "id": 91,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 92,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "2.8 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 92,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 10,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "8 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 93,
+        "label": "FLT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 25,
+    "family": "EDIT",
+    "title": "FILTER",
+    "engine": "MACRO",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-25-e17-v00",
+    "controls": [
+      {
+        "id": 90,
+        "label": "MODEL",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "LPG",
+          "LPG",
+          "LPG"
+        ],
+        "choices": [
+          "LPG"
+        ]
+      },
+      {
+        "id": 91,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 110,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "6.9 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 92,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 93,
+        "label": "FLT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 25,
+    "family": "EDIT",
+    "title": "FILTER",
+    "engine": "VPS",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-25-e18-v00",
+    "controls": [
+      {
+        "id": 90,
+        "label": "MODEL",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "SVF",
+          "SVF",
+          "SVF"
+        ],
+        "choices": [
+          "SVF"
+        ]
+      },
+      {
+        "id": 91,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 110,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "6.9 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 92,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 10,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "8 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 93,
+        "label": "FLT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 25,
+    "family": "EDIT",
+    "title": "FILTER",
+    "engine": "TERRAIN",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-25-e19-v00",
+    "controls": [
+      {
+        "id": 90,
+        "label": "MODEL",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "SVF",
+          "SVF",
+          "SVF"
+        ],
+        "choices": [
+          "SVF"
+        ]
+      },
+      {
+        "id": 91,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 110,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "6.9 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 92,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 93,
+        "label": "FLT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 25,
+    "family": "EDIT",
+    "title": "FILTER",
+    "engine": "WSEQ",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-25-e21-v00",
+    "controls": [
+      {
+        "id": 90,
+        "label": "MODEL",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "SVF",
+          "SVF",
+          "SVF"
+        ],
+        "choices": [
+          "SVF"
+        ]
+      },
+      {
+        "id": 91,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 110,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "6.9 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 92,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 10,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "8 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 93,
+        "label": "FLT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 25,
+    "family": "EDIT",
+    "title": "FILTER",
+    "engine": "JUNO",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-25-e22-v00",
+    "controls": [
+      {
+        "id": 90,
+        "label": "MODEL",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "LADDE",
+          "LADDE",
+          "LADDE"
+        ],
+        "choices": [
+          "LADDER"
+        ]
+      },
+      {
+        "id": 91,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 90,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "2.5 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 92,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 20,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "16 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 93,
+        "label": "FLT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 25,
+    "family": "EDIT",
+    "title": "FILTER",
+    "engine": "VECTOR",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-25-e23-v00",
+    "controls": [
+      {
+        "id": 90,
+        "label": "MODEL",
+        "min": 1,
+        "max": 8,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          "SVF",
+          "HP",
+          "SVF"
+        ],
+        "choices": [
+          "SVF",
+          "MOOG",
+          "MS20",
+          "DIODE",
+          "SEM",
+          "NOTCH",
+          "BP",
+          "HP"
+        ]
+      },
+      {
+        "id": 91,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 100,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "4.2 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 92,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 93,
+        "label": "FLT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 26,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "ANALOG",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-26-e01-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "DRV",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 26,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "LOFI",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-26-e04-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "OFF",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 26,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "SAMPLE",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-26-e05-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "OFF",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 26,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "TRIO",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-26-e07-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 26,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "GRAIN",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-26-e09-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "OFF",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 26,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "NOISE",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-26-e12-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 26,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "HYBRID",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-26-e13-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "DRIVE",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 26,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "WAVE",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-26-e14-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "DRV",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 26,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "ACID",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-26-e15-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "DIST",
+        "min": 0,
+        "max": 127,
+        "default": 20,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "16 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 26,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "STRINGS",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-26-e16-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 26,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "MACRO",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-26-e17-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "OFF",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 26,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "VPS",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-26-e18-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 26,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "TERRAIN",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-26-e19-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 26,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "WSEQ",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-26-e21-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 26,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "JUNO",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-26-e22-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 26,
+    "family": "EDIT",
+    "title": "FILTER GAIN",
+    "engine": "VECTOR",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-26-e23-v00",
+    "controls": [
+      {
+        "id": 94,
+        "label": "--",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 95,
+        "label": "COMP",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "OFF",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 96,
+        "label": "TRIM",
+        "min": -64,
+        "max": 127,
+        "default": 0,
+        "format": 18,
+        "formatted": [
+          "-32.0 dB",
+          "63.5 dB",
+          ".0 dB"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "ANALOG",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e01-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "WAVE",
+        "min": 0,
+        "max": 4,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "SAW",
+          "PWM",
+          "SAW"
+        ],
+        "choices": [
+          "SAW",
+          "SQR",
+          "TRI",
+          "SIN",
+          "PWM"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "DTN",
+        "min": 0,
+        "max": 127,
+        "default": 10,
+        "format": 0,
+        "formatted": [
+          "0 ct",
+          "127 ct",
+          "10 ct"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "MIX",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "NOIS",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "DIGITAL",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e02-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "ALG",
+        "min": 0,
+        "max": 7,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "1",
+          "8",
+          "1"
+        ],
+        "choices": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "R2",
+        "min": 0,
+        "max": 14,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          ".5",
+          "16",
+          "1"
+        ],
+        "choices": [
+          ".5",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "14",
+          "16"
+        ]
+      },
+      {
+        "id": 120,
+        "label": "R3",
+        "min": 0,
+        "max": 14,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          ".5",
+          "16",
+          "1"
+        ],
+        "choices": [
+          ".5",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "14",
+          "16"
+        ]
+      },
+      {
+        "id": 121,
+        "label": "R4",
+        "min": 0,
+        "max": 14,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          ".5",
+          "16",
+          "1"
+        ],
+        "choices": [
+          ".5",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "14",
+          "16"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "PHASE",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e03-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "WAVE",
+        "min": 0,
+        "max": 7,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "SAW",
+          "RTRP",
+          "SAW"
+        ],
+        "choices": [
+          "SAW",
+          "SQR",
+          "PLS",
+          "DSIN",
+          "SPLS",
+          "RSAW",
+          "RTRI",
+          "RTRP"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "WAVE2",
+        "min": 0,
+        "max": 8,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "-",
+          "RTRP",
+          "-"
+        ],
+        "choices": [
+          "-",
+          "SAW",
+          "SQR",
+          "PLS",
+          "DSIN",
+          "SPLS",
+          "RSAW",
+          "RTRI",
+          "RTRP"
+        ]
+      },
+      {
+        "id": 120,
+        "label": "DCW",
+        "min": 0,
+        "max": 127,
+        "default": 60,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "47 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "ENV",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "LOFI",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e04-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "CHIP",
+        "min": 0,
+        "max": 4,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "4BIT",
+          "STEP",
+          "4BIT"
+        ],
+        "choices": [
+          "4BIT",
+          "4B/2",
+          "8BIT",
+          "1BIT",
+          "STEP"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "WAVE",
+        "min": 0,
+        "max": 4,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "PLS",
+          "WRAM",
+          "PLS"
+        ],
+        "choices": [
+          "PLS",
+          "TRI",
+          "SAW",
+          "NOIS",
+          "WRAM"
+        ]
+      },
+      {
+        "id": 120,
+        "label": "DUTY",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "64"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "CRSH",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "LOFI",
+    "variant": 4,
+    "scope": 2,
+    "image": "ref-27-e04-v05",
+    "controls": [
+      {
+        "id": 118,
+        "label": "CHIP",
+        "min": 0,
+        "max": 4,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "4BIT",
+          "STEP",
+          "4BIT"
+        ],
+        "choices": [
+          "4BIT",
+          "4B/2",
+          "8BIT",
+          "1BIT",
+          "STEP"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "WAVE",
+        "min": 0,
+        "max": 4,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "PLS",
+          "WRAM",
+          "PLS"
+        ],
+        "choices": [
+          "PLS",
+          "TRI",
+          "SAW",
+          "NOIS",
+          "WRAM"
+        ]
+      },
+      {
+        "id": 120,
+        "label": "DUTY",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "64"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "DCY",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "CONST",
+          "L15",
+          "CONST"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "LOFI",
+    "variant": 5,
+    "scope": 2,
+    "image": "ref-27-e04-v06",
+    "controls": [
+      {
+        "id": 118,
+        "label": "CHIP",
+        "min": 0,
+        "max": 4,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "4BIT",
+          "STEP",
+          "4BIT"
+        ],
+        "choices": [
+          "4BIT",
+          "4B/2",
+          "8BIT",
+          "1BIT",
+          "STEP"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "WAVE",
+        "min": 0,
+        "max": 4,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "PLS",
+          "WRAM",
+          "PLS"
+        ],
+        "choices": [
+          "PLS",
+          "TRI",
+          "SAW",
+          "NOIS",
+          "WRAM"
+        ]
+      },
+      {
+        "id": 120,
+        "label": "WAV#",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 0,
+        "formatted": [
+          "SQ50",
+          "STAIR",
+          "BAS2"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "DCY",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "CONST",
+          "L15",
+          "CONST"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "SAMPLE",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e05-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "SET",
+        "min": 4,
+        "max": 7,
+        "default": 4,
+        "format": 8,
+        "formatted": [
+          "VOX",
+          "AIR",
+          "VOX"
+        ],
+        "choices": [
+          "VOX",
+          "GLASS",
+          "PAD",
+          "AIR"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "TUNE",
+        "min": -24,
+        "max": 24,
+        "default": 0,
+        "format": 7,
+        "formatted": [
+          "-24 st",
+          "+24 st",
+          "0 st"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "BITS",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "LOOP",
+        "min": 0,
+        "max": 1,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "ON",
+          "ON"
+        ],
+        "choices": [
+          "OFF",
+          "ON"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "VOICE",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e06-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "VOWL",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 119,
+        "label": "VOWL2",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "64"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "TALK",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 3,
+        "formatted": [
+          "1.0 ms",
+          "10.0 s",
+          "1.0 ms"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "SHIFT",
+        "min": -12,
+        "max": 12,
+        "default": 0,
+        "format": 7,
+        "formatted": [
+          "-12 st",
+          "+12 st",
+          "0 st"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "TRIO",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e07-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "WAVE",
+        "min": 0,
+        "max": 15,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "SAW3",
+          "R+SP",
+          "SAW3"
+        ],
+        "choices": [
+          "SAW3",
+          "PLS3",
+          "PPT",
+          "SST",
+          "TRI3",
+          "S&T",
+          "P&S",
+          "P+N",
+          "NOIS",
+          "SYNC",
+          "SYNCP",
+          "SYNC3",
+          "RING",
+          "RING3",
+          "R+S",
+          "R+SP"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "INT2",
+        "min": -24,
+        "max": 24,
+        "default": 0,
+        "format": 7,
+        "formatted": [
+          "-24 st",
+          "+24 st",
+          "0 st"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "INT3",
+        "min": -24,
+        "max": 24,
+        "default": -12,
+        "format": 7,
+        "formatted": [
+          "-24 st",
+          "+24 st",
+          "-12 st"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "DTN",
+        "min": 0,
+        "max": 50,
+        "default": 6,
+        "format": 0,
+        "formatted": [
+          "0 ct",
+          "50 ct",
+          "6 ct"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "WHEEL",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e08-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "REG",
+        "min": 0,
+        "max": 15,
+        "default": 4,
+        "format": 8,
+        "formatted": [
+          "FLUTE",
+          "FULL",
+          "3BAR"
+        ],
+        "choices": [
+          "FLUTE",
+          "MELLO",
+          "HOLLW",
+          "SMOOT",
+          "3BAR",
+          "BLUES",
+          "GOSPL",
+          "ROCK",
+          "TOPS",
+          "CLARI",
+          "REED",
+          "STRNG",
+          "CHAPL",
+          "BRITE",
+          "BASS",
+          "FULL"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "SUB",
+        "min": -8,
+        "max": 8,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "-8",
+          "8",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "BODY",
+        "min": -8,
+        "max": 8,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "-8",
+          "8",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "TOP",
+        "min": -8,
+        "max": 8,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "-8",
+          "8",
+          "0"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "GRAIN",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e09-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "SRC",
+        "min": 4,
+        "max": 7,
+        "default": 4,
+        "format": 8,
+        "formatted": [
+          "VOX",
+          "AIR",
+          "VOX"
+        ],
+        "choices": [
+          "VOX",
+          "GLASS",
+          "PAD",
+          "AIR"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "POS",
+        "min": 0,
+        "max": 127,
+        "default": 32,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "25 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "SIZE",
+        "min": 0,
+        "max": 127,
+        "default": 80,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "63 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "DENS",
+        "min": 0,
+        "max": 127,
+        "default": 80,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "63 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "FM6",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e10-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "ALG",
+        "min": 0,
+        "max": 32,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "PAT",
+          "32",
+          "PAT"
+        ],
+        "choices": []
+      },
+      {
+        "id": 119,
+        "label": "FB",
+        "min": -7,
+        "max": 7,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "-7",
+          "7",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "MLVL",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "MRAT",
+        "min": -16,
+        "max": 16,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "-16",
+          "16",
+          "0"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "PHYS",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e11-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "MODEL",
+        "min": 0,
+        "max": 3,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "MODAL",
+          "SYMP",
+          "MODAL"
+        ],
+        "choices": [
+          "MODAL",
+          "STRNG",
+          "MEMB",
+          "SYMP"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "STRC",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "BRIT",
+        "min": 0,
+        "max": 127,
+        "default": 80,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "63 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "DAMP",
+        "min": 0,
+        "max": 127,
+        "default": 80,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "63 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "PHYS",
+    "variant": 2,
+    "scope": 2,
+    "image": "ref-27-e11-v03",
+    "controls": [
+      {
+        "id": 118,
+        "label": "MODEL",
+        "min": 0,
+        "max": 3,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "MODAL",
+          "SYMP",
+          "MODAL"
+        ],
+        "choices": [
+          "MODAL",
+          "STRNG",
+          "MEMB",
+          "SYMP"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "HARM",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "BRIT",
+        "min": 0,
+        "max": 127,
+        "default": 80,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "63 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "DAMP",
+        "min": 0,
+        "max": 127,
+        "default": 80,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "63 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "PHYS",
+    "variant": 3,
+    "scope": 2,
+    "image": "ref-27-e11-v04",
+    "controls": [
+      {
+        "id": 118,
+        "label": "MODEL",
+        "min": 0,
+        "max": 3,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "MODAL",
+          "SYMP",
+          "MODAL"
+        ],
+        "choices": [
+          "MODAL",
+          "STRNG",
+          "MEMB",
+          "SYMP"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "CHRD",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 0,
+        "formatted": [
+          "OCT",
+          "ROOT",
+          "MIN"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "BRIT",
+        "min": 0,
+        "max": 127,
+        "default": 80,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "63 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "DAMP",
+        "min": 0,
+        "max": 127,
+        "default": 80,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "63 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "NOISE",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e12-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "MODE",
+        "min": 0,
+        "max": 3,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "ANLG",
+          "META",
+          "ANLG"
+        ],
+        "choices": [
+          "ANLG",
+          "DUST",
+          "LFSR",
+          "META"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "COLR",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "FREQ",
+        "min": 0,
+        "max": 127,
+        "default": 80,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "1.5 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 30,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "24 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "HYBRID",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e13-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "CUT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 119,
+        "label": "RES",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "FENV",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "PTCH",
+        "min": 0,
+        "max": 99,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "SYNTH",
+          "V64 A",
+          "SYNTH"
+        ],
+        "choices": [
+          "SYNTHMAVEN",
+          "POLY PAD",
+          "STRINGS",
+          "ACID",
+          "SYNC LEAD",
+          "FM BELL",
+          "FM KEYS",
+          "WOBBLE",
+          "REESE",
+          "HOOVER",
+          "BRASS",
+          "VOX",
+          "PLUCK",
+          "RISER",
+          "METAL",
+          "FOLD BASS",
+          "CHIP LEAD",
+          "GLASS PAD",
+          "DRONE",
+          "808 SUB",
+          "TRANCE",
+          "SAW PLUCK",
+          "SPACE BEL",
+          "INIT",
+          "MOOG BASS",
+          "MOOG LEAD",
+          "LADDER PAD",
+          "XD 80 BASS",
+          "XD CRYSTAL",
+          "XD DARKCHD",
+          "XD RHODES",
+          "XD GHOST",
+          "XD JUNOPAD",
+          "XD STRINGS",
+          "XD SYNWAVE",
+          "XD MOOG LD",
+          "V01 STROBE",
+          "V02 DARK",
+          "V03 REESE",
+          "V04 PLUCK",
+          "V05 SPACE",
+          "V06 ROOFTO",
+          "V07 ON DAN",
+          "V08 NOSTAL",
+          "V09 KEYS O",
+          "V10 NO TIM",
+          "V11 KEYAQU",
+          "V12 TOY",
+          "V13 CITY L",
+          "V14 THE VE",
+          "V15 STAY",
+          "V16 WOOD",
+          "V17 HOLOGR",
+          "V18 INSOMN",
+          "V19 MAINST",
+          "V20 HAPPY",
+          "V21 XYLOPH",
+          "V22 DR WHO",
+          "V23 AIRWAV",
+          "V24 WOBBLY",
+          "V25 ALCOHO",
+          "V26 RETROV",
+          "V27 STRING",
+          "V28 BLUR",
+          "V29 ORCHES",
+          "V30 VOID",
+          "V31 ALIEN",
+          "V32 NEGATI",
+          "V33 BLACK",
+          "V34 GANGNA",
+          "V35 YEAH",
+          "V36 TYPE A",
+          "V37 TAKE 2",
+          "V38 BRASS",
+          "V39 JUMP",
+          "V40 LIVE A",
+          "V41 FALLIN",
+          "V42 WIN",
+          "V43 HOUSE",
+          "V44 SOFT L",
+          "V45 COUNTD",
+          "V46 LOST",
+          "V47 NOW",
+          "V48 ORGAN",
+          "V49 STRANG",
+          "V50 SOLO L",
+          "V51 SHOW",
+          "V52 BRAMM",
+          "V53 BASS G",
+          "V54 RUSH",
+          "V55 POLARI",
+          "V56 DEEP R",
+          "V57 DEEP R",
+          "V58 TUNNEL",
+          "V59 SYNTH",
+          "V60 STARS",
+          "V61 ARP SY",
+          "V62 KEYS W",
+          "V63 KEYS E",
+          "V64 ALIEN"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "WAVE",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e14-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "TABL",
+        "min": 0,
+        "max": 19,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "BASIC",
+          "USR4",
+          "BASIC"
+        ],
+        "choices": [
+          "BASIC",
+          "PWM",
+          "HARMON",
+          "ODD",
+          "VOCAL",
+          "RESO",
+          "SYNC",
+          "FM",
+          "FM 2:3",
+          "FOLD",
+          "PD",
+          "DIGITL",
+          "BELL",
+          "ORGAN",
+          "CHIP",
+          "COMB",
+          "USR1",
+          "USR2",
+          "USR3",
+          "USR4"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "POS",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "DTN",
+        "min": 0,
+        "max": 50,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0 ct",
+          "50 ct",
+          "0 ct"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "SUB",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "ACID",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e15-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "WAVE",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "SAW",
+          "SQR",
+          "SAW"
+        ],
+        "choices": [
+          "SAW",
+          "SQR"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 30,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "132 Hz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 100,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "79 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "ENV",
+        "min": 0,
+        "max": 127,
+        "default": 70,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "55 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "STRINGS",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e16-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "16'",
+        "min": 0,
+        "max": 127,
+        "default": 40,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "31 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 119,
+        "label": "8'",
+        "min": 0,
+        "max": 127,
+        "default": 127,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "100 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "4'",
+        "min": 0,
+        "max": 127,
+        "default": 70,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "55 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "ENS",
+        "min": 0,
+        "max": 127,
+        "default": 100,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "79 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "MACRO",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e17-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "MODL",
+        "min": 0,
+        "max": 3,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "CHORD",
+          "SPEEC",
+          "CHORD"
+        ],
+        "choices": [
+          "CHORD",
+          "SWARM",
+          "ADDTV",
+          "SPEECH"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "HARM",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "TIMB",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "MRPH",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "VPS",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e18-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "D",
+        "min": 0,
+        "max": 127,
+        "default": 50,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "39 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 119,
+        "label": "V",
+        "min": 0,
+        "max": 127,
+        "default": 32,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "32"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "VENV",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "OSC2",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "TERRAIN",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e19-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "TERR",
+        "min": 0,
+        "max": 7,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "WAVES",
+          "CHAOS",
+          "WAVES"
+        ],
+        "choices": [
+          "WAVES",
+          "RIPPL",
+          "CRYST",
+          "BUMPS",
+          "SADDL",
+          "FOLDS",
+          "TWIST",
+          "CHAOS"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "RAD",
+        "min": 0,
+        "max": 127,
+        "default": 50,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "39 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "X",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "Y",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "FMX",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e20-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "PTCH",
+        "min": 0,
+        "max": 42,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "F1",
+          "B27",
+          "F1"
+        ],
+        "choices": []
+      },
+      {
+        "id": 119,
+        "label": "ALG",
+        "min": 0,
+        "max": 40,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "PAT",
+          "40",
+          "PAT"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "MOD",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "FB",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "WSEQ",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e21-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "SEQ",
+        "min": 0,
+        "max": 15,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "STEPS",
+          "PING",
+          "STEPS"
+        ],
+        "choices": [
+          "STEPS",
+          "RHYTHM",
+          "SWEEP",
+          "FIFTHS",
+          "MINOR",
+          "MAJOR",
+          "OCTAVE",
+          "GATE",
+          "BELLS",
+          "8BIT",
+          "MORPH",
+          "VOX",
+          "NOISY",
+          "DUB",
+          "DORIAN",
+          "PING"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "RATE",
+        "min": 0,
+        "max": 127,
+        "default": 40,
+        "format": 0,
+        "formatted": [
+          "1/32",
+          "BAR",
+          "1/16"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "XFADE",
+        "min": 0,
+        "max": 127,
+        "default": 20,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "16 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "LOOP",
+        "min": 0,
+        "max": 3,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "FWD",
+          "ONCE",
+          "FWD"
+        ],
+        "choices": [
+          "FWD",
+          "BACK",
+          "PING",
+          "ONCE"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "JUNO",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e22-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "WAVE",
+        "min": 0,
+        "max": 2,
+        "default": 2,
+        "format": 8,
+        "formatted": [
+          "SAW",
+          "S+P",
+          "S+P"
+        ],
+        "choices": [
+          "SAW",
+          "PLS",
+          "S+P"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "PW",
+        "min": 0,
+        "max": 127,
+        "default": 30,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "24 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 120,
+        "label": "SUB",
+        "min": 0,
+        "max": 127,
+        "default": 40,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "31 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 121,
+        "label": "NOIS",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 27,
+    "family": "EDIT",
+    "title": "EDIT 1",
+    "engine": "VECTOR",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-27-e23-v00",
+    "controls": [
+      {
+        "id": 118,
+        "label": "A",
+        "min": 0,
+        "max": 15,
+        "default": 2,
+        "format": 8,
+        "formatted": [
+          "SINE",
+          "METAL",
+          "SAW"
+        ],
+        "choices": [
+          "SINE",
+          "TRI",
+          "SAW",
+          "SQR",
+          "PLS25",
+          "PLS10",
+          "ORGAN",
+          "VOX A",
+          "VOX O",
+          "BELL",
+          "HOLLW",
+          "BRASS",
+          "RESO",
+          "DIGI",
+          "STRNG",
+          "METAL"
+        ]
+      },
+      {
+        "id": 119,
+        "label": "B",
+        "min": 0,
+        "max": 15,
+        "default": 7,
+        "format": 8,
+        "formatted": [
+          "SINE",
+          "METAL",
+          "VOX A"
+        ],
+        "choices": [
+          "SINE",
+          "TRI",
+          "SAW",
+          "SQR",
+          "PLS25",
+          "PLS10",
+          "ORGAN",
+          "VOX A",
+          "VOX O",
+          "BELL",
+          "HOLLW",
+          "BRASS",
+          "RESO",
+          "DIGI",
+          "STRNG",
+          "METAL"
+        ]
+      },
+      {
+        "id": 120,
+        "label": "C",
+        "min": 0,
+        "max": 15,
+        "default": 14,
+        "format": 8,
+        "formatted": [
+          "SINE",
+          "METAL",
+          "STRNG"
+        ],
+        "choices": [
+          "SINE",
+          "TRI",
+          "SAW",
+          "SQR",
+          "PLS25",
+          "PLS10",
+          "ORGAN",
+          "VOX A",
+          "VOX O",
+          "BELL",
+          "HOLLW",
+          "BRASS",
+          "RESO",
+          "DIGI",
+          "STRNG",
+          "METAL"
+        ]
+      },
+      {
+        "id": 121,
+        "label": "D",
+        "min": 0,
+        "max": 15,
+        "default": 9,
+        "format": 8,
+        "formatted": [
+          "SINE",
+          "METAL",
+          "BELL"
+        ],
+        "choices": [
+          "SINE",
+          "TRI",
+          "SAW",
+          "SQR",
+          "PLS25",
+          "PLS10",
+          "ORGAN",
+          "VOX A",
+          "VOX O",
+          "BELL",
+          "HOLLW",
+          "BRASS",
+          "RESO",
+          "DIGI",
+          "STRNG",
+          "METAL"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "ANALOG",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e01-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 90,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "2.5 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 30,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "24 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "DRV",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "KTR",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "DIGITAL",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e02-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "IDX",
+        "min": 0,
+        "max": 127,
+        "default": 60,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "47 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "MDEC",
+        "min": 0,
+        "max": 127,
+        "default": 60,
+        "format": 3,
+        "formatted": [
+          "1.0 ms",
+          "10.0 s",
+          "78 ms"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "FB",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "-",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "0",
+          "0"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "PHASE",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e03-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "DTN",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0 ct",
+          "127 ct",
+          "0 ct"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "LINE",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "MIX",
+          "RING",
+          "MIX"
+        ],
+        "choices": [
+          "MIX",
+          "RING"
+        ]
+      },
+      {
+        "id": 124,
+        "label": "SUB",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "-",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "0",
+          "0"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "LOFI",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e04-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "SWP",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "VIB",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "ARP",
+        "min": 0,
+        "max": 3,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "MIN",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "OCT",
+          "MAJ",
+          "MIN"
+        ]
+      },
+      {
+        "id": 125,
+        "label": "TONE",
+        "min": 0,
+        "max": 127,
+        "default": 127,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "100 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "SAMPLE",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e05-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 127,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "127"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "-",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "0",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "DRV",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "-",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "0",
+          "0"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "VOICE",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e06-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "BUZZ",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "BRTH",
+        "min": 0,
+        "max": 127,
+        "default": 10,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "8 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "Q",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "RAND",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "TRIO",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e07-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "MODE",
+        "min": 0,
+        "max": 3,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "LP",
+          "NOT",
+          "LP"
+        ],
+        "choices": [
+          "LP",
+          "BP",
+          "HP",
+          "NOT"
+        ]
+      },
+      {
+        "id": 123,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 80,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "1.5 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 40,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "31 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "PW",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "WHEEL",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e08-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "PERC",
+        "min": 0,
+        "max": 6,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "3SLOW",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "2ND",
+          "3RD",
+          "2SOFT",
+          "3SOFT",
+          "2SLOW",
+          "3SLOW"
+        ]
+      },
+      {
+        "id": 123,
+        "label": "CLICK",
+        "min": 0,
+        "max": 127,
+        "default": 40,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "31 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "DRV",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "ROTR",
+        "min": 0,
+        "max": 2,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "FAST",
+          "SLOW"
+        ],
+        "choices": [
+          "OFF",
+          "SLOW",
+          "FAST"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "GRAIN",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e09-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "PTCH",
+        "min": -24,
+        "max": 24,
+        "default": 0,
+        "format": 7,
+        "formatted": [
+          "-24 st",
+          "+24 st",
+          "0 st"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "SPRD",
+        "min": 0,
+        "max": 127,
+        "default": 30,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "24 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "RAND",
+        "min": 0,
+        "max": 127,
+        "default": 10,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "8 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "TONE",
+        "min": 0,
+        "max": 127,
+        "default": 127,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "100 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "FM6",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e10-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "MEG",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "VMOD",
+        "min": -7,
+        "max": 7,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "-7",
+          "7",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "DTUN",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "PTCH",
+        "min": 0,
+        "max": 67,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "F1",
+          "ARABE",
+          "F1"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "PHYS",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e11-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "POS",
+        "min": 0,
+        "max": 127,
+        "default": 20,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "16 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "ACC",
+        "min": 0,
+        "max": 127,
+        "default": 90,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "71 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "BOW",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "EXC",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "PHYS",
+    "variant": 2,
+    "scope": 2,
+    "image": "ref-28-e11-v03",
+    "controls": [
+      {
+        "id": 122,
+        "label": "POS",
+        "min": 0,
+        "max": 127,
+        "default": 20,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "16 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "ACC",
+        "min": 0,
+        "max": 127,
+        "default": 90,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "71 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "BEND",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "EXC",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "PHYS",
+    "variant": 3,
+    "scope": 2,
+    "image": "ref-28-e11-v04",
+    "controls": [
+      {
+        "id": 122,
+        "label": "SYMP",
+        "min": 0,
+        "max": 127,
+        "default": 20,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "16 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "ACC",
+        "min": 0,
+        "max": 127,
+        "default": 90,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "71 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "BUZZ",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "EXC",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "NOISE",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e12-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "TRK",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "DENS",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "DRFT",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "CRSH",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "NOISE",
+    "variant": 2,
+    "scope": 2,
+    "image": "ref-28-e12-v03",
+    "controls": [
+      {
+        "id": 122,
+        "label": "TRK",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "LEN",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "L23",
+          "L7",
+          "L23"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "DRFT",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "CLK",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0 st",
+          "127 st",
+          "0 st"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "NOISE",
+    "variant": 3,
+    "scope": 2,
+    "image": "ref-28-e12-v04",
+    "controls": [
+      {
+        "id": 122,
+        "label": "TRK",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "LEN",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "127",
+          "7",
+          "127"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "DRFT",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "CLK",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0 st",
+          "127 st",
+          "0 st"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "HYBRID",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e13-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "M1",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "M2",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "M3",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "M4",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "WAVE",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e14-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 110,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "6.9 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 10,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "8 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "DRV",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "KTR",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "ACID",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e15-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "DEC",
+        "min": 0,
+        "max": 127,
+        "default": 60,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "47 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "ACC",
+        "min": 0,
+        "max": 127,
+        "default": 90,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "71 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "DIST",
+        "min": 0,
+        "max": 127,
+        "default": 20,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "16 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "SWP",
+        "min": 0,
+        "max": 127,
+        "default": 60,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "47 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "STRINGS",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e16-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 92,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "2.8 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "RATE",
+        "min": 0,
+        "max": 127,
+        "default": 50,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "39 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "SHP",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 10,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "8 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "MACRO",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e17-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 110,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "6.9 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 10,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "8 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "DEC",
+        "min": 0,
+        "max": 127,
+        "default": 60,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "47 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "LPG",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "VPS",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e18-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 110,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "6.9 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 10,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "8 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "DTN",
+        "min": 0,
+        "max": 127,
+        "default": 20,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "16 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "SUB",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "TERRAIN",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e19-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "ORB",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "DRIFT",
+        "min": 0,
+        "max": 127,
+        "default": 20,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "16 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 110,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "6.9 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "FMX",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e20-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "TIME",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "DTN",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "VEL",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "KTRK",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "WSEQ",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e21-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "START",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "PITCH",
+        "min": 0,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 110,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "6.9 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 10,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "8 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "JUNO",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e22-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "HPF",
+        "min": 0,
+        "max": 3,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          "0",
+          "3",
+          "1"
+        ],
+        "choices": [
+          "0",
+          "1",
+          "2",
+          "3"
+        ]
+      },
+      {
+        "id": 123,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 90,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "2.5 kHz"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "RES",
+        "min": 0,
+        "max": 127,
+        "default": 20,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "16 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 125,
+        "label": "CHOR",
+        "min": 0,
+        "max": 3,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "I+II",
+          "I"
+        ],
+        "choices": [
+          "OFF",
+          "I",
+          "II",
+          "I+II"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 28,
+    "family": "EDIT",
+    "title": "EDIT 2",
+    "engine": "VECTOR",
+    "variant": -1,
+    "scope": 2,
+    "image": "ref-28-e23-v00",
+    "controls": [
+      {
+        "id": 122,
+        "label": "X",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 123,
+        "label": "Y",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 124,
+        "label": "MOVE",
+        "min": 0,
+        "max": 10,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "RND+",
+          "CIRC"
+        ],
+        "choices": [
+          "OFF",
+          "CIRC",
+          "CIRC+",
+          "8",
+          "8+",
+          "SWEEP",
+          "SWP+",
+          "LOOP",
+          "LOOP+",
+          "RND",
+          "RND+"
+        ]
+      },
+      {
+        "id": 125,
+        "label": "CUT",
+        "min": 0,
+        "max": 127,
+        "default": 100,
+        "format": 5,
+        "formatted": [
+          "30 Hz",
+          "16 kHz",
+          "4.2 kHz"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 29,
+    "family": "EDIT",
+    "title": "OP",
+    "engine": "FMX",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-29-e20-v00",
+    "controls": [
+      {
+        "id": 19,
+        "label": "OP",
+        "min": 1,
+        "max": 6,
+        "default": 1,
+        "format": 0,
+        "formatted": [
+          "1",
+          "6",
+          "1"
+        ],
+        "choices": []
+      },
+      {
+        "id": 20,
+        "label": "WAVE",
+        "min": 0,
+        "max": 9,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "SINE",
+          "NOISE",
+          "SINE"
+        ],
+        "choices": [
+          "SINE",
+          "TRI",
+          "SAW",
+          "SQR",
+          "HALF",
+          "ABS",
+          "QUART",
+          "PULSE",
+          "SIN8",
+          "NOISE"
+        ]
+      },
+      {
+        "id": 21,
+        "label": "MODE",
+        "min": 0,
+        "max": 2,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "PM",
+          "RING",
+          "PM"
+        ],
+        "choices": [
+          "PM",
+          "FM",
+          "RING"
+        ]
+      },
+      {
+        "id": 22,
+        "label": "RATIO",
+        "min": 0,
+        "max": 31,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          "0.5",
+          "31",
+          "1"
+        ],
+        "choices": [
+          "0.5",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16",
+          "17",
+          "18",
+          "19",
+          "20",
+          "21",
+          "22",
+          "23",
+          "24",
+          "25",
+          "26",
+          "27",
+          "28",
+          "29",
+          "30",
+          "31"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 30,
+    "family": "EDIT",
+    "title": "OP 2",
+    "engine": "FMX",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-30-e20-v00",
+    "controls": [
+      {
+        "id": 23,
+        "label": "FINE",
+        "min": 0,
+        "max": 99,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "99",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 24,
+        "label": "LEVEL",
+        "min": 0,
+        "max": 127,
+        "default": 127,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "127"
+        ],
+        "choices": []
+      },
+      {
+        "id": 25,
+        "label": "VEL",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 26,
+        "label": "KSC",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 31,
+    "family": "EDIT",
+    "title": "ROUTE",
+    "engine": "FMX",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-31-e20-v00",
+    "controls": [
+      {
+        "id": 31,
+        "label": "TO",
+        "min": 1,
+        "max": 6,
+        "default": 1,
+        "format": 0,
+        "formatted": [
+          "1",
+          "6",
+          "1"
+        ],
+        "choices": []
+      },
+      {
+        "id": 32,
+        "label": "FROM",
+        "min": 1,
+        "max": 6,
+        "default": 2,
+        "format": 0,
+        "formatted": [
+          "1",
+          "6",
+          "2"
+        ],
+        "choices": []
+      },
+      {
+        "id": 33,
+        "label": "AMT",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 34,
+        "label": "OUT",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "0"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 32,
+    "family": "EDIT",
+    "title": "FMX",
+    "engine": "FMX",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-32-e20-v00",
+    "controls": [
+      {
+        "id": 35,
+        "label": "DTN",
+        "min": -7,
+        "max": 7,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "-7",
+          "7",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 36,
+        "label": "FREQ",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "RATIO",
+          "FIX",
+          "RATIO"
+        ],
+        "choices": [
+          "RATIO",
+          "FIX"
+        ]
+      },
+      {
+        "id": 37,
+        "label": "PEG",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 38,
+        "label": "PTIM",
+        "min": 0,
+        "max": 127,
+        "default": 40,
+        "format": 3,
+        "formatted": [
+          "1.0 ms",
+          "10.0 s",
+          "18 ms"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 33,
+    "family": "EDIT",
+    "title": "VOICE",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-33-e00-v00",
+    "controls": [
+      {
+        "id": 37,
+        "label": "VCE",
+        "min": 0,
+        "max": 5,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "POLY",
+          "UNI4",
+          "POLY"
+        ],
+        "choices": [
+          "POLY",
+          "MONO",
+          "LEG",
+          "UNI",
+          "UNI2",
+          "UNI4"
+        ]
+      },
+      {
+        "id": 38,
+        "label": "GLD",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 3,
+        "formatted": [
+          "1.0 ms",
+          "10.0 s",
+          "1.0 ms"
+        ],
+        "choices": []
+      },
+      {
+        "id": 41,
+        "label": "GLMOD",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "RATE",
+          "TIME",
+          "RATE"
+        ],
+        "choices": [
+          "RATE",
+          "TIME"
+        ]
+      },
+      {
+        "id": 42,
+        "label": "PRIO",
+        "min": 0,
+        "max": 2,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "LAST",
+          "HIGH",
+          "LAST"
+        ],
+        "choices": [
+          "LAST",
+          "LOW",
+          "HIGH"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 34,
+    "family": "EDIT",
+    "title": "CHARACTER",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-34-e00-v00",
+    "controls": [
+      {
+        "id": 43,
+        "label": "ALLOC",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "ROT",
+          "REUSE",
+          "ROT"
+        ],
+        "choices": [
+          "ROT",
+          "REUSE"
+        ]
+      },
+      {
+        "id": 44,
+        "label": "DTUNE",
+        "min": 0,
+        "max": 127,
+        "default": 40,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "40"
+        ],
+        "choices": []
+      },
+      {
+        "id": 89,
+        "label": "VINTG",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 91,
+        "label": "SPRED",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 35,
+    "family": "GLO",
+    "title": "GLOBAL",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 1,
+    "image": "ref-35-e00-v00",
+    "controls": [
+      {
+        "id": 0,
+        "label": "BPM",
+        "min": 40,
+        "max": 240,
+        "default": 90,
+        "format": 9,
+        "formatted": [
+          "40 BPM",
+          "240 BPM",
+          "90 BPM"
+        ],
+        "choices": []
+      },
+      {
+        "id": 1,
+        "label": "SWING",
+        "min": 0,
+        "max": 100,
+        "default": 0,
+        "format": 14,
+        "formatted": [
+          "0",
+          "100",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 2,
+        "label": "CLICK",
+        "min": 0,
+        "max": 2,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "REC",
+          "ON"
+        ]
+      },
+      {
+        "id": 3,
+        "label": "TUNE",
+        "min": -50,
+        "max": 50,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "-50",
+          "50",
+          "0"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 36,
+    "family": "GLO",
+    "title": "MASTER",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 1,
+    "image": "ref-36-e00-v00",
+    "controls": [
+      {
+        "id": 27,
+        "label": "DUST",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 29,
+        "label": "FILT",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 15,
+        "formatted": [
+          "LP100 %",
+          "HP100 %",
+          "OFF"
+        ],
+        "choices": []
+      },
+      null,
+      null
+    ]
+  },
+  {
+    "page_id": 37,
+    "family": "GLO",
+    "title": "TUNING",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-37-e00-v00",
+    "controls": [
+      {
+        "id": 47,
+        "label": "TUNE",
+        "min": 0,
+        "max": 61,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "EQUAL",
+          "CUSTO",
+          "EQUAL"
+        ],
+        "choices": [
+          "EQUAL",
+          "JUST",
+          "PYTHA",
+          "MEANT",
+          "WERCK",
+          "KIRNB",
+          "RAST",
+          "BAYATI",
+          "SLEND",
+          "PELOG",
+          "19EDO",
+          "24EDO",
+          "31EDO",
+          "USER",
+          "AJAM",
+          "AJAM USHAYRAN",
+          "ATHAR KURD",
+          "AWJ IRAQ",
+          "BASTANIKAR",
+          "BAYATI SHURI",
+          "DALANSHIN",
+          "FARAHFAZA",
+          "HIJAZ",
+          "HIJAZKAR",
+          "HIJAZKAR KURD",
+          "HUSAYNI",
+          "HUZAM",
+          "IRAQ",
+          "JIHARKAH",
+          "KIRDAN",
+          "KURD",
+          "LAMI",
+          "MAHUR",
+          "MUHAYYAR",
+          "MUSTAAR",
+          "NAHAWAND",
+          "NAHAWAND MURASSAA",
+          "NAIRUZ",
+          "NAWA ATHAR",
+          "NIKRIZ",
+          "RAHAT AL-ARWAH",
+          "SABA",
+          "SABA ZAMZAM",
+          "SAZKAR",
+          "SHADD ARABAN",
+          "SHAHNAZ",
+          "SHAWQ AFZA",
+          "SIKAH",
+          "SIKAH BALADI APPROX",
+          "SUZDALARA",
+          "SUZIDIL",
+          "SUZNAK",
+          "USHAQ MASRI",
+          "YAKAH",
+          "ZANJARAN",
+          "RAST DESCENDING",
+          "BAYATI UPPER RAST",
+          "HIJAZ UPPER RAST",
+          "CUSTOM 1",
+          "CUSTOM 2",
+          "CUSTOM 3",
+          "CUSTOM 4"
+        ]
+      },
+      {
+        "id": 99,
+        "label": "FROM",
+        "min": 0,
+        "max": 8,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "C0",
+          "C8",
+          "C0"
+        ],
+        "choices": [
+          "C0",
+          "C1",
+          "C2",
+          "C3",
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "C8"
+        ]
+      },
+      {
+        "id": 48,
+        "label": "ROOT",
+        "min": 0,
+        "max": 11,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "C",
+          "B",
+          "C"
+        ],
+        "choices": [
+          "C",
+          "C#",
+          "D",
+          "D#",
+          "E",
+          "F",
+          "F#",
+          "G",
+          "G#",
+          "A",
+          "A#",
+          "B"
+        ]
+      },
+      {
+        "id": 78,
+        "label": "MASTER",
+        "min": 0,
+        "max": 1,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "ON",
+          "ON"
+        ],
+        "choices": [
+          "OFF",
+          "ON"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 38,
+    "family": "GLO",
+    "title": "TUNING 2",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-38-e00-v00",
+    "controls": [
+      {
+        "id": 49,
+        "label": "A4",
+        "min": 400,
+        "max": 480,
+        "default": 440,
+        "format": 0,
+        "formatted": [
+          "400 Hz",
+          "480 Hz",
+          "440 Hz"
+        ],
+        "choices": []
+      },
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "page_id": 39,
+    "family": "GLO",
+    "title": "CONTROLLER",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-39-e00-v00",
+    "controls": [
+      {
+        "id": 100,
+        "label": "MODE",
+        "min": 0,
+        "max": 3,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "AUTO",
+          "HUI",
+          "AUTO"
+        ],
+        "choices": [
+          "AUTO",
+          "MIDI",
+          "MCU",
+          "HUI"
+        ]
+      },
+      {
+        "id": 101,
+        "label": "PORT",
+        "min": 0,
+        "max": 16,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "AUTO",
+          "16",
+          "AUTO"
+        ],
+        "choices": [
+          "AUTO",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16"
+        ]
+      },
+      null,
+      null
+    ]
+  },
+  {
+    "page_id": 40,
+    "family": "GLO",
+    "title": "SYSTEM",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 1,
+    "image": "ref-40-e00-v00",
+    "controls": [
+      {
+        "id": 12,
+        "label": "MIDI",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "KEYS",
+          "SEQ",
+          "KEYS"
+        ],
+        "choices": [
+          "KEYS",
+          "SEQ"
+        ]
+      },
+      {
+        "id": 13,
+        "label": "SYNC",
+        "min": 0,
+        "max": 2,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "INT",
+          "TRS",
+          "INT"
+        ],
+        "choices": [
+          "INT",
+          "USB",
+          "TRS"
+        ]
+      },
+      {
+        "id": 14,
+        "label": "IN",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "NOTES",
+          "CLOCK",
+          "NOTES"
+        ],
+        "choices": [
+          "NOTES",
+          "CLOCK"
+        ]
+      },
+      {
+        "id": 15,
+        "label": "CPU",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "0",
+          "0"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 41,
+    "family": "GLO",
+    "title": "MIDI",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-41-e00-v00",
+    "controls": [
+      {
+        "id": 50,
+        "label": "IN CH",
+        "min": 0,
+        "max": 16,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OMNI",
+          "16",
+          "OMNI"
+        ],
+        "choices": [
+          "OMNI",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16"
+        ]
+      },
+      {
+        "id": 51,
+        "label": "OUT",
+        "min": 1,
+        "max": 16,
+        "default": 1,
+        "format": 0,
+        "formatted": [
+          "1",
+          "16",
+          "1"
+        ],
+        "choices": []
+      },
+      {
+        "id": 52,
+        "label": "BEND",
+        "min": 0,
+        "max": 24,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "AUTO",
+          "24",
+          "AUTO"
+        ],
+        "choices": [
+          "AUTO",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16",
+          "17",
+          "18",
+          "19",
+          "20",
+          "21",
+          "22",
+          "23",
+          "24"
+        ]
+      },
+      {
+        "id": 53,
+        "label": "LOCAL",
+        "min": 0,
+        "max": 1,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "ON",
+          "ON"
+        ],
+        "choices": [
+          "OFF",
+          "ON"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 42,
+    "family": "GLO",
+    "title": "MIDI 2",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-42-e00-v00",
+    "controls": [
+      {
+        "id": 54,
+        "label": "PROG",
+        "min": 0,
+        "max": 1,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "ON",
+          "ON"
+        ],
+        "choices": [
+          "OFF",
+          "ON"
+        ]
+      },
+      {
+        "id": 55,
+        "label": "SEND",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "CC",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "CC"
+        ]
+      },
+      {
+        "id": 56,
+        "label": "EWI",
+        "min": 0,
+        "max": 2,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "V+AT",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "VOL",
+          "V+AT"
+        ]
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 43,
+    "family": "GLO",
+    "title": "PATCH MIDI",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-43-e00-v00",
+    "controls": [
+      {
+        "id": 54,
+        "label": "PROG",
+        "min": 0,
+        "max": 1,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "ON",
+          "ON"
+        ],
+        "choices": [
+          "OFF",
+          "ON"
+        ]
+      },
+      {
+        "id": 57,
+        "label": "PORT",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "USB",
+          "USB",
+          "USB"
+        ],
+        "choices": [
+          "USB"
+        ]
+      },
+      null,
+      null
+    ]
+  },
+  {
+    "page_id": 44,
+    "family": "GLO",
+    "title": "KEY MIDI",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-44-e00-v00",
+    "controls": [
+      {
+        "id": 58,
+        "label": "KEY IN",
+        "min": 0,
+        "max": 2,
+        "default": 2,
+        "format": 8,
+        "formatted": [
+          "USB",
+          "BOTH",
+          "BOTH"
+        ],
+        "choices": [
+          "USB",
+          "TRS",
+          "BOTH"
+        ]
+      },
+      {
+        "id": 50,
+        "label": "IN CH",
+        "min": 0,
+        "max": 16,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OMNI",
+          "16",
+          "OMNI"
+        ],
+        "choices": [
+          "OMNI",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16"
+        ]
+      },
+      null,
+      null
+    ]
+  },
+  {
+    "page_id": 45,
+    "family": "GLO",
+    "title": "PEDAL LEARN",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-45-e00-v00",
+    "controls": [
+      {
+        "id": 79,
+        "label": "ACTION",
+        "min": 0,
+        "max": 9,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "PATCH",
+          "SETLI",
+          "PATCH"
+        ],
+        "choices": [
+          "PATCH UP",
+          "PATCH DOWN",
+          "BANK UP",
+          "BANK DOWN",
+          "PROGRAM NEXT",
+          "PROGRAM PREV",
+          "SCENE NEXT",
+          "SCENE PREV",
+          "SETLIST NEXT",
+          "SETLIST PREV"
+        ]
+      },
+      {
+        "id": 80,
+        "label": "LEARN",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 11,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": []
+      },
+      {
+        "id": 81,
+        "label": "ACCEPT",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "1",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 82,
+        "label": "DUP ms",
+        "min": 0,
+        "max": 500,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "500",
+          "0"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 46,
+    "family": "GLO",
+    "title": "SCENES",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-46-e00-v00",
+    "controls": [
+      {
+        "id": 83,
+        "label": "SCENE",
+        "min": 1,
+        "max": 4,
+        "default": 1,
+        "format": 0,
+        "formatted": [
+          "1",
+          "4",
+          "1"
+        ],
+        "choices": []
+      },
+      {
+        "id": 84,
+        "label": "CAPTURE",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "1",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 85,
+        "label": "RECALL",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "1",
+          "0"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 47,
+    "family": "GLO",
+    "title": "SETLIST",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-47-e00-v00",
+    "controls": [
+      {
+        "id": 86,
+        "label": "ENTRY",
+        "min": 1,
+        "max": 32,
+        "default": 1,
+        "format": 0,
+        "formatted": [
+          "1",
+          "32",
+          "1"
+        ],
+        "choices": []
+      },
+      {
+        "id": 87,
+        "label": "PROGRAM",
+        "min": 1,
+        "max": 8,
+        "default": 1,
+        "format": 0,
+        "formatted": [
+          "1",
+          "8",
+          "1"
+        ],
+        "choices": []
+      },
+      {
+        "id": 88,
+        "label": "LENGTH",
+        "min": 0,
+        "max": 32,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "32",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 89,
+        "label": "LOAD",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "1",
+          "0"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 48,
+    "family": "GLO",
+    "title": "PEDAL MAP",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-48-e00-v00",
+    "controls": [
+      {
+        "id": 63,
+        "label": "TYPE",
+        "min": 0,
+        "max": 2,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "PC",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "CC",
+          "PC"
+        ]
+      },
+      {
+        "id": 64,
+        "label": "NUMBER",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 65,
+        "label": "VALUE",
+        "min": 0,
+        "max": 127,
+        "default": 127,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "127"
+        ],
+        "choices": []
+      },
+      {
+        "id": 66,
+        "label": "CH",
+        "min": 0,
+        "max": 16,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "IN CH",
+          "16",
+          "IN CH"
+        ],
+        "choices": [
+          "IN CH",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 49,
+    "family": "GLO",
+    "title": "PATCH UP",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-49-e00-v00",
+    "controls": [
+      {
+        "id": 63,
+        "label": "TYPE",
+        "min": 0,
+        "max": 2,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "PC",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "CC",
+          "PC"
+        ]
+      },
+      {
+        "id": 64,
+        "label": "NUMBER",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 65,
+        "label": "VALUE",
+        "min": 0,
+        "max": 127,
+        "default": 127,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "127"
+        ],
+        "choices": []
+      },
+      {
+        "id": 66,
+        "label": "CH",
+        "min": 0,
+        "max": 16,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "IN CH",
+          "16",
+          "IN CH"
+        ],
+        "choices": [
+          "IN CH",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 50,
+    "family": "GLO",
+    "title": "PATCH DOWN",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-50-e00-v00",
+    "controls": [
+      {
+        "id": 63,
+        "label": "TYPE",
+        "min": 0,
+        "max": 2,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "PC",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "CC",
+          "PC"
+        ]
+      },
+      {
+        "id": 64,
+        "label": "NUMBER",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 65,
+        "label": "VALUE",
+        "min": 0,
+        "max": 127,
+        "default": 127,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "127"
+        ],
+        "choices": []
+      },
+      {
+        "id": 66,
+        "label": "CH",
+        "min": 0,
+        "max": 16,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "IN CH",
+          "16",
+          "IN CH"
+        ],
+        "choices": [
+          "IN CH",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 51,
+    "family": "GLO",
+    "title": "BANK UP",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-51-e00-v00",
+    "controls": [
+      {
+        "id": 63,
+        "label": "TYPE",
+        "min": 0,
+        "max": 2,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "PC",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "CC",
+          "PC"
+        ]
+      },
+      {
+        "id": 64,
+        "label": "NUMBER",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 65,
+        "label": "VALUE",
+        "min": 0,
+        "max": 127,
+        "default": 127,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "127"
+        ],
+        "choices": []
+      },
+      {
+        "id": 66,
+        "label": "CH",
+        "min": 0,
+        "max": 16,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "IN CH",
+          "16",
+          "IN CH"
+        ],
+        "choices": [
+          "IN CH",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 52,
+    "family": "GLO",
+    "title": "BANK DOWN",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-52-e00-v00",
+    "controls": [
+      {
+        "id": 63,
+        "label": "TYPE",
+        "min": 0,
+        "max": 2,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "PC",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "CC",
+          "PC"
+        ]
+      },
+      {
+        "id": 64,
+        "label": "NUMBER",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 65,
+        "label": "VALUE",
+        "min": 0,
+        "max": 127,
+        "default": 127,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "127"
+        ],
+        "choices": []
+      },
+      {
+        "id": 66,
+        "label": "CH",
+        "min": 0,
+        "max": 16,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "IN CH",
+          "16",
+          "IN CH"
+        ],
+        "choices": [
+          "IN CH",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 53,
+    "family": "GLO",
+    "title": "USB ROLE",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-53-e00-v00",
+    "controls": [
+      {
+        "id": 67,
+        "label": "USB ROLE",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "COMPU",
+          "PEDAL",
+          "COMPU"
+        ],
+        "choices": [
+          "COMPUTER",
+          "PEDAL"
+        ]
+      },
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "page_id": 54,
+    "family": "GLO",
+    "title": "LAYER ROUTE",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-54-e00-v00",
+    "controls": [
+      {
+        "id": 69,
+        "label": "ON",
+        "min": 0,
+        "max": 1,
+        "default": 1,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "ON",
+          "ON"
+        ],
+        "choices": [
+          "OFF",
+          "ON"
+        ]
+      },
+      {
+        "id": 70,
+        "label": "SPLIT",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "ON"
+        ]
+      },
+      {
+        "id": 71,
+        "label": "UPPER",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "ON"
+        ]
+      },
+      {
+        "id": 72,
+        "label": "POINT",
+        "min": 0,
+        "max": 127,
+        "default": 60,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "60"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 55,
+    "family": "GLO",
+    "title": "LAYER MIX",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-55-e00-v00",
+    "controls": [
+      {
+        "id": 73,
+        "label": "LEVEL",
+        "min": 0,
+        "max": 127,
+        "default": 104,
+        "format": 6,
+        "formatted": [
+          "OFF",
+          "7.5 dB",
+          "-4.0 dB"
+        ],
+        "choices": []
+      },
+      {
+        "id": 74,
+        "label": "PAN",
+        "min": -64,
+        "max": 63,
+        "default": 0,
+        "format": 2,
+        "formatted": [
+          "-100 %",
+          "+98 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 75,
+        "label": "MUTE",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "ON"
+        ]
+      },
+      {
+        "id": 76,
+        "label": "SOLO",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "ON"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 56,
+    "family": "GLO",
+    "title": "LAYER PITCH",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 7,
+    "image": "ref-56-e00-v00",
+    "controls": [
+      {
+        "id": 77,
+        "label": "TRANS",
+        "min": -24,
+        "max": 24,
+        "default": 0,
+        "format": 7,
+        "formatted": [
+          "-24 st",
+          "+24 st",
+          "0 st"
+        ],
+        "choices": []
+      },
+      {
+        "id": 68,
+        "label": "LAYER",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "ON"
+        ]
+      },
+      null,
+      null
+    ]
+  },
+  {
+    "page_id": 57,
+    "family": "SAVE",
+    "title": "PROGRAM",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 1,
+    "image": "ref-57-e00-v00",
+    "controls": [
+      {
+        "id": 16,
+        "label": "SLOT",
+        "min": 1,
+        "max": 8,
+        "default": 1,
+        "format": 0,
+        "formatted": [
+          "1",
+          "8",
+          "1"
+        ],
+        "choices": []
+      },
+      {
+        "id": 17,
+        "label": "NAME",
+        "min": 0,
+        "max": 0,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "--",
+          "--"
+        ],
+        "choices": [
+          "--"
+        ]
+      },
+      {
+        "id": 18,
+        "label": "LOAD",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "GO",
+          "--"
+        ],
+        "choices": [
+          "--",
+          "GO"
+        ]
+      },
+      {
+        "id": 19,
+        "label": "SAVE",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "GO",
+          "--"
+        ],
+        "choices": [
+          "--",
+          "GO"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 58,
+    "family": "SAVE",
+    "title": "TOOLS",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 1,
+    "image": "ref-58-e00-v00",
+    "controls": [
+      {
+        "id": 22,
+        "label": "CLRSQ",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "GO",
+          "--"
+        ],
+        "choices": [
+          "--",
+          "GO"
+        ]
+      },
+      {
+        "id": 23,
+        "label": "INIT",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "GO",
+          "--"
+        ],
+        "choices": [
+          "--",
+          "GO"
+        ]
+      },
+      null,
+      {
+        "id": 31,
+        "label": "NEW",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "--",
+          "GO",
+          "--"
+        ],
+        "choices": [
+          "--",
+          "GO"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 59,
+    "family": "ARP",
+    "title": "ARP",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-59-e00-v00",
+    "controls": [
+      {
+        "id": 17,
+        "label": "MODE",
+        "min": 0,
+        "max": 15,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "TURNG",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "UP",
+          "DN",
+          "UPDN",
+          "RND",
+          "ORD",
+          "REPEAT",
+          "DNUP",
+          "UP+8",
+          "CONV",
+          "DIVG",
+          "PINKY",
+          "THUMB",
+          "WALK",
+          "CHORD",
+          "TURNG"
+        ]
+      },
+      {
+        "id": 18,
+        "label": "RATE",
+        "min": 0,
+        "max": 5,
+        "default": 2,
+        "format": 8,
+        "formatted": [
+          "1/4",
+          "16T",
+          "1/16"
+        ],
+        "choices": [
+          "1/4",
+          "1/8",
+          "1/16",
+          "1/32",
+          "8T",
+          "16T"
+        ]
+      },
+      {
+        "id": 19,
+        "label": "OCT",
+        "min": 1,
+        "max": 4,
+        "default": 1,
+        "format": 0,
+        "formatted": [
+          "1",
+          "4",
+          "1"
+        ],
+        "choices": []
+      },
+      {
+        "id": 20,
+        "label": "GATE",
+        "min": 1,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "1 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 60,
+    "family": "ARP",
+    "title": "ARP 2",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-60-e00-v00",
+    "controls": [
+      {
+        "id": 21,
+        "label": "SWG",
+        "min": 0,
+        "max": 100,
+        "default": 0,
+        "format": 14,
+        "formatted": [
+          "0",
+          "100",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 22,
+        "label": "PROB",
+        "min": 0,
+        "max": 127,
+        "default": 127,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "100 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 23,
+        "label": "HOLD",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "ON",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "ON"
+        ]
+      },
+      {
+        "id": 24,
+        "label": "ORD",
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "NOTE",
+          "PLAY",
+          "NOTE"
+        ],
+        "choices": [
+          "NOTE",
+          "PLAY"
+        ]
+      }
+    ]
+  },
+  {
+    "page_id": 61,
+    "family": "ARP",
+    "title": "SPICE",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-61-e00-v00",
+    "controls": [
+      {
+        "id": 87,
+        "label": "SPICE",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 1,
+        "formatted": [
+          "0 %",
+          "100 %",
+          "0 %"
+        ],
+        "choices": []
+      },
+      {
+        "id": 88,
+        "label": "DICE",
+        "min": 0,
+        "max": 127,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "0",
+          "127",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 90,
+        "label": "LOOP",
+        "min": 1,
+        "max": 16,
+        "default": 16,
+        "format": 0,
+        "formatted": [
+          "1",
+          "16",
+          "16"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  },
+  {
+    "page_id": 62,
+    "family": "SEQ",
+    "title": "NOTES",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 3,
+    "image": "ref-62-e00-v00",
+    "controls": [
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "page_id": 63,
+    "family": "SEQ",
+    "title": "PATTERN",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-63-e00-v00",
+    "controls": [
+      {
+        "id": 29,
+        "label": "LEN",
+        "min": 1,
+        "max": 64,
+        "default": 16,
+        "format": 13,
+        "formatted": [
+          "1 STEP",
+          "64 STEP",
+          "16 STEP"
+        ],
+        "choices": []
+      },
+      {
+        "id": 30,
+        "label": "DIV",
+        "min": 0,
+        "max": 8,
+        "default": 2,
+        "format": 8,
+        "formatted": [
+          "1/4",
+          "2BAR",
+          "1/16"
+        ],
+        "choices": [
+          "1/4",
+          "1/8",
+          "1/16",
+          "1/32",
+          "8T",
+          "16T",
+          "1/2",
+          "1BAR",
+          "2BAR"
+        ]
+      },
+      {
+        "id": 31,
+        "label": "SWG",
+        "min": 0,
+        "max": 100,
+        "default": 0,
+        "format": 14,
+        "formatted": [
+          "0",
+          "100",
+          "0"
+        ],
+        "choices": []
+      },
+      {
+        "id": 32,
+        "label": "GATE",
+        "min": 1,
+        "max": 127,
+        "default": 64,
+        "format": 1,
+        "formatted": [
+          "1 %",
+          "100 %",
+          "50 %"
+        ],
+        "choices": []
+      }
+    ]
+  },
+  {
+    "page_id": 67,
+    "family": "CHORDS",
+    "title": "CHORDS",
+    "engine": "All applicable engines",
+    "variant": -1,
+    "scope": 0,
+    "image": "ref-67-e00-v00",
+    "controls": [
+      {
+        "id": 49,
+        "label": "CHORD",
+        "min": 0,
+        "max": 17,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "OFF",
+          "NEUTR",
+          "OFF"
+        ],
+        "choices": [
+          "OFF",
+          "TRIAD",
+          "7TH",
+          "9TH",
+          "SUS4",
+          "POWER",
+          "MAJ",
+          "MIN",
+          "DOM7",
+          "MAJ7",
+          "MIN7",
+          "SUS2",
+          "DIM",
+          "AUG",
+          "AUTO",
+          "AUTO2",
+          "OPEN 5",
+          "NEUTRAL"
+        ]
+      },
+      {
+        "id": 52,
+        "label": "VOIC",
+        "min": 0,
+        "max": 5,
+        "default": 0,
+        "format": 8,
+        "formatted": [
+          "CLOSE",
+          "+OCT",
+          "CLOSE"
+        ],
+        "choices": [
+          "CLOSE",
+          "SMOOTH",
+          "OPEN",
+          "INV1",
+          "INV2",
+          "+OCT"
+        ]
+      },
+      {
+        "id": 51,
+        "label": "STRUM",
+        "min": -60,
+        "max": 69,
+        "default": 0,
+        "format": 0,
+        "formatted": [
+          "-60",
+          "A32",
+          "0"
+        ],
+        "choices": []
+      },
+      null
+    ]
+  }
+]

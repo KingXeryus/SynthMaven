@@ -467,7 +467,7 @@ static void go_home(void)
 
 /* the parts' sounds at power-on (engine, preset): bass, pad, lead */
 #if SYNTHMAVEN_SYNTH                  /* SynthMaven: the instrument plays SYNTHMAVEN (HYBRID's first patch) */
-static const uint8_t TRK_DEF[NPART][2] = {{ENGI_HYBRID,SM_VITAL_PRESET_FIRST},{ENGI_HYBRID,SM_VITAL_PRESET_FIRST+1u},{ENGI_HYBRID,SM_VITAL_PRESET_FIRST+2u},{ENGI_HYBRID,SM_VITAL_PRESET_FIRST+3u}};
+static const uint8_t TRK_DEF[NPART][2] = {{1,21},{10,4},{9,15},{21,3}}; /* P1 STAGE PIANO base instruments; program supplies the complete mix. */
 #else
 static const uint8_t TRK_DEF[NPART][2] = {{0, 0}, {1, 0}, {4, 5}};   /* ANALOG 808 BOOM, DIGITAL RHODES, SAMPLE LOFI FLUTE */
 #endif
@@ -511,6 +511,9 @@ static void apply_preset_to(track_t *t, uint32_t pi)
     sound_fade_begin(t);                              /* SynthMaven: what sounds fades out with its own values */
     panic_req |= (uint8_t)(1u << trk_index(t));       /* MONO/POLY may change: release what sounds */
     t->user = 0;
+#if SYNTHMAVEN_SYNTH
+    if(trk_index(t)<4u)program_solo_gain[trk_index(t)]=0;
+#endif
     if (t == TSEL)
         sync_reload = 1;
     if (!sm_factory_count(t->eng_req))

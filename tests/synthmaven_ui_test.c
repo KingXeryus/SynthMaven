@@ -64,8 +64,8 @@ int main(int argc, char **argv)
     song.g[G_BPM] = 120;
     sloop_splash(); ppm("synthmaven-splash");
     go_home(); ui.force = 1; frames(3);
-    check(ui.home && song.sel == 0 && trk[0].eng_req == ENGI_HYBRID && !strcmp(sound_name(), "V01 STROBE"),
-          "power-on: HOME, the instrument plays V01 STROBE");
+    check(ui.home && song.sel == 0 && trk[0].eng_req == 1 && trk[0].preset == 21 && !strcmp(sound_name(), "FM GRAND"),
+          "power-on: HOME, P1 stage piano main sound");
     key(7); frames(2);                                    /* (a note, for the scope) */
     fm1_in.notes |= 1u << 7; frames(6); ui.force = 1; frame(); ppm("synthmaven-home"); fm1_in.notes &= ~(1u << 7); frames(30);
     ui.menu = 2; ui.force = 1; frame(); ppm("synthmaven-about"); ui.menu = 0; ui.force = 1; frame();
@@ -75,14 +75,14 @@ int main(int argc, char **argv)
         uint32_t total, p0 = preset_pos(&total), p1, k0, k1;
         encs[panel.enc[EN_PRESET]] = 1; frames(2);
         p1 = preset_pos(&total);
-        check(p1 == (p0 + 1u) % total, "PRESETS on HOME: the next sound");
+        check(TSEL->eng_req==1 && TSEL->preset==22, "PRESETS on HOME: the next sound");
         k0 = kind_at(preset_pos(&total));
         encs[panel.enc[EN_ALGO]] = 1; frames(2);
         p1 = preset_pos(&total);
         k1 = kind_at(p1);
-        check(k1 != k0 && (p1 == 0 || kind_at(p1 - 1u) != k1), "ALGORITHM +1: the first sound of the next kind");
+        check(TSEL->eng_req==2 && TSEL->preset==0, "ALGORITHM +1: the first sound of the next kind");
         encs[panel.enc[EN_ALGO]] = -1; frames(2);
-        check(TSEL->eng_req == ENGI_HYBRID && TSEL->preset == SM_VITAL_PRESET_FIRST,
+        check(TSEL->eng_req == 1 && TSEL->preset == 0,
               "ALGORITHM -1: back to the first sound of the kind before");
         for (i = 0; i < 12u; i++) { encs[panel.enc[EN_ALGO]] = 1; frames(1); }
         check(preset_pos(&total) < total, "ALGORITHM round the list: still a sound");

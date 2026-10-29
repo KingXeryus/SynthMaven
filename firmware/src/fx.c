@@ -91,18 +91,32 @@ static void track_dist(track_t *t, int32_t *b, uint32_t n, uint32_t fresh)
         t->dist_on = 0;                                 /* (faded out: off) */
 }
 
+#if SYNTHMAVEN_SYNTH
+/* Saturate in wide precision before narrowing: extended trim must never wrap polarity. */
+static int32_t sm_part_gain(int32_t sample,int32_t gain){
+ int64_t v=((int64_t)clamp(sample,-PART_MAX,PART_MAX)*gain)>>12;
+ return (int32_t)(v>MIX_MAX?MIX_MAX:v< -MIX_MAX?-MIX_MAX:v);
+}
+#endif
 /* master: peak limiter in front of the soft synthmaven, a 35 ms hold then ~46 ms release (SLOOP 2.6), threshold where tanh is still nearly linear,
  * so chords get quieter instead of crushed. SLOOP 2.6: it looks one block ahead (lim_block): the output is the mix
  * CTL samples late (0.73 ms) and the gain glides over each block to what the loudest sample of it and of the next one
  * needs, so a hot kick or bass is already turned down when it comes. Before, the gain caught up in ~4 samples and the
  * first ones went through the tanh knee at up to 4x: a crackle on the beats with the MASTER up (in headphones most) */
+#if SYNTHMAVEN_SYNTH
+#define LIM_T 25500 /* conservative sample ceiling; oversampled peak verified by release audits */
+#else
 #define LIM_T 18000
+#endif
 typedef struct {
     int32_t dl[CTL], dr[CTL];           /* the mix of the last block (the delay) */
     uint32_t w;                         /* its oldest sample (the next out) */
     int32_t env;                        /* the peak the gain fits under LIM_T (LIM_T: none) */
     int32_t g;                          /* the gain at the end of the last block, Q15 (32768: 1) */
     uint32_t hold;                      /* blocks before the release starts (LIM_HOLD after a peak near env) */
+#if SYNTHMAVEN_SYNTH
+    int16_t tp_l[20],tp_r[20];uint8_t tp_w;
+#endif
 } lim_t;
 /* (2.6, a whistle on loud basses) the release waits LIM_HOLD blocks after the last peak near the envelope: a held bass
  * (down to ~29 Hz, a period under 35 ms) keeps one gain, instead of the gain dipping and creeping back at every cycle
@@ -116,11 +130,43 @@ static lim_t lim_dac = {.env = LIM_T, .g = 32768}, lim_usb = {.env = LIM_T, .g =
 static const uint16_t LIM_S[CTL] = {94, 368, 810, 1408, 2150, 3024, 4018, 5120, 6318, 7600, 8954, 10368, 11830, 13328,
                                     14850, 16384, 17918, 19440, 20938, 22400, 23814, 25168, 26450, 27648, 28750, 29744,
                                     30618, 31360, 31958, 32400, 32674, 32768};
+#if SYNTHMAVEN_SYNTH
+#include "loudness.h"
+static int32_t sm_solo_part(void);
+static void sm_limit_times(uint32_t *hold,uint32_t *rel){
+ int32_t part=sm_solo_part();*hold=LIM_HOLD;*rel=LIM_REL;if(part<0)return;
+ const track_t *t=&trk[part];if(!program_solo_gain[part]&&(t->user||!SM_FACTORY_TRANSIENT[t->eng_req%NENGINES][t->preset%105u]))return;
+ uint32_t inc=0xFFFFFFFFu;for(uint32_t k=0;k<NVOICE;k++)if(t->v[k].active){uint32_t p=pitch_inc(clamp(t->v[k].pitch16,0,2047));if(p<inc)inc=p;}
+ uint32_t samples=inc&&inc!=0xFFFFFFFFu?0xFFFFFFFFu/inc:0;
+ *hold=(uint32_t)clamp((int32_t)(2u*((samples+CTL-1u)/CTL)),2,512);*rel=7;
+ /* Noise clicks have no periodic fundamental to protect from gain-cycle pumping. */
+ if(t->eng_req==11u){*hold=1;*rel=5;}
+}
+/* Quantized-history 4x peak estimate. The exact coefficient L1 bound is below 2.25;
+ * quiet blocks only update history, avoiding the interpolation cost. */
+static int32_t sm_true_peak(lim_t *s,const int32_t *l,const int32_t *r,uint32_t n,int32_t pk){
+ uint32_t w=s->tp_w;int run=pk*9>(LIM_T-512)*4;
+ for(uint32_t i=0;i<n;i++){
+  s->tp_l[w]=(int16_t)(clamp(l[i],-MIX_MAX,MIX_MAX)>>7);s->tp_r[w]=(int16_t)(clamp(r[i],-MIX_MAX,MIX_MAX)>>7);
+  if(run)for(uint32_t phase=0;phase<3u;phase++){
+   int32_t al=0,ar=0;uint32_t at=w;
+   for(uint32_t k=0;k<20u;k++){al+=(int32_t)s->tp_l[at]*SM_TP_Q15[phase][k];ar+=(int32_t)s->tp_r[at]*SM_TP_Q15[phase][k];at=at?at-1u:19u;}
+   int32_t pl=(int32_t)(((uint32_t)(al<0?-al:al)>>15)<<7)+512,pr=(int32_t)(((uint32_t)(ar<0?-ar:ar)>>15)<<7)+512;
+   if(pl>pk)pk=pl;if(pr>pk)pk=pr;
+  }
+  if(++w==20u)w=0;
+ }s->tp_w=(uint8_t)w;return pk;
+}
+#endif
 /* l, r: n (<= CTL) samples in; out: the n samples of CTL before, limited (before the knee) */
 static void lim_block(lim_t *s, int32_t *l, int32_t *r, uint32_t n)
 {
     uint32_t i, w = s->w;
     int32_t pk = 0, a, g0 = s->g, g1, dg, e = s->env;
+    uint32_t hold_blocks=LIM_HOLD,rel_shift=LIM_REL;
+#if SYNTHMAVEN_SYNTH
+    sm_limit_times(&hold_blocks,&rel_shift);
+#endif
     for (i = 0; i < CTL; i++) {                         /* the samples going out now and the ones after them (the
                                                          * rest of the delay, then this block): CTL ahead */
         a = s->dl[i] < 0 ? -s->dl[i] : s->dl[i], pk = a > pk ? a : pk;
@@ -130,16 +176,19 @@ static void lim_block(lim_t *s, int32_t *l, int32_t *r, uint32_t n)
         a = l[i] < 0 ? -l[i] : l[i], pk = a > pk ? a : pk;
         a = r[i] < 0 ? -r[i] : r[i], pk = a > pk ? a : pk;
     }
+#if SYNTHMAVEN_SYNTH
+    pk=sm_true_peak(s,l,r,n,pk);
+#endif
     if ((int64_t)pk * 17 >= (int64_t)e * 16)           /* a peak within ~0.5 dB of the envelope: the hold again */
-        s->hold = LIM_HOLD;
+        s->hold = hold_blocks;
     if (s->hold)
         s->hold--;
     else if (e > LIM_T)                                 /* the release (after the hold), a block at a time */
-        e -= (int32_t)((((int64_t)(e - LIM_T) * (int32_t)n) >> LIM_REL) + 1);
+        e -= (int32_t)((((int64_t)(e - LIM_T) * (int32_t)n) >> rel_shift) + 1);
     if (e < LIM_T)
         e = LIM_T;
     if (pk > e)
-        e = pk, s->hold = LIM_HOLD;
+        e = pk, s->hold = hold_blocks;
     s->env = e;
     g1 = e > LIM_T ? (int32_t)(((uint32_t)LIM_T << 15) / (uint32_t)e) : 32768;
     s->g = g1;
@@ -187,7 +236,11 @@ static inline int32_t lowcut1(int32_t x, int32_t *lc, int32_t *err)   /* x minus
 
 /* the output stage: linear up to KNEE (a clean low end: no tanh harmonics on a loud sine), above it
  * a tanh knee with the same slope at the joint, to full scale */
+#if SYNTHMAVEN_SYNTH
+#define KNEE 30000 /* keep the normal, look-ahead-limited path linear */
+#else
 #define KNEE 16384
+#endif
 static inline int32_t knee(int32_t x)
 {
     int32_t a = x < 0 ? -x : x;
@@ -1239,7 +1292,7 @@ static void mix_part1(track_t *t, uint32_t n)
 #if SYNTHMAVEN_SYNTH
         /* Independent half-dB factory trim: preserve boosts above the LEVEL control range. */
         lvl = (int32_t)(((int64_t)LEVEL_Q12[clamp(t->p[P_LEVEL], 0, 127)] *
-                         SM_TRIM_GAIN_Q12[clamp(t->p[P_ED_FX]-sm_filter_comp_steps(t), -64, 63) + 64]) >> 12);
+                         SM_TRIM_GAIN_Q12[clamp(t->p[P_ED_FX]-sm_filter_comp_steps(t), -64, 127) + 64]) >> 12);
         {   /* (1.0) the expression (CC 11): x (cc + 1)^2 / 128^2, 127 unchanged */
             int32_t ex = 128 - part_ctl[ctl_part(t)].exoff;
             lvl = (int32_t)(((int64_t)lvl * ex * ex) >> 14);
@@ -1327,8 +1380,7 @@ static void mix_part1(track_t *t, uint32_t n)
         dl = (t->lvl - lvl0) >> CTL_LOG2, dgl = t->gpl - gl0, dgr = t->gpr - gr0;
         for (i = 0; i < n; i++) {
 #if SYNTHMAVEN_SYNTH
-            int32_t x = clamp((int32_t)(((int64_t)clamp(b[i], -PART_MAX, PART_MAX) *
-                                         (lvl0 + dl * (int32_t)i)) >> 12), -MIX_MAX, MIX_MAX), a;
+            int32_t x = sm_part_gain(b[i],lvl0+dl*(int32_t)i), a;
 #elif NVOICE > 8                                          /* SynthMaven: 12 / 16 loud voices: one more bit of headroom */
             int32_t x = ((clamp(b[i], -PART_MAX * 2, PART_MAX * 2) >> 3) * (lvl0 + dl * (int32_t)i)) >> 9, a;
 #else
@@ -1353,8 +1405,7 @@ static void mix_part1(track_t *t, uint32_t n)
             gl = gl0 + ((dgl * (int32_t)i) >> CTL_LOG2), gr = gr0 + ((dgr * (int32_t)i) >> CTL_LOG2);   /* (0.7) */
 #if SYNTHMAVEN_SYNTH
             if (side) {                                 /* the chorus's left - right, through the same level */
-                int32_t sd = clamp((int32_t)(((int64_t)clamp(side[i], -PART_MAX, PART_MAX) *
-                                              (lvl0 + dl * (int32_t)i)) >> 12), -MIX_MAX, MIX_MAX);
+                int32_t sd = sm_part_gain(side[i],lvl0+dl*(int32_t)i);
                 if (g < 32767)
                     sd = (sd >> 4) * (g >> 3) >> 8;
                 mix_l[i] += (((x + sd) >> 4) * gl) >> 8;
@@ -1458,6 +1509,30 @@ static void djf_process(int32_t *l, int32_t *r, uint32_t n)
 #include "bus.c"              /* SynthMaven 0.3: the master EQ and compressor */
 #endif
 static int32_t master_cur = -1;                        /* the volume knob, ramped per sample (no zipper) */
+#if SYNTHMAVEN_SYNTH
+#include "loudness.h"
+static int32_t sm_solo_gain_cur=4096;
+static int32_t sm_solo_part(void){
+ if(!program_mode)return -1;uint32_t mask=0;
+ for(uint32_t p=0;p<4u;p++)if(program_route[p].enabled && !trk[p].p[P_MUTE] && trk[p].p[P_LEVEL] &&
+  (program_layer||song.sel==p) && (!song.solo||(song.solo&(1u<<p))))mask|=1u<<p;
+ if(!mask||(mask&(mask-1u)))return -1;
+ for(uint32_t p=0;p<4u;p++)if(mask==(1u<<p))return (int32_t)p;
+ return -1;
+}
+/* A fixed stored gain only when one part is audible. It does not chase playing dynamics. */
+static void sm_solo_output(int32_t *l,int32_t *r,uint32_t n){
+ int32_t part=sm_solo_part(),target=(part<0||!program_solo_gain[part])?4096:(int32_t)SM_SOLO_GAIN_Q12[(program_solo_gain[part]-1u)&63u];
+ int32_t from=sm_solo_gain_cur,step=(from+31)>>5,to=from+clamp(target-from,-step,step);sm_solo_gain_cur=to;
+ if(from==4096&&to==4096)return;
+ for(uint32_t i=0;i<n;i++){
+  int32_t g=from+(int32_t)(((int64_t)(to-from)*(i+1u))/(n?n:1u));
+  int64_t a=((int64_t)l[i]*g)>>12,b=((int64_t)r[i]*g)>>12;
+  l[i]=(int32_t)(a>MIX_MAX?MIX_MAX:a< -MIX_MAX?-MIX_MAX:a);r[i]=(int32_t)(b>MIX_MAX?MIX_MAX:b< -MIX_MAX?-MIX_MAX:b);
+ }
+}
+#endif
+
 static void mix_block(int32_t *out, uint32_t n)
 {
     uint32_t i;
@@ -1503,6 +1578,7 @@ static void mix_block(int32_t *out, uint32_t n)
     djf_process(mix_l, mix_r, n);
 #if SYNTHMAVEN_SYNTH
     bus_process(mix_l, mix_r, n);
+    sm_solo_output(mix_l,mix_r,n);
 #endif
     m1 = (int32_t)song.master_q12;
     m0 = master_cur < 0 ? m1 : master_cur;
@@ -1522,7 +1598,7 @@ static void mix_block(int32_t *out, uint32_t n)
                 vis_tap[2u * i + 1u] = (int16_t)knee(mix_r[i]);
             }
             if (usb_full_now) {                         /* USB AUDIO = FULL: MASTER all the way up (4096) */
-                ul[i] = (mix_l[i] >> 2) << 2, ur[i] = (mix_r[i] >> 2) << 2;
+                ul[i] = (clamp(mix_l[i],-MIX_MAX,MIX_MAX) >> 2) << 2, ur[i] = (clamp(mix_r[i],-MIX_MAX,MIX_MAX) >> 2) << 2;
                 master_pre_usb(&ul[i], &ur[i]);
             }
         }

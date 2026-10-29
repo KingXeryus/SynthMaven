@@ -3,7 +3,7 @@ static const param_desc_t *sm_filter_desc(uint32_t f,int16_t **vp){
  static param_desc_t d;static int16_t value[7];static const char *fixed[1];track_t *t=TSEL;uint32_t part=song.sel%4;const sm_filter_cap_t *c=&SM_FILTER_CAP[t->eng_req%NENGINES];
  d=(param_desc_t){"--",F_ENUM,0,0,0,N_DASH,0};*vp=&value[f];value[f]=0;
  if(f==5){d=(param_desc_t){"COMP",F_ONOFF,0,(c->res>=0||c->drive>=0||t->eng_req==ENGI_HYBRID)?1:0,0,0,0};value[f]=(sm_filter_comp_mask>>part)&1;return &d;}
- if(f==6){d=(param_desc_t){"TRIM",F_HALFDB,-64,63,0,0,0};*vp=&t->p[P_ED_FX];return &d;}
+ if(f==6){d=(param_desc_t){"TRIM",F_HALFDB,-64,127,0,0,0};*vp=&t->p[P_ED_FX];return &d;}
  if(t->eng_req==ENGI_HYBRID && (f<3 || f==4)){
   const hy_patch_t *p=hy_gen[part]!=hy_gen_seen[part]?&hy_in[part]:&hy_cur[part];
   d=(param_desc_t){f==0?"F1 MODEL":f==1?"F1 CUT":f==2?"F1 RES":"DRIVE",f==0?F_ENUM:f==1?F_CUTOFF:F_PCT,0,f==0?HF_N-1:127,0,f==0?N_HY_FLT:0,0};value[f]=f==0?p->flt[0].type:f==1?p->flt[0].cut:f==2?p->flt[0].res:p->drive;return &d;

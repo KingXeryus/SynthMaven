@@ -1,5 +1,15 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-static char program_names[8][13]={"PROGRAM 1","PROGRAM 2","PROGRAM 3","PROGRAM 4","PROGRAM 5","PROGRAM 6","PROGRAM 7","PROGRAM 8"};
+#include "factory_programs.h"
+static const char sm_factory_program_names[8][13]=SM_FACTORY_PROGRAM_NAMES;
+static char program_names[8][13]=SM_FACTORY_PROGRAM_NAMES;
+static int sm_factory_program(program_t *out,uint32_t slot){
+ if(slot>=SM_FACTORY_PROGRAM_COUNT || !program_unpack(out,&SM_FACTORY_PROGRAMS[slot].packed))return 0;
+ /* ROM programs do not erase the player's four custom-scale definitions. */
+ memcpy(out->custom,custom_scale,sizeof out->custom);out->sum=program_hash(out,sizeof *out-4u);return 1;
+}
+/* A saved record always wins, including a damaged record: never silently replace it. */
+static int sm_program_slot(program_t *out,const program_packed_t *saved,uint32_t slot){return saved->used?program_unpack(out,saved):sm_factory_program(out,slot);}
+static const char *sm_program_slot_name(const program_packed_t *saved,uint32_t slot){return saved->used?saved->name:sm_factory_program_names[slot%8u];}
 static uint8_t program_io_rc,program_editor_name_mask;
 static char program_editor_names[8][13];
 static uint8_t program_extra_used,program_draft_slot=255,program_name_cursor;
@@ -18,7 +28,7 @@ static void program_capture(program_t *p) {
     for(i=0;i<4;i++) {
         const track_t *t=&trk[i];program_sound_t *s=&p->sound[i];
         memcpy(s->p,t->p,sizeof s->p);memcpy(s->ms,t->ms,sizeof s->ms);
-        s->engine=t->eng_req;s->preset=t->preset;s->user=t->user;s->reserved=(uint8_t)(((sm_filter_comp_mask>>i)&1u)|2u);
+        s->engine=t->eng_req;s->preset=t->preset;s->user=t->user;s->reserved=(uint8_t)(((sm_filter_comp_mask>>i)&1u)|2u|(program_solo_gain[i]<<2));
         if(program_patch_pending&(1u<<i))memcpy(s->patch,program_patch[i],sizeof s->patch);
         else if(s->engine==ENGI_HYBRID)memcpy(s->patch,hy_gen[i]!=hy_gen_seen[i]?&hy_in[i]:&hy_cur[i],sizeof(hy_patch_t));
         else if(s->engine==ENGI_FMX)memcpy(s->patch,&fmx_cur[i],sizeof(fmx_patch_t));
@@ -31,7 +41,7 @@ static void program_apply(const program_t *p) {
     fm1_irq_off();program_mode=1;program_layer=p->layer;song.sel=p->active;song.solo=p->reserved[0]&15u;master_tuning_bypass=p->reserved[1]&15u;tune_floor_octave=p->reserved[1]>>4;memcpy(program_route,p->route,sizeof program_route);tune_cfg=p->tuning;memcpy(custom_scale,p->custom,sizeof custom_scale);custom_scale_dirty=1;sm_filter_comp_mask=0;memcpy(sm_scenes,p->scenes,sizeof sm_scenes);sm_scene_index=255;
     for(i=0;i<4;i++) {
         track_t *t=&trk[i];const program_sound_t *s=&p->sound[i];sound_fade_begin(t);
-        t->eng_req=s->engine;t->preset=(uint8_t)((s->reserved&2u)?s->preset:sm_factory_from_legacy(s->engine,s->preset));t->user=s->user;sm_filter_comp_mask|=(s->reserved&1u)<<i;
+        t->eng_req=s->engine;t->preset=(uint8_t)((s->reserved&2u)?s->preset:sm_factory_from_legacy(s->engine,s->preset));t->user=s->user;sm_filter_comp_mask|=(s->reserved&1u)<<i;program_solo_gain[i]=s->reserved>>2;
         memcpy(t->p,s->p,sizeof s->p);memcpy(t->ms,s->ms,sizeof s->ms);
         memcpy(program_patch[i],s->patch,sizeof s->patch);
         fm6_slot[i]=(uint8_t)t->p[P_E7];fm6_pend&=(uint8_t)~(1u<<i);fmx_reload&=(uint8_t)~(1u<<i);
@@ -82,3 +92,13 @@ static uint32_t program_name_request(const uint8_t *a,uint32_t n,uint8_t reply[1
 }
 
 #include "performance.c"
+
+/* Read-only ROM recall never saves over a user's named slot. */
+static program_t sm_factory_work __attribute__((section(".pool")));
+static uint32_t sm_factory_load(uint32_t slot){
+ if(slot>=SM_FACTORY_PROGRAM_COUNT)return 1;
+ if(song.playing||transport_req||!sm_perf_quiet())return 3;
+ if(!sm_factory_program(&sm_factory_work,slot))return 2;
+ program_apply(&sm_factory_work);sm_current_program=(uint8_t)slot;sm_setlist_active=0;
+ song.g[G_SLOT]=(int16_t)(slot+1u);program_draft_slot=255;ui_message("FACTORY PROGRAM");return 0;
+}

@@ -179,7 +179,12 @@ UI_SMALL static void felucca_init(void)
     TDRUM->p[P_E0] = DRUM_DEFAULT_KIT;        /* the 808 kit */
     song.sel = 0;
 #if SYNTHMAVEN_SYNTH
-    program_mode=1;program_layer=0;
+    program_mode=1;program_layer=1;
+    if(sm_factory_program(&autosave_work.program,0)){
+        program_apply(&autosave_work.program);
+        for(i=0;i<NPART;i++)trk[i].engine=trk[i].eng_req;
+        transport_req=panic_req=0;
+    }
 #endif
     song.master_q12 = 2048;
     autosave_resume();                        /* the project as it was left (project.c) */

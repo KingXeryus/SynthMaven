@@ -5,3 +5,8 @@ __pycache__/
 .venv/
 
 outputs/
+
+output/
+tmp/
+docs/screenshots/2.2/*.ppm
+docs/screenshots/2.2/*.png

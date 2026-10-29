@@ -13,10 +13,11 @@ int main(void){
  memset(nor,255,sizeof nor);bank_resolve();panel=PANEL_DEFAULT;layers_init();host_tracks_init();
  outdir="build/host";song.sel=3;program_layer=1;custom_scale[2]=0x654321u;
  program_route[1]=(program_route_t){1,1,1,61,-12};trk[1].p[P_LEVEL]=80;trk[1].p[P_PAN]=-32;song.solo=2;
+ program_solo_gain[0]=17;program_solo_gain[1]=23;
  program_capture(&a);check(program_valid(&a),"program with custom scales validates");
  check(!st_save(OBJ_PROJECT0,&a,sizeof a),"program saved with atomic object store");
  memset(&b,0,sizeof b);check(st_load(OBJ_PROJECT0,&b,sizeof b)==sizeof b && program_valid(&b) && !memcmp(&a,&b,sizeof a),"four-sound program round trips through flash");
- custom_scale[2]=0;program_apply(&b);check(custom_scale[2]==0x654321u && program_layer && song.sel==3,"program restores custom definitions, layer mode and focus");
+ custom_scale[2]=0;memset(program_solo_gain,0,sizeof program_solo_gain);program_apply(&b);check(program_solo_gain[0]==17&&program_solo_gain[1]==23,"fixed solo compensation survives flash save/restore");check(custom_scale[2]==0x654321u && program_layer && song.sel==3,"program restores custom definitions, layer mode and focus");
  check(b.route[1].split&&b.route[1].upper&&b.route[1].point==61&&b.route[1].transpose==-12&&trk[1].p[P_LEVEL]==80&&trk[1].p[P_PAN]==-32&&song.solo==2,"program restores split zone, transpose, level, pan and solo");
  program_v1_t old;memcpy(&old,&a,sizeof old-4);old.magic=0x31475250u;old.size=sizeof old;old.sum=program_hash(&old,sizeof old-4);
  check(program_import(&b,&old,sizeof old)&&b.route[1].enabled&&!b.route[1].split&&b.route[1].transpose==0&&b.sound[1].p[P_LEVEL]==80&&b.sound[1].p[P_PAN]==-32,"PRG1 import preserves sounds and mix, initializes full keyboard routing");

@@ -17,6 +17,10 @@ e=re.sub(r'SynthMaven \d+\.\d+(?:\.\d+)? Editor','SynthMaven '+m['version']+' Ed
 e=re.sub(r'Version \d+\.\d+(?:\.\d+)? ·','Version '+m['version']+' ·',e)
 e=re.sub(r'FELUCCA SYNTHMAVEN \d+\.\d+(?:\.\d+)? \(MOCK\)(?=" : opt.synthmaven)', 'FELUCCA SYNTHMAVEN '+m['version']+' (MOCK)',e)
 e=re.sub(r'const SM_FILTER_MAP = .*?(?=/\* Compact performance protocol)' , 'const SM_FILTER_MAP = '+json.dumps(json.loads((ROOT/'assets/filter-capabilities.json').read_text()))+';\n',e,count=1,flags=re.S)
+catalog=json.loads((ROOT/'assets/programs/catalog.json').read_text())
+line='const SM_FACTORY_PROGRAM_BANK = '+json.dumps(catalog,separators=(',',':'))+';'
+if 'const SM_FACTORY_PROGRAM_BANK =' in e:e=re.sub(r'^const SM_FACTORY_PROGRAM_BANK = [^\n]*$',lambda _:line,e,count=1,flags=re.M)
+else:e=e.replace('const KORG_STOCK = ',line+'\nconst KORG_STOCK = ',1)
 outputs['web/editor.html']=e
 outputs['web/index_pkg.html']=re.sub(r'(SynthMaven|SYNTHMAVEN) \d+\.\d+(?:\.\d+)?', lambda x:x[1]+' '+m['version'],(ROOT/'web/index_pkg.html').read_text())
 for p,s in outputs.items():

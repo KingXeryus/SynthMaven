@@ -292,7 +292,7 @@ files outside browser storage, which can be cleared by the browser.
 
 ## Saving, projects and backups
 
-SAVE → PROGRAM provides eight persistent named program slots. SELECT chooses SLOT 1–8. ALGORITHM chooses a name character; PRESET or KNOB 2 edits it. Turn SAVE twice to store the current four sounds and name, or LOAD twice to restore a saved program. Release held keys and stop the transport first. An empty slot reports EMPTY SLOT.
+SAVE → PROGRAM provides eight persistent named program slots. SELECT chooses SLOT 1–8. ALGORITHM chooses a name character; PRESET or KNOB 2 edits it. Turn SAVE twice to store the current four sounds and name, or LOAD twice to restore a saved program. Release held keys and stop the transport first. An unused slot recalls its matching read-only factory program. Existing saved user programs take precedence. The editor can recall any ROM factory program without overwriting a saved slot.
 
 Programs contain each sound’s engine, preset identity, edited parameters, modulation sequence and HYBRID/FMX/FM6 patch, plus selected sound, tuning configuration and layer mode. The working program autosaves after an idle period when stopped and quiet. Custom-scale definitions persist in settings and are also included in programs and working-program backups. Loading a program restores its custom scales.
 
@@ -341,7 +341,7 @@ Tap SEL to open the scale browser, then turn SELECT to cycle scales. Hold SEL fo
 
 Use **Appearance** in the editor or installer to choose Dark, Light or System. The browser remembers this choice. The editor uses the standalone instrument’s system sans-serif font, rounded panels, rotary controls and gridded parameter previews, with the logo’s red accent. Under Sound, choose Sound, Modulation, Effects, Layers, Tuning or All parameters. Drag a knob vertically, use Shift for fine pointer adjustment, use arrow keys when focused, or double-click to reset. Envelope graph handles edit attack, decay, sustain and release. Parameter diagrams are previews rather than live audio measurements.
 
-The 557-entry catalogue has **556 audible, level-matched factory sounds plus USER WT**. USER WT deliberately stays silent until a wavetable is uploaded. Factory matching uses the complete stereo firmware mix and a −29 LUFS reference target on role-appropriate phrases. Playing different notes, changing velocity/effects or layering sounds changes loudness. Saved sounds keep their stored trim; reload the factory preset to use the new calibration.
+The 557-entry catalogue has **556 audible, level-matched factory sounds plus USER WT**. USER WT deliberately stays silent until a wavetable is uploaded. Factory matching uses the complete stereo firmware mix and a −14 LUFS reference target on role-appropriate phrases. Playing different notes, changing velocity/effects or layering sounds changes loudness. Saved sounds keep their stored trim; reload the factory preset to use the new calibration.
 
 The Tuning page includes a chromatic keyboard with the selected root and each key’s cents offset. Altered keys use the logo accent. In CUSTOM1–4, click a key or its note button to cycle 0 / −25 / −50 / −75 cents and save the change on the FM1.
 
@@ -422,7 +422,7 @@ The 44 regional factory sounds replace the previous 88 D/E entries. Load a sound
 
 The development bank adds **64 native HYBRID translations** selected from 68 supplied Vital presets, for **557 factory entries: 556 calibrated audible sounds plus the intentionally silent USER WT**. These are approximations using the FM1 engines, not Vital playback. Unsupported effects, wavetable motion and modulation can change the sound substantially.
 
-On a fresh start or reset, the four program parts contain **V01 STROBE, V02 DARK, V03 REESE and V04 PLUCK**, with the first part selected and layering off. Existing autosaved work takes precedence. HOME navigation is unchanged: ALGORITHM selects the engine, PRESET cycles its sounds, and SELECT chooses one of the four parts. Within HYBRID, the 64 new sounds come first, followed by the existing HYBRID sounds in the same cycle. Existing preset IDs remain stable.
+On a fresh start or reset, **P1 STAGE PIANO** loads with four enabled parts and layering ON. The eight factory programs foreground Piano, Epiano, Lead Synth, Oriental Lead, Disco Synth, Brass, Strings and Bass. Existing autosaved work takes precedence. HOME navigation is unchanged: ALGORITHM selects the engine, PRESET cycles its sounds, and SELECT chooses one of the four parts. Within HYBRID, the 64 new sounds come first, followed by the existing HYBRID sounds in the same cycle. Existing preset IDs remain stable.
 
 Selection uses compatibility checks and native waveform spectral fitting, with no duplicate translated parameter sets. Listening comparison and device validation remain pending. See the [selection record](../assets/vital/README.md) for source attribution and conversion limits.
 
@@ -438,7 +438,7 @@ Chord mode uses all physical keys, including black keys. It does not reserve bla
 
 When master tuning introduces nonzero microtonal offsets, only OFF, OPEN 5 and NEUTRAL are offered. OPEN 5 chooses existing scale keys closest to a tuned fifth and octave above the root; NEUTRAL chooses existing scale keys closest to 350 and 700 cents. These targets guide selection; they never add or retune a scale note, so the result depends on the maqam/Scala/custom scale. At the top of the MIDI range, fewer notes can be available. Normal voicing and strum controls remain available. Bypassing master tuning on a part restores the full chord list for that part. A maqam with zero offsets also shows the full list. An incompatible saved chord ID sounds as OPEN 5 until edited, preserving the saved setting. Keyboard and incoming MIDI use the same chord generator; note releases retain their captured notes.
 
-The full list has 18 entries: the original 16 IDs remain unchanged, followed by OPEN 5 (16) and NEUTRAL (17). This release retains protocol 22 and the existing program/preset storage layout.
+The full list has 18 entries: the original 16 IDs remain unchanged, followed by OPEN 5 (16) and NEUTRAL (17). That historical 2.1.2 release retained protocol 22 and the existing program/preset storage layout.
 
 ## Tuning octave boundary (2.1.3)
 
@@ -451,3 +451,11 @@ The matching editor control is **Apply from octave**. The threshold saves with s
 ## Automatic USB controllers
 
 USB PEDAL/HOST mode automatically identifies supported Alesis, Novation, Arturia, Akai and Mackie controller families. MCU/HUI can control four program parts and transport; unknown class-compliant devices retain standard MIDI. See the [controller compatibility guide](MIDI_CONTROLLERS.md) for mappings, powered USB requirements and hardware-validation limits. Return to COMPUTER mode for the editor or installer.
+
+## Factory performance programs and loudness ({{version}})
+
+See the [illustrated PDF guide](SynthMaven-{{version}}-User-Guide.pdf) for every device menu and control, and [factory program design](FACTORY_PROGRAM_DESIGN.md) for source research and layer roles. Protocol {{protocol}} adds read-only factory-program recall (command 118). Eight four-part ROM programs fill unused named slots; saved user data and working autosave take precedence.
+
+All audible factory sounds, each isolated factory-program part, and the four scene mixes per program target −14 LUFS within ±0.5 LU on the documented reference performances. True peaks must remain at or below −1 dBTP. Static trim and stored solo compensation supply the gains, rather than a realtime loudness follower. Solo compensation applies only when exactly one configured part is audible; the layered mix keeps its intended foreground/support balance. Altered velocity, note density, effects, routing or a user sound can change loudness. Explicit short/transient references use a 16 Hz roll because sparse millisecond impulses cannot fill a 400 ms loudness window. USER WT intentionally remains silent.
+
+Saved PRG3/PBK2 records retain their size and addresses. Sound flag bits 2–7 encode zero for legacy unity or 1–63 for calibrated unity through +62 dB, in whole-dB steps. Trim supports −32 to +63.5 dB in half-dB steps. Backups written by this release require protocol {{protocol}} before restore, so an older reader cannot silently omit the new gain behavior. Older saved sounds retain their stored gains until reloaded from factory.

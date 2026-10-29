@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
 const html=readFileSync(new URL('./editor.html',import.meta.url),'utf8'),src=html.slice(html.indexOf('/*PROTO-BEGIN*/'),html.indexOf('/*PROTO-END*/'));
 const E=vm.runInNewContext(src+';({makeMockDevice,Link,PERF,pack7,SM_RELEASE,bkProjFormat,bkDevFormat})',{setTimeout,clearTimeout,setInterval,clearInterval,console,TextEncoder,TextDecoder,Blob,Response,DecompressionStream});
-const mock=E.makeMockDevice({modern:true,maqam:true,synthmaven:true,oriental:true,auto:false}),input=[...mock.access.inputs.values()][0],output=[...mock.access.outputs.values()][0],link=new E.Link(d=>output.send(d),{timeout:500});input.onmidimessage=e=>link.receive(e.data);const rq=(cmd,a=[])=>link.request([cmd,a]);
+const mock=E.makeMockDevice({modern:true,maqam:true,synthmaven:true,oriental:true,auto:false,factoryPrograms:false}),input=[...mock.access.inputs.values()][0],output=[...mock.access.outputs.values()][0],link=new E.Link(d=>output.send(d),{timeout:500});input.onmidimessage=e=>link.receive(e.data);const rq=(cmd,a=[])=>link.request([cmd,a]);
 try{
  let s=E.PERF.status(await rq(112));assert.equal(s.repeat,0);await rq(112,[1,4]);mock.sim.pedal(1,3,64,127,100);s=E.PERF.status(await rq(112));assert.equal(s.learn,2);assert.equal(s.count,0);assert.equal((await rq(112,[4,4]))[2],0);await rq(112,[2]);assert.equal((await rq(112,[4,4]))[2],1);
  await rq(112,[5,80,0]);mock.sim.pedal(1,3,64,127,200);mock.sim.pedal(1,3,64,127,210);assert.equal(E.PERF.status(await rq(112)).result,2);mock.sim.pedal(1,3,64,0,211);mock.sim.pedal(1,3,64,127,212);assert.equal(E.PERF.status(await rq(112)).result,1);

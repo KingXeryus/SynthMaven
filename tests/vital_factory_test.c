@@ -4,8 +4,8 @@
 int main(void){
  bank_resolve();panel=PANEL_DEFAULT;layers_init();host_tracks_init();outdir="build/host";go_home();
  check(SM_VITAL_COUNT==64u&&HY_NFACTORY==100u&&ENGINES[ENGI_HYBRID]->npresets==105u,"64 Vital patches append without moving 36 patch IDs or 41 sound IDs");
- for(uint32_t i=0;i<4;i++){check(TRK_DEF[i][0]==ENGI_HYBRID&&TRK_DEF[i][1]==SM_VITAL_PRESET_FIRST+i,"startup program contains four complementary Vital sounds");set_engine_of(&trk[i],TRK_DEF[i][0]);apply_preset_to(&trk[i],TRK_DEF[i][1]);}
- song.sel=0;program_mode=1;program_layer_set(0);check(!program_layer&&TSEL->preset==41u,"startup selects first Vital sound with layering OFF");
+ for(uint32_t i=0;i<4;i++){set_engine_of(&trk[i],ENGI_HYBRID);apply_preset_to(&trk[i],SM_VITAL_PRESET_FIRST+i);}
+ song.sel=0;program_mode=1;program_layer_set(0);check(!program_layer&&TSEL->preset==41u,"Vital library test selects first Vital sound with layering OFF");
  for(uint32_t i=0;i<64;i++){check(TSEL->eng_req==ENGI_HYBRID&&TSEL->preset==41u+i,"PRESET traverses the contiguous Vital bank");check(TSEL->p[P_E3]==36u+i,"factory sound references correct appended HYBRID patch");uint32_t k,pos,total;pos=base_pos(&total);check(base_at(pos,&k)==ENGI_HYBRID&&k==TSEL->preset&&!strcmp(base_kind(pos),"VITAL"),"global browser resolves Vital preset without shifting regional entries");home_preset_step(1);}
  check(TSEL->preset==0,"after 64 Vital sounds PRESET continues into existing HYBRID sounds");home_preset_step(-1);check(TSEL->preset==104,"reverse browsing returns to last Vital sound");apply_preset(41);home_preset_step(-1);check(TSEL->preset==40,"first Vital sound wraps backward to last original HYBRID sound");
  set_engine(11);home_engine_step(1);check(TSEL->eng_req==ENGI_HYBRID&&TSEL->preset==41,"ALGORITHM entering HYBRID starts on the Vital group");

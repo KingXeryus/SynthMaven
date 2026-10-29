@@ -1,10 +1,15 @@
 # SynthMaven for M-VAVE FM-1
 
-SynthMaven 2.1.3 builds on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1) with four-part programs, a layer/split mixer, learned USB pedal controls and an instrument-style visual editor. Its 23 synthesis engines provide 557 factory entries: 556 level-matched sounds and an intentionally empty USER WT slot, including 64 Vital-derived translations, 44 Oriental/Middle Eastern sounds and nine XD compatibility sounds.
+SynthMaven 2.2 builds on [Clipper by 3dSam](https://github.com/isod89/clipper-fm1) with four-part programs, a layer/split mixer, learned USB pedal controls and an instrument-style visual editor. Its 23 synthesis engines provide 557 factory entries: 556 level-matched sounds and an intentionally empty USER WT slot, including 64 Vital-derived translations, 44 Oriental/Middle Eastern sounds and nine XD compatibility sounds.
 
-[Installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [User manual](docs/USER_MANUAL.md) · [Quick start](QUICKSTART.md) · [Release notes](docs/release-2.1.3.md)
+[Installer](https://kingxeryus.github.io/SynthMaven/webapp/installer/) · [Editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [Illustrated PDF guide](docs/SynthMaven-2.2-User-Guide.pdf) · [User manual](docs/USER_MANUAL.md) · [Quick start](QUICKSTART.md) · [Release notes](docs/release-2.2.md)
 
 ## What SynthMaven adds
+
+- **Eight instrument-led four-part factory programs.** Piano, Epiano, Lead Synth, Oriental Lead, Disco Synth, Brass, Strings and Bass. Saved user slots and resumed work take precedence; the editor can recall read-only factory programs separately.
+- **−14 LUFS reference calibration.** Solo factory sounds, isolated program parts and layered program scenes are measured through the production DSP, with a −1 dBTP ceiling and no post-render normalization. Loudness depends on the played notes, articulation and velocity; see the release audit.
+- **Complete illustrated guide.** The PDF documents all 65 device menus, engine/effect variants, holds, controls, settings and step-by-step workflows.
+
 
 - **Four-sound layering, keyboard splits and mixing.** Layer enabled parts together or play only the selected part. Each part has its own split zone and point, octave shift, volume, pan, mute and solo. Eight named program slots store four sounds together with their routing, mix and tuning; names can contain up to 12 characters.
 - **USB pedal MIDI Learn and switching.** Choose Patch Up/Down, Bank Up/Down, Program Next/Previous, Scene Next/Previous or Setlist Next/Previous; choose Learn, press the pedal, review the captured CC/PC and accept it. Diagnostics distinguish USB device detection from a MIDI interface and show COMPUTER/PEDAL role, the last message, assignment matches and trigger feedback. Configurable duplicate suppression defaults OFF; a CC release immediately re-arms intentional taps. Identical PC taps inside an enabled suppression window are also suppressed, so keep the window shorter than your fastest tap.
@@ -13,7 +18,7 @@ SynthMaven 2.1.3 builds on [Clipper by 3dSam](https://github.com/isod89/clipper-
 - **Engine-aware filter access and output control.** Model, cutoff, resonance and envelope amount are grouped together; unavailable controls are disabled or omitted. HYBRID retains its own two-filter architecture. Optional estimated output compensation attenuates resonance/drive level changes, up to 12 dB, and defaults OFF; it is not measured loudness normalization. Output trim uses half-decibel steps. See the [filter capability map](docs/FILTER_CAPABILITIES.md).
 - **Ready-to-use modulation templates.** Start with velocity-to-brightness, pressure-to-vibrato, wheel-to-vibrato or envelope swell. HYBRID pressure/wheel templates use a free matrix slot and set LFO1 to sine, rate 64; a full matrix is left unchanged.
 - **Maqam, custom scales and tuning control.** Select among 46 Arabic maqam reference tunings with any root, four saved custom chromatic scales and Scala imports. Custom scales keep the chromatic keyboard mapping and adjust only the selected pitch classes. Each key press cycles 0 → −25 → −50 → −75 → 0 cents. QNT ALL applies the chosen scale/root to all four parts and incoming MIDI. Apply master tuning is enabled by default and can be bypassed independently per part.
-- **Calibrated factory levels.** The 556 audible presets pass the reference audit within ±0.5 LU; USER WT stays silent until a user wavetable is uploaded. The reference measurement method and its limits are documented in the [release notes](docs/release-1.5.md).
+- **Calibrated factory levels.** The 556 audible presets pass the reference audit within ±0.5 LU; USER WT stays silent until a user wavetable is uploaded. The −14 LUFS reference method and its limits are documented in the [release notes](docs/release-2.2.md).
 
 These performance, tuning, editor and workflow additions build on the inherited synthesis foundation. JUNO, VECTOR, FMX, WSEQ, MACRO, the filter models, TURNG and SPICE / DICE remain credited to Clipper; their design inspirations do not establish SynthMaven authorship.
 
@@ -44,7 +49,7 @@ Back up before installing. See [USB MIDI status](docs/USB_MIDI_STATUS.md), the [
 
 ## Building and verification
 
-See [BUILDING.md](BUILDING.md). Linux x86-64 runs the JieLi toolchain directly; macOS requires Docker. Run `sh tools/test_synthmaven.sh`, then `sh build.sh --release 2.1.3`. The build enables USB host support and excludes Bluetooth. Source and licence notices are published alongside the installer.
+See [BUILDING.md](BUILDING.md). Linux x86-64 runs the JieLi toolchain directly; macOS requires Docker. Run `sh tools/test_synthmaven.sh`, then `sh build.sh --release 2.2`. The build enables USB host support and excludes Bluetooth. Source and licence notices are published alongside the installer.
 
 ## Credits and licence
 
@@ -66,7 +71,7 @@ Rubik typography, parameter cards, chord keyboards and chromatic tuning visuals 
 
 The development bank adds **64 native HYBRID translations** selected from 68 supplied Vital presets, for **557 factory entries: 556 calibrated audible sounds plus the intentionally silent USER WT**. These are approximations using the FM1 engines, not Vital playback. Unsupported effects, wavetable motion and modulation can change the sound substantially.
 
-On a fresh start or reset, the four program parts contain **V01 STROBE, V02 DARK, V03 REESE and V04 PLUCK**, with the first part selected and layering off. Existing autosaved work takes precedence. HOME navigation is unchanged: ALGORITHM selects the engine, PRESET cycles its sounds, and SELECT chooses one of the four parts. Within HYBRID, the 64 new sounds come first, followed by the existing HYBRID sounds in the same cycle. Existing preset IDs remain stable.
+On a fresh start or reset, **P1 STAGE PIANO** loads with four enabled parts and layering ON. P1–P8 foreground Piano, Epiano, Lead Synth, Oriental Lead, Disco Synth, Brass, Strings and Bass respectively. Existing autosaved work takes precedence. HOME navigation is unchanged: ALGORITHM selects the engine, PRESET cycles its sounds, and SELECT chooses one of the four parts. Within HYBRID, the 64 new sounds come first, followed by the existing HYBRID sounds in the same cycle. Existing preset IDs remain stable.
 
 Selection uses compatibility checks and native waveform spectral fitting, with no duplicate translated parameter sets. Listening comparison and device validation remain pending. See the [selection record](assets/vital/README.md) for source attribution and conversion limits.
 

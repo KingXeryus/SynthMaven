@@ -20,3 +20,9 @@ TUNE_GET (95) appends `from_octave` (0..8, C0..C8) after A4. TUNE_PUT (96) accep
 ### 117 — USB controller identity and override (protocol 23)
 
 GET payload empty or `[0]`; SET `[1, protocol, port]`, protocol 0 AUTO / 1 MIDI / 2 MCU / 3 HUI, port 0 AUTO or 1–16. Reply: result, connected, override, port override, active protocol, DAW cable (0–15 or 127 none), VID and PID (each three little-endian 7-bit bytes), product NUL string (max 47), family NUL string (max 23). Invalid writes are rejected atomically. Physical host and computer roles are mutually exclusive.
+
+### 118 - read-only factory program recall (protocol 24, firmware 2.2)
+
+Payload `[slot]`, slot 0-7. Reply `[result, slot]`; 0 success, 1 invalid payload/slot, 2 invalid factory record, 3 transport or sounding voices busy. Loads the complete ROM factory program into the working program, preserving custom-scale definitions and leaving saved program objects untouched. The current program can later be saved explicitly through the existing save flow. All older command IDs and PRG3/PBK2 record formats remain unchanged.
+
+Protocol 24 PRG3/PBK2 sound flags retain bits 0 (filter compensation) and 1 (stable preset ID). Bits 2–7 encode 0 = legacy unity; 1–63 = calibrated unity through +62 dB in whole-dB steps. A newly loaded sound clears this program-specific calibration. Record sizes/addresses are unchanged. Matching-editor backup restore rejects 2.2 backups on protocol <24 before writing any object.

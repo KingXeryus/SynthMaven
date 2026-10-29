@@ -1,6 +1,6 @@
 # USB MIDI controllers and automatic detection
 
-SynthMaven 2.1.3 identifies an attached class-compliant USB MIDI controller from its USB vendor identity, product name and MIDI interface name. Automatic is the default; no model selection is required. Unknown devices retain standard MIDI input. Detection does not install vendor drivers or change custom controller templates.
+SynthMaven 2.2 identifies an attached class-compliant USB MIDI controller from its USB vendor identity, product name and MIDI interface name. Automatic is the default; no model selection is required. Unknown devices retain standard MIDI input. Detection does not install vendor drivers or change custom controller templates.
 
 ## Connecting
 

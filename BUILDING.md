@@ -140,3 +140,7 @@ python3 tools/make_synthmaven_site.py --package build/felucca.fwsc
 ## SynthMaven 1.5 USB host release
 
 Run `sh tools/test_synthmaven.sh`, then `sh build.sh --release 1.5`. USB host support is enabled for the app and disabled for the rescue loader. Bluetooth is excluded. The AC79 SDK remains a packaging dependency. Linux CI checks target flash, static RAM, low SRAM and pool limits before deployment. macOS requires Docker for the Linux toolchain.
+
+## Rebuild the illustrated guide
+
+Install Pillow, ReportLab and PyMuPDF in your Python environment. Run the host-test generators first (`sh tools/test_synthmaven.sh`), then `python3 tools/gen_user_guide_assets.py` and `python3 tools/make_user_guide.py`. The native renderer produces the menu screenshots under `docs/screenshots/<version>/`; these generated images are embedded in the committed PDF and are not separately tracked. `python3 tools/check_user_guide.py` checks version, complete menu coverage and the installer link. Audio audit JSON must be current before rebuilding the guide.

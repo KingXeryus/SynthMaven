@@ -43,7 +43,14 @@ static uint32_t edges_btn, notes_seen;
 static uint32_t fm1_input_edges(int x) { uint32_t e = edges_btn; (void)x; edges_btn = 0; return e; }
 static uint32_t fm1_input_note_edges(void) { uint32_t e = fm1_in.notes & ~notes_seen; notes_seen = fm1_in.notes; return e; }
 static uint32_t wdt_tick_ms;                       /* (stress_test: 1, the blocking PANEL setup's clock runs out) */
-static void fm1_wdt_feed(void) { fm1_ms += wdt_tick_ms; }
+#ifdef UI_GUIDE_SETUP
+static void guide_setup_tick(void);
+#endif
+static void fm1_wdt_feed(void) { fm1_ms += wdt_tick_ms;
+#ifdef UI_GUIDE_SETUP
+ guide_setup_tick();
+#endif
+}
 static int32_t fm1_adc_read(int c) { (void)c; return -1; }
 static struct { uint32_t magic, stage, page, home, ui_frames; } felucca_dbg;
 #define FELUCCA_ICONS 1
@@ -53,7 +60,13 @@ static uint32_t scope_w;
 #include "../firmware/src/panel.c"
 #include "../firmware/src/ui.c"
 static uint32_t saves, loads;
-static int project_used(uint32_t i) { return i < 2; }
+static int project_used(uint32_t i) {
+#ifdef UI_FACTORY_PROGRAMS
+ return i<8u;
+#else
+ return i<2u;
+#endif
+}
 static void project_save(uint32_t i) { (void)i; saves++; ui_message("SAVED"); }
 static void project_load(uint32_t i) { (void)i; loads++; }
 static void arrangement_save(void) {}

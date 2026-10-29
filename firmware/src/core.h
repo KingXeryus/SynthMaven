@@ -492,6 +492,7 @@ static track_t trk[NTRK];        /* the instrument: three parts and the drum tra
 static song_t song;
 #if SYNTHMAVEN_SYNTH
 static uint8_t program_mode, program_layer;
+static uint8_t program_solo_gain[4]; /* 0 legacy unity; 1..63 calibrated unity through +62 dB */
 static uint8_t master_tuning_bypass; /* zero: every sound follows master tuning by default */
 static uint32_t program_quantize(uint32_t note);
 typedef struct { uint8_t enabled,split,upper,point; int8_t transpose; } program_route_t;
