@@ -82,6 +82,8 @@ int main(void)
 {
     ui_power_on(); go_home(); press(B_SCL); frames(400);
     assert(scale_settings_page(cur_page()));
+    press(B_SCL); frames(400); assert(cur_page()->scope == SC_MASTER_TUNE);
+    press(B_SCL); frames(400); assert(cur_page()->scope == SC_MASTER_TUNE);
     press(B_SCL); frames(400); assert(cur_page()->graph == GR_CHORD);
     press(B_SCL); frames(400); assert(scale_settings_page(cur_page()));
     turn(EN_SELECT, -1); frame(); assert(cur_page()->graph == GR_CHORD);
@@ -141,6 +143,7 @@ int main(void)
             assert(!strcmp(label, "Scale") && !strcmp(value, expected));
         }
     }
+    press(B_SCL); frames(400); press(B_SCL); frames(400);
     press(B_SCL); frames(400); assert(!strcmp(cur_page()->title, "CHORD"));
     puts("scale picker: SCL/SELECT skip picker, OCT+ entry, every family, shared ROOT/scale/MPC/QNT, favorites and empty list passed");
     project_scale_test();

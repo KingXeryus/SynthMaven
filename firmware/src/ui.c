@@ -699,6 +699,7 @@ static uint32_t track_sig(const track_t *t)      /* the sound (an FM6 track's pa
 {
     uint8_t id[5] = {t->eng_req, t->preset, (uint8_t)t->user, (uint8_t)(t->user>>8), t->user_native};
     uint32_t h = fnv(fnv(steps_sig(t), t->p, sizeof t->p), id, 3), k = trk_index(t);
+    if(t->eng_req==ENGI_HYBRID)h=fnv(h,hy_patch_of(k),sizeof(hy_patch_t));
     h = fnv(h, fm6_patch_of(k), FP_SIZE + 1u);   /* (a patch the editor sent between two loads) */
     h = fnv(h, cz_patch_of(k)->raw, CZ_BYTES);
     h = fnv(h,p5_patch_of(&trk[k]),sizeof(p5_patch_t));
@@ -788,7 +789,8 @@ static void load_begin_guarded(track_t *t, uint32_t what)
     u->user_native=t->user_native;
     memcpy(u->p, t->p, sizeof u->p);
     step_snapshot_save(u->step, t->step);
-    memcpy(u->fm6, fm6_patch_of(i), FP_SIZE);
+    if(u->eng==ENGI_HYBRID)memcpy(u->fm6,hy_patch_of(i),sizeof(hy_patch_t));
+    else memcpy(u->fm6, fm6_patch_of(i), FP_SIZE);
     u->cz = (*cz_patch_of(i));
     u->p5 = *p5_patch_of(&trk[i]);
     u->drum=(*drum_patch_of(i));
@@ -918,8 +920,10 @@ static void undo_step_guarded(int redo)
                                                    * converted DIGITAL sound), preserved with the sound */
         uint32_t tr = trk_index(t);
         uint8_t v[FP_SIZE + 1u];
-        memcpy(v, fm6_patch_of(tr), FP_SIZE);
-        fm6_set_patch(tr, u->fm6);
+        if(u->eng==ENGI_HYBRID)memcpy(v,hy_patch_of(tr),sizeof(hy_patch_t));
+        else memcpy(v, fm6_patch_of(tr), FP_SIZE);
+        if(t->eng_req==ENGI_HYBRID){hy_patch_t h;memcpy(&h,u->fm6,sizeof h);hy_set_patch(tr,&h);}
+        else fm6_set_patch(tr, u->fm6);
         memcpy(u->fm6, v, FP_SIZE);
         {drum_patch_t dp=(*drum_patch_of(tr));(*drum_patch_of(tr))=u->drum;u->drum=dp;}
         { p5_patch_t pp=*p5_patch_of(t);p5_patch[tr]=u->p5;u->p5=pp;p5_ready[tr]=1; }
@@ -1024,6 +1028,11 @@ static void apply_preset_to(track_t *t, uint32_t pi)
     cz_factory_loaded(t);
     cz_track_accept(t);
     fm6_track_loaded(t);                              /* FM6: the preset's patch */
+    if(t->eng_req==ENGI_HYBRID){
+        uint32_t guard=motion_guard();
+        hy_set_patch(trk_index(t),&HY_FACTORY[clamp(t->p[P_E3],0,HY_NFACTORY-1)]);
+        motion_unguard(guard);
+    }
     load_end(t);
 }
 
@@ -1169,6 +1178,50 @@ static void track_select(uint32_t i)
     ui.bank = 0;
     sync_reload = 1;
     ui.force = 1;
+}
+
+/* SynthMaven HOME: engine / sound within engine / part. Factory sounds and
+ * user sounds of that engine form one round-robin bank; no global filter can
+ * silently move the selected part into another engine. */
+static void sm_home_preset(int32_t delta)
+{
+    uint32_t e = TSEL->eng_req, count = ENGINES[e]->npresets, current = TSEL->preset;
+    uint32_t user = user_of(TSEL);
+    browse_commit();
+    for (uint32_t k = 0; k < UP_SLOTS; ++k) {
+        if (!up_used(k) || up_engine(k) != e) continue;
+        if (k == user) current = count;
+        ++count;
+    }
+    if (!count) return;
+    int32_t next = ((int32_t)current + delta) % (int32_t)count;
+    if (next < 0) next += count;
+    if ((uint32_t)next < ENGINES[e]->npresets) apply_preset((uint32_t)next);
+    else {
+        uint32_t index = ENGINES[e]->npresets;
+        for (uint32_t k = 0; k < UP_SLOTS; ++k) {
+            if (!up_used(k) || up_engine(k) != e) continue;
+            if (index++ == (uint32_t)next) { up_load(k); break; }
+        }
+    }
+    recent_loaded();
+    preset_hinted();
+}
+static void sm_home_engine(int32_t delta)
+{
+    browse_commit();
+    int32_t n = ((int32_t)eng_rank(TSEL->eng_req) + delta) % (int32_t)NENG_SHOWN;
+    if (n < 0) n += NENG_SHOWN;
+    set_engine(eng_vis((uint32_t)n));
+    preset_hinted();
+}
+static void sm_home_part(int32_t delta)
+{
+    uint32_t count = trk_n() < NPART ? trk_n() : NPART;
+    if (!count) return;
+    int32_t n = ((int32_t)song.sel + delta) % (int32_t)count;
+    if (n < 0) n += count;
+    track_select((uint32_t)n);
 }
 
 static int slice_page_ok(void) { return 0; }

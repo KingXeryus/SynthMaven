@@ -2,6 +2,7 @@
  * Copyright (C) 2026 Kerem Kilic (Ellic Studio)
  * Portions Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
 #define MELODEE_FAVORITES 1
+#include "hybrid_patch.h"
 /* Stable engine/preset references; fixed capacity independent of optional engines.
  * Bytes no engine's presets reach hold other settings, kept with the favorites (settings_persist.c):
  *   row 8  (GRAIN, retired; Felucca 1.0's stars in bits 0..11) 8..15 GLO > WEIGHTS (settings_persist.c),
@@ -51,8 +52,57 @@ static int scale_favorite_set(uint32_t scale, int on)
 }
 static int p5_favorite_has(uint32_t slot,int factory);
 static int p5_favorite_set(uint32_t slot,int on,int factory);
+/* HYBRID stars use tagged, previously unused bytes of retired SAMPLE's row.
+ * Preserve its original low 96 bits and the PER5 record size. */
+#define HY_FAVORITE_CAP 112u
+_Static_assert(HY_FACTORY_PRESETS<=HY_FAVORITE_CAP,"HYBRID favorite storage");
+static int hy_favorite_valid(void)
+{
+    const uint8_t *p=favorites.factory[4]+12;
+    return p[0]=='H' && p[1]=='Y' && p[2]=='B' && p[3]==1;
+}
+static int hy_favorite_has(uint32_t k)
+{
+    return k<HY_FAVORITE_CAP && hy_favorite_valid() && ((favorites.factory[4][16+k/8]>>(k%8))&1u);
+}
+static int hy_favorite_set(uint32_t k,int on)
+{
+    if(k>=HY_FACTORY_PRESETS || hy_favorite_has(k)==!!on)return 0;
+    uint8_t *p=favorites.factory[4];
+    if(!hy_favorite_valid()){
+        memset(p+16,0,14);p[12]='H';p[13]='Y';p[14]='B';p[15]=1;
+    }
+    if(on)p[16+k/8]|=(uint8_t)(1u<<(k%8));
+    else p[16+k/8]&=(uint8_t)~(1u<<(k%8));
+    return 1;
+}
+/* Appended DX7 entries must not reinterpret retired native-bank stars in row 12.
+ * Use a separate tagged region; preserve TRIO's original low preset bits. */
+#define DX_FAVORITE_FIRST 25u
+#define DX_FAVORITE_COUNT 33u
+static int dx_favorite_valid(void)
+{
+    const uint8_t *p=favorites.factory[7]+12;
+    return p[0]=='D' && p[1]=='X' && p[2]=='7' && p[3]==1;
+}
+static int dx_favorite_has(uint32_t preset)
+{
+    uint32_t k=preset-DX_FAVORITE_FIRST;
+    return k<DX_FAVORITE_COUNT && dx_favorite_valid() && ((favorites.factory[7][16+k/8]>>(k%8))&1u);
+}
+static int dx_favorite_set(uint32_t preset,int on)
+{
+    uint32_t k=preset-DX_FAVORITE_FIRST;
+    if(k>=DX_FAVORITE_COUNT || dx_favorite_has(preset)==!!on)return 0;
+    uint8_t *p=favorites.factory[7];
+    if(!dx_favorite_valid()){memset(p+16,0,5);p[12]='D';p[13]='X';p[14]='7';p[15]=1;}
+    if(on)p[16+k/8]|=(uint8_t)(1u<<(k%8));else p[16+k/8]&=(uint8_t)~(1u<<(k%8));
+    return 1;
+}
 static int favorite_has(uint32_t engine, uint32_t preset)
 {
+    if(engine==ENGI_HYBRID)return hy_favorite_has(preset);
+    if(engine==ENGI_FM6 && preset>=DX_FAVORITE_FIRST)return dx_favorite_has(preset);
     if(engine==ENGI_PROPHET)return p5_favorite_has(preset,1);
     if(engine==USER_NATIVE_P5 || engine==USER_NATIVE_FM || engine==USER_NATIVE_CZ)engine=USER_GENERAL;
     if (engine == USER_GENERAL)
@@ -62,6 +112,8 @@ static int favorite_has(uint32_t engine, uint32_t preset)
 }
 static int favorite_set(uint32_t engine, uint32_t preset, int on)
 {
+    if(engine==ENGI_HYBRID)return hy_favorite_set(preset,on);
+    if(engine==ENGI_FM6 && preset>=DX_FAVORITE_FIRST)return dx_favorite_set(preset,on);
     if(engine==ENGI_PROPHET)return p5_favorite_set(preset,on,1);
     if(engine==USER_NATIVE_P5 || engine==USER_NATIVE_FM || engine==USER_NATIVE_CZ)engine=USER_GENERAL;
     if (engine >= NENGINES || (engine == USER_GENERAL ? preset >= UP_SLOTS : engine >= 16u || preset >= 256u))

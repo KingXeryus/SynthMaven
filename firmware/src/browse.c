@@ -36,12 +36,14 @@ static const char *const PRESET_CAT[NENGINES] = {
         "PSBUEFDEEEWEUOUEOOOOSERPUOBOOOBOFLGUGRLOOOBUFOOFEUFORSKKWKLGLGGKROGBGLKSLOOFOFOFLUUEFFEOFEPF",
 };
 static uint32_t cat_of_engine(uint32_t e) { return e == ENGI_DRUM ? CAT_DRUM : e == 11u ? CAT_FX : CAT_OTHER; }
+static uint32_t cat_from_name(uint32_t e, const char *name);
 static uint32_t preset_cat(uint32_t e, uint32_t k)           /* factory preset k of engine e */
 {
     const char *s = e < NENGINES ? PRESET_CAT[e] : 0;
     uint32_t c;
-    if (!s || !s[0] || k >= ENGINES[e]->npresets)
-        return cat_of_engine(e);
+    if (e >= NENGINES || k >= ENGINES[e]->npresets) return CAT_OTHER;
+    if (!s || !s[0] || k >= str_len(s))
+        return cat_from_name(e, eng_preset(ENGINES[e], k)->name);
     for (c = 1; c < CAT_N && CAT_LETTER[c] != s[k]; c++)
         ;
     return c < CAT_N ? c : cat_of_engine(e);
@@ -93,6 +95,12 @@ static int name_has_word(const char *nm, const char *w)
             return 1;
     }
     return 0;
+}
+static uint32_t cat_from_name(uint32_t e, const char *name)
+{
+    for (uint32_t k = 0; k < NELEM(CAT_WORDS); ++k)
+        if (name_has_word(name, CAT_WORDS[k].w)) return CAT_WORDS[k].cat;
+    return cat_of_engine(e);
 }
 static int name_same(const char *a, const char *b)           /* the first 12 characters, any case */
 {
@@ -292,7 +300,7 @@ static uint32_t list_scan(uint32_t m, uint32_t ws, uint32_t wk, uint32_t n, uint
             src = lseg_src(seg);
             init = slot || !len ? 0u : preset_init(src);   /* (an engine's INIT first: FM6's comes after F24) */
             for (i = 0; i < len; i++) {
-                k = (i + init) % len;
+                k = !i ? init : i <= init ? i - 1u : i;
                 if (slot && (!up_used(k) || up_engine(k)!=eng_vis(seg/2u)))
                     continue;
                 if (!list_keep(m, src, k))

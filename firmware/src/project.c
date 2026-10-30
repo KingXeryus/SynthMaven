@@ -49,7 +49,7 @@ typedef struct {
     proj_trk_t t[PROJ_TRK];
     chain_config_t chain;
     motion_store_t motion;
-    uint8_t fm6[PROJ_TRK][FM6_PACKED];             /* each track's FM6 patch, packed (eng_fm6.c) */
+    uint8_t fm6[PROJ_TRK][FM6_PACKED];             /* engine-tagged native payload: packed FM6 or full HYBRID */
     uint8_t fm6_fn[PROJ_TRK][FM6_NFN];             /* .. and its function settings (fm6_fn_ok; else Dexed's): not in
                                                 * FUN8, an FBK9 record keeps them (pattern_store.c BANK_FN_OFF) */
     uint8_t fm6_fn_ok, rsv2[3];
@@ -156,12 +156,19 @@ static struct { uint8_t used, old; char name[PROJ_NAME_LEN + 1u]; } proj_meta[4]
 
 static uint32_t proj_hash(const void *p, uint32_t n) { return fnv(2166136261u, p, n); }
 static uint32_t proj_sum(const project_t *p) { return proj_hash(p, sizeof *p - 4u); }
+_Static_assert(sizeof(hy_patch_t)==FM6_PACKED,"native project payload capacity");
+static int proj_native_valid(uint32_t engine,const uint8_t *raw)
+{
+    if(engine==ENGI_HYBRID){hy_patch_t patch;memcpy(&patch,raw,sizeof patch);return hy_patch_valid(&patch);}
+    for(uint32_t i=0;i<FM6_PACKED;i++)if(raw[i]>127u)return 0;
+    return 1;
+}
 static int proj_ok(const project_t *q)
 {
     if (q->magic != PROJ_MAGIC || q->size != sizeof *q || q->sum != proj_sum(q) ||
         q->sel >= NTRK || q->parts > NTRK || q->phys > PROJ_PHYS ||
         !chain_valid(&q->chain) || !motion_valid(&q->motion)) return 0;
-    for (uint32_t k = 0; k < PROJ_TRK; k++) if (q->t[k].engine >= NENGINES || q->t[k].mpc_octave < -3 || q->t[k].mpc_octave > 3 || q->pattern[k] >= NPAT || !drum_patch_valid(&q->drum[k]) || !p5_patch_valid(&q->p5[k])) return 0;
+    for (uint32_t k = 0; k < PROJ_TRK; k++) if (q->t[k].engine >= NENGINES || q->t[k].mpc_octave < -3 || q->t[k].mpc_octave > 3 || q->pattern[k] >= NPAT || !drum_patch_valid(&q->drum[k]) || !p5_patch_valid(&q->p5[k]) || !proj_native_valid(q->t[k].engine,q->fm6[k])) return 0;
     for (uint32_t i = 0; i < RECORD_MAX; i++) if (!recording_valid(&q->recording[i])) return 0;
     return 1;
 }
@@ -299,8 +306,7 @@ static int proj_pack(project_store_t *out, const project_t *q)
     uint32_t octword = mpc_octaves_pack(oct);
     if (!octword) return 0;
     for (t = 0; t < PROJ_TRK; t++)
-        for (i = 0; i < FM6_PACKED; i++)
-            if (q->fm6[t][i] > 127u) return 0;
+        if(!proj_native_valid(q->t[t].engine,q->fm6[t]))return 0;
     if (q->g[G_FXRETURN]<0 || q->g[G_FXRETURN]>127 || q->g[G_FXMODE]<0 || q->g[G_FXMODE]>1 || !chain_valid(&q->chain) || !motion_valid(&q->motion) || P_COUNT > 127u) return 0;
     memset(out, 0, sizeof *out); memcpy(b, &magic, 4); memcpy(b + 4, &size, 4);
     memcpy(b + 8, q->g, 2u*PROJ_GLOBALS);
@@ -439,9 +445,10 @@ static int proj_unpack(project_t *q, const uint8_t *b)
         for (t = 0; t < PROJ_TRK; t++) q->t[t].mpc_octave = oct[t];
     }
     if (!chain_valid(&q->chain) || !motion_valid(&q->motion)) return 0;
-    for (t = 0; t < PROJ_TRK; t++)
-        for (i = 0; i < FM6_PACKED; i++)
-            q->fm6[t][i] = b[end + t * FM6_PACKED + i] & 0x7Fu;
+    for (t = 0; t < PROJ_TRK; t++) {
+        memcpy(q->fm6[t],b+end+t*FM6_PACKED,FM6_PACKED);
+        if(!proj_native_valid(q->t[t].engine,q->fm6[t]))return 0;
+    }
     for (t = 0; t < PROJ_TRK; t++) {
         memcpy(q->cz[t].raw, b + PROJ_CZ_OFF + t * CZ_BYTES, CZ_BYTES);
         if (!cz_patch_valid(q->cz[t].raw)) return 0;
@@ -706,7 +713,8 @@ static void project_capture(project_t *p)
             motion_native_snapshot(&trk[own], p->p5[i].raw, MO_TAG_P5, sizeof p->p5[i].raw);
             motion_native_snapshot(&trk[own], native, MO_TAG_FM6, sizeof native);
         }
-        fm6_pack(native, p->fm6[i]);
+        if(p->t[i].engine==ENGI_HYBRID)memcpy(p->fm6[i],hy_patch_of(own),sizeof(hy_patch_t));
+        else fm6_pack(native, p->fm6[i]);
         memcpy(p->fm6_fn[i], fm6_fn[own], FM6_NFN);
     }
     p->fm6_fn_ok = 1;
@@ -949,7 +957,7 @@ static int project_restore_runtime(const project_t *input)
         pattern_commit(t);
         {   /* the project's own FM6 patch */
             uint8_t v[FP_SIZE + 1u];
-            fm6_unpack(p->fm6[k], v);
+            if(e!=ENGI_HYBRID)fm6_unpack(p->fm6[k], v);
             p5_patch[k]=p->p5[k];p5_ready[k]=1;
             uint32_t origin=p->user[k];
             if(origin && up_used(origin-1u) && up_engine(origin-1u)==e)t->user=(uint16_t)origin;
@@ -958,7 +966,8 @@ static int project_restore_runtime(const project_t *input)
             }
             (*cz_patch_of(k)) = p->cz[k];
             cz_track_accept(t);
-            fm6_set_patch(k, v);
+            if(e==ENGI_HYBRID){hy_patch_t h;memcpy(&h,p->fm6[k],sizeof h);hy_set_patch(k,&h);}
+            else fm6_set_patch(k, v);
             memcpy(fm6_fn[k], p->fm6_fn_ok && fm6_fn_ok(p->fm6_fn[k]) ? p->fm6_fn[k] : FM6_FNDEF, FM6_NFN);
             if(!t->preset && !t->user && native_limit(e))for(uint32_t slot=0;slot<UP_SLOTS;slot++)if(native_used(e,slot)){
                 const uint8_t *raw=native_raw(e,slot),*saved=e==ENGI_PROPHET?(const uint8_t *)&p->p5[k]:e==ENGI_CZ?p->cz[k].raw:p->fm6[k];
@@ -1096,6 +1105,7 @@ static int tmpl_blob_valid(const uint8_t *b,uint32_t len)
     int32_t delta=(int32_t)(PROJ_TRK*2u)*((int32_t)P_COUNT-(int32_t)np);   /* (TPLK: more parameters, below 0) */
     for(uint32_t k=0;k<PROJ_TRK;k++){
         if(b[2u*PROJ_GLOBALS+2u+k*(2u+2u*np)]>=NENGINES)return 0;
+        if(!proj_native_valid(b[2u*PROJ_GLOBALS+2u+k*(2u+2u*np)],b+((int32_t)__builtin_offsetof(tmpl_t,fm6)-delta)+k*FM6_PACKED))return 0;
         p5_patch_t p;memcpy(&p,b+((int32_t)__builtin_offsetof(tmpl_t,p5)-delta)+k*sizeof p,sizeof p);
         if(!cz_patch_valid(b+((int32_t)__builtin_offsetof(tmpl_t,cz)-delta)+k*sizeof(cz_patch_t)) || !p5_patch_valid(&p) ||
             !drum_patch_valid((const drum_patch_t *)(b+((int32_t)__builtin_offsetof(tmpl_t,drum)-delta)+k*sizeof(drum_patch_t))))return 0;
@@ -1193,7 +1203,8 @@ static void template_save(void)
         tmpl.cz[k] = (*cz_patch_of(k));
         tmpl.p5[k] = *p5_patch_of(&trk[k]);
         tmpl.drum[k]=(*drum_patch_of(k));
-        fm6_pack(fm6_patch_of(k), tmpl.fm6[k]);
+        if(tmpl.t[k].engine==ENGI_HYBRID)memcpy(tmpl.fm6[k],hy_patch_of(k),sizeof(hy_patch_t));
+        else fm6_pack(fm6_patch_of(k), tmpl.fm6[k]);
         memcpy(tmpl.fm6_fn[k], fm6_fn[k], FM6_NFN);
     }
     tmpl.size = sizeof tmpl;

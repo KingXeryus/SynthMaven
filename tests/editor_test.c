@@ -117,7 +117,7 @@ static int preferences(void)
     uint8_t a[4] = {0, 2, 0, 0};
     reset();
     uint32_t n = request(ED_INFO, a, 0);
-    const uint8_t caps[]={0,0x55,1,57,0x4d,2,MOTION_MAX,1,0x42,1,3,0x50,1,NPAT,CHAIN_ROWS,0x46,1,FM6_NFAC,0,0x43,1,16,1,0,0,0x35,1,19,16,17,18,20,0,1,0x4e,1,64,0,0,1,0x55,1,0,3};
+    const uint8_t caps[]={0,0x55,1,57,0x4d,2,MOTION_MAX,1,0x42,1,3,0x50,1,NPAT,CHAIN_ROWS,0x46,1,FM6_NEXPORT,0,0x43,1,16,1,0,0,0x35,1,19,16,17,18,20,0,1,0x4e,1,64,0,0,1,0x55,1,0,3,0x53,0x4d,1,3,5,96,110,111};
     bad+=check("INFO preserves existing IDs and advertises the shared 384-slot library",ED_SONG==33&&ED_FAV_SET==38&&n>sizeof caps&&!memcmp(host_wire+n-sizeof caps-1,caps,sizeof caps));
     request(ED_UI_SET, a, 2);
     bad += check("UI_SET updates the actual palette and reports RAM-only saving",
@@ -336,7 +336,7 @@ static int fm6_patches(void)
     bad += check("user U64 owns its sanitized FM6 voice", host_wire[7] == 0 && host_wire[8 + 14] == 99 &&
                  !memcmp(host_wire + 8 + 118, "MY PATCH  ", 10));
     n = request(ED_FM6_LIST, a, 0);
-    bad += check("FM6_LIST advertises 24 factory voices and no bank", host_wire[5] == FM6_NFAC && host_wire[6] == 0);
+    bad += check("FM6_LIST advertises appended DX7 factory voices and no bank", host_wire[5] == FM6_NEXPORT && host_wire[6] == 0);
     a[0] = 4;
     request(ED_FM6_ERASE, a, 1);
     bad += check("retired FM6 bank ERASE returns rc 3", host_wire[6] == 3);
@@ -703,9 +703,59 @@ static int midi_track_protocol(void)
                  TSEL->p[P_FXTYPE] == FX_OFF && !TSEL->p[P_FXSEND]);
     return bad;
 }
+static int layers_protocol(void)
+{
+ int bad=0;reset();sm_layers_t want={.enabled=1,.low={0,60,72,0},.high={59,127,127,47}};
+ uint8_t raw[SM_LAYERS_WIRE],a[32],got[SM_LAYERS_WIRE];sm_layers_encode(raw,&want);
+ a[0]=1;uint32_t n=1+pack7(raw,sizeof raw,a+1);request(ED_LAYERS,a,n);
+ bad+=check("layer USB apply preserves four inclusive ranges",!host_wire[6]&&sm_layers.enabled&&sm_layers.low[1]==60);
+ a[0]=0;request(ED_LAYERS,a,1);
+ bad+=check("layer USB read is byte-exact",!host_wire[6]&&ed_unpack7(host_wire+7,host_wire_n-8,got,sizeof got)==sizeof got&&!memcmp(got,raw,sizeof raw));
+ raw[5]=100;a[0]=1;n=1+pack7(raw,sizeof raw,a+1);request(ED_LAYERS,a,n);
+ bad+=check("inverted USB split is rejected atomically",host_wire[6]==1&&sm_layers.low[0]==0&&sm_layers.high[0]==59);
+ sm_layers=(sm_layers_t){.high={127,127,127,127}};return bad;
+}
+static int master_tuning_protocol(void)
+{
+    int bad=0;reset();uint8_t raw[SM_TUNE_WIRE],a[64];
+    sm_tuning_t want={.enabled=1,.scale=47,.root=2,.octave=3,.apply=15,.mask=0xfff};want.cents[4]=-37;
+    sm_tuning_encode(raw,&want);a[0]=1;uint32_t n=1+pack7(raw,sizeof raw,a+1);
+    request(ED_MASTER_TUNING,a,n);
+    bad+=check("global tuning USB applies complete signed record",!host_wire[6] && sm_tuning.cents[4]==-37 && sm_tuning.octave==3);
+    a[0]=0;request(ED_MASTER_TUNING,a,1);uint8_t got[SM_TUNE_WIRE];
+    bad+=check("global tuning USB reads exact applied record",!host_wire[6] && ed_unpack7(host_wire+7,host_wire_n-8,got,sizeof got)==sizeof got && !memcmp(got,raw,sizeof raw));
+    raw[14]=127;a[0]=1;n=1+pack7(raw,sizeof raw,a+1);request(ED_MASTER_TUNING,a,n);
+    bad+=check("invalid global tuning USB write is atomic",host_wire[6]==1 && sm_tuning.cents[4]==-37);
+    sm_tuning=(sm_tuning_t){.apply=15,.mask=0xfff};return bad;
+}
+static int hybrid_protocol(void)
+{
+    int bad=0;reset();uint8_t a[800]={0};
+    set_engine_of(TSEL,ENGI_HYBRID);apply_preset_to(TSEL,41);
+    hy_patch_t want=*hy_patch_of(0),got;want.osc[0].fine=-37;
+    a[0]=1;a[1]=0;uint32_t n=2+pack7((const uint8_t *)&want,sizeof want,a+2);
+    request(ED_HYBRID,a,n);
+    bad+=check("HYBRID USB writes preserve signed bytes in pending native patch",!host_wire[7] && !memcmp(hy_patch_of(0),&want,sizeof want));
+    a[0]=0;request(ED_HYBRID,a,2);
+    bad+=check("HYBRID USB reads round-trip complete native patch",!host_wire[7] && ed_unpack7(host_wire+8,host_wire_n-9,(uint8_t *)&got,sizeof got)==sizeof got && !memcmp(&got,&want,sizeof got));
+    a[0]=1;want.osc[0].type=255;n=2+pack7((const uint8_t *)&want,sizeof want,a+2);request(ED_HYBRID,a,n);
+    bad+=check("malformed HYBRID patch rejected without changing sound",host_wire[7]==1 && hy_patch_of(0)->osc[0].type!=255);
+    a[0]=0;a[1]=4;request(ED_HYBRID,a,2);bad+=check("HYBRID USB cannot address a non-audio part",host_wire[7]==1);
+    a[1]=1;request(ED_HYBRID,a,2);bad+=check("HYBRID USB refuses wrong engine without switching it",host_wire[7]==2);
+    a[0]=2;a[1]=99;request(ED_HYBRID,a,2);
+    bad+=check("HYBRID factory patch API includes the final Vital translation",!host_wire[7] && ed_unpack7(host_wire+8,host_wire_n-9,(uint8_t *)&got,sizeof got)==sizeof got && !memcmp(&got,&HY_FACTORY[99],sizeof got));
+    want=HY_FACTORY[36];want.osc[0].fine=-23;
+    uint32_t pos=0;a[pos++]=2;a[pos++]=7;a[pos++]=0;a[pos++]=ENGI_HYBRID;
+    memcpy(a+pos,"HY SAVE",8);pos+=8;
+    for(uint32_t j=0;j<P_COUNT;j++){a[pos++]=0;a[pos++]=64;}
+    memset(a+pos,0,32);pos+=32;a[pos++]=5u|32u|64u;a[pos++]=0;a[pos++]=1;
+    pos+=pack7((const uint8_t *)&want,sizeof want,a+pos);request(ED_LIBRARY,a,pos);
+    bad+=check("shared library stores native HYBRID through USB",!host_wire[8] && up_used(7) && up_rec(7)->ver==UP_VER_HYBRID && !memcmp(up_rec(7)->packed,&want,sizeof want));
+    return bad;
+}
 int main(void)
 {
-    int bad = midi_track_protocol() + library_transfers() + native_motion_protocol() + prophet_protocol() + bank_protocol() + preferences() + framing() + uart_recovery() + steps() + song_protocol() + malformed_saves() + names_whole() +
+    int bad = layers_protocol() + master_tuning_protocol() + hybrid_protocol() + midi_track_protocol() + library_transfers() + native_motion_protocol() + prophet_protocol() + bank_protocol() + preferences() + framing() + uart_recovery() + steps() + song_protocol() + malformed_saves() + names_whole() +
               native_protocol() + shared_protocol() + fm6_patches() + user_preset_roundtrip() + cz_native_protocol() + cz_dedicated_banks() + cz_casio_sysex() + concert_pitch() + scale_catalogue() + project_scale_protocol();
     printf("%s\n", bad ? "EDITOR TEST FAILED" : "editor test passed");
     return bad != 0;

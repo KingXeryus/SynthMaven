@@ -354,7 +354,11 @@ static void glide_set(track_t *t, voice_t *v, int glide)
 /* Keep each sounding voice's pitch after SCL/ROOT/QNT changes, including release tails. */
 static void voice_scale_pitch(const track_t *t, voice_t *v, uint32_t note)
 {
-    if (micro_active(t)) {
+    if(sm_tuning.enabled && t->eng_req!=ENGI_DRUM){
+        int32_t pitch=clamp((int32_t)note*10000+100*sm_tuning_cents(&sm_tuning,(uint32_t)(t-trk),note),0,1270000);
+        v->pitch16=pitch*16/10000;
+        v->scale_fine=(pitch*16-v->pitch16*10000)*2367/1600000;
+    } else if (micro_active(t)) {
         int32_t pitch = clamp(micro_pitch(t, (int32_t)note), 0, 1270000);
         v->pitch16 = pitch * 16 / 10000;
         v->scale_fine = (pitch * 16 - v->pitch16 * 10000) * 2367 / 1600000;
@@ -753,6 +757,7 @@ static void engine_batch_kernel(const void *data,int32_t *pcm)
     for(uint32_t k=0;k<8u;k++)params[P_E0+k]=j->engine_params[k];
     for(uint32_t k=0;k<DV_NLANE;k++)params[P_LN0+k]=j->lane_params[k];
     if(j->engine==&ENG_DRUM){dr_scratch_t scratch;drum_render_into(j->track,j->voice,pcm,j->n,&j->modulation,&scratch,params);}
+    else if(j->engine==&ENG_HYBRID)hybrid_render_into(j->track,j->voice,pcm,j->n,&j->modulation,params);
     else if(j->engine==&ENG_SID)sid_render_into(j->track,j->voice,pcm,j->n,&j->modulation,params);
     else j->engine->render(j->track,j->voice,pcm,j->n,&j->modulation);
 }
@@ -760,11 +765,11 @@ static void engine_batch_kernel(const void *data,int32_t *pcm)
 static inline void engine_join(void) {}
 static void engine_render(track_t *t,voice_t *v,const engine_t *e,int32_t *out,uint32_t n,const vmod_t *m)
 {
-    if(audio_batch_active && (e==&ENG_CZ || e==&ENG_SID || e==&ENG_DRUM)){
+    if(audio_batch_active && (e==&ENG_CZ || e==&ENG_SID || e==&ENG_DRUM || e==&ENG_HYBRID)){
         engine_batch_t j;j.track=t;j.voice=v;j.engine=e;j.modulation=*m;j.n=n;
         for(uint32_t k=0;k<8u;k++)j.engine_params[k]=t->p[P_E0+k];
         for(uint32_t k=0;k<DV_NLANE;k++)j.lane_params[k]=t->p[P_LN0+k];
-        audio_batch_push(engine_batch_kernel,&j,sizeof j,out,n,e==&ENG_CZ?AP_CZ:e==&ENG_SID||drum_issid(t)?AP_SID:drum_is909(t)?AP_909:AP_808);return;
+        audio_batch_push(engine_batch_kernel,&j,sizeof j,out,n,e==&ENG_HYBRID?AP_HYBRID:e==&ENG_CZ?AP_CZ:e==&ENG_SID||drum_issid(t)?AP_SID:drum_is909(t)?AP_909:AP_808);return;
     }
     e->render(t,v,out,n,m);
 }

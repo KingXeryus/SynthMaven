@@ -294,7 +294,7 @@ static void draw_menu(void)
                 if (i == MI_PICKER) value = PREF_BITS & PREF_PICK_OFF ? "OFF" : "ON";
                 if (i == MI_FONT) value = TY_PIXEL ? "PIXEL" : "RUBIK";
                 if (i == MI_AUTOSAVE) value = settings_autosave ? "ON" : "OFF";
-                if (i == MI_HOME_SEL) value = HS_NAME[home_select()];
+                if (i == MI_HOME_SEL) value = "PARTS";
                 if (i == MI_GLO_SEL) value = HS_NAME[glo_select()];
                 if (i == MI_TRACKS) value = GLO_SELECT & TRACKS_HIDE ? "HIDE" : "SHOW";
                 if (i == MI_SCREEN) value = (const char *const[]){"NEVER", "5 MIN", "15 MIN", "30 MIN", "60 MIN"}[scr_get()];
@@ -448,10 +448,8 @@ static void menu_input(uint32_t oct)                  /* oct: ui_input.c oct_tap
         PREF_BITS = (uint8_t)(on ? PREF_BITS & ~PREF_ACCEL_OFF : PREF_BITS | PREF_ACCEL_OFF);
         ui.force=1; ok=0;
     }
-    if ((s || ok) && ui.menu == 1 && ui.menu_sel == MI_HOME_SEL) {   /* KNOB 1 steps, OCT+ steps and wraps */
-        uint32_t v = home_select();
-        HOME_SELECT = (uint8_t)(s > 0 ? (v + 1u < HS_N ? v + 1u : v) : s < 0 ? (v ? v - 1u : 0u) : (v + 1u) % HS_N);
-        ui.force = 1; ok = 0;
+    if ((s || ok) && ui.menu == 1 && ui.menu_sel == MI_HOME_SEL) {
+        ui_message("SELECT CHANGES PART"); ok = 0;
     }
     if ((s || ok) && ui.menu == 1 && ui.menu_sel == MI_TRACKS) {     /* KNOB 1 right HIDE, left SHOW; OCT+ toggles */
         uint32_t hide = s > 0 ? 1u : s < 0 ? 0u : !(GLO_SELECT & TRACKS_HIDE);

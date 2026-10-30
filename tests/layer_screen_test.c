@@ -107,9 +107,10 @@ static void test_glo_select(void)
         assert(select_takes == 1u && !ui.ly && !ui.lock);
         assert(ui.home == home && ui.page == pg && TSEL->p[P_LEVEL] == level);
         swing = song.g[G_SWING];
+        uint32_t part = song.sel;
         turn(EN_SELECT, dir);
         assert(song.g[G_SWING] == swing);
-        assert(home ? TSEL->p[P_LEVEL] != level : ui.page != pg);
+        assert(home ? song.sel != part : ui.page != pg);
     }
     reset_controls();
     HOME_SELECT = HS_LEVEL;

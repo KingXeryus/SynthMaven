@@ -370,7 +370,7 @@ static int test_sound_loads(void)
     before = *t;
     for (i = 0; i < ENGINES[3]->npresets - before.preset + 1u; i++) /* through SID's remaining sounds, into next engine */
         turn(EN_PRESET, 1);
-    bad += check("browsing on, into another engine: the steps still untouched", t->eng_req != before.eng_req &&
+    bad += check("HOME wraps within the engine: steps still untouched", t->eng_req == before.eng_req &&
                  !memcmp(t->step, before.step, sizeof t->step) && t->p[P_AMODE] == 2);
     bad += check("browsing keeps the copy from before the first load", undo.trk == 1u && undo.what == UNDO_SOUND &&
                  undo.p[P_E0 + 1] == before.p[P_E0 + 1] && undo.eng == before.eng_req && undo.preset == before.preset);
@@ -380,7 +380,7 @@ static int test_sound_loads(void)
                  t->step[0].note[0] == 99 && msg_is("UNDO T1"));
     bad += check("EDIT held does not open the SAVE pages", ui.home);
     edit_redo();
-    bad += check("EDIT + OCT+: the loads again (REDO T1)", t->eng_req != before.eng_req && t->step[0].note[0] == 99 &&
+    bad += check("EDIT + OCT+: the loads again (REDO T1)", t->eng_req == before.eng_req && t->preset != before.preset && t->step[0].note[0] == 99 &&
                  msg_is("REDO T1") && ui.home && !song.octave);
     hold(B_EDIT);
     t->p[P_LEVEL] = 50;                           /* a mix change after the undo */
@@ -1151,60 +1151,23 @@ static int test_home_view_release(void)
     return bad;
 }
 
-/* SELECT on HOME: the menu's HOME SELECT (BPM by default; MOD WHEEL, LEVEL, SWING, TRANSPOSE, ARP RATE, PATTERN, OFF),
- * never a page turn; kept with the settings */
+/* SynthMaven HOME selection is fixed to parts; stored Melodee knob preferences
+ * must not change BPM, tuning or the selected sound. */
 static int test_home_select(void)
 {
     int bad = 0;
-    int16_t bpm;
-    ui_power_on();
-    HOME_SELECT = 0;
-    go_home(); frame();
-    bpm = song.g[G_BPM];
-    turn(EN_SELECT, 1);
-    bad += check("SELECT on HOME: BPM by default, no page turn", song.g[G_BPM] > bpm && ui.home_pg == 0u);
-    HOME_SELECT = HS_MOD;
-    turn(EN_SELECT, 3);
-    bad += check("  MOD WHEEL: the selected track's CC1, said in the header", TSEL->mw > 0 && !memcmp(ui.msg, "MOD WHEEL ", 10));
-    HOME_SELECT = HS_LEVEL;
-    track_select(0);
-    {
-        int16_t lv = TSEL->p[P_LEVEL];
-        turn(EN_SELECT, -2);
-        bad += check("  LEVEL: the selected track's, down", TSEL->p[P_LEVEL] < lv && !memcmp(ui.msg, "T1 LEVEL ", 9));
+    ui_power_on(); go_home(); frame();
+    int16_t bpm = song.g[G_BPM];
+    uint32_t engine = trk[0].eng_req, preset = trk[0].preset;
+    for (uint32_t pref = 0; pref < HS_N; ++pref) {
+        HOME_SELECT = (uint8_t)pref; track_select(0);
+        turn(EN_SELECT, -1);
+        bad += check("HOME SELECT wraps to part 4 regardless of old preference", song.sel == 3 && ui.home);
+        turn(EN_SELECT, 1);
+        bad += check("HOME SELECT restores part 1 without changing its sound or tempo",
+                     song.sel == 0 && trk[0].eng_req == engine && trk[0].preset == preset && song.g[G_BPM] == bpm);
     }
-    HOME_SELECT = HS_TRANS;
-    turn(EN_SELECT, 1);
-    bad += check("  TRANSPOSE: +1", TSEL->p[P_TRANS] == 1);
-    HOME_SELECT = HS_CHORD;
-    TSEL->p[P_CHRD] = 0;
-    turn(EN_SELECT, 5);
-    bad += check("  CHORD: the keys' chord, a name a detent (OFF -> DIA3), said in the header", TSEL->p[P_CHRD] == 1 &&
-                 !memcmp(ui.msg, "T1 CHORD DIA3", 13));
-    turn(EN_SELECT, 1); turn(EN_SELECT, 1); turn(EN_SELECT, 1); turn(EN_SELECT, 1);
-    bad += check("  .. DOM7 four on", TSEL->p[P_CHRD] == 5 && !memcmp(ui.msg, "T1 CHORD DOM7", 13));
-    HOME_SELECT = HS_PATTERN;
-    stop_transport();
-    turn(EN_SELECT, 1);
-    bad += check("  PATTERN stopped: pattern 2 at once", TSEL->pattern == 1u);
-    HOME_SELECT = HS_OFF;
-    bpm = song.g[G_BPM];
-    turn(EN_SELECT, 1);
-    bad += check("  OFF: nothing", song.g[G_BPM] == bpm && TSEL->pattern == 1u);
-    HOME_SELECT = 200;
-    bad += check("  an unknown stored value: BPM", home_select() == HS_BPM);
-    {
-        persist_t p;
-        memset(&p, 0, sizeof p);
-        HOME_SELECT = HS_SWING;
-        settings_export(&p);
-        HOME_SELECT = 0;
-        settings_import(&p, (int)sizeof p);
-        bad += check("  kept with the settings", home_select() == HS_SWING);
-    }
-    HOME_SELECT = 0;
-    ui_power_on();
-    return bad;
+    HOME_SELECT = 0; ui_power_on(); return bad;
 }
 
 /* key k of colour black (1) / white (0) at place p (seq.c key_place) */
@@ -1466,13 +1429,14 @@ static int test_browser(void)
     list_set(LM_ALL);
     for (e = 0; e < NENGINES; e++)
         if (PRESET_CAT[e] && PRESET_CAT[e][0]) {
-            ok &= str_len(PRESET_CAT[e]) == ENGINES[e]->npresets;
+            ok &= str_len(PRESET_CAT[e]) <= ENGINES[e]->npresets;
             for (k = 0; k < ENGINES[e]->npresets && PRESET_CAT[e][k]; k++)
                 ok &= (c = preset_cat(e, k)) >= 1u && c < CAT_N && CAT_LETTER[c] == PRESET_CAT[e][k];
         }
     for (i = 0; i < NENG_SHOWN; i++)
-        ok &= (PRESET_CAT[eng_vis(i)] && PRESET_CAT[eng_vis(i)][0]) || eng_vis(i) == ENGI_DRUM || eng_vis(i) == 11u;
-    bad += check("BROWSE: a category letter for each factory preset of every engine shown", ok);
+        for (k = 0; k < ENGINES[eng_vis(i)]->npresets; ++k)
+            ok &= (c = preset_cat(eng_vis(i), k)) >= 1u && c < CAT_N;
+    bad += check("BROWSE: authored or name-derived category for every factory preset", ok);
     bad += check("BROWSE: factory categories (Prophet, FM6, CZ-1, the kits)",
                  preset_cat(ENGI_PROPHET, find_preset(ENGI_PROPHET, "Fat Poly Bass")) == CAT_BASS &&
                  preset_cat(ENGI_PROPHET, find_preset(ENGI_PROPHET, "Pluckity Duck")) == CAT_PLUCK &&
@@ -1584,7 +1548,7 @@ static int test_browser(void)
     recent_n = 0;
     set_engine_of(TSEL, ENGI_PROPHET);
     my_steps(TSEL);
-    ui.home = 1;
+    go_page(GR_BROWSE);
     fm1_ms += 1000u;
     rest();
     before = *TSEL;
@@ -1638,7 +1602,7 @@ static int test_browser(void)
     cur_entry(&src, &k);
     ok &= song.sel == 1u && entry_cat(src, k) == CAT_BASS;
     track_select(0);
-    go_home();
+    go_page(GR_BROWSE);
     turn(EN_PRESET, 1);
     cur_entry(&src, &k);
     bad += check("LIST is each track's: PRESETS on the brass track loads a brass after the bass track picked BASS",
@@ -4293,9 +4257,10 @@ static int test_bughunt_ui(void)
         btn_down(B_GLO); turn(EN_ALGO, 1);             /* armed, not open yet: ignored too */
         ok &= song.sel == 0u;
         btn_up(B_GLO); frame(); go_home(); frame();
+        uint32_t previous_engine = TSEL->eng_req;
         turn(EN_ALGO, 1);
-        bad += check("ALGORITHM ignored with a layer's button held (OCT- puts back all); then T2",
-                     ok && song.sel == 1u);
+        bad += check("ALGORITHM ignored while held, then changes the HOME engine",
+                     ok && song.sel == 0u && TSEL->eng_req == eng_step(previous_engine, 1));
     }
     /* 6: the sheets' clearing rows: nothing there says so (not a question, not STOP TO EDIT) */
     ui_power_on();
@@ -4376,6 +4341,10 @@ static int test_chord_page(void)
     go_home(); frame();
     press(B_SCL); frames(400);
     ok = str_eq(cur_page()->title, "SCL");
+    press(B_SCL); frames(400);
+    ok &= str_eq(cur_page()->title, "MASTER TUNE");
+    press(B_SCL); frames(400);
+    ok &= str_eq(cur_page()->title, "CUSTOM TUNE");
     press(B_SCL); frames(400);
     ok &= str_eq(cur_page()->title, "CHORD") && cur_page()->graph == GR_CHORD && cur_page()->fam == FAM_SCL;
     bad += check("SCL cycles settings then CHORD: the CHORD page (CHRD VOIC, the chord graph)", ok && cur_page()->id[0] == P_CHRD &&

@@ -31,8 +31,8 @@ from pathlib import Path
 
 # name, bg, surf, text, accent, (track 1, 2, 3, 4) (8-bit RGB; stored as RGB565)
 PALETTES = [
-    ("NIGHT",    (23, 20, 31),    (36, 32, 46),    (243, 238, 248), (255, 255, 255),
-     ((255, 122, 92), (255, 193, 69), (70, 217, 176), (157, 140, 255))),
+    ("NIGHT", (0, 0, 0), (22, 22, 26), (242, 242, 242), (255, 44, 52),
+     ((255, 44, 52), (158, 211, 240), (242, 242, 242), (138, 138, 146))),
     ("DAY",      (246, 242, 234), (231, 224, 212), (30, 26, 38),    (20, 16, 28),
      ((160, 42, 22), (116, 68, 0), (0, 92, 72), (78, 56, 184))),
     ("CONTRAST", (0, 0, 0),       (34, 34, 34),    (255, 255, 255), (255, 255, 255),
@@ -53,9 +53,9 @@ TEST_GRAY = ("GRAY", (14, 14, 14), (36, 36, 36), (204, 204, 204), (255, 255, 255
 PAL_TAG = 96                       # stored id = PAL_TAG + index (ids below: earlier firmware, read as the default)
 REC_DARK, REC_LIGHT = (255, 72, 72), (190, 24, 40)
 QR_LIGHT, QR_DARK, CRASH_BG, CRASH_INK = (255, 255, 255), (0, 0, 0), (160, 0, 0), (255, 255, 255)
-PCT = {"MID": 70, "DIM": 42, "LINE": 18, "SEL": 80, "TINT": 12, "KEY": 78}
+PCT = {"MID": 70, "DIM": 42, "LINE": 18, "SEL": 90, "TINT": 12, "KEY": 78}
 RAISE_PCT = 12                     # SURF -> TEXT
-LINE_PCT = {"NIGHT": 10}           # a palette's own LINE (else PCT["LINE"]): NIGHT's dividers as faint as the design's
+LINE_PCT = {"NIGHT": 18}           # a palette's own LINE (else PCT["LINE"]): NIGHT's dividers as faint as the design's
 
 
 # the knobs' colours (src/gfx.c T_KNOB): each track colour turned round the hue circle in OKLCH (degrees, and a lightness
@@ -104,7 +104,7 @@ def shade(rgb, dh, dl):
 def shades(p):
     """[track][knob] colours of palette p"""
     name, bg, _, _, _, trk = p
-    if name == "GRAY":
+    if name in ("GRAY", "NIGHT"):
         return [[c] * 4 for c in trk]
     away = -1.0 if sum(bg) > 3 * 128 else 1.0          # (a light background: darker)
     return [[shade(c, dh, away * dl) for dh, dl in SHADES] for c in trk]

@@ -1,3 +1,4 @@
+#include "synthmaven_layers.h"
 #include "recording_preferences.h"
 #include "midi_knobs.h"
 /* SPDX-License-Identifier: GPL-3.0-only
@@ -66,6 +67,12 @@ static int settings_legacy_valid(const persist_t *p)
 static int settings_import(persist_t *p, int n)
 {
     if (n != (int)sizeof *p || p->magic != PERSIST_MAGIC) return 0;
+    /* Tagged master tuning occupies retired VOICE's unused upper bytes.
+     * Preserve its low 32 legacy favorite bits and the PER5 size. */
+    sm_layers=(sm_layers_t){.high={127,127,127,127}};
+    sm_layers_decode(&sm_layers,p->favorites.factory[3]+16);
+    sm_tuning=(sm_tuning_t){.apply=15,.mask=0xfff};
+    sm_tuning_decode(&sm_tuning,p->favorites.factory[6]+4);
     uint32_t work=p->ext.usb_off,points=(work>>8)&255u;
     settings_budget=(int16_t)(((work&0xffff0000u)==WORK_BUDGET_TAG && points>=8u && points<=32u)?points:VOICE_BUDGET_DEFAULT);
     uint32_t mode = work <= 3u || (work & 0xFFFF00FCu) == WORK_BUDGET_TAG ? work & 3u : 0u;
@@ -112,6 +119,8 @@ static int settings_import(persist_t *p, int n)
     settings_hold = (uint8_t)hold_from_stored(p->bold);
 #ifdef MELODEE_FAVORITES
     memcpy(&favorites, &p->favorites, sizeof favorites);
+    memset(favorites.factory[3]+16,0,SM_LAYERS_WIRE);
+    memset(favorites.factory[6]+4,0,SM_TUNE_WIRE); /* tuning is not a favorite bitset */
     favorites_user_hi = p->ext.spare[0];
     favorites.filter = favorites.filter == 1u;
 #endif
@@ -142,6 +151,8 @@ static void settings_export(persist_t *p)
     memcpy(&p->favorites, &favorites, sizeof favorites);
     p->ext.spare[0] = favorites_user_hi;
 #endif
+    sm_layers_encode(p->favorites.factory[3]+16,&sm_layers);
+    sm_tuning_encode(p->favorites.factory[6]+4,&sm_tuning);
     memcpy(p->favorites.factory[1] + 28, SETTINGS_OWNER, sizeof SETTINGS_OWNER);
     {
         uint8_t *m = p->favorites.factory[1] + MIDI_KNOB_PREF_BYTE;

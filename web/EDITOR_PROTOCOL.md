@@ -1290,3 +1290,55 @@ The division is the complete first-to-last sweep, with an immediate first tone
 and evenly spaced remaining tones. Input release and STOP cancel pending tones;
 MIDI sustain follows existing ownership. ARP bypasses strumming. Live recording
 captures the staggered onsets; STEP entry continues to write a complete chord.
+
+## SynthMaven 3.5 development extension
+
+This extension is not part of upstream Melodee. INFO appends the exact capability
+sequence `53 4D 01 03 05 60` (hex): SynthMaven schema 1, version 3.5, native HYBRID
+command 96. Clients must verify that capability before sending HYBRID writes;
+engine IDs or version labels alone do not authorize use of another fork's commands.
+
+Command 96 takes `operation, index[, pack7(patch)]`. Operation 0 reads a live
+audio part (0–3), operation 1 writes it, and operation 2 reads a factory native
+patch (0–99). Live operations require engine 22 already selected. Replies echo
+`operation, index, rc`, followed by a packed 128-byte native patch for successful
+reads. Status 1 means malformed/range, 2 means wrong engine. Writes are validated
+in full before publication, occur in foreground, and do not write flash.
+
+Shared-library command 80 adds native kind 5, engine 22, 128-byte HYBRID payload.
+Signed fields are transported with the existing pack7 codec, never truncated to
+7 bits. Generic kind 0 is refused for HYBRID to avoid silently losing its patch.
+Project, autosave/template and undo records reuse their engine-tagged native
+patch payload: engine 22 stores 128 HYBRID bytes there instead of packed FM6.
+Flash record sizes stay unchanged; upstream Melodee rejects engine 22.
+
+### SynthMaven development extensions: global tuning and layers
+
+The schema-1 `SM` INFO trailer now advertises command IDs `96, 110, 111`.
+Check each capability before sending its commands; older Melodee does not
+implement these commands. This remains development protocol, not a released
+compatibility promise.
+
+Command 110: request `[op]` (0 = read), or `[1, pack7(record)]` (apply).
+Response `[op, rc, pack7(current-record)]`. The 28-byte record contains `SMT,1`,
+enabled, scale (0 chromatic, 1–46 catalogue, 47 custom), root (C=0), starting
+octave (C0=0 through C8=8), quantize, four-bit apply mask, twelve signed cent
+offsets (−100…+100), a little-endian 12-bit scale membership mask, then four
+reserved zero bytes. C0 means MIDI note 12. Offsets and membership are relative
+to root. Notes below the threshold retain equal temperament. Ordinary project
+loads do not override these global settings; explicit program overrides remain
+part of the pending program-format work.
+
+Command 111 has the same read/apply envelope and response. Its 16-byte record is
+`SML,1`, enabled, four inclusive low MIDI notes, four inclusive high MIDI notes,
+and three reserved zero bytes. Each low must be at most its matching high.
+Layering routes eligible keyboard/MIDI input to the first four audio parts,
+within the existing shared voice budget. MIDI-only tracks and MPC pad routing
+retain their own routing. Note releases follow the original owners through
+layer/range/selection changes. Chord ownership is bounded; when there is not
+room to retain every eligible part, the new layered press is rejected rather
+than leaving an untracked partial chord.
+
+Both commands reject the entire malformed update with rc 1. rc 0 acknowledges
+application in RAM; persistence uses the normal deferred settings-save path.
+Layer configuration is currently a device setting, pending program integration.

@@ -6,3 +6,5 @@
 #define A4_DEFAULT 440
 /* Device preference, independent of a project's cents offset (G_TUNE). */
 static int16_t tuning_a4 = A4_DEFAULT;
+
+#include "master_tuning.h"

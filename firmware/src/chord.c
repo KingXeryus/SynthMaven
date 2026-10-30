@@ -77,7 +77,7 @@ static uint32_t chord_tones(const track_t *t, uint32_t mode, int32_t *root, int3
     }
     {
         uint32_t mask = scale_mask(t), deg[12], c = 0, at = 0, guard = 12;
-        int32_t r = t->p[P_ROOT];
+        int32_t r = scale_root(t);
         if (mask == 0xFFFu)
             mask = SCALE_MASK[1];                       /* CHR: no key of its own, the major scale of ROOT */
         while (guard-- && !((mask >> (uint32_t)((*root - r + 120) % 12)) & 1u))

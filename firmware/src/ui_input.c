@@ -1049,6 +1049,29 @@ static void edit_param(uint32_t slot, int32_t steps)
         0)) {
         ui_message("STOP TO EDIT"); return;
     }
+    if(pg->scope==SC_MASTER_TUNE){
+        d=page_desc(pg,slot,&vp);if(!d||!vp)return;
+        uint32_t id=pg->id[slot],guard=motion_guard();
+        int32_t delta=id==5u?steps*10:steps;
+        v=midi_edit_value>=0?d->min+(midi_edit_value*(d->max-d->min)+63)/127:clamp(*vp+delta,d->min,d->max);
+        if(id==4u)sm_tune_key=(int16_t)v;
+        else if(id==0u){sm_tuning.scale=(uint8_t)v;sm_tuning.enabled=1;}
+        else if(id==1u)sm_tuning.octave=(uint8_t)v;
+        else if(id==2u)sm_tuning.root=(uint8_t)v;
+        else if(id==3u)sm_tuning.enabled=(uint8_t)v;
+        else if(id==5u){
+            if(sm_tuning.scale!=SM_TUNE_CUSTOM){
+                sm_tuning_t source=sm_tuning;source.enabled=1;source.apply=15;source.octave=0;source.root=0;
+                for(uint32_t key=0;key<12u;key++)sm_tuning.cents[key]=(int8_t)sm_tuning_cents(&source,0,60+key);
+                sm_tuning.mask=(uint16_t)sm_tuning_mask(&source);
+            }
+            sm_tuning.cents[((uint32_t)sm_tune_key+12-sm_tuning.root)%12]=(int8_t)v;
+            sm_tuning.scale=SM_TUNE_CUSTOM;sm_tuning.enabled=1;
+        }else if(id==6u)sm_tuning.quantize=(uint8_t)v;
+        else if(id==7u){uint32_t bit=1u<<(song.sel%NPART);sm_tuning.apply=(uint8_t)(v?sm_tuning.apply|bit:sm_tuning.apply&~bit);}
+        motion_unguard(guard);
+        if(id!=4u)settings_save();ui.force=1;return;
+    }
     if(pg->scope==SC_DRUM){drum_sound_edit(slot,steps);return;}
     if(pg->scope==SC_DRUMHIT){drum_hit_edit(slot,steps);return;}
     if (pg->scope == SC_STEP) {
@@ -2478,7 +2501,9 @@ static void ui_input(void)
 
     s = panel_enc(EN_PRESET);
     if (s) step_edit_combo();
-    if (s && !ui.home && cur_page()->graph == GR_SCALE_PICKER) {
+    if (s && ui.home) {
+        sm_home_preset(s);
+    } else if (s && !ui.home && cur_page()->graph == GR_SCALE_PICKER) {
         scale_picker_step(list_accel(EN_PRESET, s, scale_picker_count(), 0));
     } else if (s && (ui.home || cur_page()->graph == GR_BROWSE || cur_page()->graph == GR_PATGRID)) {
         /* PRESETS browses the selected part's sounds (all engines, then user presets) on HOME and the
@@ -2504,7 +2529,8 @@ static void ui_input(void)
     }
     if ((s = panel_enc(EN_ALGO)) != 0) {           /* ALGORITHM: the selected track, on every page */
         step_edit_combo();
-        track_select((uint32_t)clamp((int32_t)song.sel + (s > 0 ? 1 : -1), 0, (int32_t)trk_n() - 1));
+        if (ui.home) sm_home_engine(s);
+        else track_select((uint32_t)clamp((int32_t)song.sel + (s > 0 ? 1 : -1), 0, (int32_t)trk_n() - 1));
     }
     if (!glo_select_layer && (s = panel_enc(EN_SELECT)) != 0) { /* SELECT: pages; with SEQ / a step key / ENV / SCL: below */
         step_edit_combo();
@@ -2519,7 +2545,7 @@ static void ui_input(void)
                                                          * KNOB 1) */
             page_scroll(s);
         } else {                                        /* HOME: what the menu's HOME SELECT says */
-            select_turn(home_select(), s);
+            sm_home_part(s);
         }
     }
     for (k = 0; !knob_layer && k < 4u; k++) {

@@ -135,6 +135,13 @@ static uint32_t release_cap(void)
         if (s > free_cap_s)
             return s;
     }
+    if(t->eng_req==ENGI_HYBRID){
+        /* Generic Q24 envelope ends at 2^12: allow ln(4096) time constants,
+         * rather than misclassifying a deliberately long factory release. */
+        double k=ENV_EXP[t->p[P_REL]&127]/65536.0;
+        uint32_t seconds=k>=1.0?1u:(uint32_t)ceil(log(4096.0)/-log(1.0-k)*CTL/FS)+2u;
+        if(seconds>free_cap_s)return seconds;
+    }
     return free_cap_s;
 }
 

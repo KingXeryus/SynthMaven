@@ -94,7 +94,7 @@ static const char *const N_MSRC[] = {"OFF", "LFO", "ENV", "VEL", "KEY", "RAND", 
 static const char *const N_MDST[] = {"OFF", "PITCH", "CUT", "SHP", "AMP", "PAN", "", "", "", "", "RATE",
                                      "VIB", "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "DEPTH"};
 static const char *const N_ENGNAME[] = {"-", "-", MELODEE_LEGACY_EXTRAS ? "PHASE" : "-", "SID", "-", MELODEE_LEGACY_EXTRAS ? "VOICE" : "-", MELODEE_LEGACY_EXTRAS ? "TRIO" : "-", MELODEE_LEGACY_EXTRAS ? "WHEEL" : "-", "-", MELODEE_LEGACY_EXTRAS ? "PHYS" : "-",
-                                             "DRUM", MELODEE_LEGACY_EXTRAS ? "NOISE" : "-", "FM6", MELODEE_SLICE ? "SLICE" : "-", "-", "CZ-1", "-", "-", "-", "PROPHET", "-", "MIDI Track"};
+                                             "DRUM", MELODEE_LEGACY_EXTRAS ? "NOISE" : "-", "FM6", MELODEE_SLICE ? "SLICE" : "-", "-", "CZ-1", "-", "-", "-", "PROPHET", "-", "MIDI Track", "HYBRID"};
 
 #define PD(l, f, mn, mx, df) {l, f, mn, mx, df, 0, 0}
 #define PE(l, n, df) {l, F_ENUM, 0, (int16_t)(sizeof(n) / sizeof(n[0]) - 1), df, n, 0}
@@ -578,7 +578,7 @@ static void param_format(const param_desc_t *d, int32_t v, char *val, const char
 enum { FAM_HOME, FAM_ENV, FAM_LFO, FAM_SCL, FAM_EDIT, FAM_GLO, FAM_SAVE, FAM_ARP, FAM_SEQ, FAM_TRK,
        FAM_FX, FAM_COUNT };
 enum { SC_TRACK, SC_GLOBAL, SC_ENGINE, SC_STEP, SC_TRK,   /* SC_TRK: the TRACKS page (ui_input.c tracks_edit) */
-       SC_FM6, SC_FMOP, SC_CZ, SC_CZ1, SC_P5, SC_P5STORE, SC_DRUM, SC_DRUMHIT };                         /* FM6: its patch, functions; operator fm6_opsel;
+       SC_FM6, SC_FMOP, SC_CZ, SC_CZ1, SC_P5, SC_P5STORE, SC_DRUM, SC_DRUMHIT, SC_MASTER_TUNE };                         /* FM6: its patch, functions; operator fm6_opsel;
                                                                   * CZ1: a native CZ-1 tone (cz_edit.h) */
 enum { GR_NONE, GR_ADSR, GR_LFO, GR_STEPS, GR_ARP, GR_SCALE, GR_ROLL, GR_BROWSE, GR_SLOTS, GR_USER, GR_TRK,
        GR_MOD, GR_PATS, GR_SONG, GR_MOTION, GR_CHORD, GR_SLICES,
@@ -601,6 +601,18 @@ typedef struct {
     {t " POINT", FAM_EDIT, SC_CZ1, GR_NONE, {LCZ_EBASE(l, e) + 16, LCZ_EBASE(l, e) + 17, 0xFF, 0xFF}}
 
 #define G_PROJECT_RECQ 0xFEu                            /* shared recording QNT, mirrored in track slots for storage/protocol compatibility */
+static int16_t sm_tune_key,sm_tune_cell[4];
+static const char *const SM_OCTAVES[]={"C0","C1","C2","C3","C4","C5","C6","C7","C8"};
+static const param_desc_t SM_TUNE_DESC[]={
+    {"SCALE",F_ENUM,0,SM_TUNE_CUSTOM,0,SM_TUNE_NAMES,0},
+    {"FROM",F_ENUM,0,8,0,SM_OCTAVES,0},
+    {"ROOT",F_NOTE,0,11,0,0,0},
+    {"USE",F_ONOFF,0,1,0,0,0},
+    {"KEY",F_NOTE,0,11,0,0,0},
+    {"CENTS",F_INT,-100,100,0,0,"ct"},
+    {"SNAP",F_ONOFF,0,1,0,0,0},
+    {"PART",F_ONOFF,0,1,1,0,0}
+};
 static const page_t PAGES[] = {
     /* FX (docs/design README "FX rack"): the track's rack, its three slots (shown while they hold an effect), the
      * shared rack, its three slots. A rack: KNOB 2 the row (fx_rack_row), 1 its effect, 4 its amount, SHARED's 3 ROUTE
@@ -621,6 +633,8 @@ static const page_t PAGES[] = {
     {"MOD", FAM_LFO, SC_TRACK, GR_MOD, {P_M1SRC, 0xFF, P_M1DST, P_M1AMT}},   /* KNOB 2: the route (mod_ui_slot) */
     {"SCALES", FAM_SCL, SC_TRACK, GR_SCALE_PICKER, {0xFF, P_SCALE, P_ROOT, P_QUANT}},
     {"SCL", FAM_SCL, SC_TRACK, GR_SCALE, {P_ROOT, 0xFF, P_QUANT, P_TRANS}}, /* K2: scale favorite */
+    {"MASTER TUNE",FAM_SCL,SC_MASTER_TUNE,GR_NONE,{0,1,2,3}},
+    {"CUSTOM TUNE",FAM_SCL,SC_MASTER_TUNE,GR_NONE,{4,5,6,7}},
     {"CHORD", FAM_SCL, SC_TRACK, GR_CHORD, {P_CHRD, P_VOIC, P_STRUM, P_STROKE}},   /* SCL again: the chord keys (chord.c) */
     {"MPC", FAM_SCL, SC_TRACK, GR_NONE, {P_MPCDEG, 0xFF, 0xFF, 0xFF}},   /* the degree of each bank's pad 02: a row of SCL's list
                                                                           * (QNT MPC only), not a page of its own */
@@ -819,6 +833,14 @@ static const param_desc_t *fx_rack_desc(const page_t *pg, uint32_t slot, int16_t
 static const param_desc_t *page_desc(const page_t *pg, uint32_t slot, int16_t **valp)
 {
     uint32_t id = pg->id[slot];
+    if(pg->scope==SC_MASTER_TUNE){
+        if(id>=8u){*valp=0;return 0;}
+        sm_tuning_t preview=sm_tuning;preview.enabled=1;preview.apply=15;preview.octave=0;
+        const int16_t values[]={sm_tuning.scale,sm_tuning.octave,sm_tuning.root,sm_tuning.enabled,sm_tune_key,
+            (int16_t)sm_tuning_cents(&preview,0,60u+(uint32_t)sm_tune_key),sm_tuning.quantize,
+            (int16_t)((sm_tuning.apply>>(song.sel%NPART))&1u)};
+        sm_tune_cell[slot&3u]=values[id];*valp=&sm_tune_cell[slot&3u];return &SM_TUNE_DESC[id];
+    }
     if (midi_track_only(TSEL) && ((pg->fam == FAM_FX && pg->scope == SC_TRACK) ||
         ((pg->scope == SC_TRACK || pg->scope == SC_ENGINE) && midi_track_audio_disabled(TSEL->eng_req, id)))) {
         *valp = 0; return 0;

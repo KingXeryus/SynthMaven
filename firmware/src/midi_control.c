@@ -94,50 +94,42 @@ static int midi_local_held(const track_t *t, uint32_t note)
     return 0;
 }
 
-static void midi_release(uint32_t ch, uint32_t note)
+static void sm_release_chord(mchord_t *m)
 {
-    uint32_t id = mn_get(ch, note) & 0x7Fu;
-    mn_set(ch, note, 0);
-    if (id) {
-        midi_owners[id - 1u]--;
-        if (!--midi_ch[ch].owned[id - 1u])
-            midi_ch[ch].targets &= (uint8_t)~(1u << (id - 1u));
-    }
-    if (id) {
-        step_midi_edge(id - 1u, 0, 0, ch, note);
-        mchord_t *m = mchord_of(ch, note, id);
-        uint8_t nn[CHORD_MAX];
-        uint32_t n = 1, i;
-        nn[0] = (uint8_t)note;
-        if (m) {                                  /* a chord: exactly the notes it started */
-            n = m->n;
-            for (i = 0; i < n; i++)
-                nn[i] = m->note[i];
-            midi_strum_pending &= ~(1u << (uint32_t)(m - mchord));
-            m->id = 0;
-        }
-        for (i = 0; i < n; i++) {
-            if (!midi_local_held(&trk[id - 1u], nn[i]))
-                input_off(&trk[id - 1u], nn[i]);  /* input_off also checks other MIDI owners */
-        }
+    uint32_t id=m->id,n=m->n;uint8_t notes[CHORD_MAX];memcpy(notes,m->note,n);
+    midi_strum_pending&=~(1u<<(uint32_t)(m-mchord));m->id=0;
+    for(uint32_t i=0;i<n;i++)if(!midi_local_held(&trk[id-1u],notes[i]))input_off(&trk[id-1u],notes[i]);
+}
+static void midi_release(uint32_t ch,uint32_t note)
+{
+    uint32_t id=mn_get(ch,note)&0x7fu,mask=id?1u<<(id-1u):0;
+    mn_set(ch,note,0);
+    for(uint32_t i=0;i<MCHORD_N;i++)if(mchord[i].id && mchord[i].ch==ch && mchord[i].src==note)mask|=1u<<(mchord[i].id-1u);
+    for(uint32_t tr=0;tr<NTRK;tr++)if(mask&(1u<<tr)){
+        if(midi_owners[tr])midi_owners[tr]--;
+        if(midi_ch[ch].owned[tr] && !--midi_ch[ch].owned[tr])midi_ch[ch].targets&=(uint8_t)~(1u<<tr);
+        step_midi_edge(tr,0,0,ch,note);
+        mchord_t *m=mchord_of(ch,note,tr+1u);
+        if(m)sm_release_chord(m);
+        else if(!midi_local_held(&trk[tr],note))input_off(&trk[tr],note);
     }
 }
 
 /* a MIDI note-on (ch, note) of track t: through the scale layouts (seq.c midi_map), then its chord (chord.c) or the
  * note alone. A note another key or MIDI note holds already sounds: not started again. What it plays is kept (an
  * mchord) whenever that is not the note itself, so the note-off ends exactly that. 0: it plays nothing */
-static int midi_play(track_t *t, uint32_t ch, uint32_t note, uint32_t vel)
+static int midi_play(track_t *t, uint32_t ch, uint32_t note, uint32_t vel, uint32_t force_record)
 {
     uint8_t nn[CHORD_MAX];
     uint32_t m = midi_map(t, note), n, i, f = 0;
     if (m == KB_SILENT)
         return 0;
     n = chord_build(t, m, nn);
-    if (n > 1u || nn[0] != note)
+    if (force_record || n > 1u || nn[0] != note)
         for (f = 0; f < MCHORD_N && mchord[f].id; f++)
             ;
     if (f == MCHORD_N) {                          /* no room to keep a chord: the note alone, if it is itself */
-        if (m != note)
+        if (force_record || m != note)
             return 0;
         n = 1;
         nn[0] = (uint8_t)note;
@@ -146,7 +138,7 @@ static int midi_play(track_t *t, uint32_t ch, uint32_t note, uint32_t vel)
         midi_hint = (uint8_t)(MIDI_TRACK_FOLLOW | (trk_index(t) + 1u)); /* every accepted pad: latest bank wins */
     for (i = 0; i < n; i++)
         step_midi_edge(trk_index(t), nn[i], 1, ch, note); /* step entry keeps the complete chord */
-    if (n > 1u || nn[0] != note) {
+    if (force_record || n > 1u || nn[0] != note) {
         mchord_t *m = &mchord[f];
         m->ch = (uint8_t)ch; m->src = (uint8_t)note; m->n = 0;
         memcpy(m->note, nn, n);
@@ -161,6 +153,44 @@ static int midi_play(track_t *t, uint32_t ch, uint32_t note, uint32_t vel)
     return 1;
 }
 
+static uint32_t sm_chord_free(void){uint32_t n=0;for(uint32_t i=0;i<MCHORD_N;i++)n+=!mchord[i].id;return n;}
+static int sm_layer_key_on(uint32_t k)
+{
+    uint32_t mask;
+    /* kb_map owns octave/transpose; use its selected-part chromatic reference for the split. */
+    int32_t raw=53+(int32_t)k+input_octave(TSEL)*12+TSEL->p[P_TRANS];
+    mask=raw<0||raw>127?0:sm_layer_mask((uint32_t)raw,trk_n());
+    uint32_t count=0;for(uint32_t tr=0;tr<4;tr++)count+=(mask>>tr)&1u;
+    if(!count || sm_chord_free()<count)return 0;
+    for(uint32_t tr=0;tr<4;tr++)if(mask&(1u<<tr)){
+        uint32_t note=kb_map(&trk[tr],k);if(note==KB_SILENT)continue;
+        uint32_t i=0;while(mchord[i].id)i++;
+        mchord_t *m=&mchord[i];m->id=(uint8_t)(tr+1);m->ch=16;m->src=(uint8_t)k;m->n=0;
+        uint32_t n=chord_build(&trk[tr],note,m->note);n=chord_strum_begin(&trk[tr],m->note,n,&m->strum,100);m->strum.vel=100;
+        for(uint32_t j=0;j<n;j++)midi_chord_tone(m);
+        if(m->strum.total)midi_strum_pending|=1u<<i;
+    }
+    return 1;
+}
+static void sm_layer_key_off(uint32_t k)
+{
+    for(uint32_t i=0;i<MCHORD_N;i++)if(mchord[i].id && mchord[i].ch==16 && mchord[i].src==k)sm_release_chord(&mchord[i]);
+}
+static int sm_layer_midi_on(uint32_t ch,uint32_t note,uint32_t vel)
+{
+    uint32_t mask=sm_layer_mask(note,trk_n()),count=0,first=0;
+    for(uint32_t tr=0;tr<4;tr++)count+=(mask>>tr)&1u;
+    if(!count||sm_chord_free()<count)return 0;
+    midi_channel_t *c=midi_channel(ch);
+    for(uint32_t tr=0;tr<4;tr++)if(mask&(1u<<tr)){
+        midi_expression(&trk[tr],c);
+        if(!midi_play(&trk[tr],ch,note,vel,1))continue;
+        if(!first)first=tr+1u;
+        c->targets|=(uint8_t)(1u<<tr);c->owned[tr]++;midi_owners[tr]++;
+    }
+    mn_set(ch,note,first);return first!=0;
+}
+
 static void midi_note_event(uint32_t ch, uint32_t note, uint32_t vel)
 {
     midi_channel_t *c = midi_channel(ch);
@@ -173,8 +203,9 @@ static void midi_note_event(uint32_t ch, uint32_t note, uint32_t vel)
             midi_release(ch, note);
         if (!t)
             return;
+        if(sm_layers.enabled && trk_index(t)<NPART && trk[0].p[P_QUANT]!=Q_MPC){sm_layer_midi_on(ch,note,vel);return;}
         midi_expression(t, c);
-        if (!midi_play(t, ch, note, vel))           /* (a note the layout silences: no owner) */
+        if (!midi_play(t, ch, note, vel, 0))           /* (a note the layout silences: no owner) */
             return;
         c->targets |= (uint8_t)(1u << trk_index(t));
         mn_set(ch, note, trk_index(t) + 1u);
@@ -218,8 +249,11 @@ static void __attribute__((noinline)) midi_forget_track(uint32_t track)
         if (!(midi_ch[ch].targets & (1u << track)))
             continue;
         for (note = 0; note < 128u; note++)
-            if ((mn_get(ch, note) & 0x7Fu) == track + 1u)
-                mn_set(ch, note, 0);
+            if ((mn_get(ch, note) & 0x7Fu) == track + 1u){
+                uint32_t replacement=0;
+                for(uint32_t i=0;i<MCHORD_N;i++)if(mchord[i].id && mchord[i].id!=track+1u && mchord[i].ch==ch && mchord[i].src==note){replacement=mchord[i].id;break;}
+                mn_set(ch,note,replacement?replacement|(mn_get(ch,note)&MIDI_PEDAL_NOTE):0);
+            }
         midi_ch[ch].targets &= (uint8_t)~(1u << track);
         midi_ch[ch].owned[track] = 0;
     }

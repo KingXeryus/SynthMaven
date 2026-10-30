@@ -33,11 +33,12 @@ static int panel_controls(void)
             knob_cc(source, map[1], 64);
             bad += check("absolute SELECT establishes position without changing tempo", song.g[G_BPM] == bpm);
             knob_cc(source, map[1], 65);
-            bad += check("mapped SELECT uses the real HOME SELECT control", song.g[G_BPM] == bpm + 1);
+            bad += check("mapped SELECT switches the HOME part without changing tempo", song.sel == 1 && song.g[G_BPM] == bpm);
+            track_select(0);
             knob_cc(source, map[2], 64); knob_cc(source, map[2], 65); browse_commit();
             bad += check("mapped PRESETS browses and loads the next sound", trk[0].preset == 1);
             knob_cc(source, map[3], 64); knob_cc(source, map[3], 65);
-            bad += check("mapped ALGORITHM selects the next track", song.sel == 1);
+            bad += check("mapped ALGORITHM changes the HOME engine", song.sel == 0 && TSEL->eng_req == eng_step(HOST_SYNTH,1));
             track_select(0);
             /* Native Prophet controls exercise descriptors stored in temporary cells. */
             set_engine_of(TSEL, ENGI_PROPHET); apply_preset_to(TSEL, 0);
@@ -70,27 +71,30 @@ static int encoder_modes(void)
     const uint8_t down[4] = {0,63,127,15}, up[4] = {0,65,1,17}, neutral[4] = {0,64,0,16};
     for (uint32_t mode = MK_REL1; mode < MK_MODES; mode++) {
         knob_reset(MK_MINILAB, mode);
-        int32_t bpm = song.g[G_BPM];
-        for (uint32_t n = 0; n < 8; n++) knob_cc(1, 71, up[mode]);
-        bad += check("relative encoders keep every repeated +1 without local acceleration", song.g[G_BPM] == bpm + 8);
+        int32_t bpm = song.sel;
+        for (uint32_t n = 0; n < 8; n++) {
+            knob_cc(1, 71, up[mode]);
+            bad += check("each repeated relative detent advances exactly one part", song.sel == (bpm+n+1) % NPART);
+        }
+        bad += check("relative encoders keep every repeated +1 without local acceleration", song.sel == (bpm + 8) % NPART);
         knob_cc(1, 71, neutral[mode]);
-        bad += check("relative neutral does not move SELECT", song.g[G_BPM] == bpm + 8);
+        bad += check("relative neutral does not move SELECT", song.sel == (bpm + 8) % NPART);
         knob_cc(1, 71, down[mode]);
-        bad += check("relative encoder decrements exactly once", song.g[G_BPM] == bpm + 7);
+        bad += check("relative encoder decrements exactly once", song.sel == (bpm + 7) % NPART);
         knob_cc(1, 74, down[mode]);
         bad += check("relative volume starts at unity and decrements", midi_master_volume == 126);
     }
     knob_reset(MK_GENERAL, MK_ABSOLUTE);
-    knob_cc(1, 17, 64); int32_t bpm = song.g[G_BPM];
+    knob_cc(1, 17, 64); int32_t bpm = song.sel;
     knob_cc(2, 17, 0);
-    bad += check("TRS does not inherit USB's absolute navigation position", song.g[G_BPM] == bpm);
+    bad += check("TRS does not inherit USB's absolute navigation position", song.sel == bpm);
     route_input(1, 0xB1, 17, 127); ui_input();
-    bad += check("another MIDI channel establishes its own position", song.g[G_BPM] == bpm);
+    bad += check("another MIDI channel establishes its own position", song.sel == bpm);
     knob_cc(1, 17, 65);
-    bad += check("the original USB/channel position survives interleaved input", song.g[G_BPM] == bpm + 1);
+    bad += check("the original USB/channel position survives interleaved input", song.sel == (bpm + 1) % NPART);
     settings_midi_knob_mode = MK_REL2;
     knob_cc(1, 17, 1);
-    bad += check("mode changes reset absolute history and take relative input immediately", song.g[G_BPM] == bpm + 2);
+    bad += check("mode changes reset absolute history and take relative input immediately", song.sel == (bpm + 2) % NPART);
     return bad;
 }
 
@@ -98,9 +102,9 @@ static int isolation_and_overflow(void)
 {
     int bad = 0;
     knob_reset(MK_MINILAB, MK_REL2);
-    int32_t bpm = song.g[G_BPM];
+    int32_t bpm = song.sel;
     route_input(1, 0xB7, 71, 1); ui_input();
-    bad += check("channels outside ROUT cannot operate the panel", song.g[G_BPM] == bpm && !midi_knob_w);
+    bad += check("channels outside ROUT cannot operate the panel", song.sel == bpm && !midi_knob_w);
     int16_t level = TSEL->p[P_LEVEL];
     knob_cc(1, 7, 0);
     bad += check("unmapped standard CC7 still controls track volume", !TSEL->p[P_LEVEL] && level);
@@ -109,27 +113,27 @@ static int isolation_and_overflow(void)
     knob_cc(1, 74, 0); /* relative volume neutral, formerly brightness */
     bad += check("mapped CC74 does not also modify synth cutoff", p5_patch_of(TSEL)->raw[P5_CUTOFF] == 50);
     knob_reset(MK_GENERAL, MK_ABSOLUTE);
-    knob_cc(1, 17, 64); bpm = song.g[G_BPM];
+    knob_cc(1, 17, 64); bpm = song.sel;
     for (uint32_t i = 0; i < MIDI_KNOB_Q + 8u; i++) route_input(1, 0xB0, 17, i & 127u);
     bad += check("controller flood fills only its bounded UI queue", midi_knob_overflow && !midi_in_overflow);
     ui_input();
-    bad += check("overflow discards the interrupted gesture without moving navigation", song.g[G_BPM] == bpm && midi_knob_r == midi_knob_w);
+    bad += check("overflow discards the interrupted gesture without moving navigation", song.sel == bpm && midi_knob_r == midi_knob_w);
     knob_cc(1, 17, 100);
-    bad += check("first absolute value after overflow rebases", song.g[G_BPM] == bpm);
+    bad += check("first absolute value after overflow rebases", song.sel == bpm);
     knob_cc(1, 17, 101);
-    bad += check("controller input recovers on the next movement", song.g[G_BPM] == bpm + 1);
+    bad += check("controller input recovers on the next movement", song.sel == (bpm + 1) % NPART);
     route_input(1, 0xB0, 17, 110);
     settings_midi_knobs = MK_MINILAB; ui_input();
-    bad += check("profile change discards pending old-profile controls", song.g[G_BPM] == bpm + 1);
+    bad += check("profile change discards pending old-profile controls", song.sel == (bpm + 1) % NPART);
     knob_reset(MK_GENERAL, MK_ABSOLUTE);
-    knob_cc(1, 17, 64); knob_cc(2, 17, 64); bpm = song.g[G_BPM];
+    knob_cc(1, 17, 64); knob_cc(2, 17, 64); bpm = song.sel;
     route_input(1, 0xB0, 17, 100);   /* waiting in the UI queue when the controller disconnects */
     midi_usb_lost = 1; events_block(CTL); ui_input();
-    bad += check("USB disconnect discards pending controls from its old session", song.g[G_BPM] == bpm);
+    bad += check("USB disconnect discards pending controls from its old session", song.sel == bpm);
     knob_cc(1, 17, 0);
-    bad += check("a reconnected USB controller establishes a fresh position", song.g[G_BPM] == bpm);
+    bad += check("a reconnected USB controller establishes a fresh position", song.sel == bpm);
     knob_cc(2, 17, 65);
-    bad += check("USB reconnect preserves the TRS controller's position", song.g[G_BPM] == bpm + 1);
+    bad += check("USB reconnect preserves the TRS controller's position", song.sel == (bpm + 1) % NPART);
     return bad;
 }
 
@@ -179,7 +183,8 @@ static int page_and_local_controls(void)
     knob_reset(MK_MINILAB, MK_REL2);
     set_engine_of(TSEL, ENGI_MIDI); events_block(CTL); usb.config = 1; mo_r = mo_w = 0;
     int32_t bpm = song.g[G_BPM]; knob_cc(1, 71, 1);
-    bad += check("panel CCs operate the selected MIDI Track without forwarding", song.g[G_BPM] == bpm + 1 && mo_r == mo_w);
+    bad += check("panel CCs operate the selected MIDI Track without forwarding", song.g[G_BPM] == bpm && song.sel == 1 && mo_r == mo_w);
+    track_select(0);
     knob_cc(1, 7, 100);
     bad += check("unmapped CCs still pass through a MIDI Track", mo_r != mo_w && ((midi_out_q[mo_r % MQ] >> 16) & 127u) == 7);
     return bad;

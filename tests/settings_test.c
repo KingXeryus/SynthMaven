@@ -6,7 +6,8 @@
 #include <assert.h>
 #include "../firmware/src/tuning.h"
 #define __attribute__(x)
-#define NENGINES 20u
+#define NENGINES 23u
+#define ENGI_HYBRID 22u
 #define USER_GENERAL 16u
 #define USER_NATIVE_P5 20u
 #define ENGI_PROPHET 19u
@@ -43,6 +44,16 @@ static int up_favorite_set(uint32_t k,int on){if(k>=64u)return 0;uint32_t *word=
 int main(void)
 {
     persist_t original = {0}, p;
+    {
+        memset(favorites.factory[12],255,32);
+        assert(!favorite_has(ENGI_FM6,25) && !favorite_has(ENGI_FM6,57));
+        assert(favorite_set(ENGI_FM6,25,1) && favorite_set(ENGI_FM6,57,1));
+        assert(favorite_set(ENGI_HYBRID,104,1));
+        settings_export(&p);memset(&favorites,0,sizeof favorites);assert(settings_import(&p,sizeof p));
+        assert(favorite_has(ENGI_FM6,25) && favorite_has(ENGI_FM6,57) && favorite_has(ENGI_HYBRID,104));
+        assert(!favorite_set(ENGI_FM6,58,1) && !favorite_set(ENGI_HYBRID,105,1));
+        memset(&favorites,0,sizeof favorites);
+    }
     {   /* Tagged knob preferences survive saves without touching adjacent favorites. */
         persist_t q = {0}; q.magic = PERSIST_MAGIC; q.panel = PANEL_DEFAULT;
         assert(settings_import(&q, sizeof q) && settings_midi_knobs == MK_OFF && settings_midi_knob_mode == MK_ABSOLUTE);

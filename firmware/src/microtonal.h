@@ -9,6 +9,7 @@
  * Pitch tables are hundredths of a cent; their last entry is the repeat period. */
 static const micro_scale_t *micro_scale(const track_t *t)
 {
+    if(sm_tuning.enabled)return 0;
     int32_t s = t->p[P_SCALE];
     return s >= (int32_t)SCALE_LEGACY && s < (int32_t)SCALE_TOTAL ? &MICRO_SCALE[s - SCALE_LEGACY] : 0;
 }

@@ -86,8 +86,10 @@ static uint32_t key_place(uint32_t k)
 }
 enum { GK_ACC = NLANE, GK_PGDN, GK_PGUP };       /* black keys 9..11 on the grid */
 
+static uint32_t scale_root(const track_t *t){return sm_tuning.enabled?sm_tuning.root:(uint32_t)t->p[P_ROOT];}
 static uint32_t scale_mask(const track_t *t)
 {
+    if(sm_tuning.enabled)return sm_tuning_mask(&sm_tuning);
     const micro_scale_t *s = micro_scale(t);
     if (s) { /* approximate pitch classes for the keyboard LEDs only */
         uint32_t mask = 0;
@@ -130,7 +132,7 @@ static uint32_t scale_degree_map(const track_t *t, int32_t degree, int32_t offse
                 break;
             degree--;
         }
-    n = 60 + t->p[P_ROOT] + 12 * oct + (int32_t)i + offset + t->p[P_TRANS];
+    n = 60 + (int32_t)scale_root(t) + 12 * oct + (int32_t)i + offset + t->p[P_TRANS];
     if (strict && (n < 0 || n > 127))
         return KB_SILENT;
     return (uint32_t)clamp(n, 0, 127);
@@ -159,6 +161,7 @@ static uint32_t kb_map(const track_t *t, uint32_t k)
     if (e->keys && (n = e->keys(t, k)) >= 0)           /* the engine's own key map (GM kit, slices) */
         return (uint32_t)n;
     n = 53 + (int32_t)k;
+    if(sm_tuning.enabled)return sm_tuning_snap(&sm_tuning,trk_index(t),(uint32_t)clamp(n+12*input_octave(t)+t->p[P_TRANS],0,127));
     if (t->p[P_QUANT] == Q_SNAP) {                     /* SNAP: every key, rounded down to the scale */
         if (micro_active(t)) {
             uint32_t note = micro_snap(t, n + t->p[P_TRANS]);
@@ -184,6 +187,7 @@ static uint32_t midi_map(const track_t *t, uint32_t note)
 {
     const engine_t *e = ENGINES[eng_idx(t->eng_req)];
     uint32_t pad = mpc_pad(note);
+    if(sm_tuning.enabled && !drum_track(t))return sm_tuning_snap(&sm_tuning,trk_index(t),note);
     if (t->p[P_QUANT] == Q_MPC && pad / 16u != trk_index(t))
         return KB_SILENT;
     if (t->p[P_QUANT] == Q_MPC && drum_track(t))
@@ -826,6 +830,9 @@ static __attribute__((noinline)) void kb_lat(uint32_t k)
 }
 #endif
 
+static uint32_t sm_layer_keys;
+static int sm_layer_key_on(uint32_t k);
+static void sm_layer_key_off(uint32_t k);
 static void keyboard_block(void)
 {
     uint32_t cur = fm1_in.notes, ch, k;
@@ -858,7 +865,10 @@ static void keyboard_block(void)
                 kb_note[k] = (uint8_t)kb_map(&trk[kb_trk[k]], k);
             if (kb_note[k] == KB_SILENT)
                 continue;
-            key_on(k, &trk[kb_trk[k]]);
+            if(sm_layers.enabled && !song.grid && song.sel<NPART){
+                if(sm_layer_key_on(k))sm_layer_keys|=1u<<k;
+                else kb_note[k]=KB_SILENT;
+            }else key_on(k, &trk[kb_trk[k]]);
 #ifdef FM1_INPUT_LAT
             kb_lat(k);
 #endif
@@ -871,6 +881,7 @@ static void keyboard_block(void)
                 kb_layer &= ~(1u << k);
                 continue;
             }
+            if(sm_layer_keys&(1u<<k)){sm_layer_keys&=~(1u<<k);sm_layer_key_off(k);continue;}
             if (kb_note[k] == KB_SILENT)
                 continue;
             key_off(k, &trk[kb_trk[k] % NTRK]);

@@ -12,3 +12,6 @@ fm1-recovery-backups/
 web/manual/*.png
 web/node_modules/
 !/AGENTS.md
+
+# Local development Python environment
+.venv/

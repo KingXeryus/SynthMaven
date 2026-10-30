@@ -82,7 +82,7 @@
 export AC79_SDK="${AC79_SDK:-$HOME/fw-AC79_AIoT_SDK}"
 cd "$(dirname "$0")/.."
 # Pillow's Raqm (text spacing, renders): macOS strips DYLD_* on the way into /bin/sh (build.sh)
-[ "$(uname -s)" = Darwin ] && export DYLD_FALLBACK_LIBRARY_PATH="${DYLD_FALLBACK_LIBRARY_PATH:-/opt/homebrew/lib:/usr/local/lib:/usr/lib}"
+[ "$(uname -s)" = Darwin ] && export DYLD_FALLBACK_LIBRARY_PATH="${DYLD_FALLBACK_LIBRARY_PATH:-$PWD/build/font-runtime/lib:/opt/homebrew/lib:/usr/local/lib:/usr/lib}"
 OUT=build/host
 LOG=$OUT/log
 CC="${CC:-cc} -O1 -ffp-contract=off -Wall -Wno-unused-function"
@@ -168,6 +168,7 @@ web_tests() {                                     # the editor mock's tables mus
     fi
     if command -v node >/dev/null 2>&1; then
         step "web pages: editor protocol + native CZ patches, package builder, update protocol" node web/test_web.mjs
+        step "SynthMaven master tuning touch controls" node web/test_master_tuning.mjs
         step "installer UI: release selection, fetch races, cache and write lock" node web/test_installer.mjs
         step "installer safety: tab locks, wake/leave guards, throttled MIDI, preflight and interrupted resumes" node web/test_install_safety.mjs
         step "TransitFM1: verified package, backup, loader isolation and resume" node web/test_transit.mjs
@@ -386,6 +387,11 @@ if core && [ $TABLES = 1 ]; then
         run "text spacing: glyph gaps against the font's own (16x supersampled), S M <= 0.25 px, L <= 0.5 px" \
             python3 tests/text_spacing_test.py build/gen/ui_fonts.h
     fi
+    t "SynthMaven HYBRID native saves and interrupted-write recovery" synthmaven_hybrid_store_test -O1 $FW -- "$OUT/synthmaven_hybrid_store_test"
+    t "SynthMaven four-part layer routing and note ownership" synthmaven_layer_routing_test -O1 $FW -- "$OUT/synthmaven_layer_routing_test"
+    t "SynthMaven tuning knob controls" synthmaven_tuning_ui_test -O1 $FW -- "$OUT/synthmaven_tuning_ui_test"
+    t "SynthMaven global chromatic tuning and persistence" synthmaven_tuning_test -O1 $FW -- "$OUT/synthmaven_tuning_test"
+    t "SynthMaven HOME: engine, preset bank and part navigation" synthmaven_home_test -O1 $FW -- "$OUT/synthmaven_home_test"
     t "settings: PER5 records, palette ids and preference preservation" settings_test -O1 -w -Ibuild/gen
     t "UI: sounds keep steps, undo, recording, MIDI overflow, pending saves, panel recovery, drum grid, song chain, MONO gray" \
         ui_test -DMELODEE_USB_AUDIO=1 $FW
@@ -429,11 +435,12 @@ if sound && [ $TABLES = 1 ]; then
         -DMELODEE_LEGACY_EXTRAS=1 -O2 $FW -- "$OUT/phys_test" build/phys_demo
     t "paired FM6/Prophet voices: serial/concurrent sample equality and eight-voice allocation" dual_core_test \
         -O2 $FW -pthread
-    t "audio: 1296 ordered engine assignments, releases, controls and concurrent PCM parity" audio_matrix_test -O2 $FW -pthread
+    t "audio: 2401 ordered engine assignments, releases, controls and concurrent PCM parity" audio_matrix_test -O2 $FW -pthread
     t "CZ-1: every knob changes a full tone; the dim ones leave INIT and factory tones bit for bit" cz1_knob_test -O2 $FW
     t "native fp32: independent numerical references, exact pitch, quiet signals and fractional envelopes" synth_fpu_test \
         -O2 $FW
     job prophet
+    t "SynthMaven HYBRID and DX7 banks: render and part isolation" synthmaven_port_test -O2 $FW -- "$OUT/synthmaven_port_test"
     t "modulation matrix: off = bit-identical, the math, MIDI CC1 / CC11 / aftertouch, cost, demos" mod_test \
         -DMELODEE_LEGACY_EXTRAS=1 -O2 $FW -- "$OUT/mod_test" build/mod_demo
     t "matrix S&H / SLEW / DEPTH, SPREAD: off = bit-identical, stereo sides and routing" mod_spread_test -O2 $FW

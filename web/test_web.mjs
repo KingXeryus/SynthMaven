@@ -30,11 +30,48 @@ const HERE = new URL(".", import.meta.url).pathname;
 const html = readFileSync(join(HERE, "editor.html"), "utf8");
 const proto = html.slice(html.indexOf("/*PROTO-BEGIN*/"), html.indexOf("/*PROTO-END*/"));
 const E = vm.runInNewContext(proto + `
-;({ frame, unframe, parse, req, Link, parseWav, resample, normalize, takeSample, autoTrim, zoomView, rootFromName, buildSlot, makeMockDevice, CMD, SMP,
+;({ layersEncode, layersDecode, tuningEncode, tuningDecode, HYBRID_PK, hybridValid, frame, unframe, parse, req, Link, parseWav, resample, normalize, takeSample, autoTrim, zoomView, rootFromName, buildSlot, makeMockDevice, CMD, SMP,
    UP, bank, nativeBank, capturePatch, auditionPatch, startWatch, libraryFile, readLibraryFile, paramKeys, patternFromSteps, stepsFromPattern, upName,
    mixer, parseNotes, parseHits, hitsText, gridFromSteps, LANE_NOTE, LANE_OF, readDevicePreferences, devicePresetRows, engineOrder, ENGINE_ORDER, aliasOf, fmtValue, F, FM6,
    FM4, fromDigital, CZ, P5, P5_FACTORY, p5LibraryPatch, readSysexLibrary, nativeImportTargets, scaleRows, SCALE_INFO, czLibraryPatch, czBankEncode, czBankDecode, czBankUpload, czBankRead, czLegacyTone })`,
 { setTimeout, clearTimeout, setInterval, clearInterval, console });
+
+{
+  const m=E.makeMockDevice({shared:true,auto:false}),link=new E.Link(d=>[...m.access.outputs.values()][0].send(d));
+  [...m.access.inputs.values()][0].onmidimessage=e=>link.receive(e.data);
+  const rq=x=>link.request(x),info=E.parse[E.CMD.INFO](await rq(E.req.info()));
+  ok(info.synthmaven?.hybrid&&info.synthmaven.major===3&&info.synthmaven.minor===5,"SynthMaven: explicit versioned HYBRID capability");
+  ok(E.HYBRID_PK.length===100&&E.HYBRID_PK.every(E.hybridValid),"HYBRID: all native factory patches pass strict editor validation");
+  ok(info.synthmaven.layers,"SynthMaven: explicit four-part layer capability");
+  const layers={enabled:1,low:[0,60,72,0],high:[59,127,127,47]};
+  let lr=E.parse[E.CMD.LAYERS](await rq(E.req.layersPut(layers)));
+  ok(!lr.rc&&eq(E.layersEncode(lr.layers),E.layersEncode(layers)),"Layers: inclusive split ranges survive USB round-trip");
+  const invalidLayer=E.layersEncode(layers);invalidLayer[5]=100;
+  lr=E.parse[E.CMD.LAYERS](await rq([E.CMD.LAYERS,[1,...pack7(invalidLayer)]]));
+  ok(lr.rc===1&&eq(E.layersEncode(lr.layers),E.layersEncode(layers)),"Layers: inverted range rejected without altering configuration");
+  ok(info.synthmaven.masterTuning,"SynthMaven: explicit master tuning capability");
+  const tune={enabled:1,scale:47,root:2,octave:3,quantize:1,apply:15,cents:[0,0,0,0,-37,0,0,0,0,0,0,100],mask:2741};
+  let tr=E.parse[E.CMD.MASTER_TUNING](await rq(E.req.tuningPut(tune)));
+  ok(!tr.rc&&eq(E.tuningEncode(tr.tuning),E.tuningEncode(tune)),"Tuning: signed one-cent offsets survive USB apply");
+  tr=E.parse[E.CMD.MASTER_TUNING](await rq(E.req.tuningGet()));
+  ok(eq(E.tuningEncode(tr.tuning),E.tuningEncode(tune)),"Tuning: USB read preserves root, threshold and part mask");
+  const malformed=E.tuningEncode(tune);malformed[14]=127;
+  tr=E.parse[E.CMD.MASTER_TUNING](await rq([E.CMD.MASTER_TUNING,[1,...pack7(malformed)]]));
+  ok(tr.rc===1&&eq(E.tuningEncode(tr.tuning),E.tuningEncode(tune)),"Tuning: invalid incoming update leaves state unchanged");
+  await rq(E.req.set(1,20,22));
+  const raw=Array.from(E.HYBRID_PK[36]);raw[2]=256-37;
+  let r=E.parse[E.CMD.HYBRID](await rq(E.req.hybridPut(0,raw)));
+  ok(!r.rc,"HYBRID: USB native patch writes");
+  r=E.parse[E.CMD.HYBRID](await rq(E.req.hybridGet(0)));ok(!r.rc&&eq(r.raw,raw),"HYBRID: USB signed fields round-trip without truncation");
+  const pt=(await E.capturePatch(rq,info,"MY HYBRID")).patch;
+  ok(eq(pt.hybrid,raw),"HYBRID: library capture keeps the full patch");
+  await E.bank.put(rq,7,pt,info);const saved=await E.bank.get(rq,info,7);
+  ok(eq(saved.hybrid,raw),"HYBRID: shared library native save/read round-trip");
+  const file=E.libraryFile("patch",[pt],{engines:info.engines,keys:[],pe0:info.pe0});
+  ok(eq(file.patches[0].hybrid,raw),"HYBRID: exported library retains native patch");
+  let sent=false,blocked=false;try{await E.bank.put(()=>{sent=true;},7,pt,{...info,synthmaven:null});}catch{blocked=true;}
+  ok(blocked&&!sent,"HYBRID: unsupported firmware rejected before any write");
+}
 
 {
   const mock=E.makeMockDevice({shared:true}),input=[...mock.access.inputs.values()][0],output=[...mock.access.outputs.values()][0];
@@ -257,7 +294,7 @@ async function editorMock() {
   inp.onmidimessage = (e) => link.receive(e.data);
   const rq = async (r, o) => link.request(r, o);
   const info = E.parse[E.CMD.INFO](await rq(E.req.info()));
-  ok(info.nengines === 22 && info.engines[20] === "-" && info.engines[21] === "MIDI Track" && info.engines[14] === "-" && info.engines[1] === "-" && info.engines[12] === "FM6" && info.engines[13] === "-"
+  ok(info.nengines === 23 && info.engines[22] === "HYBRID" && info.engines[20] === "-" && info.engines[21] === "MIDI Track" && info.engines[14] === "-" && info.engines[1] === "-" && info.engines[12] === "FM6" && info.engines[13] === "-"
  && info.engines[2] === "-" && info.engines[5] === "-" && info.engines[6] === "-" && info.engines[7] === "-" && info.engines[8] === "-" && info.engines[9] === "-" && info.engines[10] === "DRUM" && info.engines[11] === "-" && info.pcount === 124 && info.pe0 === 116 && info.engines[4] === "-",
     "editor: INFO");
   let descs = 0;
@@ -365,15 +402,15 @@ async function editorMock() {
   ok(!prefs.favorites[info.namespace.general][31] && !E.devicePresetRows(info, names, prefs).some((r) => r.user), "editor: erased slot disappears and loses star");
   {   /* the lists in the device's order: FM6 second, MIDI Track last, "-" never; the numbers stay */
     const shown = E.engineOrder(info.engines).map((i) => info.engines[i]);
-    ok(shown.join() === "PROPHET,FM6,CZ-1,SID,DRUM,MIDI Track" &&
-       E.engineOrder(info.engines)[1] === 12 && E.engineOrder(info.engines).at(-1) === 21,
-       "editor: engines listed FM6 second, MIDI Track last (indices kept)");
+    ok(shown.join() === "PROPHET,FM6,CZ-1,SID,DRUM,MIDI Track,HYBRID" &&
+       E.engineOrder(info.engines)[1] === 12 && E.engineOrder(info.engines).at(-1) === 22,
+       "editor: engines listed FM6 second, HYBRID appended (indices kept)");
     ok(E.engineOrder(["ANALOG", "X", "-", "DRUM", "FM6"]).join() === "0,4,3,1", "editor: an unknown engine follows the known ones");
     m.state.favorites[10][0] = m.state.favorites[12][0] = true;
     await rq(E.req.uiSet(3, 0));
     prefs = await E.readDevicePreferences(rq, info, names, prefs);
     const rows = E.devicePresetRows(info, names, prefs).filter((r) => !r.user), eng = [...new Set(rows.map((r) => r.engine))];
-    ok(eng[0] === 19 && eng[1] === 12 && eng[eng.length - 1] === 21, "editor: device presets in the device's engine order");
+    ok(eng[0] === 19 && eng[1] === 12 && eng[eng.length - 1] === 22, "editor: device presets in the device's engine order");
   }
   const none = await E.readDevicePreferences(() => { throw new Error("unexpected request"); }, { uiCaps: 0 }, []);
   ok(none === null, "editor: old firmware receives no unsupported preference requests");
@@ -518,6 +555,7 @@ function mockTables() {
   m2.stop();
   cmp("firmware: G_ENGSEL names == engine names", fw.GP[fw.G_ENGSEL].names, fw.ENG.map((e) => e.name));
   cmp("FM6 patches (init, factory, bank size)", T.FM6, fw.FM6);
+  cmp("HYBRID native patches", E.HYBRID_PK, fw.HYBRID_PK);
   cmp("DRUM grid: the lanes' GM notes", [...E.LANE_NOTE], fw.LANE_NOTE);
   cmp("DRUM grid: the lane of GM 35..81", E.LANE_OF, fw.LANE_OF);
   diffs.slice(0, 20).forEach((d) => console.log("  " + d));
@@ -788,7 +826,7 @@ async function editorLibrarian() {
   const ctx = { keys, engines: info.engines, firmware: info.version, pe0: info.pe0 };
   const pts = [cap, { ...bass, engineName: info.engines[bass.engine], tags: ["bass", "device"] }];
   const file = JSON.parse(JSON.stringify(E.libraryFile("library", pts, ctx)));
-  ok(file.format === "felucca-library" && file.version === 1 && file.pCount === info.pcount && file.paramLabels.length === info.pcount && file.paramLabels[81] === "CHRD" && file.paramLabels[82] === "VOIC" && file.paramLabels[83] === "DEG" && file.paramLabels.slice(92, 96).join() === "SYNC,TRIG,POL,SPRD" && file.engines.length === 22,
+  ok(file.format === "felucca-library" && file.version === 1 && file.pCount === info.pcount && file.paramLabels.length === info.pcount && file.paramLabels[81] === "CHRD" && file.paramLabels[82] === "VOIC" && file.paramLabels[83] === "DEG" && file.paramLabels.slice(92, 96).join() === "SYNC,TRIG,POL,SPRD" && file.engines.length === 23,
     "library file: versioned, with P_COUNT, labels and engines");
   const back = E.readLibraryFile(file, ctx);
   const oldKeys = keys.slice(); oldKeys[8] = "FX";
@@ -1197,9 +1235,9 @@ async function editorFm6() {
   [...m.access.inputs.values()][0].onmidimessage = (e) => link.receive(e.data);
   const rq = (x) => link.request(x), C = E.CMD;
   const info = E.parse[C.INFO](await rq(E.req.info()));
-  ok(info.fm6 && info.fm6.factory === 24 && info.fm6.bank === 0, "FM6: INFO tag (24 factory, no patch bank)");
+  ok(info.fm6 && info.fm6.factory === 58 && info.fm6.bank === 0, "FM6: INFO tag (58 factory entries, no patch bank)");
   const list = E.parse[C.FM6_LIST](await rq(E.req.fm6List()));
-  ok(list.slots.length === 24 && list.slots[0].name === "TINE EP" && list.slots[9].name === "BRASS SECT", "FM6: factory voice list");
+  ok(list.slots.length === 58 && list.slots[0].name === "TINE EP" && list.slots[9].name === "BRASS SECT", "FM6: factory voice list");
   let p = E.parse[C.FM6_PUT](await rq(E.req.fm6Put(1,4,F6.INIT_PK)));
   ok(p.rc === 3, "FM6: retired bank writes report no bank");
   const mine = F6.setName(F6.factory(2), "my bass");

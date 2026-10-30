@@ -116,13 +116,15 @@ int main(void)
     for (i = 0; i < FM6_PACKED; i++)
         printf("%s%d", i ? "," : "[", FM6_INIT[i]);
     printf("],\"factory\":[");
-    for (k = 0; k < FM6_NFAC; k++) {
+    for (k = 0; k < FM6_NEXPORT; k++) {
         uint8_t pk[FM6_PACKED];
         fm6_factory(k, pk);
         for (i = 0; i < FM6_PACKED; i++)
             printf("%s%d%s", i ? "," : k ? ",[" : "[", pk[i], i == FM6_PACKED - 1u ? "]" : "");
     }
     printf("]}");
+    printf(",\n\"HYBRID_PK\":[");
+    for(k=0;k<HY_NFACTORY;k++){const uint8_t *raw=(const uint8_t *)&HY_FACTORY[k];printf("%s[",k?",":"");for(i=0;i<sizeof(hy_patch_t);i++)printf("%s%u",i?",":"",raw[i]);printf("]");}printf("]");
     printf(",\n\"LANE_NOTE\":[");                    /* the DRUM grid: each lane's GM note, the lane of GM 35..81 */
     for (k = 0; k < NLANE; k++)
         printf("%s%d", k ? "," : "", DRUM_LANE_NOTE[k]);
