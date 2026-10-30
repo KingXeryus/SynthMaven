@@ -82,3 +82,18 @@ static uint32_t uh_midi_ok(uint32_t pkt)
         return pkt;
     return 0u;
 }
+
+/* SynthMaven controller port identification. */
+static uint8_t uh_cable_string(const uint8_t *d,uint32_t len,const uh_midi_t *m,uint32_t cable){
+ uint8_t active=0,ep=0,jack=0;
+ for(uint32_t i=0;i+2u<=len;){uint32_t n=d[i];if(n<2u||i+n>len)break;
+  if(d[i+1]==4u&&n>=9u){active=(uint8_t)(d[i+2]==m->iface&&d[i+3]==m->alt);ep=0;}
+  else if(active&&d[i+1]==5u&&n>=7u)ep=(uint8_t)(d[i+2]==(0x80u|m->in_ep));
+  else if(active&&ep&&d[i+1]==0x25u&&n>=4u&&d[i+2]==1u&&cable<d[i+3]&&4u+cable<n){jack=d[i+4u+cable];break;}i+=n;
+ }
+ if(!jack)return 0;active=0;
+ for(uint32_t i=0;i+2u<=len;){uint32_t n=d[i];if(n<2u||i+n>len)break;
+  if(d[i+1]==4u&&n>=9u)active=(uint8_t)(d[i+2]==m->iface&&d[i+3]==m->alt);
+  else if(active&&d[i+1]==0x24u&&n>=6u&&(d[i+2]==2u||d[i+2]==3u)&&d[i+3]==1u&&d[i+4]==jack)return d[i+n-1u];i+=n;
+ }return 0;
+}

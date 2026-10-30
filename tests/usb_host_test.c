@@ -434,7 +434,7 @@ static void test_keyboard(int via_hub)
     assert(mi_w - mi_r == 3);
     assert(midi_in_q[mi_r % MQ] == 0x643C9009u && midi_in_source[mi_r % MQ] == 1);
     assert(midi_in_q[(mi_r + 1) % MQ] == 0x0000F80Fu);
-    assert(midi_in_q[(mi_r + 2) % MQ] == 0x7F409109u);  /* the cable bits are gone */
+    assert(midi_in_q[(mi_r + 2) % MQ] == 0x7F409119u);  /* retain cable identity for MCU/HUI routing */
     assert(uh.pkts == 4 && uh.events == 3);
 
     /* a full ring holds the packet back instead of overflowing */
@@ -760,8 +760,20 @@ static void test_device_mode_untouched(void)
     puts("USB host: off at boot, the device side starts as before: OK");
 }
 
+static void test_controller_mailbox(void)
+{
+ uh_mackie_ready=uh_mackie_pos=0;
+ uh_mackie_packet(0x0000F024u);uh_mackie_packet(0x00146624u);uh_mackie_packet(0x0000F725u);
+ assert(uh_mackie_ready==7&&uh_mackie_cable==2&&uh_mackie_buf[3]==0x66);
+ uh_mackie_ready=uh_mackie_pos=0;
+ uh_mackie_packet(0x2422F004u);uh_mackie_packet(0xF77F3507u);assert(!uh_mackie_ready);
+ uh_mackie_packet(0x0000F004u);for(unsigned i=0;i<30;i++)uh_mackie_packet(0x00000004u);
+ assert(!uh_mackie_ready&&uh_mackie_pos<sizeof uh_mackie_buf);
+ puts("USB host: bounded Mackie-only SysEx mailbox rejects updater traffic and oversized messages: OK");
+}
 int main(void)
 {
+    test_controller_mailbox();
     devices_init();
     test_parse();
     test_device_mode_untouched();

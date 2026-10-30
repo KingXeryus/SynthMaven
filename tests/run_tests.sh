@@ -399,6 +399,7 @@ if core && [ $TABLES = 1 ]; then
     t "SynthMaven eight programs, scenes and atomic storage" synthmaven_program_test -O1 $FW -- "$OUT/synthmaven_program_test"
     t "SynthMaven HYBRID native saves and interrupted-write recovery" synthmaven_hybrid_store_test -O1 $FW -- "$OUT/synthmaven_hybrid_store_test"
     t "SynthMaven four-part layer routing and note ownership" synthmaven_layer_routing_test -O1 $FW -- "$OUT/synthmaven_layer_routing_test"
+    t "SynthMaven controller profiles, MCU and HUI" synthmaven_controller_test -O1 $FW -- "$OUT/synthmaven_controller_test"
     t "SynthMaven MIDI learn and persistent mappings" synthmaven_mapping_test -O1 $FW -- "$OUT/synthmaven_mapping_test"
     t "SynthMaven compact program backup recovery" synthmaven_program_backup_test -O1 $FW -- "$OUT/synthmaven_program_backup_test"
     t "SynthMaven delayed button shortcuts" synthmaven_shortcuts_test -O1 $FW -- "$OUT/synthmaven_shortcuts_test"

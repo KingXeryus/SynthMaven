@@ -17,6 +17,7 @@ int main(void)
  rule[3]=43;rule[4]=128;rule[5]=1;rule[6]=2;rule[7]=P_LEVEL;memcpy(sm_maps[1],rule,12);
  assert(sm_map_receive(0xb0,0,43,75,1));sm_mapping_poll();assert(trk[2].p[P_LEVEL]==75);
  assert(!sm_map_receive(0xb0,1,43,75,1));
+ sm_controller_override=CT_HUI;sm_controller_port=3;assert(!sm_config_save());sm_controller_override=sm_controller_port=0;sm_config_load();assert(sm_controller_override==CT_HUI&&sm_controller_port==3);
  assert(!sm_config_save());memset(sm_maps,0,sizeof sm_maps);sm_config_load();assert(sm_maps[1][7]==P_LEVEL&&sm_maps[0][3]==80);
  assert(!sm_program_save(0,"MAPPED",0));memset(sm_maps,0,sizeof sm_maps);sm_config_load();assert(sm_maps[1][3]==43);
  sm_setlist_count=3;sm_setlist[0]=0;sm_setlist[1]=3;sm_setlist[2]=0;assert(!sm_config_save());sm_setlist_count=0;sm_config_load();assert(sm_setlist_count==3&&sm_setlist[1]==3);assert(!sm_program_load(0));

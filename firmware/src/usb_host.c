@@ -33,6 +33,9 @@ enum { UH_MSG_NONE, UH_MSG_ON, UH_MSG_OFF, UH_MSG_MIDI, UH_MSG_NOMIDI, UH_MSG_LO
 static uint8_t uh_rx[64 + 4] __attribute__((aligned(4)));
 static uint8_t uh_cfg[320];                                  /* a configuration, cut short if longer */
 static struct {
+    uint16_t vid,pid;
+    uint8_t daw_hint;
+    char product[48],iface_name[32];
     uint8_t want;                                       /* the menu (main loop) */
     uint8_t on;                                         /* the port is a host */
     volatile uint8_t run;                               /* TIMER5 owns the active MIDI endpoints */
@@ -46,6 +49,26 @@ static struct {
     uint32_t tx_ms, hub_poll_ms;
     volatile uint32_t pkts, events;
 } uh;
+
+/* Bounded Mackie handshake mailbox; proprietary update commands never enter the editor. */
+static uint8_t uh_mackie_buf[32],uh_mackie_pos,uh_mackie_cable;
+static volatile uint8_t uh_mackie_ready;
+static void uh_mackie_packet(uint32_t p){
+ uint32_t cin=p&15u,n=cin==4u||cin==7u?3u:cin==6u?2u:1u,cable=(p>>4)&15u;
+ if(cin<4u||cin>7u||uh_mackie_ready)return;
+ for(uint32_t i=0;i<n;i++){
+  uint8_t b=(uint8_t)(p>>(8u*(i+1u)));
+  if(b==0xF0u){uh_mackie_pos=0;uh_mackie_cable=(uint8_t)cable;}
+  if(cable!=uh_mackie_cable || uh_mackie_pos>=sizeof uh_mackie_buf){uh_mackie_pos=0;return;}
+  if((!uh_mackie_pos&&b!=0xF0u) || (uh_mackie_pos&&b>=128u&&b!=0xF7u)){uh_mackie_pos=0;return;}
+  uh_mackie_buf[uh_mackie_pos++]=b;
+  if(b==0xF7u){
+   if(uh_mackie_pos>=7u && !uh_mackie_buf[1] && !uh_mackie_buf[2] && uh_mackie_buf[3]==0x66u &&
+     (uh_mackie_buf[4]==0x14u||uh_mackie_buf[4]==0x10u||uh_mackie_buf[4]==5u))uh_mackie_ready=uh_mackie_pos;
+   uh_mackie_pos=0;
+  }
+ }
+}
 
 /* ------------------------------------------------ main loop: control --- */
 static void uh_wait(uint32_t ms)                        /* main loop only */
@@ -132,11 +155,19 @@ static int uh_ctl(uint8_t addr, uint8_t rt, uint8_t rq, uint16_t val, uint16_t i
 /* ---------------------------------------------------- enumeration --- */
 static int uh_hub_probe(uint8_t addr, uint8_t mps, uint8_t cfgval, uh_midi_t *m);
 
+static void uh_string(uint8_t addr,uint8_t mps,uint8_t index,char *out,uint32_t size){
+ uint8_t b[98];out[0]=0;if(!index)return;
+ uint16_t lang=0x0409u;
+ int n=uh_ctl(addr,0x80,6,0x0300,0,4,b,mps);if(n>=4&&b[1]==3)lang=(uint16_t)(b[2]|b[3]<<8);
+ n=uh_ctl(addr,0x80,6,(uint16_t)(0x0300u|index),lang,sizeof b,b,mps);
+ if(n<2||b[1]!=3)return;if(n>b[0])n=b[0];uint32_t k=0;
+ for(uint32_t j=2;j+1u<(uint32_t)n&&k+1u<size;j+=2)out[k++]=!b[j+1]&&b[j]>=32u&&b[j]<=126u?(char)b[j]:'?';out[k]=0;
+}
 /* The device at address 0 (just reset): give it an address, read its configuration, and if it has a USB-MIDI
  * streaming interface select it. 1 = found, 0 = no (including a hub below depth 0 and a device that fails). */
 static int uh_probe(uint8_t depth, uh_midi_t *m)
 {
-    uint8_t d8[8], mps, cls, addr = uh.next_addr++;
+    uint8_t d8[8], dd[18], mps, cls, addr = uh.next_addr++;
     uint32_t total;
     int r;
     r = uh_ctl(0, 0x80, 6, 0x0100, 0, 8, d8, 8);        /* GET_DESCRIPTOR(device), first 8 bytes */
@@ -167,6 +198,24 @@ static int uh_probe(uint8_t depth, uh_midi_t *m)
         return 0;
     if (m->alt && uh_ctl(addr, 0x01, 11, m->alt, m->iface, 0, 0, mps) < 0)   /* SET_INTERFACE */
         return 0;
+    uh.vid=uh.pid=0;uh.daw_hint=255;uh.product[0]=uh.iface_name[0]=0;
+    if(uh_ctl(addr,0x80,6,0x0100,0,sizeof dd,dd,mps)>=18){
+        uh.vid=(uint16_t)(dd[8]|dd[9]<<8);uh.pid=(uint16_t)(dd[10]|dd[11]<<8);
+        uh_string(addr,mps,dd[15],uh.product,sizeof uh.product);
+    }
+    uint8_t string_index=0;
+    for(uint32_t i=0;i+9u<=total;){uint32_t len=uh_cfg[i];if(len<2u||i+len>total)break;
+      if(uh_cfg[i+1]==4u&&len>=9u&&uh_cfg[i+2]==m->iface&&uh_cfg[i+3]==m->alt){string_index=uh_cfg[i+8];break;}i+=len;}
+    uh_string(addr,mps,string_index,uh.iface_name,sizeof uh.iface_name);
+    /* Embedded jack names identify the actual virtual control port, before family fallbacks. */
+    for(uint32_t cable=0;cable<16u;cable++){
+      uint8_t idx=uh_cable_string(uh_cfg,total,m,cable);if(!idx)continue;
+      char name[32];uh_string(addr,mps,idx,name,sizeof name);
+      for(uint32_t j=0;name[j];j++)if(name[j]>='a'&&name[j]<='z')name[j]-=32;
+      int match=0;static const char *const tags[]={"MCU","HUI","DAW","MACKIE"};
+      for(uint32_t j=0;name[j]&&!match;j++)for(uint32_t k=0;k<4u;k++){uint32_t q=0;while(tags[k][q]&&name[j+q]==tags[k][q])q++;if(!tags[k][q]){match=1;break;}}
+      if(match){uh.daw_hint=(uint8_t)cable;break;}
+    }
     uh.dev = addr;
     return 1;
 }
@@ -275,6 +324,7 @@ static void uh_start_ep(const uh_midi_t *m)
 static void uh_session_end(void)
 {
     uh.run = 0;
+    uh.vid=uh.pid=0;uh.daw_hint=255;uh.product[0]=uh.iface_name[0]=0;uh_mackie_ready=uh_mackie_pos=0;
     uh.out_mps = 0;
     uh.tx_count = 0;
     mo_r = mo_w;
@@ -489,8 +539,10 @@ static void uh_poll(void)
             return;                                     /* ring too full: the packet stays, retried next poll */
 #endif
         for (i = 0; i + 3u < n; i += 4u) {
-            uint32_t p = uh_midi_ok((uint32_t)uh_rx[i] | (uint32_t)uh_rx[i + 1] << 8 |
-                                    (uint32_t)uh_rx[i + 2] << 16 | (uint32_t)uh_rx[i + 3] << 24);
+            uint32_t raw=(uint32_t)uh_rx[i] | (uint32_t)uh_rx[i+1]<<8 | (uint32_t)uh_rx[i+2]<<16 | (uint32_t)uh_rx[i+3]<<24;
+            if((raw&15u)>=4u&&(raw&15u)<=7u){uh_mackie_packet(raw);continue;}
+            uint32_t p=uh_midi_ok(raw);
+            if(p)p|=raw&0xF0u; /* Preserve the virtual cable for controller routing. */
             if (p) {
                 midi_enqueue(p, 1u);
                 uh.events++;

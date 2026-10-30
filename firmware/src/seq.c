@@ -53,6 +53,7 @@ static uint32_t trk_index(const track_t *t) { return (uint32_t)(t - trk); }
 
 static uint32_t trk_midi_ch(uint32_t i)
 { return midi_track_only(&trk[i % NTRK]) ? midi_track_channel(&trk[i % NTRK]) : i % NTRK; }
+static uint32_t midi_event_cable;
 static uint32_t midi_event_source; /* 0: internal/test dispatch, 1 USB, 2 TRS */
 #include "synthmaven_midi.c"
 #include "midi_knobs.c"
@@ -188,7 +189,11 @@ static uint32_t midi_map(const track_t *t, uint32_t note)
 {
     const engine_t *e = ENGINES[eng_idx(t->eng_req)];
     uint32_t pad = mpc_pad(note);
-    if(sm_tuning.enabled && !drum_track(t))return sm_tuning_snap(&sm_tuning,trk_index(t),note);
+    if(sm_tuning.enabled && !drum_track(t))return sm_tuning_snap(&sm_tuning,trk_index(t),(uint32_t)clamp((int32_t)note+(sm_layers.enabled?t->p[P_TRANS]:0),0,127));
+    /* Layer voicings apply to external notes as well as the physical keys.
+     * WHITE/ALL and legacy micro SNAP already transpose in their mapping. */
+    if(sm_layers.enabled&&!drum_track(t)&&t->p[P_QUANT]!=Q_WHITE&&t->p[P_QUANT]!=Q_ALL&&!(micro_active(t)&&t->p[P_QUANT]==Q_SNAP))
+        note=(uint32_t)clamp((int32_t)note+t->p[P_TRANS],0,127);
     if (t->p[P_QUANT] == Q_MPC && pad / 16u != trk_index(t))
         return KB_SILENT;
     if (t->p[P_QUANT] == Q_MPC && drum_track(t))
@@ -1277,6 +1282,7 @@ static track_t *midi_note_track(uint32_t ch, uint32_t note)
     return midi_track(ch);
 }
 
+#include "controller.c"
 #include "midi_control.c"
 #include "midi_clock.c"
 
@@ -1461,6 +1467,7 @@ static void events_block(uint32_t n)
         } else {
             if (clock_mode && song.playing)
                 seq_advance(midi_clock_advance(time));
+            midi_event_cable=(pkt>>4)&15u;
             midi_event_source = source;
             midi_event(st, ch, d1, d2);
             midi_event_source = 0;

@@ -54,6 +54,10 @@ const E = vm.runInNewContext(proto + `
   const mapping=[1,0,0,80,127,0,4,2,80,0,255,0];map=await mapRq([2,0,...E.pack7(mapping)]);ok(!map.rc&&map.maps[0][7]===2,"MIDI Learn: accepts program action assignment");
   map=await mapRq([2,1,...E.pack7(mapping)]);ok(map.rc===5&&map.conflict===0,"MIDI Learn: reports overlapping assignment");
   let list=E.parse[E.CMD.SETLIST](await rq([E.CMD.SETLIST,[1,3,0,7,0]]));ok(!list.rc&&eq(list.slots,[0,7,0]),"Setlist: ordered references allow repeats");
+  const ct=E.parse[E.CMD.CONTROLLER](await rq([E.CMD.CONTROLLER,[1,3,2]]));
+  ok(info.synthmaven.controller&&!ct.rc&&ct.override===3&&ct.port===2,'Controllers: capability and saved manual HUI port');
+  const controller=E.parse[E.CMD.CONTROLLER]([0,0,1,0,0,2,1,...Array.from('Launchkey',c=>c.charCodeAt(0)),0,...Array.from('NOVATION',c=>c.charCodeAt(0)),0]);
+  ok(controller.mode===2&&controller.cable===1&&controller.product==='Launchkey','Controllers: strict protocol identity and virtual cable status');
   ok(info.synthmaven.programs,"SynthMaven: explicit named program capability");
   const program=async a=>E.parse[E.CMD.PROGRAMS](await rq([E.CMD.PROGRAMS,a]));
   let ps=await program([0]);ok(ps.current===127&&ps.slots.length===8,"Programs: empty status has eight slots");

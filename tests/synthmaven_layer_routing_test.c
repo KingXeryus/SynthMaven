@@ -14,6 +14,7 @@ int main(void){
  setup();key_down(7);frame();for(uint32_t tr=0;tr<4;tr++)assert(gate_note(&trk[tr],60));sm_layers.enabled=0;key_up(7);frame();for(uint32_t tr=0;tr<4;tr++)assert(!gate_note(&trk[tr],60));
  setup();key_down(7);frame();queued(0x90,60,100,1);key_up(7);frame();for(uint32_t tr=0;tr<4;tr++)assert(gate_note(&trk[tr],60));queued(0x80,60,0,1);for(uint32_t tr=0;tr<4;tr++)assert(!gate_note(&trk[tr],60));
  setup();for(uint32_t n=60;n<67;n++)queued(0x90,n,100,1);assert(!mn_get(0,66));for(uint32_t n=60;n<67;n++)queued(0x80,n,0,1);assert(sm_chord_free()==MCHORD_N);for(uint32_t tr=0;tr<4;tr++)assert(!midi_owners[tr]);
+ setup();trk[1].p[P_TRANS]=-12;trk[2].p[P_TRANS]=12;queued(0x90,60,100,1);assert(gate_note(&trk[1],48)&&gate_note(&trk[2],72));trk[1].p[P_TRANS]=7;queued(0x80,60,0,1);assert(!gate_note(&trk[1],48)&&!gate_note(&trk[2],72));
  setup();sm_layers.low[1]=60;sm_layers.high[0]=59;persist_t saved={0};settings_export(&saved);sm_layers.enabled=0;assert(settings_import(&saved,sizeof saved)&&sm_layers.enabled&&sm_layers.low[1]==60&&sm_layers.high[0]==59);
  puts("Four-part routing: USB layers, split boundaries, mode changes while held, sustain, part panic and physical keys passed");return 0;
 }

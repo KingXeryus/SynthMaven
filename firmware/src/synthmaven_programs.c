@@ -98,16 +98,17 @@ static int sm_factory_program(uint32_t slot)
 }
 static void sm_config_pack(uint8_t *b)
 {
-    memset(b,0,SM_CONFIG_BYTES);memcpy(b,"SMC2",4);b[328]=sm_program_current<8?sm_program_current+1:0;b[4]=sm_setlist_count;b[5]=sm_setlist_pos;
+    memset(b,0,SM_CONFIG_BYTES);memcpy(b,"SMC3",4);b[329]=sm_controller_override;b[330]=sm_controller_port;b[328]=sm_program_current<8?sm_program_current+1:0;b[4]=sm_setlist_count;b[5]=sm_setlist_pos;
     memcpy(b+8,sm_setlist,32);memcpy(b+40,sm_maps,sizeof sm_maps);
 }
 static int sm_config_valid(const uint8_t *b)
 {
-    if((memcmp(b,"SMC1",4)&&memcmp(b,"SMC2",4))||b[4]>32||b[5]>31||b[6]||b[7])return 0;
+    if((memcmp(b,"SMC1",4)&&memcmp(b,"SMC2",4)&&memcmp(b,"SMC3",4))||b[4]>32||b[5]>31||b[6]||b[7])return 0;
     for(uint32_t i=0;i<32;i++)if(b[8+i]>7)return 0;
     for(uint32_t i=0;i<SM_MAP_COUNT;i++)if(!sm_map_valid(b+40+i*SM_MAP_BYTES))return 0;
-    if(b[3]=='2'&&b[328]>8)return 0;
-    for(uint32_t i=b[3]=='2'?329:328;i<SM_CONFIG_BYTES;i++)if(b[i])return 0;return 1;
+    if(b[3]>='2'&&b[328]>8)return 0;
+    if(b[3]=='3'&&(b[329]>3||b[330]>16))return 0;
+    for(uint32_t i=b[3]=='3'?331:b[3]=='2'?329:328;i<SM_CONFIG_BYTES;i++)if(b[i])return 0;return 1;
 }
 #if MELODEE_FLASH
 _Static_assert(SM_PROGRAM_BANK<=ST_BANK_BASE_MAX+ST_BANK_EXT_MAX,"eight programs fit existing atomic project extents");
@@ -123,7 +124,8 @@ static void sm_config_load(void)
 {
     st_hdr_t h;uint8_t header[16],b[SM_CONFIG_BYTES];int copy=sm_program_bank(0,&h,header);
     if(copy<0||st_read_range(OBJ_BANK0,(uint32_t)copy,SM_CONFIG_OFF,b,sizeof b)||!sm_config_valid(b))return;
-    sm_program_boot_slot=b[3]=='2'&&b[328]?b[328]-1:255;
+    sm_program_boot_slot=b[3]>='2'&&b[328]?b[328]-1:255;
+    sm_controller_override=b[3]=='3'?b[329]:0;sm_controller_port=b[3]=='3'?b[330]:0;
     sm_setlist_count=b[4];sm_setlist_pos=b[5];memcpy(sm_setlist,b+8,32);memcpy(sm_maps,b+40,sizeof sm_maps);
 }
 static int sm_config_save(void)

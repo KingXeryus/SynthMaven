@@ -1,8 +1,21 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 #define ED_SM_MAPPING 113u
 #define ED_SM_SETLIST 114u
+#define ED_SM_CONTROLLER 115u
 static int ed_sm_mapping_handle(uint32_t cmd,const uint8_t *a,uint32_t n)
 {
+    if(cmd==ED_SM_CONTROLLER){
+        uint32_t rc=1,op=n?a[0]:127;
+        if(op==0&&n==1)rc=0;
+        else if(op==1&&n==3&&a[1]<=3&&a[2]<=16){
+            uint8_t mode=sm_controller_override,port=sm_controller_port;
+            sm_controller_override=a[1];sm_controller_port=a[2];rc=(uint32_t)sm_config_save();
+            if(rc){sm_controller_override=mode;sm_controller_port=port;}
+            else{uint32_t guard=motion_guard();sm_controller_mode(a[1]);panic_req|=15u;motion_unguard(guard);}
+        }
+        ed_b(op);ed_b(rc);ed_b(ct_connected);ed_b(sm_controller_override);ed_b(sm_controller_port);ed_b(ct_mode);ed_b(ct_daw==255?127:ct_daw);
+        ed_str(ct_product,47);ed_str(ct_family,23);return 1;
+    }
     if(cmd!=ED_SM_MAPPING&&cmd!=ED_SM_SETLIST)return 0;
     uint32_t op=n?a[0]:127,rc=1,conflict=127;
     if(cmd==ED_SM_SETLIST){

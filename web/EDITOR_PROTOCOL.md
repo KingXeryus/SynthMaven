@@ -1342,3 +1342,15 @@ than leaving an untracked partial chord.
 Both commands reject the entire malformed update with rc 1. rc 0 acknowledges
 application in RAM; persistence uses the normal deferred settings-save path.
 Layer configuration is currently a device setting, pending program integration.
+
+### SynthMaven controller extension (115)
+
+The SynthMaven INFO trailer appends capability byte 115. Request `[0]` reads
+controller status; `[1, mode, port]` saves an override (`mode` 0 AUTO, 1 MIDI,
+2 MCU, 3 HUI; `port` 0 automatic, 1..16 USB virtual cable+1). Response:
+`op, rc, connected, override, port, active_mode, cable, product\0, family\0`.
+Cable 127 means none; product is at most 47 ASCII characters and family 23.
+Return codes follow program/config saves. Invalid requests do not write.
+SMC3 configuration retains SMC1/SMC2 reading, and stores the override at bytes
+329/330. Learned assignments are evaluated before native surface decoding.
+Channel music from other virtual cables retains normal pitch bend and notes.

@@ -244,3 +244,42 @@ The web route isolation/stale-callback tests pass.
 A fresh 3.0 backup was read from the connected hardware and all object CRCs
 verified. It is stored privately under output/backups (ignored by Git), not
 included among release assets. The connected device has not yet been reflashed.
+
+### Controller and first physical candidate checkpoint (30 October)
+
+The generic controller, MCU/HUI and supported manufacturer profiles now run in
+this branch. USB host identity includes product/interface names and virtual MIDI
+cables. Native control-surface messages are separate from the musical port;
+explicit MIDI Learn assignments take precedence. Heavy transport/record changes
+are deferred to the foreground. Controller mode/port persist in SMC3 configuration
+while SMC1/SMC2 remain readable. Editor command 115 exposes identity and overrides.
+
+The full host/audio suite passed in 204 seconds
+(`build/host/controller-full-regression.log`). The final local target build passed
+all memory and stack checks: app 571,500 bytes, loader 7,645 bytes, package 610,801
+bytes. The iOS parser/bridge/simulator checks passed. These are development builds,
+not the attested release packages.
+
+The connected FM-1 was backed up, installed and restarted successfully into this
+USB-only 3.5 candidate. All eight factory programs loaded. Sixteen physical timing
+cases (one held note and a three-note chord per program, four parts enabled) had
+zero added audio deadline misses, second-core faults/timeouts or resource
+allocation failures. CPU snapshots were 26.2–37.9%; the largest complete audio
+interrupt was 2,059 microseconds. These short passages do not establish worst-case
+polyphony or final listening quality. Voice replacement remains intentional for
+mono support parts. Evidence: `build/hardware35-programs.jsonl` and
+`build/hardware35-install.log`.
+
+USB audio capture is under investigation: the host receives zero-valued samples
+although voices are active. Do not claim an audio capture or listening pass until
+this is resolved. No public release, installer deployment, Bluetooth integration,
+or TestFlight distribution has occurred. The recovery package and full original
+3.0 backup remain private and available.
+
+Perform tuning and its wheel now fit at 1280 × 720 without scrolling. FM6 Perform
+controls expose native modulator-envelope timing and velocity response instead
+of the generic ADSR, which that engine does not use.
+
+The owner confirmed the physical MASTER knob was fully down during the silent
+USB captures. USB recording follows this control. A repeat with MASTER raised is
+required; the zero-valued captures are not an audio pass or a firmware diagnosis.

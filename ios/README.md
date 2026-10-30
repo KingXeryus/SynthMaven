@@ -22,9 +22,19 @@ Direct Bluetooth is excluded from this candidate and has its own later validatio
 
 ## Work still required before distribution
 
-- Shared touch-first Perform view and final responsive layout verification.
+- Final responsive layout verification on physical iPad (the shared Perform view is implemented).
 - Physical USB parameter editing, disconnect/reconnect and export/import checks.
 - Firmware/controller integration validation and release guide.
 - Archive/signing, App Store Connect build-number check, and internal/external testing approval.
 
 No TestFlight upload or external invitation has been made from this branch.
+
+## Learning a controller
+
+Connect both the FM-1 and controller through a powered USB hub. In Settings →
+Pedal & MIDI Learn, choose Controller input and select the controller (not the
+FM-1). Select an action or parameter, tap Learn, operate the controller, then
+accept the captured message. Only channel messages are routed; the app does not
+forward controller SysEx or MIDI clock. Routing stops on disconnect/background
+and releases sustain/notes. Saved assignments remain in the firmware for direct
+PEDAL/HOST use later. The first USB-only candidate contains no Bluetooth UI.

@@ -489,7 +489,7 @@ const CMD = { INFO: 1, GET: 2, SET: 3, DUMP: 4, DESC: 5, STEP_GET: 6, STEP_SET: 
   TRACK_PARAM: 31, TRACK_CHANGED: 32, SONG: 33, PATTERN: 73, BANK_SONG: 74,
   UI_STATE: 34, UI_SET: 35, UI_PALETTES: 36, FAV_GET: 37, FAV_SET: 38,
   MOTION: 64, BACKUP_LIST: 65, BACKUP_GET: 66, BACKUP_PUT: 67,
-  FM6_GET: 68, FM6_PUT: 69, FM6_LIST: 70, FM6_ERASE: 71, CZ_GET: 75, CZ_PUT: 76, CZ_BANK: 77, NATIVE: 78, LIBRARY:80, PROPHET:95, HYBRID:96, MASTER_TUNING:110, LAYERS:111, PROGRAMS:112, MAPPING:113, SETLIST:114 };
+  FM6_GET: 68, FM6_PUT: 69, FM6_LIST: 70, FM6_ERASE: 71, CZ_GET: 75, CZ_PUT: 76, CZ_BANK: 77, NATIVE: 78, LIBRARY:80, PROPHET:95, HYBRID:96, MASTER_TUNING:110, LAYERS:111, PROGRAMS:112, MAPPING:113, SETLIST:114, CONTROLLER:115 };
 /* frames the device sends on its own (while WATCH is on); never replies */
 
 /*P5-FACTORY-BEGIN*/
@@ -696,7 +696,7 @@ const parse = {
     o.shared=shared>=0?{version:1,total:trailer[shared+2]|trailer[shared+3]<<7}:null;
     if(o.shared)o.native=null;
     const sm=trailer.findIndex((x,i)=>x===0x53&&trailer[i+1]===0x4d&&trailer[i+2]===1);
-    o.synthmaven=sm>=0?{schema:1,major:trailer[sm+3],minor:trailer[sm+4],hybrid:trailer[sm+5]===96,masterTuning:trailer[sm+6]===110,layers:trailer[sm+7]===111,programs:trailer[sm+8]===112,mapping:trailer[sm+9]===113,setlist:trailer[sm+10]===114}:null;
+    o.synthmaven=sm>=0?{schema:1,major:trailer[sm+3],minor:trailer[sm+4],hybrid:trailer[sm+5]===96,masterTuning:trailer[sm+6]===110,layers:trailer[sm+7]===111,programs:trailer[sm+8]===112,mapping:trailer[sm+9]===113,setlist:trailer[sm+10]===114,controller:trailer[sm+11]===115}:null;
     return o;
   },
   [CMD.UI_STATE](a) {
@@ -841,6 +841,10 @@ const parse = {
   [CMD.TRACK_PARAM](a) { const r = new Reader(a); return { track: r.b(), id: r.b(), value: r.v() }; },
   [CMD.TRACK_CHANGED](a) { return parse[CMD.TRACK_PARAM](a); },
   /* FM6 patches: target 0 a track, 1 a bank slot, 2 a factory patch; packed: the 128-byte record */
+  [CMD.CONTROLLER](a){
+    const r=new Reader(a),o={op:r.b(),rc:r.b(),connected:r.b(),override:r.b(),port:r.b(),mode:r.b(),cable:r.b(),product:r.s(),family:r.s()};
+    if(o.rc>4||o.connected>1||o.override>3||o.port>16||o.mode>3||!(o.cable<16||o.cable===127)||o.product.length>47||o.family.length>23||r.i!==a.length)throw Error('Invalid controller status');return o;
+  },
   [CMD.SETLIST](a){if(a.length<4||a[2]>32||a[3]>31||a.length!==4+a[2]||a.slice(4).some(x=>x>7))throw Error('Invalid setlist status');return {op:a[0],rc:a[1],count:a[2],position:a[3],slots:a.slice(4)};},
   [CMD.MAPPING](a){
     if(a.length!==363||a[1]>5||a[3]>2||a[5]>1||a[6]>1||a[7]>1)throw Error('Invalid MIDI mapping status');
@@ -976,7 +980,7 @@ function replyMatches(cmd, args, a) {
     case CMD.BANK_SONG: case CMD.SONG: return a[0] === args[0];
     case CMD.PATTERN: return a[0] === args[0] && a[1] === args[1];
     case CMD.PROPHET: return a[2]===args[1]&&a[0]===(args[0]<=1?1:args[0]);
-    case CMD.MAPPING: case CMD.SETLIST: return a[0]===args[0];
+    case CMD.CONTROLLER: case CMD.MAPPING: case CMD.SETLIST: return a[0]===args[0];
     case CMD.PROGRAMS: return a[0]===args[0];
     case CMD.LAYERS: return a[0]===args[0];
     case CMD.MASTER_TUNING: return a[0]===args[0];
@@ -2415,6 +2419,12 @@ function makeMockDevice(opt = {}) {
     };
     const NB = st.bank.length;
     switch (cmd) {
+      case CMD.CONTROLLER: {
+        const c=st.controller??={override:0,port:0};let rc=1;
+        if(a.length===1&&a[0]===0)rc=0;
+        if(a.length===3&&a[0]===1&&a[1]<=3&&a[2]<=16){c.override=a[1];c.port=a[2];rc=0;}
+        [a[0]??127,rc,0,c.override,c.port,c.override||1,127].forEach(b);s('');s('');break;
+      }
       case CMD.SETLIST: {
         st.setlist??=[];st.setlistPosition??=0;let rc=1;
         if(a[0]===0&&a.length===1)rc=0;
@@ -2668,7 +2678,7 @@ function makeMockDevice(opt = {}) {
         if (!opt.legacy) b(NTRK);
         if (!opt.legacy && !opt.v3 && !opt.v5) {
           b(0);
-          if (st.uiCaps) { [0x55,1,st.uiCaps,0x4d,2,64,1,0x42,1,3,0x50,1,8,16].forEach(b); if (!opt.noFm6) [0x46,1,FM6.FACTORY_PK.length,FM6_BANK,0x43,1,16,1,0,0,0x35,1,19,16,17,18,20,0,1,0x4e,1,64,0,0,1].forEach(b); if(opt.shared)[0x55,1,0,3].forEach(b);if(!opt.noSynthMaven)[0x53,0x4d,1,3,5,96,110,111,112,113,114].forEach(b); }
+          if (st.uiCaps) { [0x55,1,st.uiCaps,0x4d,2,64,1,0x42,1,3,0x50,1,8,16].forEach(b); if (!opt.noFm6) [0x46,1,FM6.FACTORY_PK.length,FM6_BANK,0x43,1,16,1,0,0,0x35,1,19,16,17,18,20,0,1,0x4e,1,64,0,0,1].forEach(b); if(opt.shared)[0x55,1,0,3].forEach(b);if(!opt.noSynthMaven)[0x53,0x4d,1,3,5,96,110,111,112,113,114,115].forEach(b); }
         }
         break;
       case CMD.GET: case CMD.SET: {
@@ -4413,7 +4423,7 @@ async function mappingRequest(args,draw=true){
  if(s.rc)throw Error(s.rc===5?`Conflicts with assignment ${s.conflict+1}. Remove it or choose another message.`:['','Invalid assignment','Storage error','Protected legacy project: back up and migrate it before saving mappings','Stop playback to save assignments'][s.rc]);
  d.mapping=s;if(draw)renderMapping();return s;
 }
-async function loadMapping(){const host=$('sm-mapping');host.hidden=!dev?.info.synthmaven?.mapping;if(host.hidden)return;try{await mappingRequest([0]);}catch(e){say(e.message);}}
+async function loadMapping(){const host=$('sm-mapping');host.hidden=!dev?.info.synthmaven?.mapping;if(host.hidden)return;try{if(dev.info.synthmaven?.controller)dev.controller=parse[CMD.CONTROLLER](await sessionRequest(dev,[CMD.CONTROLLER,[0]]));await mappingRequest([0]);}catch(e){say(e.message);}}
 function renderMapping(){
  const d=dev,s=d?.mapping,host=$('sm-mapping');if(!s)return;host.replaceChildren();const state=d.mappingDraft??={slot:0,target:'a0',part:4,repeat:80};
  const run=fn=>async()=>{try{await fn();}catch(e){say(e.message);}};
@@ -4424,6 +4434,11 @@ function renderMapping(){
   for(const input of access?.inputs.values()||[])if(input!==d.input&&input.state!=='disconnected')route.append(el('option',{value:input.id,text:input.name||input.id}));
   route.value=controllerRoute?.input.id||'';route.onchange=run(async()=>{await chooseControllerRoute(route.value);renderMapping();});
   host.append(el('label',{},'Forward controller input ',route),el('p',{class:'dim'},'Connect the controller and FM-1 to this computer. Choose the controller here, then Learn. Only channel messages are forwarded; routing stops when the editor disconnects.'));
+ }
+ if(d.controller){const c=d.controller,mode=el('select',{'aria-label':'Controller protocol'}),port=el('select',{'aria-label':'Controller DAW port'});
+  ['Automatic','Standard MIDI','Mackie Control / MCU','HUI'].forEach((name,i)=>mode.append(el('option',{value:i,text:name})));mode.value=c.override;
+  for(let i=0;i<=16;i++)port.append(el('option',{value:i,text:i?'Port '+i:'Automatic port'}));port.value=c.port;
+  host.append(el('h3',{},'Direct USB controller'),el('p',{},c.connected?`${c.product} · ${c.family} · ${['AUTO','MIDI','MCU','HUI'][c.mode]}`:'No direct controller attached; settings apply in PEDAL / HOST mode.'),el('div',{class:'bar'},mode,port,el('button',{onclick:run(async()=>{const r=parse[CMD.CONTROLLER](await sessionRequest(d,[CMD.CONTROLLER,[1,+mode.value,+port.value]]));if(r.rc)throw Error('Controller settings could not be saved. Stop playback and check storage.');d.controller=r;renderMapping();})},'Save controller settings')));
  }
  const slot=el('select',{'aria-label':'Assignment slot'});s.maps.forEach((m,i)=>slot.append(el('option',{value:i,text:`${i+1} · ${m[0]?(m[5]?'Parameter '+m[7]:SM_ACTIONS[m[7]]):'Empty'}`})));slot.value=state.slot;slot.onchange=()=>{state.slot=+slot.value;};
  const target=el('select',{'aria-label':'MIDI action or parameter'});SM_ACTIONS.forEach((name,i)=>target.append(el('option',{value:'a'+i,text:name})));d.pdesc.forEach((p,i)=>{if(p?.label&&p.max>p.min)target.append(el('option',{value:'p'+i,text:'Parameter · '+p.label}));});target.value=state.target;target.onchange=()=>state.target=target.value;
@@ -4465,7 +4480,10 @@ function renderPerform(){
  const views=el('div',{class:'perform-views'});for(const [id,label] of [['quick','Quick controls'],['layers','Layers'],['tuning','Tuning']])views.append(el('button',{'aria-pressed':performView===id,onclick:()=>{performView=id;placePerformPanels();renderPerform();}},label));nav.append(views);
  controls.hidden=performView!=='quick';if(controls.hidden){placePerformPanels();return;}
  const parts=el('div',{class:'perform-parts'});for(let part=0;part<Math.min(d.info.ntrk||1,4);part++)parts.append(el('button',{'aria-pressed':(d.sel||0)===part,onclick:()=>selectTrack(part)},'Part '+(part+1),el('small',{},d.mix?.tracks[part]?trackName(d.mix.tracks[part]):'')));
- const ids=[[1,'ENV attack'],[4,'ENV release'],[9,'LFO rate'],[14,'LFO → filter']];
+ // FM6 owns its six operator envelopes; the generic track ADSR is inactive.
+ // Expose its native envelope/velocity macros instead of ineffective controls.
+ const nativeFM=d.info.engines[d.dump.engine]==='FM6';
+ const ids=nativeFM?[[d.info.pe0+4,'Modulator ENV time'],[d.info.pe0+5,'Velocity response'],[9,'LFO rate'],[14,'LFO → brightness']]:[[1,'ENV attack'],[4,'ENV release'],[9,'LFO rate'],[14,'LFO → filter']];
  for(let i=0;i<4;i++){const id=d.info.pe0+(d.info.engines[d.dump.engine]==='HYBRID'?4:0)+i;ids.push([id,d.pdesc[id]?.label||'Engine control']);}
  const grid=el('div',{class:'perform-knobs'});
  for(const [id,label] of ids){const desc=d.pdesc[id];if(!desc)continue;const value=d.dump.p[id],out=el('output',{},fmtValue(desc,value).filter(Boolean).join(' '));

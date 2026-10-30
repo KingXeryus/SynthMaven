@@ -386,6 +386,7 @@ static void midi_control(uint32_t ch, uint32_t cc, uint32_t value)
 static void __attribute__((noinline)) midi_event(uint32_t st, uint32_t ch, uint32_t d1, uint32_t d2)
 {
     if(sm_map_receive(st,ch,d1,d2,midi_event_source)){if(st==0x80u||(st==0x90u&&!d2))midi_note_event(ch,d1,0);return;}
+    if(midi_event_source==1u&&sm_controller_event(st,ch,&d1,d2,0,midi_event_cable))return;
     track_t *t = midi_track(ch);
     track_t *destination = (st == 0x90u && d2) ? midi_note_track(ch, d1) : t;
     if ((st == 0x80u || (st == 0x90u && !d2)) && (mn_get(ch, d1) & 0x7Fu))

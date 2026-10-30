@@ -139,9 +139,10 @@ static int midi_enqueue(uint32_t pkt, uint32_t source)
     return 1;
 }
 
+static uint8_t midi_out_control_only;
 static int midi_track_emit(uint32_t pkt)            /* from the audio ISR */
 {
-    if (usb_midi_out_ready() && mo_w - mo_r < MQ) {
+    if (!midi_out_control_only && usb_midi_out_ready() && mo_w - mo_r < MQ) {
         midi_out_q[mo_w % MQ] = pkt;
         RING_PUBLISH();
         mo_w++;

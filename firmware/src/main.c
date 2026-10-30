@@ -194,6 +194,18 @@ static void melodee_init(void)
     ui.force = 1;
 }
 
+#if MELODEE_USB_HOST
+static void __attribute__((noinline)) sm_controller_host_poll(void)
+{
+        if(uh.run&&(!ct_connected||ct_vid!=uh.vid||ct_pid!=uh.pid)){uint32_t guard=motion_guard();sm_controller_attach(uh.vid,uh.pid,uh.product,uh.iface_name);sm_controller_hint(uh.daw_hint);motion_unguard(guard);}
+        if(!uh.run&&ct_connected){uint32_t guard=motion_guard();sm_controller_disconnect();motion_unguard(guard);}
+        if(uh_mackie_ready){uint8_t data[32],len,cable;uint32_t guard=motion_guard();len=uh_mackie_ready;cable=uh_mackie_cable;memcpy(data,uh_mackie_buf,len);uh_mackie_ready=0;motion_unguard(guard);sm_controller_mackie(data,len,cable);}
+        sm_controller_tick(fm1_ms);
+        if(ct_focus<4){song.sel=ct_focus;ct_focus=255;sync_reload=1;ui.force=1;}
+    if(ct_dirty){ct_dirty=0;sync_reload=1;ui.force=1;}
+}
+#endif
+
 static void fm1_main(void)
 {
     int32_t knob = 512 * 16;
@@ -275,6 +287,7 @@ static void fm1_main(void)
         pattern_poll();
 #if MELODEE_USB_HOST
         uh_task(fm1_ms);                                /* before usb_retry: a host port is not retried as a device */
+        sm_controller_host_poll();
         if (uh.msg) {
             static const char *const UH_TEXT[] = {"", "", "", "MIDI READY", "NO MIDI DEVICE",
                                                   "LOW SPEED", "CONTROLLER LOST"};
