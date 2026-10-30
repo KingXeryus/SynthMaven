@@ -7,7 +7,7 @@ old SynthMaven 3.0 parameter bindings into the Melodee-based protocol.
 
 Run `python3 ios/generate_project.py`, then `ios/test.sh`. The tests build an unsigned
 iOS Simulator application; they do not install firmware or distribute TestFlight.
-The current target is version 3.5, build 13, home-screen name **SM FM1**. Both landscape orientations are supported; iPhone and portrait mode are excluded.
+The current target is version 3.5, build 14, home-screen name **SM FM1**. Both landscape orientations are supported; iPhone and portrait mode are excluded.
 
 ## Connecting
 
@@ -28,3 +28,5 @@ FM-1). Tap Learn new action, operate the controller, select an action or paramet
 forward controller SysEx or MIDI clock. Routing stops on disconnect/background
 and releases sustain/notes. Saved assignments remain in the firmware for direct
 PEDAL/HOST use later. The first USB-only candidate contains no Bluetooth UI.
+
+Build 14 fixes the truncated MIDI-engine favorites handshake and adds the four-track song arranger: 16 sections, per-track patterns, repeats, copy/reorder/delete and project saving.
