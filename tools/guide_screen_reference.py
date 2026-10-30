@@ -23,6 +23,8 @@ GLO={'GLOBAL':'TUNE / CLOCK','SYSTEM':'MIDI / CPU','WEIGHTS':'VOICE COST','WEIGH
 def describe(p,c):
  l=c['label'];t=p['title'];e=p['engine']
  if not l:return HELP['']
+ if t=='FM BEND' and l=='TIME':return 'Portamento transition time: higher values produce a slower glide between notes. PORTA and GLISS determine its behavior.'
+ if t.startswith('EDIT') and l=='TUNE':return 'Pitch tuning of the engine oscillator; use the displayed interval to transpose this sound without changing the global scale.'
  if t=='FM BEND' and l=='PORTA':return 'Select the FM portamento behavior; TIME sets the transition duration.'
  if t=='FM BEND' and l=='BRTH':return 'Breath controller modulation range; B.DST selects its destination.'
  if t=='FM BEND' and l=='STEP':return 'Pitch-bend step size; stepped bends move in discrete pitch intervals.'
