@@ -169,6 +169,7 @@ web_tests() {                                     # the editor mock's tables mus
     if command -v node >/dev/null 2>&1; then
         step "web pages: editor protocol + native CZ patches, package builder, update protocol" node web/test_web.mjs
         step "SynthMaven master tuning touch controls" node web/test_master_tuning.mjs
+        step "SynthMaven controller input routing" node web/test_controller_route.mjs
         step "installer UI: release selection, fetch races, cache and write lock" node web/test_installer.mjs
         step "installer safety: tab locks, wake/leave guards, throttled MIDI, preflight and interrupted resumes" node web/test_install_safety.mjs
         step "TransitFM1: verified package, backup, loader isolation and resume" node web/test_transit.mjs
@@ -191,6 +192,12 @@ old_to_new() {                                    # a package of another app (th
 powercut_tests() {
     python3 tests/boot_fixtures.py &&
         "$OUT/loader_powercut_test" build/host/boot-fixtures/legacy.fwsc build/melodee.fwsc \
+        build/host/boot-fixtures/same-stub.fwsc build/host/boot-fixtures/other-legacy.fwsc \
+        build/host/boot-fixtures/old-stub.fwsc
+}
+sm_powercut_tests() {
+    python3 tests/boot_fixtures.py &&
+        "$OUT/synthmaven_loader_powercut_test" build/host/boot-fixtures/legacy.fwsc build/melodee.fwsc \
         build/host/boot-fixtures/same-stub.fwsc build/host/boot-fixtures/other-legacy.fwsc \
         build/host/boot-fixtures/old-stub.fwsc
 }
@@ -336,6 +343,8 @@ if core; then
     t "power cuts: every erase/page, resume and unchanged boot sector" loader_powercut_test -O2 -- powercut_tests
     t "M-UPGRADE entry (own loader and pinned boot installer)" ota_test -DOWN_PKG=1 -- "$OUT/ota_test" build/melodee.fwsc web/m-bootloader/fm1-uboot.fwsc
     t "installer crash report (read only)" installer_report_test
+    t "SynthMaven factory reset ranges and recovery guard" synthmaven_loader_reset_test -O2
+    t "SynthMaven reset power cuts and resume" synthmaven_loader_powercut_test -O2 -- sm_powercut_tests
     t "update loader: other app -> this build" ldr_test -- old_to_new
     run "installer CLI (fm1_install.py) against a simulated FM-1" python3 tests/install_test.py
     run "ROM USB recovery: backup, protected regions, interrupted writes and transport failures" python3 tests/recovery_test.py

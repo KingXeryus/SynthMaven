@@ -174,6 +174,32 @@ static int ldr_sector(uint32_t fl_off, uint32_t s, uint8_t *sec, uint8_t *cur, u
     return -11;                                          /* verify failed twice */
 }
 
+/* SynthMaven update policy: clear musical storage before committing the new
+ * app marker. Never touch the flash head, loader staging or reserved sectors.
+ * An interruption leaves the staged loader available for a complete retry. */
+#ifndef SYNTHMAVEN_FACTORY_RESET
+#define SYNTHMAVEN_FACTORY_RESET 0
+#endif
+static int ldr_factory_reset(uint8_t *cur,uint32_t mark,uint32_t *open)
+{
+#if SYNTHMAVEN_FACTORY_RESET
+    const uint32_t ranges[][2]={{0x93000u,0xE0000u},{0xE5000u,0xFB000u},{0xFC000u,0xFF000u}};
+    for(uint32_t r=0;r<3u;r++)for(uint32_t off=ranges[r][0];off<ranges[r][1];off+=0x1000u){
+        if(ldr_fread(off,cur,0x1000u))return -8;
+        uint32_t i=0;while(i<0x1000u&&cur[i]==0xFFu)i++;
+        if(i==0x1000u)continue;
+        int rc;if(mark&&(rc=ldr_uncommit(cur,open)))return rc;
+        if(ldr_erase(off))return -9;
+        if(ldr_fread(off,cur,0x1000u))return -8;
+        for(i=0;i<0x1000u;i++)if(cur[i]!=0xFFu)return -11;
+        ldr_progress(off,0xFF000u);
+    }
+#else
+    (void)cur;(void)mark;(void)open;
+#endif
+    return 0;
+}
+
 static int ldr_session(void)
 {
     static uint8_t hdr[0x400], sec[0x1000], cur[0x1000];
@@ -204,6 +230,7 @@ static int ldr_session(void)
         done += 0x1000u;
         ldr_progress(done, LDR_APP_HI - LDR_APP_LO);
     }
+    if((rc=ldr_factory_reset(cur,(uint32_t)mark,&open)))return rc;
     if (mark) {                                          /* the commit: every other sector is written and verified */
         if ((rc = ldr_sector(fl_off, LDR_MARK_SEC, sec, cur, 1u, &open)) != 0)
             return rc;

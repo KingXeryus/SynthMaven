@@ -218,3 +218,29 @@ layout/canvas parity. Device CPU/audio performance remains unverified.
 These are local development checks. Controller profiles, final responsive UI,
 factory-program listening/device timing, USB hardware validation and all release
 and distribution gates remain outstanding. No hardware or public release changed.
+
+### Reset and editor routing checkpoint
+
+The SynthMaven loader clears musical storage at 0x93000–0xDFFFF,
+0xE5000–0xFAFFF and 0xFC000–0xFEFFF before committing the new app marker.
+It verifies erased bytes, preserves staging/head/reserved sectors, and skips
+already blank sectors on retry. This is intentionally different from upstream
+Melodee's preserve-data update policy. Make a backup before every installation.
+
+`build/host/reset-controller-regression.log` passes the full non-audio suite
+in 145 s, including the dedicated factory reset guard/range test and the full
+power-cut/resume matrix with populated user storage. The earlier full audio
+suite remains unchanged by these loader/editor changes. Target build
+`build/factory-reset-target.log` passes: app 564,132 bytes, loader 7,645 bytes,
+package 610,801 bytes. `build/ios-controller-route.log` passes the iOS build.
+
+Web MIDI Learn now offers an explicit external controller input route. iOS
+provides a native controller picker through the same mapping page; controller
+and FM-1 can connect to the iPad through a powered hub. Routing forwards channel
+messages only, isolates editor SysEx/clock, releases notes on detach, and stops
+on editor disconnect/background. Native physical routing is not yet verified.
+The web route isolation/stale-callback tests pass.
+
+A fresh 3.0 backup was read from the connected hardware and all object CRCs
+verified. It is stored privately under output/backups (ignored by Git), not
+included among release assets. The connected device has not yet been reflashed.

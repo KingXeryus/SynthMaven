@@ -111,7 +111,7 @@ static void ota_commit(const uint8_t *parm) { (void)parm; }
 static int ldr_fread(uint32_t off, void *p, uint32_t n) { memcpy(p, nor + off, n); return 0; }
 static int ldr_erase(uint32_t off)
 {
-    if (off < 0x4000u || off >= 0xFC000u || (off & 0xFFFu)) bad_range++;
+    if (off < 0x4000u || off >= 0xFF000u || (off & 0xFFFu)) bad_range++;
     if (off < 0x4000u) { printf("ERASE IN THE HEAD %#x\n", off); exit(1); }
     erases++;
     memset(nor + off, 0xFF, 0x1000);
@@ -203,6 +203,11 @@ static uint32_t stub_says(stub_result_t *r)         /* the device's stub_decide 
 static void restore(const uint8_t *base)
 {
     memcpy(nor + LDR_APP_LO, base + LDR_APP_LO, LDR_APP_HI - LDR_APP_LO);
+#if SYNTHMAVEN_FACTORY_RESET
+    memset(nor+0x93000u,0x5A,0xE0000u-0x93000u);
+    memset(nor+0xE5000u,0x6B,0xFB000u-0xE5000u);
+    memset(nor+0xFC000u,0x7C,0xFF000u-0xFC000u);
+#endif
     rx_full = 0;
 }
 

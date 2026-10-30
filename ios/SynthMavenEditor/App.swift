@@ -60,7 +60,7 @@ final class EditorController: UIViewController, WKScriptMessageHandlerWithReply,
         web.evaluateJavaScript("window.SynthMavenNative?.\(method)(...\(json))",completionHandler:nil)
     }
     private func state() {
-        js("state",["connected":midi.source != 0,"session":midi.sessionID])
+        js("state",["connected":midi.source != 0,"session":midi.sessionID,"controller":midi.controllerName])
         navigationItem.rightBarButtonItem?.title = midi.source != 0 ? "Connection" : "Connect"
         navigationItem.leftBarButtonItem?.accessibilityLabel = midi.label
     }
@@ -75,6 +75,19 @@ final class EditorController: UIViewController, WKScriptMessageHandlerWithReply,
         if midi.source != 0 { sheet.addAction(UIAlertAction(title:"Disconnect",style:.destructive){[weak self] _ in self?.midi.disconnect()}) }
         sheet.addAction(UIAlertAction(title:"Cancel",style:.cancel))
         sheet.popoverPresentationController?.barButtonItem=navigationItem.rightBarButtonItem;present(sheet,animated:true)
+    }
+    private func chooseController() {
+        guard midi.source != 0 else { alert("Connect the FM-1 first."); return }
+        let sheet = UIAlertController(title:"Controller for MIDI Learn", message:"Connect the controller and FM-1 to the iPad through a powered USB hub. Channel messages are forwarded to the FM-1 while this app is open. Current: \(midi.controllerName)", preferredStyle:.actionSheet)
+        sheet.addAction(UIAlertAction(title:"None — stop routing",style:.default){[weak self] _ in try? self?.midi.routeController(nil)})
+        for port in midi.ports(input:true) where port.endpoint != midi.source {
+            sheet.addAction(UIAlertAction(title:port.name,style:.default){[weak self] _ in
+                do { try self?.midi.routeController(port) } catch { self?.alert(error.localizedDescription) }
+            })
+        }
+        sheet.addAction(UIAlertAction(title:"Cancel",style:.cancel))
+        sheet.popoverPresentationController?.barButtonItem=navigationItem.rightBarButtonItem
+        present(sheet,animated:true)
     }
     private func connectDetected(wireless:Bool) {
         midi.refresh()
@@ -129,7 +142,8 @@ final class EditorController: UIViewController, WKScriptMessageHandlerWithReply,
         do {
             switch action {
             case "connect":connections();replyHandler(true,nil);return
-            case "status":replyHandler(["connected":midi.source != 0,"session":midi.sessionID],nil);return
+            case "routeController":chooseController();replyHandler(true,nil);return
+            case "status":replyHandler(["connected":midi.source != 0,"session":midi.sessionID,"controller":midi.controllerName],nil);return
             case "disconnect":midi.disconnect()
             case "send":
                 guard let session=body["session"] as? UInt,session==midi.sessionID,let values=body["bytes"] as? [Int],values.allSatisfy({0...255 ~= $0}) else{throw MIDIProblem.invalid("Invalid bytes")}

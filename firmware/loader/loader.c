@@ -18,7 +18,7 @@
 #include "fm1_time.h"
 #include "fm1_sys.h"
 /* the loader writes the app area and erases update records; never the head */
-#define FL_RANGE_OK(off, n) (FL_IN(off, n, 0x4000u, 0x93000u) || FL_IN(off, n, 0x93000u, 0xFC000u))
+#define FL_RANGE_OK(off, n) (FL_IN(off, n, 0x4000u, 0x93000u) || FL_IN(off, n, 0x93000u, 0xFF000u))
 #include "fm1_flash.h"
 #include "../src/libc.c"
 #include "../src/usb.c"
@@ -75,6 +75,7 @@ static void ldr_record_clear(void)
     fm1_updata_parm_clear();                        /* CRC 0: the SPL ignores it on a warm reset */
 }
 static void ldr_progress(uint32_t done, uint32_t total) { (void)done; (void)total; ldr_poll(); }
+#define SYNTHMAVEN_FACTORY_RESET 1
 #include "ldr_core.c"
 
 extern uint32_t _bss_start[], _bss_end[];

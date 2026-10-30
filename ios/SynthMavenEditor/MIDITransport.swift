@@ -17,6 +17,11 @@ final class MIDITransport {
     private var client = MIDIClientRef()
     private var input = MIDIPortRef()
     private var output = MIDIPortRef()
+    private var controllerInput = MIDIPortRef()
+    private(set) var controllerSource: MIDIEndpointRef = 0
+    private(set) var controllerName = "None"
+    private var controllerGeneration: UInt = 0
+    private var controllerParser = MIDIStream()
     private let receiveQueue = DispatchQueue(label: "SynthMaven.MIDI.receive")
     private var parser = MIDIStream()
     private var scheduler = MIDIQueue()
@@ -43,6 +48,17 @@ final class MIDITransport {
                 DispatchQueue.main.async {
                     guard session == self.generation, self.source != 0 else { return }
                     for message in messages { self.onMessage?(message) }
+                }
+            }
+        }
+        MIDIInputPortCreateWithBlock(client, "Controller input" as CFString, &controllerInput) { [weak self] list, context in
+            let token = UInt(bitPattern: context)
+            var data: [UInt8] = []
+            for packet in list.unsafeSequence() { data.append(contentsOf: packet.bytes()) }
+            DispatchQueue.main.async {
+                guard let self, token == self.controllerGeneration, self.controllerSource != 0 else { return }
+                for message in self.controllerParser.feed(data) where message.first.map({ $0 >= 0x80 && $0 < 0xF0 }) == true {
+                    self.sendPacket(message)
                 }
             }
         }
@@ -82,6 +98,10 @@ final class MIDITransport {
     }
     private func flush() {
         guard destination != 0, let bytes = scheduler.take(now: ProcessInfo.processInfo.systemUptime) else { return }
+        sendPacket(bytes)
+    }
+    private func sendPacket(_ bytes: [UInt8]) {
+        guard destination != 0 else { return }
         let list = packetStorage.bindMemory(to: MIDIPacketList.self, capacity: 1)
         let first = MIDIPacketListInit(list)
         let added = bytes.withUnsafeBufferPointer { buffer in MIDIPacketListAdd(list, 16384, first, 0, buffer.count, buffer.baseAddress!) }
@@ -90,7 +110,30 @@ final class MIDITransport {
         if result != noErr { fail("MIDI send failed (\(result))") }
     }
     private func fail(_ text: String) { disconnect(); onError?(text) }
+    func routeController(_ port: MIDIPortChoice?) throws {
+        if let port, port.endpoint == source { throw MIDIProblem.invalid("Choose the controller, not the FM-1 input") }
+        guard port == nil || source != 0 else { throw MIDIProblem.invalid("Connect the FM-1 first") }
+        stopController()
+        if let port {
+            let result = MIDIPortConnectSource(controllerInput, port.endpoint, UnsafeMutableRawPointer(bitPattern: controllerGeneration))
+            guard result == noErr else { throw MIDIProblem.invalid("Could not open controller (\(result))") }
+            controllerSource = port.endpoint; controllerName = port.name
+        }
+        onChange?()
+    }
+    private func stopController() {
+        controllerGeneration &+= 1
+        let previous = controllerSource
+        controllerSource = 0
+        if previous != 0 {
+            MIDIPortDisconnectSource(controllerInput, previous)
+            // Release sustain and notes from the departing controller before detach.
+            for channel in UInt8(0)..<16 { sendPacket([0xB0 | channel, 64, 0]); sendPacket([0xB0 | channel, 123, 0]) }
+        }
+        controllerSource = 0; controllerName = "None"; controllerParser = MIDIStream()
+    }
     func disconnect() {
+        stopController()
         generation &+= 1
         if source != 0 { MIDIPortDisconnectSource(input, source) }
         source = 0; destination = 0; scheduler.clear(); label = "Not connected"
@@ -98,12 +141,14 @@ final class MIDITransport {
         onChange?()
     }
     func refresh() {
+        if controllerSource != 0 && !ports(input: true).contains(where: {$0.endpoint == controllerSource}) { stopController() }
         if source != 0 && (!ports(input: true).contains(where: {$0.endpoint == source}) || !ports(input: false).contains(where: {$0.endpoint == destination})) { disconnect() }
         onChange?()
     }
     deinit {
         timer?.invalidate()
         if source != 0 { MIDIPortDisconnectSource(input, source) }
+        if controllerInput != 0 { MIDIPortDispose(controllerInput) }
         if input != 0 { MIDIPortDispose(input) }; if output != 0 { MIDIPortDispose(output) }
         if client != 0 { MIDIClientDispose(client) }; packetStorage.deallocate()
     }

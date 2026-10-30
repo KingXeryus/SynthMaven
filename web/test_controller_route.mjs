@@ -1,0 +1,22 @@
+// SPDX-License-Identifier: GPL-3.0-only
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+const html=readFileSync(new URL('editor.html',import.meta.url),'utf8');
+const code=html.slice(html.indexOf('let controllerRoute=null;'),html.indexOf('let connecting = false;'));
+const sent=[],errors=[];
+const fm={id:'fm',state:'connected'},pedal={id:'pedal',state:'connected',async open(){}};
+const device={input:fm,output:{send:bytes=>sent.push([...bytes])}};
+const c={access:{inputs:new Map([['fm',fm],['pedal',pedal]])},dev:device,window:{addEventListener(){}},say:e=>errors.push(e)};
+vm.createContext(c);vm.runInContext(code,c);
+await c.chooseControllerRoute('pedal');const old=pedal.onmidimessage;
+pedal.onmidimessage({data:[0xb0,80,127]});pedal.onmidimessage({data:[0xc2,8]});
+pedal.onmidimessage({data:[0xf0,1,2,0xf7]});pedal.onmidimessage({data:[0xf8]});
+assert.deepEqual(sent,[[0xb0,80,127],[0xc2,8]]);
+c.stopControllerRoute();assert.equal(pedal.onmidimessage,null);assert.equal(sent.length,34);
+for(let ch=0;ch<16;ch++)assert.deepEqual(sent.slice(2+ch*2,4+ch*2),[[0xb0|ch,64,0],[0xb0|ch,123,0]]);
+old({data:[0x90,60,100]});assert.equal(sent.length,34);
+await assert.rejects(c.chooseControllerRoute('fm'),/unavailable/);
+pedal.state='disconnected';await assert.rejects(c.chooseControllerRoute('pedal'),/unavailable/);
+assert.equal(errors.length,0);
+console.log('Controller route: CC/PC forwarding, SysEx/clock isolation, note cleanup, stale callback and endpoint rejection passed');

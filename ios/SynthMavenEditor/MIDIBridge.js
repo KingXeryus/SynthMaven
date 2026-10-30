@@ -18,7 +18,9 @@
       async open(){return this;}, async close(){this.connection='closed';return this;}};
   }
   window.SynthMavenNative = {
-    state({connected,session}) {
+    state({connected,session,controller}) {
+      this.controller=controller||"None";
+      window.dispatchEvent(new CustomEvent("synthmaven-controller-change"));
       if (!connected) { disconnected();return; }
       if (input && input.session===session) return;
       if (input) disconnected();
@@ -35,6 +37,7 @@
       access.onstatechange?.({port:input});access.onstatechange?.({port:output});
     },
     connect(){window.SynthMavenConnect?.();},
+    routeController(){return native({action:"routeController"});},
     receive(bytes){input?.onmidimessage?.({data:Uint8Array.from(bytes),receivedTime:performance.now(),target:input});},
     error(text){disconnected(text);}
   };

@@ -218,7 +218,11 @@ button[aria-pressed=true],[role=tab][aria-selected=true]{border-color:var(--acce
 #perform-detail #layer-routing select{min-height:32px;width:100%;max-width:none;padding:4px}
 #perform-detail #layer-routing label{font-size:11px}
 @media(max-width:750px){#perform-detail[data-view=layers]{grid-template-columns:1fr}#perform-detail #layer-routing{grid-template-columns:repeat(4,1fr)}}
-#perform-detail .mt-keyboard{height:160px}#perform-detail .mt-wheel{margin:12px auto}
+#perform-detail #master-tuning{padding:12px}
+#perform-detail #master-tuning h3{margin:0 0 8px}
+#perform-detail .mt-keyboard{height:120px;margin:10px 0}
+#perform-detail .mt-wheel{margin:8px auto;gap:3px}
+#perform-detail #master-tuning>p{margin:6px 0 0;font-size:11px}
 @media(max-width:600px){#perform-nav{grid-template-columns:1fr}.perform-bank{padding:8px}.perform-knobs{gap:6px;grid-template-columns:repeat(2,minmax(0,1fr))}.perform-control{padding:8px}.perform-control output{font-size:20px}.perform-parts small{display:none}}
 
 </style>
@@ -3455,6 +3459,25 @@ const pById = (label, def) => { const i = dev.pdesc.findIndex((d, k) => d && k <
 const pPan = () => pById("PAN", 39), pMute = () => pById("MUTE", 40);
 
 /* -------------------------------------------------------------- MIDI --- */
+let controllerRoute=null;
+function stopControllerRoute(){
+ const route=controllerRoute;controllerRoute=null;if(!route)return;
+ route.input.onmidimessage=null;
+ if(route.device===dev)try{for(let ch=0;ch<16;ch++){dev.output.send([0xb0|ch,64,0]);dev.output.send([0xb0|ch,123,0]);}}catch{}
+}
+async function chooseControllerRoute(id){
+ stopControllerRoute();if(!id)return;
+ const input=access?.inputs.get(id),d=dev;
+ if(!d||!input||input===d.input||input.state==='disconnected')throw Error('Controller input is unavailable');
+ if(input.open)await input.open();if(d!==dev)return;
+ const route={input,device:d};controllerRoute=route;
+ input.onmidimessage=e=>{if(controllerRoute!==route||dev!==d)return;const data=e.data;
+  // Channel voice only: never loop editor SysEx, clock or active sensing.
+  if(data.length<2||data[0]<0x80||data[0]>=0xf0)return;
+  try{d.output.send(data);}catch(error){stopControllerRoute();say(error.message);}
+ };
+}
+window.addEventListener('synthmaven-controller-change',()=>{if(dev?.mapping)renderMapping();});
 let connecting = false;
 async function connect() {
   if (connecting || dev) return;
@@ -3505,6 +3528,7 @@ async function connect() {
 }
 
 function disconnect(reasonKey = "disconnected") {
+  stopControllerRoute();
   if (dev) {
     dev.link.close();
     dev.input.onmidimessage = null;
@@ -3526,6 +3550,7 @@ function disconnect(reasonKey = "disconnected") {
 
 function onState(e) {
   const p = e.port;
+  if(controllerRoute?.input===p&&p.state==='disconnected'){stopControllerRoute();if(dev?.mapping)renderMapping();}
   if (!p || !/synthmaven|melodee|felucca/i.test(p.name || "")) return;
   if (dev && p.state === "disconnected" && (p.id === dev.input.id || p.id === dev.output.id)) {
     disconnect("lost");
@@ -3678,7 +3703,7 @@ function renderMasterTuning(){
     const cents=document.createElement('span');cents.textContent=k===key?(c>0?'+':'')+c+' ct':'';const name=document.createElement('span');name.textContent=notes[k];b.append(cents,name);
     b.onclick=()=>{const now=Date.now(),double=d.tuningTap?.key===k&&now-d.tuningTap.time<350;d.tuningKey=k;d.tuningTap=double?null:{key:k,time:now};if(double){const next={...tune,cents:profile.cents.slice(),mask:profile.mask,scale:47,enabled:1};next.cents[r]=c?0:-50;change(t=>Object.assign(t,next));}else renderMasterTuning();};kb.append(b);
   }
-  const wheel=document.createElement('label');wheel.className='mt-wheel';wheel.textContent=notes[key]+' / FINE TUNE · '+value+' ct';const slider=document.createElement('input');slider.type='range';slider.min=-100;slider.max=100;slider.step=1;slider.value=value;slider.setAttribute('aria-label','Selected key tuning in cents');slider.oninput=()=>{wheel.firstChild.textContent=notes[key]+' / FINE TUNE · '+slider.value+' ct';};slider.onchange=()=>fine(+slider.value);wheel.append(slider);host.append(wheel);
+  const wheel=document.createElement('label');wheel.className='mt-wheel';wheel.textContent=notes[key]+' / FINE TUNE · '+value+' ct';const slider=document.createElement('input');slider.type='range';slider.min=-100;slider.max=100;slider.step=1;slider.value=value;slider.setAttribute('aria-label','Selected key tuning in cents');slider.oninput=()=>{wheel.firstChild.textContent=notes[key]+' / FINE TUNE · '+slider.value+' ct';kb.querySelector('[aria-pressed=true] span').textContent=(+slider.value>0?'+':'')+slider.value+' ct';};slider.onchange=()=>fine(+slider.value);wheel.append(slider);host.append(wheel);
   const help=document.createElement('p');help.className='dim';help.textContent='Single tap selects a key. Double tap sets −50 ct, or resets a tuned key to 0. Global tuning survives program changes.';host.append(help);
 }
 
@@ -4393,6 +4418,13 @@ function renderMapping(){
  const d=dev,s=d?.mapping,host=$('sm-mapping');if(!s)return;host.replaceChildren();const state=d.mappingDraft??={slot:0,target:'a0',part:4,repeat:80};
  const run=fn=>async()=>{try{await fn();}catch(e){say(e.message);}};
  host.append(el('h2',{},'Pedal & MIDI Learn'),el('p',{},`USB role: ${s.host?'PEDAL / HOST':'COMPUTER'} · Device: ${s.device?'detected':'not detected'} · MIDI interface: ${s.midi?'detected':'not detected'}`),el('p',{id:'sm-midi-status','aria-live':'polite'},s.serial?`Last received: ${midiMessageText(s.last)} · ${s.match<24?'Matched assignment '+(s.match+1):'No matching assignment'} · triggers ${s.hits}`:'Waiting for a MIDI message'),el('p',{class:'dim'},'Use COMPUTER mode for the web or iOS editor over USB. A directly attached pedal needs PEDAL / HOST mode and external power. Return to COMPUTER mode and reconnect the cable to edit assignments; the USB port cannot host a pedal and connect to the editor at the same time. Learn through a computer MIDI route before connecting the pedal directly.'));
+ if(window.SynthMavenNative?.routeController){host.append(el('button',{onclick:run(()=>window.SynthMavenNative.routeController())},'Controller input · '+(window.SynthMavenNative.controller||'None')));}
+ else {
+  const route=el('select',{'aria-label':'Forward controller input'});route.append(el('option',{value:'',text:'None — routing off'}));
+  for(const input of access?.inputs.values()||[])if(input!==d.input&&input.state!=='disconnected')route.append(el('option',{value:input.id,text:input.name||input.id}));
+  route.value=controllerRoute?.input.id||'';route.onchange=run(async()=>{await chooseControllerRoute(route.value);renderMapping();});
+  host.append(el('label',{},'Forward controller input ',route),el('p',{class:'dim'},'Connect the controller and FM-1 to this computer. Choose the controller here, then Learn. Only channel messages are forwarded; routing stops when the editor disconnects.'));
+ }
  const slot=el('select',{'aria-label':'Assignment slot'});s.maps.forEach((m,i)=>slot.append(el('option',{value:i,text:`${i+1} · ${m[0]?(m[5]?'Parameter '+m[7]:SM_ACTIONS[m[7]]):'Empty'}`})));slot.value=state.slot;slot.onchange=()=>{state.slot=+slot.value;};
  const target=el('select',{'aria-label':'MIDI action or parameter'});SM_ACTIONS.forEach((name,i)=>target.append(el('option',{value:'a'+i,text:name})));d.pdesc.forEach((p,i)=>{if(p?.label&&p.max>p.min)target.append(el('option',{value:'p'+i,text:'Parameter · '+p.label}));});target.value=state.target;target.onchange=()=>state.target=target.value;
  const part=el('select',{'aria-label':'Target part'});['Part 1','Part 2','Part 3','Part 4','Selected part'].forEach((name,i)=>part.append(el('option',{value:i,text:name})));part.value=state.part;part.onchange=()=>state.part=+part.value;
