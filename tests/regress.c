@@ -958,11 +958,15 @@ static void slug(char *d, const char *s, size_t n)
 }
 
 /* ------------------------------------------------------------- main --- */
-#define MAXJ 1024
+#define MAXJ 2048 /* golden and CPU jobs each cover the complete factory catalogue */
 static job_t J[MAXJ];
 static uint32_t nj;
 static job_t *add(uint32_t kind, const char *name)
 {
+    if (nj >= MAXJ) {
+        fprintf(stderr, "regress: job capacity %u exceeded; enlarge MAXJ for this catalogue\n", MAXJ);
+        exit(2);
+    }
     job_t *j = &J[nj++];
     memset(j, 0, sizeof *j);
     j->kind = (uint8_t)kind;
