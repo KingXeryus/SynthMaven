@@ -76,7 +76,7 @@ static int sm_factory_program(uint32_t slot)
 #if MELODEE_FLASH
     uint8_t *raw=(uint8_t *)proj_image_store();
 #else
-    static uint8_t raw[14356]; /* host fixtures have no flash-transfer workspace */
+    static uint8_t raw[SM_FACTORY_RAW_BYTES]; /* host fixtures have no flash-transfer workspace */
 #endif
     uint32_t in=0,out=0;
     while(in<sizeof SM_FACTORY_LZ){
@@ -116,7 +116,7 @@ static int sm_factory_program(uint32_t slot)
     sm_program_current=(uint8_t)slot;sm_scene_current=meta[1];motion_unguard(guard);
     undo_clear();list_forget();sync_reload=1;ui.force=1;return 0;
 }
-_Static_assert(14356u<=BANK_STORE_SIZE,"factory decoder workspace");
+_Static_assert(SM_FACTORY_RAW_BYTES<=BANK_STORE_SIZE,"factory decoder workspace");
 _Static_assert(P_COUNT==124u&&FM6_PACKED==128u,"factory capture layout");
 static void sm_config_pack(uint8_t *b)
 {

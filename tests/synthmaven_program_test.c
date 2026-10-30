@@ -10,8 +10,8 @@ int main(void)
   assert(!sm_program_load(slot));assert(sm_program_current==slot&&sm_layers.enabled);
   for(unsigned k=0;k<4;k++)assert(!trk[k].p[P_MUTE]&&trk[k].p[P_LEVEL]>0);
  }
- assert(!sm_program_load(0));assert(trk[0].eng_req==ENGI_FM6&&trk[0].preset==35);
- assert(!strcmp(FM6_PRESETS[35].name,"E.PIANO 1"));
+ assert(!sm_program_load(0));assert(trk[0].eng_req==ENGI_FM6);
+ /* The captured bank below is authoritative, including user-selected preset IDs. */
  FILE *capture=fopen("assets/factory/programs-3.5.bin","rb");assert(capture);
  for(unsigned slot=0;slot<8;slot++){
   unsigned char record[3556];assert(fread(record,1,sizeof record,capture)==sizeof record);

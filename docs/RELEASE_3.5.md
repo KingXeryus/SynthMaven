@@ -14,7 +14,9 @@ SynthMaven 3.5 migrates to Melodee 1.5.1 while bringing over four-part programs,
 - Ten named and numbered GLO pages include theme-color presets, USB, autosave, control and recording preferences; MIDI mapping remains in the editors.
 - Melodee graphics, sequencer, USB audio and native instrument editors. GLO two-second layer toggle, EDIT two-second mixer, ENV three-second chords, SEL tuning. HOME OCT−/OCT+ three-second holds select the previous/next program; short taps change octave. Autosave retained.
 
-Factory programs: **DX7 Stage, E. Organ, Rhodes E-Piano, Disco Lead, Vintage Lead, Lead Guitar, Arabic Strings and RnB Bass**. The eight programs preserve the owner’s final FM-1 edits, including native patches, supporting layers, effects and scenes; P2 is renamed E. Organ.
+Factory programs: **DX7 Stage, E. Organ, Rhodes E-Piano, Disco Lead, Vintage Lead, Lead Guitar, Arabic Strings and RnB Bass**. The eight programs preserve the owner’s final FM-1 edits, including native patches, supporting layers, effects and scenes; the final refresh includes the latest P1 and the already named P2 E. Organ.
+
+The downloadable illustrated guide includes step-by-step device and editor workflows, per-page control tables, shortcuts, USB host/hub setup and backup/recovery instructions. This factory-bank refresh makes no editor changes.
 
 ## Install and recover
 
@@ -28,7 +30,7 @@ Do not restore a SynthMaven 3.0 binary backup into 3.5. Preserve it for rollback
 
 ## Validation and limits
 
-Physical tests of the USB-only candidate covered eight programs with one held note and three-note chords, both alone and with independent drums, USB audio capture, global tuning across program changes, program save/reload, MIDI Learn/match, and factory reset on reflash. The measured captures had no full-scale rail samples or complete-buffer deadline misses. These bounded tests do not prove every possible sound/effects combination is overload-free.
+Physical tests of the USB-only candidate covered the earlier capture of all eight programs with one held note and three-note chords, both alone and with independent drums, USB audio capture, global tuning across program changes, program save/reload, MIDI Learn/match, and factory reset on reflash. The measured captures had no full-scale rail samples or complete-buffer deadline misses. The final P1 refresh also passed one-note and three-note hardware timing checks with no missed deadlines or second-core faults; all eight final records passed 288 host audio renders. These bounded tests do not prove every possible sound/effects combination is overload-free.
 
 All four parts share CPU, memory and voice resources. Monophonic parts replace their previous note when a chord is played. The ensemble string engine reserves four budget units per voice to protect layered playback with drums. Vital import approximates supported settings; it is not Vital playback. Direct USB controllers need a suitable powered adapter/hub and compatible mode. Controller and iPad model coverage remains limited. The physical MASTER affects USB audio recording.
 

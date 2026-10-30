@@ -1,10 +1,10 @@
 # SynthMaven 3.5 factory programs
 
-The factory bank is captured from the owner’s eight final saved FM-1 programs on 30 October 2026. Only P2 was renamed to **E. Organ**. The earlier generated recipes are superseded.
+The factory bank is captured from the owner’s eight final saved FM-1 programs on 30 October 2026. The final refresh includes the latest P1 edit; P2 is already named **E. Organ** on the device. The earlier generated recipes are superseded.
 
 | Slot | Name | Lead engine | Supporting engines |
 |---|---|---|---|
-| P1 | DX7 STAGE | FM6 | Analog / Strings / Analog |
+| P1 | DX7 STAGE | FM6 | Analog / Hybrid / FM6 |
 | P2 | E. Organ | FM6 | Juno / Hybrid / FM6 |
 | P3 | RHODES EP | Digital | Juno / Hybrid / FM6 |
 | P4 | DISCO LEAD | Hybrid | Analog / CZ / Prophet |

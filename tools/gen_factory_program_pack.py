@@ -54,6 +54,7 @@ while i<len(out):
   else:decoded.append(out[i]);i+=1
 assert decoded==source
 header='/* SPDX-License-Identifier: GPL-3.0-only */\n/* User-curated FM-1 programs, captured 2026-10-30. Generated; do not edit. */\n'
+header+=f'#define SM_FACTORY_RAW_BYTES {len(source)}u\n'
 header+='static const char SM_FACTORY_PROGRAM_NAMES[8][13]='+json.dumps(names).replace('[','{').replace(']','}')+';\n'
 for typ,name,data in [('uint16_t','SM_FACTORY_OFF',offset),('uint8_t','SM_FACTORY_LZ',out)]:
  header+=f'static const {typ} {name}[]={{'+','.join(map(str,data))+'};\n'
