@@ -9,6 +9,7 @@ from html import escape
 from pathlib import Path
 import re
 from bs4 import BeautifulSoup, NavigableString, Tag
+from reportlab.platypus.tableofcontents import TableOfContents
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -30,6 +31,8 @@ def main():
     styles['BodyText'].fontSize = 9.5
     styles['BodyText'].leading = 14
     styles['BodyText'].spaceAfter = 7
+    styles['Heading3'].keepWithNext = True
+    styles['Heading3'].spaceBefore = 10
     styles['Heading1'].textColor = colors.HexColor('#c41624')
     styles['Heading1'].spaceBefore = 16
     styles['Heading1'].keepWithNext = True
@@ -64,8 +67,10 @@ def main():
         for child in node.children:
             if not isinstance(child,Tag): continue
             name=child.name
-            if name in ('h2','h3','h4'):
-                output.append(paragraph(child,'Heading1' if name=='h2' else 'Heading2'))
+            if name in ('h2','h3','h4','h5'):
+                item = paragraph(child, 'Heading2' if name=='h2' else 'Heading3')
+                if name=='h2': item.toc_level = 1
+                output.append(item)
             elif name=='p': output.append(paragraph(child))
             elif name in ('ol','ul'):
                 for i,li in enumerate(child.find_all('li',recursive=False)):
@@ -80,6 +85,8 @@ def main():
                     shot.drawWidth=width if image['src'].startswith('editor-') else 150
                     shot.drawHeight=shot.drawWidth*ratio
                     items=[shot]
+                    if output and isinstance(output[-1], Paragraph) and output[-1].style.name.startswith("Heading"):
+                        items.insert(0,output.pop())
                     if caption: items.append(paragraph(caption,'CaptionSM'))
                     items.append(Spacer(1,8));output.append(KeepTogether(items))
             elif name=='table':
@@ -100,20 +107,57 @@ def main():
                         ('TOPPADDING',(0,0),(-1,-1),5),('BOTTOMPADDING',(0,0),(-1,-1),5)]))
                     output.extend([table,Spacer(1,10)])
             elif name=='pre': output.append(paragraph(child,'CellSM'))
-            elif name not in ('script','style','nav'): output.extend(walk(child))
+            elif name not in ('script','style','nav'):
+                if child.get('class') and 'editor-guide-screen' in child.get('class',[]): output.append(PageBreak())
+                output.extend(walk(child))
         return output
 
-    story=[Spacer(1,90),Paragraph('SYNTHMAVEN',styles['Title']),
-           Paragraph(f'{escape(args.version)} · FM-1 user guide',styles['Heading1']),
-           Paragraph('Melodee-based firmware · USB web and iPad editor',styles['BodyText']),
-           Spacer(1,20),Paragraph('Programs, layers, microtuning, controllers and the complete engine and sequencer reference.',styles['BodyText']),
-           Paragraph('Back up before flashing. Installation resets user settings and musical storage. Bluetooth is not included in this USB-first build.',styles['BodyText']),
-           PageBreak()]
-    story.append(Paragraph('Contents',styles['Heading1']))
-    for heading in soup.select('article > section > h2'):
-        story.append(paragraph(heading))
-    story.append(PageBreak())
-    story.extend(walk(soup.select_one('article')))
+    chapters = [
+        ('Start here: install, connect and recover', ['before','install','backup']),
+        ('Play the FM-1: panel, HOME and shortcuts', ['navigate','panel','stage','menu']),
+        ('Programs, layers, saving and performance', ['synthmaven','factory-character','tracks','sounds','projects']),
+        ('Shape a sound: engines and synthesis', ['engines','designer']),
+        ('Envelopes, modulation and effects', ['modulation','effects']),
+        ('Scales, microtuning and chords', ['scales']),
+        ('Arpeggiator, sequencer and recording', ['arp','sequencer','recording']),
+        ('Global settings, MIDI and USB audio', ['global','midi','usb-audio']),
+        ('Web and iPad editor: step-by-step workflows', ['sm-editor','editor','editor-walkthrough']),
+        ('Troubleshooting, limitations and credits', ['trouble','about']),
+    ]
+    expected = {x['id'] for x in soup.select('article > section')}
+    included = [x for _, ids in chapters for x in ids]
+    assert len(included)==len(set(included)) and set(included)==expected
+    story=[Spacer(1,28),Image(str(ROOT/'web/branding/firmware-icon.png'),width=180,height=180),
+           Spacer(1,24),Paragraph('Illustrated user guide',styles['Title']),
+           Paragraph(f'SynthMaven {escape(args.version)} · FM-1',styles['Heading1']),
+           Paragraph('Firmware, web editor and iPad editor',styles['Heading2']),
+           Paragraph('Step-by-step operation, screen-by-screen controls, shortcuts, secondary functions and the eight factory programs.',styles['BodyText']),
+           Spacer(1,16),Paragraph('Start with the instrument. Learn its panel and HOME screens, build and save a four-part program, then explore sound design, tuning and sequencing. The editor chapter explains the matching USB workflows.',styles['BodyText']),
+           Paragraph('Back up before flashing: installation resets settings and musical storage. Bluetooth is not included in this release.',styles['BodyText']),
+           Paragraph('Device illustrations come from the firmware renderer. Editor screenshots illustrate the matching interface; they are not evidence of hardware validation.',styles['CaptionSM']),PageBreak()]
+    story.append(Paragraph('Find your next step',styles['Heading1']))
+    story.append(Paragraph('Select a chapter or topic below, or use the PDF bookmarks. Page numbers refer to this guide.',styles['BodyText']))
+    toc=TableOfContents()
+    toc.levelStyles=[ParagraphStyle('TOCChapter',fontSize=11,leading=15,spaceBefore=9,textColor=colors.HexColor('#a61f2b')),
+                     ParagraphStyle('TOCTopic',fontSize=9,leading=12,leftIndent=14,spaceBefore=3)]
+    story.extend([toc,PageBreak(),Paragraph('Three things to keep separate',styles['Heading1']),
+        Paragraph('<b>Sound preset:</b> one instrument sound and its sound parameters.<br/><b>Program:</b> four sounds together with their performance setup.<br/><b>Editor library entry:</b> a browser-side sound record until it is sent to the FM-1 and saved there.',styles['BodyText']),
+        Paragraph('A project is a separate device storage workflow for tracks, patterns and arrangements. Saving a sound, saving a program and saving a project are different operations; use the instructions for the item you want to preserve.',styles['BodyText']),
+        Paragraph('How to use this guide',styles['Heading2']),
+        Paragraph('Begin with chapters 1 and 2 for installation and physical controls. Chapter 3 covers your saved programs and layers. Chapters 4–8 explain synthesis and performance settings. Chapter 9 follows editor tasks with screenshots. Chapter 10 covers recovery checks and attribution.',styles['BodyText'])])
+    for number,(title,ids) in enumerate(chapters,1):
+        story.append(PageBreak())
+        heading=Paragraph(f'{number:02d}  {title}',styles['Heading1']);heading.toc_level=0
+        story.append(heading)
+        for section_id in ids:
+            story.extend(walk(soup.find('section',id=section_id)))
+    class GuideDoc(SimpleDocTemplate):
+        def afterFlowable(self, flowable):
+            if hasattr(flowable,'toc_level'):
+                text=flowable.getPlainText(); key='topic-'+str(self.seq.nextf('topic'))
+                self.canv.bookmarkPage(key)
+                self.canv.addOutlineEntry(text,key,level=flowable.toc_level,closed=False)
+                self.notify('TOCEntry',(flowable.toc_level,text,self.page,key))
     def footer(canvas,doc):
         canvas.saveState();canvas.setStrokeColor(colors.HexColor('#c41624'))
         canvas.line(44,38,A4[0]-44,38);canvas.setFont('Helvetica',8)
@@ -121,9 +165,9 @@ def main():
         canvas.drawString(44,25,f'SynthMaven {args.version} | FM-1')
         canvas.drawRightString(A4[0]-44,25,str(doc.page));canvas.restoreState()
     args.output.parent.mkdir(parents=True,exist_ok=True)
-    doc=SimpleDocTemplate(str(args.output),pagesize=A4,leftMargin=44,rightMargin=44,
+    doc=GuideDoc(str(args.output),pagesize=A4,leftMargin=44,rightMargin=44,
                           topMargin=42,bottomMargin=52,title=f'SynthMaven {args.version} User Guide',author='SynthMaven')
-    doc.build(story,onFirstPage=footer,onLaterPages=footer)
+    doc.multiBuild(story,onFirstPage=footer,onLaterPages=footer)
     print(args.output)
 
 

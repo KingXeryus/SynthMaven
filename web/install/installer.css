@@ -202,3 +202,8 @@
 .sm-features h2 { color:#ff737e; }.sm-features li { margin:0 0 10px; }
 .sm-features a { color:#b7d3ff; }.hero { padding-top:32px; }
 @media(max-width:1000px){.site,main,footer{max-width:100%;}}
+
+/* Shared firmware startup artwork beside the installer name. */
+.site { align-items: center; flex-wrap: wrap; }
+.site .brand { display: inline-flex; align-items: center; gap: 10px; }
+.firmware-logo { width: 48px; height: 48px; object-fit: contain; flex: none; border-radius: 10px; }

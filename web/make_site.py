@@ -231,6 +231,7 @@ def main(pkg, version, out, nightly=None, installer_only=False, rc=None, manual=
         require_manual(man_src)                     # before any write: a missing figure must leave the site untouched
     for d in (inst, ed, fw):
         d.mkdir(parents=True, exist_ok=True)
+    shutil.copy(HERE / "branding/firmware-icon.png", inst / "firmware-icon.png")
     (fw / "m-bootloader-1.2.fwsc").write_bytes(boot_files["fm1-uboot.fwsc"])
     (fw / "m-bootloader-1.2.boot").write_bytes(boot_files["fm1-uboot.boot"])
     (fw / "m-bootloader-LICENSE.txt").write_bytes(boot_files["LICENSE"])
