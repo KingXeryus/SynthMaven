@@ -144,3 +144,53 @@ has 27,904 bytes of payload capacity. Two current-pattern records would occupy
 banks of a Melodee project. Eight programs must therefore use an explicitly
 versioned format and validated migration/backup handling. Do not simply enlarge
 the existing four-slot array or claim that eight complete Melodee projects fit.
+
+## Program, mapping and USB app integration (30 October, in progress)
+
+- Commands 112/113/114 implement named programs/scenes, MIDI Learn/mappings and
+  setlists. Eight sound programs share four atomic A/B objects, two per object.
+  Each object is 7,512 bytes, including scenes and configuration. Sound programs
+  intentionally exclude sequencer note/pattern banks and preserve the current sequence.
+- Legacy project objects are protected in both directions. Program backup restore
+  validates the complete object before publication. Interrupted writes retain the
+  prior copy and the paired program.
+- Scenes capture four levels, pans, mutes, three effect sends, HYBRID macros and
+  tuning. Programs optionally override global tuning. Autosave uses the existing
+  idle policy; byte-identical sound programs skip flash erasure.
+- MIDI assignments capture a message, require acceptance, reject conflicts and
+  survive reboot. Action dispatch is bounded and deferred out of the audio interrupt.
+  Release messages rearm duplicate suppression to preserve intentional taps.
+- GLO holds for two seconds before toggling layering and showing its state. EDIT
+  holds for two seconds before retaining the mixer; ENV holds three seconds for
+  chords. SEL opens master tuning; SELECT selects the scale. SEL held three seconds
+  opens custom tuning. Undo is EDIT + OCT−; redo remains EDIT + OCT+.
+- The existing iOS CoreMIDI transport and one-step USB selection are copied with
+  their notices. The app bundles this branch's editor without legacy protocol bindings,
+  displays “SM FM1 Editor”, and builds as 3.5 (11). No distribution has occurred.
+  Bluetooth selection is absent from this USB-first candidate.
+- Eight draft factory programs follow the requested instrument categories with
+  mono supporting parts. These are new Melodee-native recipes, not exact copies of
+  the owner-captured 3.0 programs. All 16 single-note/chord host renders are audible
+  and have no full-scale samples. This is not a loudness-match, listening, or device
+  CPU validation. No global solo gain or limiter change was introduced.
+
+Evidence: `build/programs-shortcuts-target.log` passes target build/resource checks
+(app 565,248 bytes, loader 7,427 bytes, development package 610,583 bytes).
+`build/host/mapping-web-fixed.log` passes the web suite. `build/ios-build.log` passes
+an unsigned simulator build; MIDI stream and JavaScript bridge tests pass.
+`build/host/factory-audio.log` records the draft program renders. Full regression
+is being rerun after shortcut and screen-label corrections; earlier failing logs
+must not be described as a complete pass.
+
+Still required beyond the blockers above: current-program/scene boot restoration,
+final controller profiles, neutral-chord filtering, final shared Perform layout,
+physical timing/audio/USB verification, and release documentation/attestation.
+
+Read-only hardware check on 30 October confirms the connected “Melodee FM-1”
+USB endpoint is running **FELUCCA SYNTHMAVEN 3.0** (INFO command 1). No candidate
+was installed by this check.
+
+Checkpoint validation: `build/host/program-regression-4.log` reports **ALL HOST
+TESTS PASSED in 197 s** with SOUND=1, including the web suite, audio regressions,
+atomic program/backup/mapping tests, new shortcuts, all UI fixtures and screen
+layout/canvas parity. Device CPU/audio performance remains unverified.

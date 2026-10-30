@@ -56,7 +56,7 @@ static uint32_t layer_bits(void)
 {
     uint32_t l, m = 0;
     for (l = LAYER_FX; l < LAYER_N; l++)
-        m |= ly_bit(l);
+        if(l==LAYER_FX)m |= ly_bit(l);
     if (step_modifier_context())
         m &= ~step_modifier_mask();                      /* synth STEP: SCL, EDIT edit notes */
     return m;
@@ -157,10 +157,11 @@ static uint32_t layer_gesture(uint32_t now, uint32_t combo)
     }
     if (ly_down(l)) {
         if (!(*t0 & (LY_OPEN | LY_DEAD)) &&
-            (combo || now - (*t0 & ~15u) >= (uint32_t)HOLD_MS[settings_hold % 4u] * 1000u * FM1_TICKS_PER_US)) {
+            (combo || now - (*t0 & ~15u) >= 2000u * 1000u * FM1_TICKS_PER_US)) {
             *t0 |= LY_OPEN | (combo ? LY_COMBO : 0u);
             layer_opened(l);
         }
+        if(l==LAYER_FX && (*t0&LY_OPEN) && now-(*t0&~15u)>=3000u*1000u*FM1_TICKS_PER_US)ui.lock=LAYER_FX;
         return 0;
     }
     l = *t0 & (LY_OPEN | LY_DEAD) || combo ? 0u : l;   /* (a knob turned as it was let go: a combo, no tap) */

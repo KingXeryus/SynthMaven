@@ -14,7 +14,7 @@ static void open_picker(void)
 
 static void mark(int on)
 {
-    press(B_SCL); frames(400); assert(scale_settings_page(cur_page()));
+    go_title("SCL"); frame(); assert(scale_settings_page(cur_page()));
     turn(EN_K2, -100); frame();
     turn(EN_K2, 4); frame();                       /* (SCL is a list: Favourite its 5th row, KNOB 1 its value) */
     turn(EN_K1, on ? 1 : -1); frame();
@@ -29,16 +29,11 @@ static void project_scale_test(void)
     go_title("SCL");
     edit_param(0, 7);                               /* ordinary SCL page: G */
     for (uint32_t k = 0; k < NPART; k++) assert(trk[k].p[P_ROOT] == 7);
-    go_home();
-    lay_combo(B_SCL, black(4));                     /* SCL + D#: project key, silent */
-    for (uint32_t k = 0; k < NPART; k++) assert(trk[k].p[P_ROOT] == 3);
-    assert(!gates());
-    key_up(black(4)); frame();
-    oct_back();
-    for (uint32_t k = 0; k < NPART; k++) assert(trk[k].p[P_ROOT] == 7);
-    turn(EN_K1, 2);                                 /* SCL layer knob: A */
-    for (uint32_t k = 0; k < NPART; k++) assert(trk[k].p[P_ROOT] == 9);
-    btn_up(B_SCL); frame();
+    /* Legacy scale data remains editable, but SEL now opens master tuning. */
+    edit_param(0, -4);
+    for (uint32_t k=0;k<NPART;k++)assert(trk[k].p[P_ROOT]==3);
+    edit_param(0,6);
+    for (uint32_t k=0;k<NPART;k++)assert(trk[k].p[P_ROOT]==9);
 
     set_engine_of(&trk[3], ENGI_DRUM);
     song.sel = 3;                                  /* shared settings can be edited on drums too */
@@ -81,13 +76,8 @@ static void project_scale_test(void)
 int main(void)
 {
     ui_power_on(); go_home(); press(B_SCL); frames(400);
-    assert(scale_settings_page(cur_page()));
-    press(B_SCL); frames(400); assert(cur_page()->scope == SC_MASTER_TUNE);
-    press(B_SCL); frames(400); assert(cur_page()->scope == SC_MASTER_TUNE);
-    press(B_SCL); frames(400); assert(cur_page()->graph == GR_CHORD);
-    press(B_SCL); frames(400); assert(scale_settings_page(cur_page()));
-    turn(EN_SELECT, -1); frame(); assert(cur_page()->graph == GR_CHORD);
-    turn(EN_SELECT, 1); frame(); assert(scale_settings_page(cur_page()));
+    assert(cur_page()->scope==SC_MASTER_TUNE);
+    go_title("SCL");frame();assert(scale_settings_page(cur_page()));
     open_picker();
     assert(cur_page()->graph == GR_SCALE_PICKER && ui.scale_family == 1);
     assert(cur_page()->id[1] == P_SCALE && cur_page()->id[2] == P_ROOT);
@@ -130,7 +120,7 @@ int main(void)
     edit_param(3, -100); assert(TSEL->p[P_QUANT] == Q_OFF);
     edit_param(3, 1);
     for (uint32_t k = 0; k < NPART; k++) assert(trk[k].p[P_QUANT] == TSEL->p[P_QUANT]);
-    press(B_SCL); frames(400); assert(!strcmp(cur_page()->title, "SCL"));
+    go_title("SCL"); frame(); assert(!strcmp(cur_page()->title, "SCL"));
     {
         char label[16], value[16], expected[16];
         uint16_t color;
@@ -143,8 +133,7 @@ int main(void)
             assert(!strcmp(label, "Scale") && !strcmp(value, expected));
         }
     }
-    press(B_SCL); frames(400); press(B_SCL); frames(400);
-    press(B_SCL); frames(400); assert(!strcmp(cur_page()->title, "CHORD"));
+    btn_down(B_ENV);frames(3100);btn_up(B_ENV);frame();assert(!strcmp(cur_page()->title,"CHORD"));
     puts("scale picker: SCL/SELECT skip picker, OCT+ entry, every family, shared ROOT/scale/MPC/QNT, favorites and empty list passed");
     project_scale_test();
     return 0;

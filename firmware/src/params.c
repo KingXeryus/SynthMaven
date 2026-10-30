@@ -578,12 +578,12 @@ static void param_format(const param_desc_t *d, int32_t v, char *val, const char
 enum { FAM_HOME, FAM_ENV, FAM_LFO, FAM_SCL, FAM_EDIT, FAM_GLO, FAM_SAVE, FAM_ARP, FAM_SEQ, FAM_TRK,
        FAM_FX, FAM_COUNT };
 enum { SC_TRACK, SC_GLOBAL, SC_ENGINE, SC_STEP, SC_TRK,   /* SC_TRK: the TRACKS page (ui_input.c tracks_edit) */
-       SC_FM6, SC_FMOP, SC_CZ, SC_CZ1, SC_P5, SC_P5STORE, SC_DRUM, SC_DRUMHIT, SC_MASTER_TUNE };                         /* FM6: its patch, functions; operator fm6_opsel;
+       SC_FM6, SC_FMOP, SC_CZ, SC_CZ1, SC_P5, SC_P5STORE, SC_DRUM, SC_DRUMHIT, SC_MASTER_TUNE, SC_SM_PROGRAM, SC_SM_MIX, SC_SM_LAYER };                         /* FM6: its patch, functions; operator fm6_opsel;
                                                                   * CZ1: a native CZ-1 tone (cz_edit.h) */
 enum { GR_NONE, GR_ADSR, GR_LFO, GR_STEPS, GR_ARP, GR_SCALE, GR_ROLL, GR_BROWSE, GR_SLOTS, GR_USER, GR_TRK,
        GR_MOD, GR_PATS, GR_SONG, GR_MOTION, GR_CHORD, GR_SLICES,
        GR_FMEG, GR_FMPEG, GR_FMSTORE, GR_CZTOOLS, GR_SCALE_PICKER, GR_DRUMHIT, GR_PATGRID,
-       GR_FXRACK }; /* NOTES shares GR_ROLL for steps and recorded events */
+       GR_FXRACK, GR_SM_MIX, GR_SM_TUNING }; /* NOTES shares GR_ROLL for steps and recorded events */
 
 typedef struct {
     const char *title;
@@ -613,6 +613,17 @@ static const param_desc_t SM_TUNE_DESC[]={
     {"SNAP",F_ONOFF,0,1,0,0,0},
     {"PART",F_ONOFF,0,1,1,0,0}
 };
+static int16_t sm_program_slot=1,sm_program_override,sm_program_action;
+static const param_desc_t SM_PROGRAM_DESC[]={
+    {"SLOT",F_INT,1,8,1,0,0}, PE("LOAD",N_GO,0), PE("SAVE",N_GO,0),
+    {"TUNE",F_ONOFF,0,1,0,0,0}
+};
+static int16_t sm_layer_cell;
+static const param_desc_t SM_LAYER_DESC={"LAYER",F_ONOFF,0,1,0,0,0};
+static const param_desc_t SM_MIX_DESC[4]={
+    {"VOL1",F_PCT,0,127,100,0,0},{"VOL2",F_PCT,0,127,100,0,0},
+    {"VOL3",F_PCT,0,127,100,0,0},{"VOL4",F_PCT,0,127,100,0,0}
+};
 static const page_t PAGES[] = {
     /* FX (docs/design README "FX rack"): the track's rack, its three slots (shown while they hold an effect), the
      * shared rack, its three slots. A rack: KNOB 2 the row (fx_rack_row), 1 its effect, 4 its amount, SHARED's 3 ROUTE
@@ -633,8 +644,8 @@ static const page_t PAGES[] = {
     {"MOD", FAM_LFO, SC_TRACK, GR_MOD, {P_M1SRC, 0xFF, P_M1DST, P_M1AMT}},   /* KNOB 2: the route (mod_ui_slot) */
     {"SCALES", FAM_SCL, SC_TRACK, GR_SCALE_PICKER, {0xFF, P_SCALE, P_ROOT, P_QUANT}},
     {"SCL", FAM_SCL, SC_TRACK, GR_SCALE, {P_ROOT, 0xFF, P_QUANT, P_TRANS}}, /* K2: scale favorite */
-    {"MASTER TUNE",FAM_SCL,SC_MASTER_TUNE,GR_NONE,{0,1,2,3}},
-    {"CUSTOM TUNE",FAM_SCL,SC_MASTER_TUNE,GR_NONE,{4,5,6,7}},
+    {"MASTER TUNE",FAM_SCL,SC_MASTER_TUNE,GR_SM_TUNING,{0,1,2,3}},
+    {"CUSTOM TUNE",FAM_SCL,SC_MASTER_TUNE,GR_SM_TUNING,{4,5,6,7}},
     {"CHORD", FAM_SCL, SC_TRACK, GR_CHORD, {P_CHRD, P_VOIC, P_STRUM, P_STROKE}},   /* SCL again: the chord keys (chord.c) */
     {"MPC", FAM_SCL, SC_TRACK, GR_NONE, {P_MPCDEG, 0xFF, 0xFF, 0xFF}},   /* the degree of each bank's pad 02: a row of SCL's list
                                                                           * (QNT MPC only), not a page of its own */
@@ -707,7 +718,9 @@ static const page_t PAGES[] = {
     {"GLOBAL", FAM_GLO, SC_GLOBAL, GR_NONE, {G_A4, G_BUDGET, G_CLOCK, G_TUNE}}, /* device reference/budget; CLK/TUNE kept */
     {"SYSTEM", FAM_GLO, SC_GLOBAL, GR_NONE, {G_MIDI, G_DRUMCH, G_ROUTE, G_INFO}},
     {"WEIGHTS", FAM_GLO, SC_GLOBAL, GR_NONE, {G_WP5, G_WCZ, G_WFM6, G_WSID}},        /* budget points per voice */
+    {"LAYERING",FAM_GLO,SC_SM_LAYER,GR_NONE,{0,255,255,255}},
     {"WEIGHTS 2", FAM_GLO, SC_GLOBAL, GR_NONE, {G_WDRUM, G_BUDGET, 0xFF, G_SAFETY}},  /* SAFETY: overload voice cuts */
+    {"PROGRAM", FAM_SAVE, SC_SM_PROGRAM, GR_NONE, {0,1,2,3}},
     {"PRESETS", FAM_SAVE, SC_GLOBAL, GR_BROWSE, {0xFF, 0xFF, 0xFF, 0xFF}},   /* browser: KNOB 1 LIST, 2 / PRESETS the sounds */
     {"USER", FAM_SAVE, SC_GLOBAL, GR_USER, {0xFF, 0xFF, 0xFF, 0xFF}},       /* user presets: SLOT LOAD ERASE SAVE */
     {"PROJECT", FAM_SAVE, SC_GLOBAL, GR_SLOTS, {G_SLOT, G_BOOT, G_LOAD, G_SAVE}},
@@ -717,6 +730,7 @@ static const page_t PAGES[] = {
     {"PATTERN", FAM_SEQ, SC_TRACK, GR_STEPS, {P_SLEN, P_SDIV, P_SSWING, P_SGATE}},
     {"TEMPO", FAM_SEQ, SC_GLOBAL, GR_NONE, {G_BPM, G_SWING, G_PROJECT_RECQ, 0xFF}},   /* project speed, swing and recording grid */
     {"MIXER", FAM_TRK, SC_TRK, GR_TRK, {0, 1, 2, 3}},   /* GLO button; LEVEL PAN MUTE */
+    {"LAYER MIX",FAM_TRK,SC_SM_MIX,GR_SM_MIX,{0,1,2,3}},
     {"PATTERNS", FAM_SEQ, SC_GLOBAL, GR_PATGRID, {0xFF, 0xFF, 0xFF, 0xFF}},   /* the 4 x 8 grid: KNOB k track k's (ui_stage.c) */
     {"SONG", FAM_SEQ, SC_GLOBAL, GR_SONG, {0xFF, 0xFF, 0xFF, 0xFF}},
     {"MOTION", FAM_SEQ, SC_TRACK, GR_MOTION, {0xFF, 0xFF, 0xFF, 0xFF}},
@@ -833,6 +847,12 @@ static const param_desc_t *fx_rack_desc(const page_t *pg, uint32_t slot, int16_t
 static const param_desc_t *page_desc(const page_t *pg, uint32_t slot, int16_t **valp)
 {
     uint32_t id = pg->id[slot];
+    if(pg->scope==SC_SM_LAYER){if(slot){*valp=0;return 0;}sm_layer_cell=sm_layers.enabled;*valp=&sm_layer_cell;return &SM_LAYER_DESC;}
+    if(pg->scope==SC_SM_MIX){*valp=&trk[slot&3u].p[P_LEVEL];return &SM_MIX_DESC[slot&3u];}
+    if(pg->scope==SC_SM_PROGRAM){
+        *valp=slot==0?&sm_program_slot:slot==3?&sm_program_override:&sm_program_action;
+        return &SM_PROGRAM_DESC[slot&3u];
+    }
     if(pg->scope==SC_MASTER_TUNE){
         if(id>=8u){*valp=0;return 0;}
         sm_tuning_t preview=sm_tuning;preview.enabled=1;preview.apply=15;preview.octave=0;

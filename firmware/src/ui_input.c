@@ -762,6 +762,7 @@ static void jam_take(void)
  * differs from what is there (project.c project_autosave); once per rest */
 #define AUTOSAVE_MS 5000u
 static void project_autosave(void);
+static void sm_program_autosave(void);
 static void autosave_poll(uint32_t active)
 {
     static uint32_t t0, rx;
@@ -781,6 +782,7 @@ static void autosave_poll(uint32_t active)
     if (!done && fm1_ms - t0 >= AUTOSAVE_MS) {
         done = 1;
         project_autosave();
+        sm_program_autosave();
     }
 }
 
@@ -1072,6 +1074,12 @@ static void edit_param(uint32_t slot, int32_t steps)
         motion_unguard(guard);
         if(id!=4u)settings_save();ui.force=1;return;
     }
+    if(pg->scope==SC_SM_LAYER){if(!slot){sm_layers.enabled=(uint8_t)clamp(sm_layers.enabled+steps,0,1);settings_save();ui.force=1;}return;}
+    if(pg->scope==SC_SM_MIX){trk[slot&3u].p[P_LEVEL]=(int16_t)clamp(trk[slot&3u].p[P_LEVEL]+steps,0,127);ui.force=1;return;}
+    if(pg->scope==SC_SM_PROGRAM && (slot==0 || slot==3)){
+        int16_t *value=slot==0?&sm_program_slot:&sm_program_override;
+        *value=(int16_t)clamp(*value+steps,slot==0?1:0,slot==0?8:1);ui.force=1;return;
+    }
     if(pg->scope==SC_DRUM){drum_sound_edit(slot,steps);return;}
     if(pg->scope==SC_DRUMHIT){drum_hit_edit(slot,steps);return;}
     if (pg->scope == SC_STEP) {
@@ -1246,6 +1254,11 @@ static void act_do(void)
     uint32_t c = act_col(), id, k = (uint32_t)song.g[G_SLOT] - 1u;
     if (!c--)
         return;
+    if(cur_page()->scope==SC_SM_PROGRAM){
+        if(c==1u){int rc=sm_program_load((uint32_t)sm_program_slot-1u);ui_message(rc==0?"PROGRAM LOADED":rc==3?"LEGACY PROJECT":rc==4?"STOP TO LOAD":"EMPTY / LOAD ERROR");}
+        else if(c==2u)name_open(NK_SM_PROGRAM_SAVE,(uint32_t)sm_program_slot-1u);
+        ui.act=0;return;
+    }
     if(cur_page()->scope==SC_P5STORE){
         uint32_t slot=(uint32_t)p5_store_slot-1u;
         if(c==1u){if(transport_busy())ui_message("STOP TO SAVE");else if(up_used(slot) || up_old(slot))confirm_open(CF_OVR_USER,slot);else name_open(NK_USER_SAVE,slot);}
@@ -1665,7 +1678,7 @@ static uint32_t btn_hold(uint32_t *t0, uint32_t label, uint32_t now, int hold_ok
     if ((fm1_in.buttons >> panel.btn[label]) & 1u) {
         if (!*t0)
             *t0 = (now | 1u) & ~2u;
-        else if (hold_ok && !(*t0 & 2u) && now - (*t0 & ~3u) > 700u * 1000u * FM1_TICKS_PER_US) {
+        else if (hold_ok && !(*t0 & 2u) && now - (*t0 & ~3u) > (label==B_EDIT||label==B_GLO?2000u:label==B_ENV||label==B_SCL?3000u:700u) * 1000u * FM1_TICKS_PER_US) {
             *t0 |= 2u;
             return BT_HOLD;
         }
@@ -1706,6 +1719,9 @@ static void page_tap(uint32_t b)
         return;
     }
     if(b==B_EDIT && !ui.home && cur_page()->scope==SC_DRUMHIT){drum_hit_delete();return;}
+    if(b==B_SCL){
+        for(uint32_t i=0;i<NPAGES;i++)if(PAGES[i].scope==SC_MASTER_TUNE&&PAGES[i].id[0]==0){ui.page=(uint8_t)i;ui.home=0;page_entered();return;}
+    }
     if (b == B_GLO) {
         open_global();                                  /* MIXER -> GLOBAL -> SYSTEM -> MIXER */
         return;
@@ -2097,6 +2113,16 @@ static void ui_input(void)
     if (seq_long) seq = BT_HOLD;
     uint32_t save = btn_hold(&ui.save_t0, B_SAVE, now, !ui.menu && !ui.confirm);
     uint32_t edit = btn_hold(&ui.edit_t0, B_EDIT, now, !ui.menu && !ui.confirm && !name_on() && !new_on() && !ui.ly);
+    uint32_t sm_glo=btn_hold(&ui.sm_glo_t0,B_GLO,now,!ui.menu&&!ui.confirm&&!name_on());
+    uint32_t sm_env=btn_hold(&ui.sm_env_t0,B_ENV,now,!ui.menu&&!ui.confirm&&!name_on()&&!step_modifier_context());
+    uint32_t sm_scl=btn_hold(&ui.sm_scl_t0,B_SCL,now,!ui.menu&&!ui.confirm&&!name_on()&&!step_modifier_context());
+    if(ui.menu||ui.confirm||name_on()){if(ui.sm_glo_t0)ui.sm_glo_t0|=2u;if(ui.sm_env_t0)ui.sm_env_t0|=2u;if(ui.sm_scl_t0)ui.sm_scl_t0|=2u;}
+    if(sm_glo==BT_HOLD){sm_layers.enabled^=1;settings_save();sm_layer_notice_until=fm1_ms+1500;ui.force=1;}
+    else if(sm_glo==BT_TAP&&!ui.menu&&!ui.confirm&&!name_on())page_tap(B_GLO);
+    if(sm_env==BT_HOLD){for(uint32_t i=0;i<NPAGES;i++)if(PAGES[i].graph==GR_CHORD){ui.page=(uint8_t)i;ui.home=0;page_entered();break;}}
+    else if(sm_env==BT_TAP&&!step_modifier_context()&&!ui.menu&&!ui.confirm&&!name_on())page_tap(B_ENV);
+    if(sm_scl==BT_HOLD){for(uint32_t i=0;i<NPAGES;i++)if(PAGES[i].scope==SC_MASTER_TUNE&&PAGES[i].id[0]==4){ui.page=(uint8_t)i;ui.home=0;page_entered();break;}}
+    else if(sm_scl==BT_TAP&&!step_modifier_context()&&!ui.menu&&!ui.confirm&&!name_on())page_tap(B_SCL);
     uint32_t octup = btn_hold(&ui.oct_t0, B_OCTUP, now, page_sheet() != 0u);   /* held: the page's sheet */
     uint32_t oct;
     if (octup == BT_HOLD) {
@@ -2257,7 +2283,9 @@ static void ui_input(void)
         qsave_poll();
     } else if (save == BT_TAP && !ui.confirm)
         open_family(FAM_SAVE);
-    if (!ui.confirm && !lay && (edit == BT_HOLD || edit_oct)) {
+    if(edit==BT_HOLD&&!ui.confirm&&!lay){
+        for(uint32_t i=0;i<NPAGES;i++)if(PAGES[i].scope==SC_SM_MIX){ui.page=(uint8_t)i;ui.home=0;page_entered();break;}
+    } else if (!ui.confirm && !lay && edit_oct) {
         uint32_t dir = ((edit_oct >> panel.btn[B_OCTDN]) & 1u) | (((edit_oct >> panel.btn[B_OCTUP]) & 1u) << 1);
         step_edit_combo();
         step_history_end();
@@ -2374,6 +2402,7 @@ static void ui_input(void)
         case B_REC:                                     /* tap / hold: above */
         case B_SAVE:
         case B_GLO:
+        case B_ENV:
         case B_SCL:
         case B_EDIT:
         case B_HOME:
@@ -2501,7 +2530,9 @@ static void ui_input(void)
 
     s = panel_enc(EN_PRESET);
     if (s) step_edit_combo();
-    if (s && ui.home) {
+    if(s&&!ui.home&&cur_page()->scope==SC_SM_MIX){
+        TSEL->p[P_PAN]=(int16_t)clamp(TSEL->p[P_PAN]+s,-64,63);ui.force=1;
+    } else if (s && ui.home) {
         sm_home_preset(s);
     } else if (s && !ui.home && cur_page()->graph == GR_SCALE_PICKER) {
         scale_picker_step(list_accel(EN_PRESET, s, scale_picker_count(), 0));
@@ -2529,12 +2560,17 @@ static void ui_input(void)
     }
     if ((s = panel_enc(EN_ALGO)) != 0) {           /* ALGORITHM: the selected track, on every page */
         step_edit_combo();
-        if (ui.home) sm_home_engine(s);
+        if(!ui.home&&cur_page()->scope==SC_SM_MIX){sm_layers.low[song.sel%4]=(uint8_t)clamp(sm_layers.low[song.sel%4]+s,33,93);if(sm_layers.high[song.sel%4]<sm_layers.low[song.sel%4])sm_layers.high[song.sel%4]=127;settings_save();ui.force=1;}
+        else if (ui.home) sm_home_engine(s);
         else track_select((uint32_t)clamp((int32_t)song.sel + (s > 0 ? 1 : -1), 0, (int32_t)trk_n() - 1));
     }
     if (!glo_select_layer && (s = panel_enc(EN_SELECT)) != 0) { /* SELECT: pages; with SEQ / a step key / ENV / SCL: below */
         step_edit_combo();
-        if(bulk_jog(s)) {
+        if(!ui.home&&cur_page()->scope==SC_SM_MIX){song.sel=(uint8_t)(((int)song.sel+s%4+4)%4);ui.force=1;}
+        else if(!ui.home&&cur_page()->scope==SC_MASTER_TUNE&&cur_page()->id[0]==0){edit_param(0,s);}
+        else if(!ui.home && cur_page()->scope==SC_SM_PROGRAM){
+            sm_program_slot=(int16_t)(1+((sm_program_slot-1+s)%8+8)%8);ui.force=1;
+        } else if(bulk_jog(s)) {
         } else if (pattern_keys_on() && (fm1_in.buttons & (1u << panel.btn[B_SEQ]))) {
             ui.seq_t0 |= 2u;
             uint32_t from = TSEL->pattern_next < NPAT ? TSEL->pattern_next : TSEL->pattern;

@@ -64,7 +64,7 @@ static void controls(void)
     assert(enum_orig(&TP[P_FXTYPE],FX_REVERB)==FX_OFF);
     assert(enum_rows(&TP[P_FXTYPE])==3 && enum_rows(&GP[G_MFXTYPE])==14);
     press(B_FX);assert(cur_page()->fam==FAM_FX);
-    btn_down(B_FX);frames(800);assert(ui.layer==LAYER_FX);
+    btn_down(B_FX);frames(2100);assert(ui.layer==LAYER_FX);
     key_down(white(0));frame();assert(!gates() && kb_layer);key_up(white(0));frame();assert(!gates());
     btn_up(B_FX);frames(100);assert(!ui.layer);
     printf("Retired FX: picker holes skipped; FX keeps note keys playable; remaining slot state %zu bytes x %u\n",sizeof(fx_state_t),FX_STATE_COUNT);

@@ -168,6 +168,11 @@ static uint32_t ed_bk_commit_inner(void)
     uint32_t obj;
 #if MELODEE_FLASH
     if(ed_bk_project(ed_bk_id) && ed_bk_len && !ed_bk_ram_only()){
+        if(ed_bk_id>=2u&&ed_bk_id<=5u&&ed_bk_len==SM_PROGRAM_BANK){
+            if(ed_bk_pos!=ed_bk_len||~ed_bk_stage.crc!=ed_bk_crc||st_stream_check(&ed_bk_stage)||!sm_program_stream_valid(ed_bk_stage.obj,ed_bk_stage.head.slot))return 2;
+            if(st_stream_publish(&ed_bk_stage))return 4;
+            sm_config_load();sync_reload=1;ui.force=1;return 0;
+        }
         if(ed_bk_pos!=ed_bk_len || ~ed_bk_stage.crc!=ed_bk_crc || st_stream_check(&ed_bk_stage) ||
            !proj_stream_load(ed_bk_stage.obj,ed_bk_stage.head.slot,ed_bk_len))return 2;
         int full=bank_full(ed_bk_len);
@@ -285,7 +290,7 @@ static uint32_t ed_bk_write(const uint8_t *a, uint32_t n)
         uint32_t len = ed_bk_r32(a + 2);
         if (len > ED_BK_MAX || (a[1] == 0u && !bank_full(len) && len != sizeof(project_store_t)) ||
             (a[1] == 1u && len != sizeof(persist_t) && !tmpl_param_count(len - sizeof(persist_t))) ||
-            (a[1] >= 2u && a[1] <= 5u && len && !bank_full(len) && len != sizeof(project_store_t)) ||
+            (a[1] >= 2u && a[1] <= 5u && len && len!=SM_PROGRAM_BANK && !bank_full(len) && len != sizeof(project_store_t)) ||
             (ed_bk_preset_bank(a[1])<UP_BANKS && len>3840u) ||
             (a[1]==8u && len)) return 1;
         ed_bk_valid=ed_bk_put=0;
@@ -293,7 +298,7 @@ static uint32_t ed_bk_write(const uint8_t *a, uint32_t n)
 #if MELODEE_FLASH
         if(ed_bk_project(a[1]) && len && !ed_bk_ram_only()){
             uint32_t slot=a[1]?a[1]-2u:proj_cur<4u?proj_cur:0u;
-            if(!flash_ok || st_stream_begin(&ed_bk_stage,OBJ_BANK0+slot,len))return 4;
+            if((proj_is_sound_program(slot)&&len!=SM_PROGRAM_BANK) || !flash_ok || st_stream_begin(&ed_bk_stage,OBJ_BANK0+slot,len))return 4;
         }else if(len>sizeof proj_wire_u.raw)return 1;
 #endif
         ed_bk_put = 1; ed_bk_id = a[1]; ed_bk_len = len;

@@ -47,99 +47,24 @@ static void reset_controls(void)
 static void tap_fast(uint32_t b) { btn_down(b); frame(); btn_up(b); frame(); }
 static void test_layers(void)
 {
-    {
-        uint32_t l = LAYER_GLO;
-        reset_controls(); uint32_t b=LAYERS[l].btn;
-        tap_fast(b); tap_fast(b);
-        assert(ui.lock==l && ui.layer==l && ui.home);
-        key_down(white(0)); frame();
-        assert(kb_layer & (1u<<white(0))); assert(!gates());
-        key_up(white(0)); frame(); tap_fast(b);
-        assert(!ui.lock && !ui.layer);
-    }
-    for (uint32_t home = 0; home < 2u; home++) {
-        reset_controls();
-        if (!home) { go_title("ENV"); frame(); }
-        for (uint32_t tap = 0; tap < 4u; tap++) {
-            btn_down(B_SCL); frame();
-            assert(!ui.lock && !ui.layer);
-            btn_up(B_SCL); frame();
-            assert(!ui.lock && !ui.ly && !ui.layer && !kb_lock && !pop.on && !smap.on);
-            assert(!ui.home && cur_page()->fam == FAM_SCL);
-        }
-        int16_t root = TSEL->p[P_ROOT];
-        key_down(white(0)); frame();
-        assert(gates() && !kb_layer && TSEL->p[P_ROOT] == root);
-        key_up(white(0)); frame();
-    }
-    puts("layers/screen: GLO double-tap locks; repeated SCL taps navigate and keep keys playable");
+ reset_controls();go_home();
+ tap_fast(B_GLO);tap_fast(B_GLO);assert(!ui.lock&&!ui.layer);
+ go_home();btn_down(B_GLO);frames(1800);assert(!sm_layers.enabled&&!ui.layer);
+ frames(300);assert(sm_layers.enabled&&!ui.lock);btn_up(B_GLO);frame();frames(1600);
+ for(unsigned i=0;i<4;i++){tap_fast(B_SCL);assert(cur_page()->scope==SC_MASTER_TUNE&&!ui.lock&&!ui.layer);}
+ key_down(white(0));frame();assert(gates()&&!kb_layer);key_up(white(0));frame();
+ puts("layers/screen: delayed GLO toggles layering without locking; SEL opens tuning and keeps keys playable");
 }
 static void test_glo_select(void)
 {
-    for (uint32_t home = 0; home < 2u; home++)
-    for (uint32_t locked = 0; locked < 2u; locked++)
-    for (int32_t dir = -1; dir <= 1; dir += 2) {
-        reset_controls();
-        HOME_SELECT = HS_LEVEL;
-        glo_select_set(HS_SWING);
-        song.g[G_SWING] = 40;
-        if (!home) { go_title("ENV"); frame(); }
-        if (locked) { tap_fast(B_GLO); tap_fast(B_GLO); assert(ui.lock == LAYER_GLO); }
-        else { btn_down(B_GLO); frame(); }
-        uint32_t pg = ui.page;
-        int16_t level = TSEL->p[P_LEVEL], swing = song.g[G_SWING];
-        /* A scan publishes a second detent after the first take, even in the armed frame. */
-        select_takes = 0;
-        select_inject = dir;
-        turn(EN_SELECT, dir);
-        assert(select_takes == 1u && host_enc[panel.enc[EN_SELECT]] == dir * panel.dir[EN_SELECT]);
-        assert((song.g[G_SWING] - swing) * dir > 0 && ui.layer == LAYER_GLO);
-        assert(ui.home == home && ui.page == pg && TSEL->p[P_LEVEL] == level);
-        select_takes = 0;
-        frame();
-        assert(select_takes == 1u && !host_enc[panel.enc[EN_SELECT]]);
-        assert(ui.home == home && ui.page == pg && TSEL->p[P_LEVEL] == level);
-        /* SELECT still belongs to GLO on the frame its button is released. */
-        if (locked) { btn_down(B_GLO); frame(); }
-        btn_up(B_GLO);
-        select_takes = 0;
-        turn(EN_SELECT, dir);
-        assert(select_takes == 1u && !ui.ly && !ui.lock);
-        assert(ui.home == home && ui.page == pg && TSEL->p[P_LEVEL] == level);
-        swing = song.g[G_SWING];
-        uint32_t part = song.sel;
-        turn(EN_SELECT, dir);
-        assert(song.g[G_SWING] == swing);
-        assert(home ? song.sel != part : ui.page != pg);
-    }
-    reset_controls();
-    HOME_SELECT = HS_LEVEL;
-    glo_select_set(HS_OFF);
-    int16_t level = TSEL->p[P_LEVEL];
-    btn_down(B_GLO); frame();
-    select_takes = 0;
-    select_inject = 1;
-    turn(EN_SELECT, 1); frame();
-    assert(select_takes == 2u && TSEL->p[P_LEVEL] == level);
-    btn_up(B_GLO); frame();
-    reset_controls(); go_title("ENV"); frame();
-    glo_select_set(HS_SWING);
-    uint32_t pg = ui.page;
-    int16_t swing = song.g[G_SWING];
-    /* A turn arriving with the initial press belongs to GLO already. */
-    btn_down(B_GLO); turn(EN_SELECT, 1);
-    assert(song.g[G_SWING] > swing && !ui.home && ui.page == pg);
-    btn_up(B_GLO); frame();
-    reset_controls(); go_title("ENV"); frame();
-    glo_select_set(HS_SWING);
-    pg = ui.page; swing = song.g[G_SWING];
-    /* Even the first turn arriving on release is a combo, not a GLO tap. */
-    btn_down(B_GLO); frame();
-    btn_up(B_GLO); turn(EN_SELECT, 1);
-    assert(song.g[G_SWING] > swing && !ui.home && ui.page == pg && !ui.ly);
-    HOME_SELECT = 0;
-    glo_select_set(0);
-    puts("layers/screen: GLO SELECT exclusive when armed, held, locked and released; standalone SELECT restored");
+ for(int dir=-1;dir<=1;dir+=2){
+  reset_controls();go_home();int16_t swing=song.g[G_SWING];
+  btn_down(B_GLO);frame();select_takes=0;select_inject=dir;turn(EN_SELECT,dir);
+  assert(select_takes==1&&host_enc[panel.enc[EN_SELECT]]==dir*panel.dir[EN_SELECT]);
+  frame();assert(select_takes==2&&!host_enc[panel.enc[EN_SELECT]]);
+  assert(song.g[G_SWING]==swing&&!ui.lock&&!ui.layer);btn_up(B_GLO);frame();
+ }
+ puts("GLO SELECT: encoder detents preserved, no obsolete swing interception or locked layer");
 }
 static void test_map_encoder_reads(void)
 {

@@ -30,7 +30,7 @@ const HERE = new URL(".", import.meta.url).pathname;
 const html = readFileSync(join(HERE, "editor.html"), "utf8");
 const proto = html.slice(html.indexOf("/*PROTO-BEGIN*/"), html.indexOf("/*PROTO-END*/"));
 const E = vm.runInNewContext(proto + `
-;({ layersEncode, layersDecode, tuningEncode, tuningDecode, HYBRID_PK, hybridValid, frame, unframe, parse, req, Link, parseWav, resample, normalize, takeSample, autoTrim, zoomView, rootFromName, buildSlot, makeMockDevice, CMD, SMP,
+;({ pack7, layersEncode, layersDecode, tuningEncode, tuningDecode, HYBRID_PK, hybridValid, frame, unframe, parse, req, Link, parseWav, resample, normalize, takeSample, autoTrim, zoomView, rootFromName, buildSlot, makeMockDevice, CMD, SMP,
    UP, bank, nativeBank, capturePatch, auditionPatch, startWatch, libraryFile, readLibraryFile, paramKeys, patternFromSteps, stepsFromPattern, upName,
    mixer, parseNotes, parseHits, hitsText, gridFromSteps, LANE_NOTE, LANE_OF, readDevicePreferences, devicePresetRows, engineOrder, ENGINE_ORDER, aliasOf, fmtValue, F, FM6,
    FM4, fromDigital, CZ, P5, P5_FACTORY, p5LibraryPatch, readSysexLibrary, nativeImportTargets, scaleRows, SCALE_INFO, czLibraryPatch, czBankEncode, czBankDecode, czBankUpload, czBankRead, czLegacyTone })`,
@@ -47,8 +47,23 @@ const E = vm.runInNewContext(proto + `
   let lr=E.parse[E.CMD.LAYERS](await rq(E.req.layersPut(layers)));
   ok(!lr.rc&&eq(E.layersEncode(lr.layers),E.layersEncode(layers)),"Layers: inclusive split ranges survive USB round-trip");
   const invalidLayer=E.layersEncode(layers);invalidLayer[5]=100;
-  lr=E.parse[E.CMD.LAYERS](await rq([E.CMD.LAYERS,[1,...pack7(invalidLayer)]]));
+  lr=E.parse[E.CMD.LAYERS](await rq([E.CMD.LAYERS,[1,...E.pack7(invalidLayer)]]));
   ok(lr.rc===1&&eq(E.layersEncode(lr.layers),E.layersEncode(layers)),"Layers: inverted range rejected without altering configuration");
+  const mapRq=async a=>E.parse[E.CMD.MAPPING](await rq([E.CMD.MAPPING,a]));
+  let map=await mapRq([0]);ok(map.maps.length===24&&map.host===0,"MIDI Learn: 24 assignments and COMPUTER role");
+  const mapping=[1,0,0,80,127,0,4,2,80,0,255,0];map=await mapRq([2,0,...E.pack7(mapping)]);ok(!map.rc&&map.maps[0][7]===2,"MIDI Learn: accepts program action assignment");
+  map=await mapRq([2,1,...E.pack7(mapping)]);ok(map.rc===5&&map.conflict===0,"MIDI Learn: reports overlapping assignment");
+  let list=E.parse[E.CMD.SETLIST](await rq([E.CMD.SETLIST,[1,3,0,7,0]]));ok(!list.rc&&eq(list.slots,[0,7,0]),"Setlist: ordered references allow repeats");
+  ok(info.synthmaven.programs,"SynthMaven: explicit named program capability");
+  const program=async a=>E.parse[E.CMD.PROGRAMS](await rq([E.CMD.PROGRAMS,a]));
+  let ps=await program([0]);ok(ps.current===127&&ps.slots.length===8,"Programs: empty status has eight slots");
+  ps=await program([2,7,0,...Array.from('LIVE',c=>c.charCodeAt(0))]);
+  ok(!ps.rc&&ps.current===7&&ps.name==='LIVE',"Programs: save named slot eight");
+  ps=await program([3,2,66,82,73,68,71,69]);ok(!ps.rc&&ps.scenes[2]==='BRIDGE',"Scenes: capture named scene");
+  ps=await program([2,7,1,76,73,86,69]);ps=await program([1,7]);
+  ok(!ps.rc&&ps.override===1&&ps.sceneMask===4,"Programs: tuning override and scenes survive load");
+  ps=await program([4,2]);ok(!ps.rc&&ps.scene===2,"Scenes: recall by slot");
+  let invalidStatus=false;try{E.parse[E.CMD.PROGRAMS]([0,0]);}catch{invalidStatus=true;}ok(invalidStatus,"Programs: truncated status rejected");
   ok(info.synthmaven.masterTuning,"SynthMaven: explicit master tuning capability");
   const tune={enabled:1,scale:47,root:2,octave:3,quantize:1,apply:15,cents:[0,0,0,0,-37,0,0,0,0,0,0,100],mask:2741};
   let tr=E.parse[E.CMD.MASTER_TUNING](await rq(E.req.tuningPut(tune)));
@@ -56,7 +71,7 @@ const E = vm.runInNewContext(proto + `
   tr=E.parse[E.CMD.MASTER_TUNING](await rq(E.req.tuningGet()));
   ok(eq(E.tuningEncode(tr.tuning),E.tuningEncode(tune)),"Tuning: USB read preserves root, threshold and part mask");
   const malformed=E.tuningEncode(tune);malformed[14]=127;
-  tr=E.parse[E.CMD.MASTER_TUNING](await rq([E.CMD.MASTER_TUNING,[1,...pack7(malformed)]]));
+  tr=E.parse[E.CMD.MASTER_TUNING](await rq([E.CMD.MASTER_TUNING,[1,...E.pack7(malformed)]]));
   ok(tr.rc===1&&eq(E.tuningEncode(tr.tuning),E.tuningEncode(tune)),"Tuning: invalid incoming update leaves state unchanged");
   await rq(E.req.set(1,20,22));
   const raw=Array.from(E.HYBRID_PK[36]);raw[2]=256-37;

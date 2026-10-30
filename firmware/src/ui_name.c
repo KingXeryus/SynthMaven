@@ -20,7 +20,7 @@
  *   KNOB 1       the cursor; KNOB 2 the character at the cursor (SPACE A..Z 0..9 - . _ / # +; at the end: a new one).
  *   LEDs         every key that types or edits is lit; the key whose letters are being cycled blinks.
  * Spaces at either end are dropped when it is written; an empty name: USER the automatic one, PROJECT none. */
-enum { NK_NONE, NK_USER_SAVE, NK_USER_RENAME, NK_PROJ_SAVE, NK_PROJ_RENAME, NK_CZ_NAME };
+enum { NK_NONE, NK_USER_SAVE, NK_USER_RENAME, NK_PROJ_SAVE, NK_PROJ_RENAME, NK_CZ_NAME, NK_SM_PROGRAM_SAVE };
 #define NM_LEN 12u
 #define NM_TAP_MS 800u                                 /* multi-tap: the next letter within this */
 #define NM_REP_MS 450u                                 /* a held arrow / DELETE repeats after this, */
@@ -88,7 +88,10 @@ static void name_open(uint32_t kind, uint32_t slot)
     nm.slot = (uint16_t)slot;
     nm.num = nm.key = nm.rep = 0;
     b[0] = 0;
-    if(kind==NK_CZ_NAME){
+    if(kind==NK_SM_PROGRAM_SAVE){
+        str_cpy(nm.ph,"PROGRAM 1",sizeof nm.ph);nm.ph[8]=(char)('1'+slot);
+        sm_program_name_at(slot,b);
+    }else if(kind==NK_CZ_NAME){
         memcpy(b,cz_patch_of(slot)->raw+128,CZ_NAME_LEN);b[CZ_NAME_LEN]=0;
         for(uint32_t k=0;k<CZ_NAME_LEN;k++)if(b[k]<' ' || b[k]>'~')b[k]=' ';   /* (LCD custom characters) */
         for(uint32_t k=CZ_NAME_LEN;k && b[k-1]==' ';k--)b[k-1]=0;
@@ -243,6 +246,11 @@ static void name_ok(void)
         return;
     }
     switch (nm.kind) {
+    case NK_SM_PROGRAM_SAVE: {
+        int rc=sm_program_save(nm.slot,b[0]?b:nm.ph,sm_program_override);
+        if(rc){ui_message(rc==3?"LEGACY PROJECT":rc==4?"STOP TO SAVE":"SAVE FAILED");return;}
+        ui_message("PROGRAM SAVED");break;
+    }
     case NK_CZ_NAME:
         cz_compare_take(nm.slot);memset(cz_patch_of(nm.slot)->raw+128,' ',CZ_NAME_LEN);memcpy(cz_patch_of(nm.slot)->raw+128,b,str_len(b));
         ui_message("TONE NAMED");break;
@@ -319,7 +327,7 @@ static uint32_t name_leds(void)
  * then the knobs and the keys */
 static void nm_title(char *b)
 {
-    str_cpy(b, nm.kind == NK_USER_SAVE || nm.kind == NK_PROJ_SAVE ? "SAVE " : "NAME ", 8);
+    str_cpy(b, nm.kind == NK_USER_SAVE || (nm.kind == NK_PROJ_SAVE || nm.kind == NK_SM_PROGRAM_SAVE) ? "SAVE " : "NAME ", 8);
     if(nm.kind==NK_CZ_NAME){str_cpy(b,"NAME CZ TONE",24);return;}
     if (nm.kind <= NK_USER_RENAME)
         up_slot_label(b + 5, nm.slot);
@@ -418,7 +426,7 @@ static void nm_draw_name(void)
     cv_blit(0, H_HEAD + 138);
     {                                                   /* the keys: OCT- back, OCT+ Save */
         int ok = !transport_busy();
-        const char *go = nm.kind == NK_USER_SAVE || nm.kind == NK_PROJ_SAVE ? "Save" : "Rename";
+        const char *go = nm.kind == NK_USER_SAVE || (nm.kind == NK_PROJ_SAVE || nm.kind == NK_SM_PROGRAM_SAVE) ? "Save" : "Rename";
         int32_t gw = text_w(TY_TX, go) + 42;
         cv_begin(240, H_FOOT, T_BG);
         cv_rrect(4, 2, 48, 24, 6, T_SURF, T_BG);

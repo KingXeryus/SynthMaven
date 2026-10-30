@@ -301,6 +301,8 @@ static int ed_flash_stop(void)
 #include "editor_hybrid.c"
 #include "editor_master_tuning.c"
 #include "editor_layers.c"
+#include "editor_programs.c"
+#include "editor_mapping.c"
 #include "editor_cpu_lab.h"
 
 static void ed_motion_reply(uint32_t k, uint32_t rc)
@@ -358,6 +360,8 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         return;
     if(cmd==ED_SET || (cmd==ED_TRACK_PARAM && na==4u) || cmd==ED_FM6_PUT || cmd==ED_CZ_PUT || (cmd==95u && na && a[0]>=1u && a[0]<=3u))momentary_restore();
     ed_begin(cmd);
+    if(ed_sm_mapping_handle(cmd,a,na)){ed_send();return;}
+    if(ed_sm_program_handle(cmd,a,na)){ed_send();return;}
     if(ed_layers_handle(cmd,a,na)){ed_send();return;}
     if(ed_master_tuning_handle(cmd,a,na)){ed_send();return;}
     if(ed_hybrid_handle(cmd,a,na)){ed_send();return;}
@@ -725,7 +729,7 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         ed_b(0x35);ed_b(1);ed_b(ENGI_PROPHET);ed_b(USER_GENERAL);ed_b(USER_NATIVE_FM);ed_b(USER_NATIVE_CZ);ed_b(USER_NATIVE_P5);ed_b(0);ed_b(1); /* legacy native clients see their addressable prefix */
         ed_b(0x4e); ed_b(1); ed_b(64); ed_b(0); ed_b(0); ed_b(1); /* legacy command 78 addressable prefixes */
         ed_b(0x55);ed_b(1);ed_b(UP_SLOTS&127u);ed_b(UP_SLOTS>>7); /* shared library, command 80 */
-        ed_b(0x53);ed_b(0x4d);ed_b(1);ed_b(3);ed_b(5);ed_b(ED_HYBRID);ed_b(ED_MASTER_TUNING);ed_b(ED_LAYERS); /* SynthMaven schema 1, 3.5, native extensions */
+        ed_b(0x53);ed_b(0x4d);ed_b(1);ed_b(3);ed_b(5);ed_b(ED_HYBRID);ed_b(ED_MASTER_TUNING);ed_b(ED_LAYERS);ed_b(ED_SM_PROGRAM);ed_b(ED_SM_MAPPING);ed_b(ED_SM_SETLIST); /* SynthMaven schema 1, 3.5, native extensions */
         break;
     case ED_GET:
     case ED_SET:

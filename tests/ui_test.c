@@ -125,6 +125,9 @@ static int check(const char *what, int ok)
 static void ui_power_on(void)
 {
     uint32_t i;
+    sm_layers=(sm_layers_t){.high={127,127,127,127}};
+    sm_tuning=(sm_tuning_t){.apply=15,.mask=0xfff};
+    sm_layer_notice_until=0;
     midi_insert_init();
     memset(midi_output, 0, sizeof midi_output);
     punch_reset(); punch_panel_mask=punch_panel_lock=0;
@@ -241,6 +244,14 @@ static void press(uint32_t label)                 /* a tap: down, a frame, up, a
     frame();
     fm1_in.buttons &= ~(1u << panel.btn[label]);
     frame();
+}
+/* SynthMaven reserves the two-second EDIT hold for its mixer. Undo remains
+ * available through EDIT + OCT-, so load-history tests use that gesture. */
+static void undo_gesture(void)
+{
+    uint32_t e=1u<<panel.btn[B_EDIT],o=1u<<panel.btn[B_OCTDN];
+    fm1_in.buttons|=e;host_pressed|=e;frame();fm1_in.buttons|=o;host_pressed|=o;frame();
+    fm1_in.buttons&=~(e|o);frame();
 }
 static void hold(uint32_t label)                  /* held 0.8 s, then let go */
 {
@@ -375,17 +386,17 @@ static int test_sound_loads(void)
     bad += check("browsing keeps the copy from before the first load", undo.trk == 1u && undo.what == UNDO_SOUND &&
                  undo.p[P_E0 + 1] == before.p[P_E0 + 1] && undo.eng == before.eng_req && undo.preset == before.preset);
     t->step[0].note[0] = 99;                      /* recorded after the loads */
-    hold(B_EDIT);
-    bad += check("EDIT held: the sound back (UNDO T1); steps recorded since stay", same_sound(t, &before) &&
+    undo_gesture();
+    bad += check("EDIT + OCT-: the sound back (UNDO T1); steps recorded since stay", same_sound(t, &before) &&
                  t->step[0].note[0] == 99 && msg_is("UNDO T1"));
-    bad += check("EDIT held does not open the SAVE pages", ui.home);
+    bad += check("EDIT + OCT- does not open the SAVE pages", ui.home);
     edit_redo();
     bad += check("EDIT + OCT+: the loads again (REDO T1)", t->eng_req == before.eng_req && t->preset != before.preset && t->step[0].note[0] == 99 &&
                  msg_is("REDO T1") && ui.home && !song.octave);
-    hold(B_EDIT);
+    undo_gesture();
     t->p[P_LEVEL] = 50;                           /* a mix change after the undo */
     turn(EN_PRESET, 1);                           /* a load after an undo copies the track as it is now */
-    hold(B_EDIT);
+    undo_gesture();
     bad += check("a load after the undo: its own copy; the mix (LEVEL) is never swapped", same_sound(t, &before) && t->p[P_LEVEL] == 50);
     press(B_SAVE);
     bad += check("SAVE tap opens the SAVE pages (on release)", !ui.home && cur_page()->fam == FAM_SAVE);
@@ -664,7 +675,9 @@ static int test_save(void)
     set_engine_of(&trk[0], 3);                    /* (a general sound: the Prophet keeps its own slots) */
     trk[0].p[P_E1] = 5;
     press(B_SAVE);
-    bad += check("SAVE opens USER on its slot, no sheet popped up, without writing a slot",
+    bad += check("SAVE opens the SynthMaven program page",cur_page()->scope==SC_SM_PROGRAM);
+    press(B_SAVE);press(B_SAVE);
+    bad += check("Legacy USER remains reachable without writing a slot",
                  !ui.home && cur_page()->graph == GR_USER && !pop.on && !up_used(0));
     press(B_OCTUP);
     bad += check("..OCT+: the slot's sheet, on Save here", pop.on == POP_SHEET && str_eq(pop.rows[pop.sel].label, "Save here"));
@@ -683,9 +696,11 @@ static int test_save(void)
     bad += check("SAVE again still cycles to PROJECT", cur_page()->graph == GR_SLOTS);
     go_home();
     press(B_SAVE);
+    bad += check("HOME then SAVE returns to PROGRAM",cur_page()->scope==SC_SM_PROGRAM);
+    press(B_SAVE);press(B_SAVE);
     ok = cur_page()->graph == GR_USER && !pop.on;
     press(B_OCTUP);
-    bad += check("SAVE from HOME returns directly to USER (OCT+: its sheet, on Save here), even after visiting PROJECT",
+    bad += check("Legacy USER still offers its save sheet after visiting PROJECT",
                  ok && pop.on == POP_SHEET && str_eq(pop.rows[pop.sel].label, "Save here"));
     press(B_OCTUP);
     bad += check("direct SAVE still asks before overwriting an occupied slot",
@@ -1361,7 +1376,7 @@ static int test_grid(void)
         ok &= t->seq_n == 1u && t->seq_notes[0] == 36u;
         seq_release(t);
         bad += check("a sound load keeps the grid; on SID its hits play as their GM notes", ok);
-        hold(B_EDIT);                             /* undo the sound loads: DRUM again */
+        undo_gesture();                             /* undo the sound loads: DRUM again */
         set_engine_of(t, ENGI_DRUM);
         t->engine = t->eng_req;
     }
@@ -2245,7 +2260,7 @@ static int test_init_scales_patterns(void)
     undo_step(0);
     ok = !seq_is_empty(t);
     undo_step(1);
-    bad += check("..EDIT held undoes it, EDIT + OCT+ redoes it", ok && seq_is_empty(t));
+    bad += check("..EDIT + OCT- undoes it, EDIT + OCT+ redoes it", ok && seq_is_empty(t));
     sheet_do("Delete pattern");
     ok = !ui.confirm && msg_is("NOTHING TO DELETE");
     sheet_do("Copy to\x85");
@@ -2624,7 +2639,7 @@ static int test_chain(void)
     bad += check("SONG row change: four tracks together, sounds unchanged", ok);
     open_family(FAM_SEQ);
     for (k = 0; k < NPAGES && cur_page()->scope != SC_STEP; k++) open_family(FAM_SEQ);
-    turn(EN_K2, 1); press(B_EDIT); hold(B_REC); hold(B_EDIT);
+    turn(EN_K2, 1); press(B_EDIT); hold(B_REC); undo_gesture();
     bad += check("SONG playing: step edits, clears, recording and undo are blocked", trk[0].step[0].note[0] == 65 && trk[0].step[0].n == 3 && !ui.confirm);
     events_block(period);
     events_block(period);
@@ -2722,6 +2737,7 @@ static int test_product_ux(void)
     press(B_GLO); ok = cur_page()->fam == FAM_GLO && str_eq(cur_page()->title, "GLOBAL");
     press(B_GLO); ok &= str_eq(cur_page()->title, "SYSTEM");
     press(B_GLO); ok &= str_eq(cur_page()->title, "WEIGHTS");
+    press(B_GLO); ok &= str_eq(cur_page()->title, "LAYERING");
     press(B_GLO); ok &= str_eq(cur_page()->title, "WEIGHTS 2");
     press(B_GLO); ok &= cur_page()->graph == GR_TRK;
     bad += check("GLO cycles MIXER > GLOBAL > SYSTEM > WEIGHTS > WEIGHTS 2 > MIXER", ok);
@@ -2759,7 +2775,7 @@ static int test_product_ux(void)
                  motion_count(TSEL) == 1);
     press(B_OCTDN); sheet_do("Clear all motion"); press(B_OCTUP);
     bad += check("confirmed MOTION clear removes events and EDIT hold restores them", motion_count(TSEL) == 0);
-    hold(B_EDIT);
+    undo_gesture();
     bad += check("motion-clear UNDO restores the recorded events", motion_count(TSEL) == 1);
     press(B_OCTUP);
     bad += check("MOTION: OCT+ on the lane: its sheet (Play, Clear <lane>, Clear all motion)", pop.on == POP_SHEET &&
@@ -2768,7 +2784,7 @@ static int test_product_ux(void)
     bad += check("..Play: on again", motion_enabled(TSEL) && !pop.on);
     sheet_do(mo_clear_label);
     bad += check("..Clear <lane>: its events gone, undoable", motion_count(TSEL) == 0 && msg_is("LANE CLEARED"));
-    hold(B_EDIT);
+    undo_gesture();
     bad += check("motion-clear UNDO restores the recorded events", motion_count(TSEL) == 1);
     {   /* Editing automation never clears neighbours, other tracks or banks. */
         uint16_t ids[MO_MAX]; int16_t value;
@@ -2798,7 +2814,7 @@ static int test_product_ux(void)
         fm1_in.buttons = 0; frame();
         bad += check("MOTION: SEQ + K2 clears only this lane, preserving the other bank and track",
             motion.count == 3 && !mo_events(P_PAN) && mo_events(P_DETUNE) == 1 && motion_page());
-        hold(B_EDIT);
+        undo_gesture();
         bad += check("MOTION: undo restores the gesture's automation without changing other tracks",
             motion.count == 5 && mo_events(P_PAN) == 2 && motion_count(&trk[1]) == 1);
         memset(host_screen, 0xA5, sizeof host_screen); gfx_forget(); ui.force = 1; ui_draw(); ok = 1;
@@ -2965,7 +2981,7 @@ static int test_layer(void)
     go_home(); hold(B_SEQ); ok &= cur_page()->graph == GR_PATGRID;
     bad += check("HOME (menu) and SEQ (PATTERNS) holds of 0.7 s", ok);
 
-    ui_power_on();btn_down(B_FX);frames(800);
+    ui_power_on();btn_down(B_FX);frames(2100);
     ok=ui.layer==LAYER_FX && (kb_mask & (1u<<panel.btn[B_FX]));
     key_down(white(0));frame();ok &= !gates() && kb_layer && punch.req==PX_LOOP4;
     key_up(white(0));btn_up(B_FX);frame();
@@ -3507,6 +3523,8 @@ static int test_tempo_select(void)
     turn(EN_SELECT, 1);
     ok &= str_eq(cur_page()->title, "WEIGHTS");
     turn(EN_SELECT, 1);
+    ok &= str_eq(cur_page()->title, "LAYERING");
+    turn(EN_SELECT, 1);
     ok &= str_eq(cur_page()->title, "WEIGHTS 2");
     turn(EN_SELECT, 1);
     ok &= str_eq(cur_page()->title, "GLOBAL");
@@ -3633,11 +3651,11 @@ static int test_save_edit_holds(void)
     turn(EN_PRESET, 1); uint32_t preset = TSEL->preset;
     project_save(1); hold(B_SAVE);
     bad += check("hold SAVE preserves the sound and its undo history", TSEL->preset == preset);
-    btn_down(B_EDIT); frame(); frames(800);
-    ok = same_sound(TSEL, &before) && !ui.ly && !ui.layer && ui.home;
-    frames(800); btn_up(B_EDIT); frame();
-    bad += check("hold EDIT undoes once and never opens a navigation layer or page",
-                 ok && same_sound(TSEL, &before) && ui.home && !ui.ly && !ui.layer);
+    btn_down(B_EDIT); frame(); frames(1800);ok=ui.home&&TSEL->preset==preset;
+    frames(300);btn_up(B_EDIT);frame();
+    bad += check("two-second EDIT opens and latches mixer without changing sound",ok&&cur_page()->scope==SC_SM_MIX&&TSEL->preset==preset);
+    go_home();undo_gesture();
+    bad += check("EDIT plus OCT- preserves sound-load undo",same_sound(TSEL,&before));
     int16_t octave = song.octave;
     btn_down(B_EDIT); frame(); press(B_OCTUP); btn_up(B_EDIT); frame();
     bad += check("EDIT + OCT+ redoes on Stage without octave changes or a sheet",
@@ -4002,152 +4020,17 @@ static void lay_combo(uint32_t btn, uint32_t k) { btn_down(btn); key_down(k); fr
 static void oct_back(void) { btn_down(B_OCTDN); frame(); btn_up(B_OCTDN); frame(); }
 static uint32_t leds_at(uint32_t ms) { fm1_ms = ms; return layer_leds(); }
 
+/* SynthMaven replaces GLO/SCL shortcut maps with layering and tuning. */
 static int test_quick_layers(void)
 {
-    static const uint8_t LB[2] = {B_GLO, B_SCL};
-    static const uint8_t LL[2] = {LAYER_GLO, LAYER_SCL};
-    int bad = 0, ok, flash, hint;
-    uint32_t i, k, a, b2, mo;
-    /* tap / peek / combo, with no shortcut hint on page navigation */
-    ok = 1; hint = 1;
-    for (i = 0; i < 2u; i++) {
-        ui_power_on_general();                    /* (EDIT 1: the general engines' first page) */
-        ui.msg_t = 0;
-        btn_down(LB[i]);
-        for (flash = 0, k = 0; k < 20u; k++) { frame(); flash |= ui.layer; }      /* 0.32 s */
-        btn_up(LB[i]); frame();
-        ok &= !flash && !ui.home && (LB[i] == B_GLO ? cur_page()->graph == GR_TRK :
-                                     LB[i] == B_SCL ? cur_page()->fam == FAM_SCL : str_eq(cur_page()->title, "EDIT 1"));
-        hint &= !ui.msg_t;
-        frames(320);                              /* another ordinary tap, outside the double-tap window */
-        press(LB[i]);
-        hint &= !ui.msg_t && !ui.layer;
-        go_home(); frame();
-        btn_down(LB[i]); frames(368);
-        ok &= !ui.layer;
-        frames(64);
-        ok &= ui.layer == LL[i];
-        btn_up(LB[i]); frame();
-        ok &= ui.home && !ui.layer;
-        ui.msg_t = 0;
-        press(LB[i]);
-        hint &= !ui.msg_t;
-        go_home(); frame();
-        btn_down(LB[i]); key_down(white(9)); frame();
-        ok &= ui.layer == LL[i] && !gates();
-        key_up(white(9)); btn_up(LB[i]); frame();
-        ok &= ui.home && !ui.layer;
-    }
-    bad += check("GLO SCL: a tap opens the page, held past HOLD the map (no page), a key: the map at once", ok);
-    bad += check("  first and repeated GLO / SCL taps open pages without shortcut hints, before and after a hold", hint);
-
-    /* GLO: mutes latch (lit = sounding), SOLO while held, UNMUTE ALL, TAP, levels, OCT- */
-    ui_power_on();
-    usb.config = 1; mo = mo_w;
-    lay_combo(B_GLO, black(1));
-    ok = trk[1].p[P_MUTE] == 1 && ui.layer == LAYER_GLO && !gates() && mo_w == mo;
-    a = leds_at(0); b2 = leds_at(250);
-    ok &= ((a & b2) >> black(0)) & 1u && !(((a | b2) >> black(1)) & 1u);           /* T1 sounding lit, T2 muted dark */
-    ok &= ((a ^ b2) >> white(0)) & 1u && ((a ^ b2) >> white(7)) & 1u && !(((a | b2) >> white(5)) & 1u);
-    key_up(black(1)); btn_up(B_GLO); frame();
-    bad += check("GLO + black key 2: T2 MUTE latched (SET), silent, no MIDI; LEDs: sounding lit, muted dark", ok &&
-                 trk[1].p[P_MUTE] == 1 && !ui.layer);
-    lay_combo(B_GLO, black(1)); key_up(black(1)); frame();
-    key_down(white(4)); key_up(white(4)); frame();
-    lay_combo(B_GLO, black(2)); key_up(black(2)); frame();
-    ok = trk[1].p[P_MUTE] == 0 && trk[2].p[P_MUTE] == 1;
-    key_down(white(4)); frame(); key_up(white(4)); frame();
-    btn_up(B_GLO); frame();
-    bad += check("  again: unmuted; C4: UNMUTE ALL", ok && !trk[2].p[P_MUTE] && !trk[1].p[P_MUTE]);
-    lay_combo(B_GLO, white(2));
-    ok = track_solo == 4u;   /* T3 solo: T1 T2 T4 muted */
-    btn_up(B_GLO); frame();
-    ok &= track_solo == 4u && ui.layer == LAYER_GLO;                 /* GLO let go first: the solo stays with its key */
-    key_up(white(2)); frame();
-    bad += check("GLO + A3 held: SOLO T3 (the others muted), lasts while the key is held, not P_MUTE",
-                 ok && !track_solo && !trk[0].p[P_MUTE] && !ui.layer);
-    song.g[G_BPM] = 100;
-    btn_down(B_GLO); frame();
-    for (i = 0; i < 3u; i++) { key_down(white(7)); frame(); key_up(white(7)); frames(480); }
-    ok = song.g[G_BPM] == 120;
-    btn_up(B_GLO); frame();
-    song.g[G_CLOCK] = 1;
-    lay_combo(B_GLO, white(7)); key_up(white(7)); frame();
-    ok &= msg_is("TAP: CLK IS EXT") && song.g[G_BPM] == 120;
-    btn_up(B_GLO); frame(); song.g[G_CLOCK] = 0;
-    bad += check("GLO + F4 x3 at 0.5 s: TAP 120 BPM; with CLK EXT: dimmed, it says why", ok);
-    {
-        set_engine_of(TSEL, 3);                   /* (the generic ENV page) */
-        int16_t l2 = trk[2].p[P_LEVEL], atk = TSEL->p[P_ATK];
-        go_title("ENV");
-        btn_down(B_GLO); frame();
-        turn(EN_K3, -10);
-        ok = trk[2].p[P_LEVEL] == l2 - 10 && TSEL->p[P_ATK] == atk && ui.layer == LAYER_GLO;
-        key_down(black(0)); frame(); key_up(black(0)); frame();
-        ok &= trk[0].p[P_MUTE] == 1 && song.octave == 0;
-        oct_back();
-        ok &= trk[2].p[P_LEVEL] == l2 && !trk[0].p[P_MUTE] && song.octave == 0 && ui.layer == LAYER_GLO;
-        btn_up(B_GLO); frame();
-        bad += check("GLO KNOB 3: T3 LEVEL from any page; OCT-: mutes and levels as it opened, no octave", ok &&
-                     str_eq(cur_page()->title, "ENV"));
-    }
-    song.playing = 1; transport_req = 0;
-    btn_down(B_GLO); frame(); press(B_PLAY);
-    ok = transport_req == 3u;
-    events_block(CTL);
-    ok &= song.playing && transport_req == 0u;
-    btn_up(B_GLO); frame();
-    stop_transport();
-    btn_down(B_GLO); frame(); press(B_PLAY);
-    ok &= transport_req == 1u;
-    btn_up(B_GLO); frame(); transport_req = 0;
-    bad += check("GLO + PLAY: RESTART playing (from the top, not stopped); stopped: PLAY", ok);
-    usb.config = 0;
-
-    /* SCL: a key is ROOT, KNOB 2 the scale, the LEDs, OCT- */
-    ui_power_on();
-    TSEL->p[P_ROOT] = 0; TSEL->p[P_SCALE] = 1;                     /* C MAJ */
-    lay_combo(B_SCL, black(4));                                    /* D#4 */
-    ok = TSEL->p[P_ROOT] == 3 && ui.layer == LAYER_SCL && !gates();
-    key_up(black(4)); frame();
-    key_down(white(1)); key_up(white(1)); frame();                  /* G3 */
-    ok &= TSEL->p[P_ROOT] == 7;
-    turn(EN_K2, 1);
-    ok &= TSEL->p[P_SCALE] == 2;
-    a = leds_at(0); b2 = leds_at(250);
-    ok &= ((a & b2) >> white(1)) & 1u && ((a & b2) >> white(8)) & 1u;   /* G3 G4: the root, lit */
-    ok &= ((a ^ b2) >> white(2)) & 1u && ((a ^ b2) >> black(4)) & 1u;   /* A, A# (G minor): blink */
-    ok &= !(((a | b2) >> black(0)) & 1u);                               /* F#: not in G minor, dark */
-    btn_up(B_SCL); frame();
-    bad += check("SCL + D#4, then G3: ROOT D#, G (latched); KNOB 2: SCL; LEDs: root lit, the scale blinks", ok &&
-                 TSEL->p[P_ROOT] == 7 && TSEL->p[P_SCALE] == 2 && ui.home);
-    btn_down(B_SCL); frame(); key_down(white(4)); key_up(white(4)); frame(); turn(EN_K2, 3);
-    ok = TSEL->p[P_ROOT] == 0 && TSEL->p[P_SCALE] == 5;
-    oct_back();
-    btn_up(B_SCL); frame();
-    bad += check("  OCT- in SCL: ROOT and SCL as the layer opened", ok && TSEL->p[P_ROOT] == 7 && TSEL->p[P_SCALE] == 2);
-
-    /* no layer in the menu or a dialog: GLO + a key plays */
-    ui_power_on(); hold(B_HOME);
-    btn_down(B_GLO); frame(); key_down(white(3)); frame();
-    ok = !ui.layer && gates() > 0 && !kb_layer;
-    key_up(white(3)); btn_up(B_GLO); frame();
-    bad += check("in the menu: no GLO layer, GLO + a key plays it; GLO let go: no page", ok && ui.menu == 1);
-    ui_power_on(); ui.confirm = CF_CLEAR_SEQ;
-    btn_down(B_SCL); frames(512);
-    ok = !ui.layer;
-    btn_up(B_SCL); frame();
-    bad += check("in a dialog: SCL held shows no map and taps nothing", ok && ui.confirm == CF_CLEAR_SEQ);
-    /* one layer at a time: a second layer button is ignored, its keys stay notes after */
-    ui_power_on();
-    btn_down(B_GLO); frame(); btn_down(B_EDIT); frame(); key_down(white(1)); frame();
-    ok = ui.layer == LAYER_GLO && TSEL->eng_req == trk[0].eng_req && track_solo == 2u;
-    key_up(white(1)); btn_up(B_GLO); frame();
-    key_down(white(1)); frame();
-    ok &= gates() > 0 && !ui.layer;
-    key_up(white(1)); btn_up(B_EDIT); frame();
-    bad += check("GLO then EDIT: GLO's layer; EDIT ignored (no layer, no page, its keys notes)", ok && ui.home);
-    return bad;
+ int bad=0;
+ ui_power_on();go_home();sm_layers.enabled=0;btn_down(B_GLO);frames(1800);
+ bad+=check("GLO below two seconds never flashes a shortcut screen",ui.home&&!ui.layer&&!sm_layers.enabled);
+ frames(300);btn_up(B_GLO);frame();bad+=check("GLO toggles layering once without locking",sm_layers.enabled&&!ui.lock);frames(1600);
+ press(B_SCL);bad+=check("SEL opens global tuning",cur_page()->scope==SC_MASTER_TUNE);
+ uint8_t scale=sm_tuning.scale;turn(EN_SELECT,1);bad+=check("SELECT chooses the global scale",sm_tuning.scale==scale+1);
+ ui_power_on();go_home();btn_down(B_SCL);key_down(white(1));frame();bad+=check("SEL no longer steals musical keys",gates()>0&&!ui.layer);key_up(white(1));btn_up(B_SCL);frame();
+ return bad;
 }
 
 /* bug fixes (UI): one regression each */
@@ -4182,14 +4065,14 @@ static int test_bughunt_ui(void)
         memcpy(mine, fm6_patch_of(1), FP_SIZE);
         turn(EN_PRESET, 1);                             /* browse one sound */
         memcpy(next, fm6_patch_of(1), FP_SIZE);
-        hold(B_EDIT);                                   /* UNDO */
+        undo_gesture();                                   /* UNDO */
         frame();
         ok = TSEL->eng_req == ENGI_FM6 && !memcmp(mine, fm6_patch_of(1), FP_SIZE);
         edit_redo();                                    /* REDO */
         frame();
         bad += check("UNDO of a sound load on FM6: the track's edited patch back; REDO: the load's",
                      ok && memcmp(mine, next, FP_SIZE) && !memcmp(next, fm6_patch_of(1), FP_SIZE));
-        hold(B_EDIT); frame();                          /* (the edited patch again) */
+        undo_gesture(); frame();                          /* (the edited patch again) */
 
     }
     {   /* 2b: a patch the editor sends between two preset loads is a new starting point: UNDO brings it back */
@@ -4204,7 +4087,7 @@ static int test_bughunt_ui(void)
         fm6_set_patch(1, ed);                           /* the editor's FM6_PUT */
         memcpy(ed, fm6_patch_of(1), FP_SIZE);
         turn(EN_PRESET, 1); frame();                    /* load 2 */
-        hold(B_EDIT); frame();                          /* UNDO */
+        undo_gesture(); frame();                          /* UNDO */
         bad += check("UNDO after load, editor patch, load: the editor's patch back",
                      !memcmp(ed, fm6_patch_of(1), FP_SIZE));
     }
@@ -4242,25 +4125,10 @@ static int test_bughunt_ui(void)
                  ok && !ui.confirm && !up_used(1));
     sheet_do("Erase");
     bad += check("  an empty slot: no dialog, EMPTY SLOT", !ui.confirm && msg_is("EMPTY SLOT"));
-    {   /* 5: ALGORITHM does nothing while a layer's button is held (as PRESETS); after it, the track again */
-        int16_t r0;
-        ui_power_on();
-        r0 = trk[0].p[P_ROOT];
-        btn_down(B_SCL); frames(500);
-        turn(EN_ALGO, 1);
-        ok = ui.layer == LAYER_SCL && song.sel == 0u;
-        key_down(white(1)); frame(); key_up(white(1)); frame();   /* ROOT on T1 */
-        ok &= trk[0].p[P_ROOT] != r0;
-        oct_back();
-        ok &= trk[0].p[P_ROOT] == r0;
-        btn_up(B_SCL); frame();
-        btn_down(B_GLO); turn(EN_ALGO, 1);             /* armed, not open yet: ignored too */
-        ok &= song.sel == 0u;
-        btn_up(B_GLO); frame(); go_home(); frame();
-        uint32_t previous_engine = TSEL->eng_req;
-        turn(EN_ALGO, 1);
-        bad += check("ALGORITHM ignored while held, then changes the HOME engine",
-                     ok && song.sel == 0u && TSEL->eng_req == eng_step(previous_engine, 1));
+    {   /* GLO and SEL no longer own the engine knob as shortcut maps. */
+        ui_power_on();go_home();uint32_t engine=TSEL->eng_req;btn_down(B_SCL);frames(500);turn(EN_ALGO,1);
+        bad+=check("ALGORITHM keeps engine navigation while SEL is down",TSEL->eng_req==eng_step(engine,1)&&!ui.layer);
+        btn_up(B_SCL);frame();
     }
     /* 6: the sheets' clearing rows: nothing there says so (not a question, not STOP TO EDIT) */
     ui_power_on();
@@ -4280,40 +4148,8 @@ static int test_bughunt_ui(void)
     hold(B_OCTUP); sheet_do("Clear song");
     bad += check("the sheets' Delete section / Clear song / Clear pattern with nothing there: NOTHING TO ..; a song: its dialog",
                  ok && ui.confirm == CF_CLEAR_SONG);
-    /* 7: REC works in the layers, as PLAY: it arms the track (PLAY starts); the layer stays, no page */
-    ok = 1;
-    {
-        static const uint8_t LB[2] = {B_GLO, B_SCL};
-        uint32_t i;
-        for (i = 0; i < 2u; i++) {
-            ui_power_on();
-            btn_down(LB[i]); frame();
-            press(B_REC);
-            ok &= song.rec == 1u && transport_req == 0u && ui.layer != 0u;
-            btn_up(LB[i]); frame();
-            ok &= ui.home;
-        }
-    }
-    bad += check("REC in every layer: arms the track without starting PLAY; the layer stays, no page", ok);
-    /* 8: the OCT- LED lit in the SET layers (OCT- = UNDO), OCT+ dark; FX (HOLD): the octave as usual */
-    ok = 1;
-    {
-        static const uint8_t LB[2] = {B_GLO, B_SCL};
-        uint32_t i;
-        for (i = 0; i < 2u; i++) {
-            ui_power_on();
-            song.octave = 1;                            /* (outside: OCT+ lit) */
-            btn_down(LB[i]); frames(500);
-            ok &= layer_set_open() && oct_leds_seen(1) == 1u && oct_leds_seen(0) == 1u;
-            btn_up(LB[i]); frame();
-            ok &= oct_leds() == 2u;
-        }
-        ui_power_on();
-        btn_down(B_FX); frames(500);
-        ok &= ui.layer==LAYER_FX && ui.ly==LAYER_FX;
-        btn_up(B_FX); frame();
-    }
-    bad += check("SET layers: OCT- UNDO, OCT+ dark; after: octave; FX opens HOLD", ok);
+    ui_power_on();btn_down(B_FX);frames(2100);press(B_REC);
+    bad+=check("REC still arms during the FX hold",song.rec==1u&&ui.layer==LAYER_FX);btn_up(B_FX);frame();
     /* 9: no "HOLD [EDIT] QUICK" over NAME (EDIT tapped on USER / PROJECT renames) */
     ui_power_on_general();
     up_ui(2, 0);
@@ -4339,16 +4175,9 @@ static int test_chord_page(void)
     t = TSEL;
     t->p[P_VOICE] = V_POLY;
     go_home(); frame();
-    press(B_SCL); frames(400);
-    ok = str_eq(cur_page()->title, "SCL");
-    press(B_SCL); frames(400);
-    ok &= str_eq(cur_page()->title, "MASTER TUNE");
-    press(B_SCL); frames(400);
-    ok &= str_eq(cur_page()->title, "CUSTOM TUNE");
-    press(B_SCL); frames(400);
-    ok &= str_eq(cur_page()->title, "CHORD") && cur_page()->graph == GR_CHORD && cur_page()->fam == FAM_SCL;
-    bad += check("SCL cycles settings then CHORD: the CHORD page (CHRD VOIC, the chord graph)", ok && cur_page()->id[0] == P_CHRD &&
-                 cur_page()->id[1] == P_VOIC);
+    press(B_SCL);frames(400);ok=cur_page()->scope==SC_MASTER_TUNE;
+    btn_down(B_ENV);frames(3100);btn_up(B_ENV);frame();
+    bad+=check("ENV held three seconds opens CHORD from tuning",ok&&cur_page()->graph==GR_CHORD&&cur_page()->id[0]==P_CHRD&&cur_page()->id[1]==P_VOIC);
     screen_clear(); ui.force = 1; ui_draw();
     bad += check("  CHRD OFF: the page says what to do, MONO gray", screen_gray());
     turn(EN_K1, 1); frame();
@@ -4367,26 +4196,8 @@ static int test_chord_page(void)
     set_engine_of(t, ENGI_DRUM); t->engine = t->eng_req; frame();
     screen_clear(); ui.force = 1; ui_draw();
     bad += check("  a kit (DRUM): the page says so, MONO gray", chord_kit(t) && screen_gray());
-    ui_power_on();
-    t = TSEL;
-    t->p[P_CHRD] = CH_OFF; t->p[P_VOIC] = VC_CLOSE;
-    go_home(); frame();
-    btn_down(B_SCL); frames(800);
-    ok = ui.layer == LAYER_SCL;
-    turn(EN_K3, 2); frame();
-    turn(EN_K4, 1); frame();
-    ok &= t->p[P_CHRD] == CH_DIA7 && t->p[P_VOIC] == VC_OPEN && t->p[P_QUANT] == 0 && t->p[P_TRANS] == 0;
-    turn(EN_K1, 2); frame();
-    ok &= t->p[P_ROOT] == 2;
-    oct_back();
-    btn_up(B_SCL); frame();
-    bad += check("SCL layer: KNOB 1 ROOT, 3 CHRD, 4 VOIC (QNT TRN untouched); OCT- puts them back", ok &&
-                 t->p[P_CHRD] == CH_OFF && t->p[P_VOIC] == VC_CLOSE && t->p[P_ROOT] == 0 && ui.home);
-    btn_down(B_SCL); frames(800);
-    screen_clear(); ui.force = 1; ui_draw();
-    ok = screen_gray();
-    btn_up(B_SCL); frame();
-    bad += check("  its map and cards MONO gray", ok);
+    ui_power_on();press(B_SCL);btn_down(B_SCL);frames(3100);btn_up(B_SCL);frame();
+    bad+=check("SEL held three seconds opens custom tuning without changing chords",cur_page()->scope==SC_MASTER_TUNE&&cur_page()->id[0]==4&&TSEL->p[P_CHRD]==CH_OFF);
     return bad;
 }
 
@@ -4512,7 +4323,7 @@ static int test_bughunt_ui2(void)
             btn_down(BTN[i]); frame(); frames(100);
             btn_down(B_OCTDN); frame(); btn_up(B_OCTDN); frame();   /* the dialog closes, the button still held */
             frames(800);
-            ok = !ui.confirm && (ui.ly_t0 & LY_DEAD) && !ui.layer && !kb_mask;
+            ok = !ui.confirm && !ui.layer && !(kb_mask&(1u<<panel.btn[BTN[i]]));
             key_down(k); frame();
             ok = ok && kb_note[k] != KB_SILENT && gates() == 1u && !((kb_layer >> k) & 1u) && !ui.layer;
             key_up(k); frame();
@@ -4921,8 +4732,8 @@ static int test_capture(void)
                  TSEL->step[2].note[0] == 62 && TSEL->step[18].note[0] == 78 && TSEL->step[14].n == 1u);
     for (uint32_t repeat = 0; repeat < 8u; repeat++) hold(B_REC);
     bad += check("Capture: repeating the same take does not accumulate duplicate playback events", cap_events(TSEL) == 5u);
-    hold(B_EDIT);
-    bad += check("  EDIT held undoes it (LEN and steps back)", TSEL->p[P_SLEN] == 16 && !TSEL->step[2].n);
+    undo_gesture();
+    bad += check("  EDIT + OCT- undoes it (LEN and steps back)", TSEL->p[P_SLEN] == 16 && !TSEL->step[2].n);
     song.rec = 1;
     hold(B_REC);
     bad += check("Capture while the track records: refused", msg_is("RECORDING"));
@@ -5032,9 +4843,9 @@ static int test_undo_levels(void)
         uint32_t levels = 2u;
         bad += check("undo acquires only two used levels from the shared allocator",
                      undo_nlv == levels && undo_lv == resource[RES_LOAD_UNDO].ptr && resource[RES_LOAD_UNDO].size==levels*sizeof(undo_t));
-        hold(B_EDIT);
+        undo_gesture();
         bad += check("latest sound load is undoable with and without cache", trk[1].preset == p1);
-        hold(B_EDIT);
+        undo_gesture();
         bad += check("older history is retained at full depth, bounded on cache failure",
                      levels > 1u ? trk[0].preset == p0 && msg_is("UNDO T1") :
                                    trk[0].preset != p0 && msg_is("NOTHING TO UNDO"));
@@ -5053,7 +4864,7 @@ static int test_undo_levels(void)
         }
         levels=UNDO_LV_MAX;
         bad += check("load history remains bounded after repeated loads", undo_top == levels && undo_cnt == levels);
-        for (uint32_t k = 0; k < levels; k++) hold(B_EDIT);
+        for (uint32_t k = 0; k < levels; k++) undo_gesture();
         bad += check("all available load levels can be undone", undo_top == 0u);
         for (uint32_t k = 0; k < levels; k++) edit_redo();
         bad += check("all available load levels can be redone", undo_top == levels);
@@ -5632,15 +5443,13 @@ static int test_seq_keys(void)
         btn_down(B_GLO); frame();
         turn(EN_SELECT, 2);
         btn_up(B_GLO); frame();
-        bad += check("GLO + SELECT on a page: BPM by default, no page turn, no GLO tap", song.g[G_BPM] > v &&
-                     !ui.home && ui.page == pg);
+        bad += check("GLO plus SELECT does not unexpectedly change tempo", song.g[G_BPM] == v && !ui.layer);
         glo_select_set(HS_SWING);
         v = song.g[G_SWING];
         btn_down(B_GLO); frame();
         turn(EN_SELECT, 3);
         btn_up(B_GLO); frame();
-        bad += check("  GLO SELECT SWING: the swing, said in the header", song.g[G_SWING] > v && ui.page == pg &&
-                     !memcmp(ui.msg, "SWING ", 6));
+        bad += check("  retired GLO shortcut cannot unexpectedly change swing", song.g[G_SWING] == v && !ui.layer);
         v = song.g[G_SWING];
         turn(EN_SELECT, 1);
         bad += check("  SELECT alone: the page's own (SWING as it was)", song.g[G_SWING] == v);

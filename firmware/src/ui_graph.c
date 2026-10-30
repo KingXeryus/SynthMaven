@@ -392,6 +392,22 @@ static void graph_scale(const track_t *t, uint16_t c)
         cv_rrect(x + 3, BLACK[i] ? 6 : 38, 10, 52, 3, col, T_SURF);
     }
 }
+/* Chromatic microtuning keeps piano key identity: tuned red, excluded grey. */
+static void graph_master_tuning(void)
+{
+    static const uint8_t white[7]={0,2,4,5,7,9,11},black[5]={1,3,6,8,10},after[5]={0,1,3,4,5};
+    sm_tuning_t preview=sm_tuning;preview.enabled=1;preview.apply=15;preview.octave=0;
+    uint32_t mask=sm_tuning_mask(&preview);
+    for(uint32_t group=0;group<2;group++)for(uint32_t i=0;i<(group?5u:7u);i++){
+        uint32_t key=group?black[i]:white[i],relative=(key+12-preview.root)%12;
+        int tuned=sm_tuning_cents(&preview,0,60+key),included=(mask>>relative)&1;
+        int32_t x=group?12+(int32_t)(after[i]+1)*31-9:12+(int32_t)i*31,w=group?18:30,h=group?47:76;
+        uint16_t col=!included?T_MID:tuned?T_REC:group?RGB(0,0,0):(ux.mono?T_TEXT:RGB(255,255,255));
+        cv_rrect(x,8,w,h,2,key==(uint32_t)sm_tune_key?T_TEXT:T_LINE,T_SURF);cv_rrect(x+1,9,w-2,h-2,1,col,T_LINE);
+    }
+    char label[24];note_name(label,60+(uint32_t)sm_tune_key);uint32_t len=str_len(label);label[len++]=' ';fmt_int(label+len,sm_tuning_cents(&preview,0,60+(uint32_t)sm_tune_key));str_cpy(label+str_len(label)," ct",4);
+    cv_text_c(120,ty_y(94,TY_LB),TY_LB,label,T_TEXT,T_SURF);
+}
 /* CHORD (SCL 2): the chord's name ("Cm7": the last one the track played; before any, the one on its ROOT from
  * C4) over the keys from the C below its lowest note (two octaves, three for a wide one): its notes THEME, its
  * root's ACCENT, the others RAISE. OFF or a kit: what to do instead */
@@ -1009,6 +1025,11 @@ static void draw_graph(void)
             graph_scope(c, 0, H_GRAPH);
         } else {
             switch (pg->graph) {
+            case GR_SM_TUNING:graph_master_tuning();break;
+            case GR_SM_MIX: {
+                char label[24]="PART ",note[8],pan[12]="PAN ";fmt_int(label+5,(int32_t)(song.sel%4)+1);note_name(note,sm_layers.low[song.sel%4]);fmt_int(pan+4,TSEL->p[P_PAN]);
+                cv_text(12,8,TY_TX,label,T_TEXT);cv_text(12,38,TY_TX,"SPLIT",T_MID);cv_text(100,38,TY_TX,note,T_TEXT);cv_text(12,68,TY_TX,pan,T_TEXT);break;
+            }
             case GR_LFO:
                 graph_lfo(t, c);
                 break;

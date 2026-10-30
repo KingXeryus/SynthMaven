@@ -387,8 +387,13 @@ if core && [ $TABLES = 1 ]; then
         run "text spacing: glyph gaps against the font's own (16x supersampled), S M <= 0.25 px, L <= 0.5 px" \
             python3 tests/text_spacing_test.py build/gen/ui_fonts.h
     fi
+    t "SynthMaven eight programs, scenes and atomic storage" synthmaven_program_test -O1 $FW -- "$OUT/synthmaven_program_test"
     t "SynthMaven HYBRID native saves and interrupted-write recovery" synthmaven_hybrid_store_test -O1 $FW -- "$OUT/synthmaven_hybrid_store_test"
     t "SynthMaven four-part layer routing and note ownership" synthmaven_layer_routing_test -O1 $FW -- "$OUT/synthmaven_layer_routing_test"
+    t "SynthMaven MIDI learn and persistent mappings" synthmaven_mapping_test -O1 $FW -- "$OUT/synthmaven_mapping_test"
+    t "SynthMaven compact program backup recovery" synthmaven_program_backup_test -O1 $FW -- "$OUT/synthmaven_program_backup_test"
+    t "SynthMaven delayed button shortcuts" synthmaven_shortcuts_test -O1 $FW -- "$OUT/synthmaven_shortcuts_test"
+    t "SynthMaven program controls" synthmaven_program_ui_test -O1 $FW -- "$OUT/synthmaven_program_ui_test"
     t "SynthMaven tuning knob controls" synthmaven_tuning_ui_test -O1 $FW -- "$OUT/synthmaven_tuning_ui_test"
     t "SynthMaven global chromatic tuning and persistence" synthmaven_tuning_test -O1 $FW -- "$OUT/synthmaven_tuning_test"
     t "SynthMaven HOME: engine, preset bank and part navigation" synthmaven_home_test -O1 $FW -- "$OUT/synthmaven_home_test"
@@ -440,6 +445,7 @@ if sound && [ $TABLES = 1 ]; then
     t "native fp32: independent numerical references, exact pitch, quiet signals and fractional envelopes" synth_fpu_test \
         -O2 $FW
     job prophet
+    t "SynthMaven factory programs: actual loader and bounded audio" synthmaven_factory_audio_test -O1 $FW -- "$OUT/synthmaven_factory_audio_test"
     t "SynthMaven HYBRID and DX7 banks: render and part isolation" synthmaven_port_test -O2 $FW -- "$OUT/synthmaven_port_test"
     t "modulation matrix: off = bit-identical, the math, MIDI CC1 / CC11 / aftertouch, cost, demos" mod_test \
         -DMELODEE_LEGACY_EXTRAS=1 -O2 $FW -- "$OUT/mod_test" build/mod_demo

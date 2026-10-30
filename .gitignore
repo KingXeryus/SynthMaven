@@ -15,3 +15,6 @@ web/node_modules/
 
 # Local development Python environment
 .venv/
+
+# iOS bundle is generated from the shared web editor
+ios/Generated/

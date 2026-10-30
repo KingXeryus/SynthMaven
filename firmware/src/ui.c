@@ -1,3 +1,7 @@
+static uint32_t sm_layer_notice_until;
+static int sm_program_save(uint32_t slot,const char *name,int tuning_override);
+static int sm_program_load(uint32_t slot);
+static int sm_program_name_at(uint32_t slot,char *name);
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Kerem Kilic (Ellic Studio)
  * Portions Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
@@ -170,6 +174,7 @@ static struct {
     uint32_t rec_t0;             /* REC press time (transport only) */
     uint32_t seq_t0;             /* SEQ held: direct SONG entry */
     uint32_t save_t0;            /* SAVE press time (btn_hold: held = project quick save) */
+    uint32_t sm_glo_t0, sm_env_t0, sm_scl_t0;
     uint32_t edit_t0;            /* EDIT press time (btn_hold: held = UNDO) */
     uint32_t oct_t0;             /* OCT+ press time (btn_hold: held = the page's sheet, ui_popup.c) */
     uint8_t confirm;             /* the OCT- / OCT+ dialog: CF_*, 0 = none */
@@ -580,8 +585,8 @@ static void open_family(uint32_t fam)
     } else if (fam == FAM_SAVE) {
         uint32_t i;
         for (i = 0; i < NPAGES; i++)
-            if (PAGES[i].graph == GR_USER) break;
-        ui.page = (uint8_t)i;                         /* SAVE enters the sound save screen directly */
+            if (PAGES[i].scope == SC_SM_PROGRAM) break;
+        ui.page = (uint8_t)i;                         /* SAVE enters the eight sound programs. */
     } else {
         ui.page = ui.fam_last[fam] && PAGES[ui.fam_last[fam]].fam == fam && page_visible(ui.fam_last[fam]) ? ui.fam_last[fam]
                                                                           : (uint8_t)page_first(fam);
@@ -1236,6 +1241,7 @@ static uint32_t act_cols(void)                   /* the columns that are actions
     const page_t *pg = cur_page();
     if (ui.home)
         return 0;
+    if(pg->scope==SC_SM_PROGRAM)return 6u;
     if (pg->graph == GR_SONG)
         return 1u;                               /* PLAY / STOP (also the PLAY button; TAKE JAM: REC held) */
     if (pg->graph == GR_SLICES)
@@ -1254,6 +1260,7 @@ static uint32_t act_col(void)
 
 static const char *act_name(uint32_t c)          /* column c's action (the footer hint) */
 {
+    if(cur_page()->scope==SC_SM_PROGRAM)return c==1?"LOAD":"SAVE";
     if (cur_page()->graph == GR_SONG)
         return song.playing || chain_busy() ? "STOP" : "PLAY";
     if (cur_page()->graph == GR_SLICES)

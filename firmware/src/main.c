@@ -234,6 +234,8 @@ static void fm1_main(void)
     fm1_adc_init();
     panel_init();
     melodee_init();
+    sm_config_load();
+    sm_factory_program(0);
 #if MELODEE_DUAL_CORE
     /* Default recovery chooses one core after failed supply setup, an early
      * crash, or a retained CPU1 bar. No-fallback diagnostics bypass the last
@@ -367,6 +369,7 @@ static void fm1_main(void)
         melodee_dbg.home = ui.home;
         melodee_dbg.stage = 1;
         ui_input();
+        sm_mapping_poll();
         glo_poll();                                     /* a kept GLO value changed: the settings, later */
         settings_poll();                              /* queued settings save: only while stopped */
         melodee_dbg.stage = 2;

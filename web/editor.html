@@ -319,6 +319,8 @@ button[aria-pressed=true],[role=tab][aria-selected=true]{border-color:var(--acce
 
   <section class="panel" id="p-tracks" data-tab="tracks" data-dev hidden>
     <h2 data-t="mixer" data-ic="ui_slider_vertical"></h2>
+    <div id="sm-programs" hidden></div>
+    <div id="sm-setlist" hidden></div>
     <div id="layer-routing" class="bar" hidden></div>
     <div class="mixer" id="mixer"></div>
     <p class="dim" data-t="mixHelp"></p>
@@ -404,6 +406,7 @@ button[aria-pressed=true],[role=tab][aria-selected=true]{border-color:var(--acce
   </section>
 
   <section class="panel" id="p-settings" data-tab="settings" data-dev hidden>
+    <div id="sm-mapping" hidden></div>
     <div class="groups" id="setgroups"></div>
     <div class="group" id="device-display" hidden style="margin-top:12px">
       <h2 data-t="deviceDisplay"></h2>
@@ -452,7 +455,7 @@ const CMD = { INFO: 1, GET: 2, SET: 3, DUMP: 4, DESC: 5, STEP_GET: 6, STEP_SET: 
   TRACK_PARAM: 31, TRACK_CHANGED: 32, SONG: 33, PATTERN: 73, BANK_SONG: 74,
   UI_STATE: 34, UI_SET: 35, UI_PALETTES: 36, FAV_GET: 37, FAV_SET: 38,
   MOTION: 64, BACKUP_LIST: 65, BACKUP_GET: 66, BACKUP_PUT: 67,
-  FM6_GET: 68, FM6_PUT: 69, FM6_LIST: 70, FM6_ERASE: 71, CZ_GET: 75, CZ_PUT: 76, CZ_BANK: 77, NATIVE: 78, LIBRARY:80, PROPHET:95, HYBRID:96, MASTER_TUNING:110, LAYERS:111 };
+  FM6_GET: 68, FM6_PUT: 69, FM6_LIST: 70, FM6_ERASE: 71, CZ_GET: 75, CZ_PUT: 76, CZ_BANK: 77, NATIVE: 78, LIBRARY:80, PROPHET:95, HYBRID:96, MASTER_TUNING:110, LAYERS:111, PROGRAMS:112, MAPPING:113, SETLIST:114 };
 /* frames the device sends on its own (while WATCH is on); never replies */
 
 /*P5-FACTORY-BEGIN*/
@@ -659,7 +662,7 @@ const parse = {
     o.shared=shared>=0?{version:1,total:trailer[shared+2]|trailer[shared+3]<<7}:null;
     if(o.shared)o.native=null;
     const sm=trailer.findIndex((x,i)=>x===0x53&&trailer[i+1]===0x4d&&trailer[i+2]===1);
-    o.synthmaven=sm>=0?{schema:1,major:trailer[sm+3],minor:trailer[sm+4],hybrid:trailer[sm+5]===96,masterTuning:trailer[sm+6]===110,layers:trailer[sm+7]===111}:null;
+    o.synthmaven=sm>=0?{schema:1,major:trailer[sm+3],minor:trailer[sm+4],hybrid:trailer[sm+5]===96,masterTuning:trailer[sm+6]===110,layers:trailer[sm+7]===111,programs:trailer[sm+8]===112,mapping:trailer[sm+9]===113,setlist:trailer[sm+10]===114}:null;
     return o;
   },
   [CMD.UI_STATE](a) {
@@ -804,6 +807,22 @@ const parse = {
   [CMD.TRACK_PARAM](a) { const r = new Reader(a); return { track: r.b(), id: r.b(), value: r.v() }; },
   [CMD.TRACK_CHANGED](a) { return parse[CMD.TRACK_PARAM](a); },
   /* FM6 patches: target 0 a track, 1 a bank slot, 2 a factory patch; packed: the 128-byte record */
+  [CMD.SETLIST](a){if(a.length<4||a[2]>32||a[3]>31||a.length!==4+a[2]||a.slice(4).some(x=>x>7))throw Error('Invalid setlist status');return {op:a[0],rc:a[1],count:a[2],position:a[3],slots:a.slice(4)};},
+  [CMD.MAPPING](a){
+    if(a.length!==363||a[1]>5||a[3]>2||a[5]>1||a[6]>1||a[7]>1)throw Error('Invalid MIDI mapping status');
+    const number=at=>{let v=0;for(let j=0;j<5;j++)v+=a[at+j]*2**(j*7);return v>>>0;};
+    const raw=Array.from(unpack7(a.slice(33)));if(raw.length!==288)throw Error('Invalid MIDI assignments');
+    const maps=Array.from({length:24},(_,i)=>raw.slice(i*12,i*12+12));
+    return {op:a[0],rc:a[1],conflict:a[2],learn:a[3],match:a[4],host:a[5],device:a[6],midi:a[7],last:number(8),captured:number(13),serial:number(18),hits:number(23),drops:number(28),maps};
+  },
+  [CMD.PROGRAMS](a) {
+    let i=0;const byte=()=>{if(i>=a.length)throw Error('Truncated program status');return a[i++];};
+    const name=()=>{let n='';for(let j=0;j<=12;j++){const c=byte();if(!c)return n;if(j===12||c<32||c>126)throw Error('Invalid program name');n+=String.fromCharCode(c);}throw Error('Invalid program name');};
+    const o={op:byte(),rc:byte(),current:byte(),scene:byte(),override:byte(),name:name(),slots:[]};
+    if(o.rc>4||!(o.current<8||o.current===127)||!(o.scene<4||o.scene===127)||o.override>1)throw Error('Invalid program status');
+    for(let k=0;k<8;k++){const status=byte();if(status>3)throw Error('Invalid program slot');o.slots.push({status,name:name()});}
+    o.sceneMask=byte();o.scenes=Array.from({length:4},name);if(o.sceneMask>15||i!==a.length)throw Error('Invalid scene status');return o;
+  },
   [CMD.LAYERS](a) {return {op:a[0],rc:a[1],layers:layersDecode(Array.from(unpack7(a.slice(2))))};},
   [CMD.MASTER_TUNING](a) { return {op:a[0],rc:a[1],tuning:tuningDecode(Array.from(unpack7(a.slice(2))))}; },
   [CMD.HYBRID](a) { return {op:a[0],index:a[1],rc:a[2],raw:a[2]||a[0]===1?null:Array.from(unpack7(a.slice(3)))}; },
@@ -923,6 +942,8 @@ function replyMatches(cmd, args, a) {
     case CMD.BANK_SONG: case CMD.SONG: return a[0] === args[0];
     case CMD.PATTERN: return a[0] === args[0] && a[1] === args[1];
     case CMD.PROPHET: return a[2]===args[1]&&a[0]===(args[0]<=1?1:args[0]);
+    case CMD.MAPPING: case CMD.SETLIST: return a[0]===args[0];
+    case CMD.PROGRAMS: return a[0]===args[0];
     case CMD.LAYERS: return a[0]===args[0];
     case CMD.MASTER_TUNING: return a[0]===args[0];
     case CMD.HYBRID: return a[0]===args[0]&&a[1]===args[1];
@@ -2360,6 +2381,45 @@ function makeMockDevice(opt = {}) {
     };
     const NB = st.bank.length;
     switch (cmd) {
+      case CMD.SETLIST: {
+        st.setlist??=[];st.setlistPosition??=0;let rc=1;
+        if(a[0]===0&&a.length===1)rc=0;
+        else if(a[0]===1&&a[1]<=32&&a.length===2+a[1]&&a.slice(2).every(x=>x<8)){st.setlist=a.slice(2);st.setlistPosition=0;rc=0;}
+        [a[0],rc,st.setlist.length,st.setlistPosition,...st.setlist].forEach(b);break;
+      }
+      case CMD.MAPPING: {
+        st.mappings??=Array.from({length:24},()=>Array(12).fill(0));st.mappingLearn??=0;let rc=1,conflict=127;
+        if(a[0]===0&&a.length===1)rc=0;
+        else if(a[0]===1&&a.length===2&&a[1]<=1){st.mappingLearn=a[1];rc=0;}
+        else if(a[0]===2&&a[1]<24){const m=Array.from(unpack7(a.slice(2)));
+          if(m.length===12&&m[0]<=1&&m[1]<=2&&m[2]<=16&&m[3]<=127&&m[4]<=128&&m[5]<=1&&m[6]<=4&&(m[5]?m[7]<P_COUNT:m[7]<10)&&(m[8]+m[9]*256)<=2000&&(m[10]<ENG.length||m[10]===255)&&m[11]===0&&(!m[5]||m[1]===0)){
+            const c=st.mappings.findIndex((p,i)=>i!==a[1]&&p[0]&&m[0]&&p[1]===m[1]&&p[3]===m[3]&&(p[2]===m[2]||p[2]===16||m[2]===16)&&(p[4]===m[4]||p[4]===128||m[4]===128));
+            if(c>=0){rc=5;conflict=c;}else{st.mappings[a[1]]=m;st.mappingLearn=0;rc=0;}
+          }
+        }
+        [a[0],rc,conflict,st.mappingLearn,127,0,1,1,...Array(25).fill(0),...pack7(st.mappings.flat())].forEach(b);break;
+      }
+      case CMD.PROGRAMS: {
+        if(opt.noSynthMaven)return null;
+        st.programs??=Array(8).fill(null);st.scenes??=Array(4).fill(null);st.programCurrent??=127;st.sceneCurrent??=127;
+        const op=a[0],slot=a[1],start=op===2?3:2,name=String.fromCharCode(...a.slice(start));let rc=1;
+        const copy=x=>JSON.parse(JSON.stringify(x));
+        if(op===0&&a.length===1)rc=0;
+        else if(op===2&&slot<8&&a[2]<=1&&/^[ -~]{1,12}$/.test(name)){
+          st.programs[slot]={name,override:a[2],tracks:copy(st.tracks.slice(0,4)),g:st.g.slice(),layers:copy(st.layers||{enabled:0,low:[0,0,0,0],high:[127,127,127,127]}),tuning:copy(st.masterTuning||{enabled:0,scale:0,root:0,octave:0,quantize:0,apply:15,cents:Array(12).fill(0),mask:4095}),scenes:copy(st.scenes),scene:st.sceneCurrent};
+          st.programCurrent=slot;st.programName=name;st.programOverride=a[2];rc=0;
+        }else if(op===1&&a.length===2&&st.programs[slot]){
+          const p=st.programs[slot];p.tracks.forEach((from,i)=>{const to=st.tracks[i];for(const key of ['engine','preset','fm6','p5','cz','drum','hybrid'])if(from[key]!==undefined)to[key]=copy(from[key]);from.p.forEach((v,j)=>{if(j<29||j>32)to.p[j]=v;});});
+          for(let i=27;i<41;i++)st.g[i]=p.g[i];for(let i=42;i<45;i++)st.g[i]=p.g[i];
+          st.layers=copy(p.layers);if(p.override)st.masterTuning=copy(p.tuning);st.scenes=copy(p.scenes);st.sceneCurrent=p.scene;st.programCurrent=slot;st.programName=p.name;st.programOverride=p.override;rc=0;
+        }else if(op===3&&slot<4&&/^[ -~]{1,12}$/.test(name)){
+          st.scenes[slot]={name,values:st.tracks.slice(0,4).map(t=>[0,39,40,108,120,121,122,123,109,110].map(i=>t.p[i])),tuning:st.masterTuning?copy(st.masterTuning):null};st.sceneCurrent=slot;rc=0;
+        }else if(op===4&&a.length===2&&slot<4&&st.scenes[slot]){
+          const sc=st.scenes[slot];sc.values.forEach((v,k)=>v.forEach((x,j)=>{if(j<4||j>=8||st.tracks[k].engine===22)st.tracks[k].p[[0,39,40,108,120,121,122,123,109,110][j]]=x;}));if(sc.tuning)st.masterTuning=copy(sc.tuning);st.sceneCurrent=slot;rc=0;
+        }
+        [op,rc,st.programCurrent,st.sceneCurrent,st.programOverride||0].forEach(b);s(st.programName||'');
+        st.programs.forEach(p=>{b(p?0:1);s(p?.name||'');});b(st.scenes.reduce((mask,x,i)=>mask|(x?1<<i:0),0));st.scenes.forEach(x=>s(x?.name||''));break;
+      }
       case CMD.LAYERS: {
         if(opt.noSynthMaven)return null;
         st.layers??={enabled:0,low:[0,0,0,0],high:[127,127,127,127]};let rc=0;const op=a[0];
@@ -2574,7 +2634,7 @@ function makeMockDevice(opt = {}) {
         if (!opt.legacy) b(NTRK);
         if (!opt.legacy && !opt.v3 && !opt.v5) {
           b(0);
-          if (st.uiCaps) { [0x55,1,st.uiCaps,0x4d,2,64,1,0x42,1,3,0x50,1,8,16].forEach(b); if (!opt.noFm6) [0x46,1,FM6.FACTORY_PK.length,FM6_BANK,0x43,1,16,1,0,0,0x35,1,19,16,17,18,20,0,1,0x4e,1,64,0,0,1].forEach(b); if(opt.shared)[0x55,1,0,3].forEach(b);if(!opt.noSynthMaven)[0x53,0x4d,1,3,5,96,110,111].forEach(b); }
+          if (st.uiCaps) { [0x55,1,st.uiCaps,0x4d,2,64,1,0x42,1,3,0x50,1,8,16].forEach(b); if (!opt.noFm6) [0x46,1,FM6.FACTORY_PK.length,FM6_BANK,0x43,1,16,1,0,0,0x35,1,19,16,17,18,20,0,1,0x4e,1,64,0,0,1].forEach(b); if(opt.shared)[0x55,1,0,3].forEach(b);if(!opt.noSynthMaven)[0x53,0x4d,1,3,5,96,110,111,112,113,114].forEach(b); }
         }
         break;
       case CMD.GET: case CMD.SET: {
@@ -3597,6 +3657,9 @@ function buildUI() {
   renderFm6();
   loadMasterTuning();
   loadLayerRouting();
+  loadPrograms();
+  loadMapping();
+  loadSetlist();
 }
 
 /* the track selector (v3): the four parts; the editor shows the selected one */
@@ -4275,6 +4338,64 @@ function mixToSound(i) {
   put(0, P.LEVEL, x.level);
   put(0, pMute(), x.mute ? 1 : 0);
   put(0, pPan(), x.pan);
+}
+
+const SM_ACTIONS=['Patch Up','Patch Down','Program Next','Program Previous','Scene Next','Scene Previous','Layering On/Off','Setlist Next','Setlist Previous','All notes off'];
+function midiMessageText(raw){const type=(raw>>18)&3,n=raw&127,v=(raw>>7)&127,ch=((raw>>14)&15)+1;return `${['CC','PC','Note'][type]||'?'} ${n}${type===1?'':` · value ${v}`} · channel ${ch}`;}
+async function mappingRequest(args,draw=true){
+ const d=dev;if(!d?.info.synthmaven?.mapping)throw Error('Firmware MIDI Learn is unavailable');
+ const s=parse[CMD.MAPPING](await sessionRequest(d,[CMD.MAPPING,args]));
+ if(s.rc)throw Error(s.rc===5?`Conflicts with assignment ${s.conflict+1}. Remove it or choose another message.`:['','Invalid assignment','Storage error','Protected legacy project: back up and migrate it before saving mappings','Stop playback to save assignments'][s.rc]);
+ d.mapping=s;if(draw)renderMapping();return s;
+}
+async function loadMapping(){const host=$('sm-mapping');host.hidden=!dev?.info.synthmaven?.mapping;if(host.hidden)return;try{await mappingRequest([0]);}catch(e){say(e.message);}}
+function renderMapping(){
+ const d=dev,s=d?.mapping,host=$('sm-mapping');if(!s)return;host.replaceChildren();const state=d.mappingDraft??={slot:0,target:'a0',part:4,repeat:80};
+ const run=fn=>async()=>{try{await fn();}catch(e){say(e.message);}};
+ host.append(el('h2',{},'Pedal & MIDI Learn'),el('p',{},`USB role: ${s.host?'PEDAL / HOST':'COMPUTER'} · Device: ${s.device?'detected':'not detected'} · MIDI interface: ${s.midi?'detected':'not detected'}`),el('p',{id:'sm-midi-status','aria-live':'polite'},s.serial?`Last received: ${midiMessageText(s.last)} · ${s.match<24?'Matched assignment '+(s.match+1):'No matching assignment'} · triggers ${s.hits}`:'Waiting for a MIDI message'),el('p',{class:'dim'},'Use COMPUTER mode for the web or iOS editor over USB. A directly attached pedal needs PEDAL / HOST mode and external power. Return to COMPUTER mode and reconnect the cable to edit assignments; the USB port cannot host a pedal and connect to the editor at the same time. Learn through a computer MIDI route before connecting the pedal directly.'));
+ const slot=el('select',{'aria-label':'Assignment slot'});s.maps.forEach((m,i)=>slot.append(el('option',{value:i,text:`${i+1} · ${m[0]?(m[5]?'Parameter '+m[7]:SM_ACTIONS[m[7]]):'Empty'}`})));slot.value=state.slot;slot.onchange=()=>{state.slot=+slot.value;};
+ const target=el('select',{'aria-label':'MIDI action or parameter'});SM_ACTIONS.forEach((name,i)=>target.append(el('option',{value:'a'+i,text:name})));d.pdesc.forEach((p,i)=>{if(p?.label&&p.max>p.min)target.append(el('option',{value:'p'+i,text:'Parameter · '+p.label}));});target.value=state.target;target.onchange=()=>state.target=target.value;
+ const part=el('select',{'aria-label':'Target part'});['Part 1','Part 2','Part 3','Part 4','Selected part'].forEach((name,i)=>part.append(el('option',{value:i,text:name})));part.value=state.part;part.onchange=()=>state.part=+part.value;
+ const repeat=el('input',{type:'number',min:0,max:2000,step:1,value:state.repeat,'aria-label':'Duplicate suppression milliseconds'});repeat.onchange=()=>state.repeat=Math.max(0,Math.min(2000,Math.round(+repeat.value)||0));
+ const learn=el('button',{onclick:run(()=>mappingRequest([1,1]))},'Learn');const cancel=el('button',{onclick:run(()=>mappingRequest([1,0]))},'Cancel Learn');
+ const accept=el('button',{onclick:run(async()=>{const raw=s.captured,type=(raw>>18)&3,param=state.target[0]==='p';if(param&&type!==0)throw Error('Move a CC knob or fader for a parameter assignment');const m=[1,type,(raw>>14)&15,raw&127,param?128:(raw>>7)&127,+param,state.part,+state.target.slice(1),state.repeat&255,state.repeat>>8,param&&+state.target.slice(1)>=d.info.pe0?d.dump.engine:255,0];await mappingRequest([2,state.slot,...pack7(m)]);})},'Accept captured message');accept.disabled=s.learn!==2;
+ const remove=el('button',{onclick:run(()=>mappingRequest([2,state.slot,...pack7(Array(12).fill(0))]))},'Remove assignment');
+ host.append(el('div',{class:'bar'},slot,target,part,el('label',{},'Duplicate suppression (ms)',repeat),learn,cancel),el('p',{id:'sm-learn-status'},s.learn===1?'Press the pedal or move a controller now.':s.learn===2?'Captured: '+midiMessageText(s.captured):'Select an action or parameter, choose Learn, press the pedal, then accept.'),el('div',{class:'bar'},accept,remove),el('p',{class:'dim'},'Release messages rearm the next tap immediately. Set suppression to 0 for devices whose repeated messages are intentional. Parameter controls use their full CC range.'));
+}
+setInterval(async()=>{if(!dev?.info.synthmaven?.mapping||$('p-settings').hidden||busy)return;try{const before=dev.mapping,s=await mappingRequest([0],false);if(before?.learn!==s.learn)renderMapping();else{const node=$('sm-midi-status');if(node)node.textContent=s.serial?`Last received: ${midiMessageText(s.last)} · ${s.match<24?'Matched assignment '+(s.match+1):'No matching assignment'} · triggers ${s.hits}`:'Waiting for a MIDI message';}}catch(e){say(e.message);}},400);
+async function loadSetlist(){const host=$('sm-setlist');host.hidden=!dev?.info.synthmaven?.setlist;if(host.hidden)return;try{const s=parse[CMD.SETLIST](await sessionRequest(dev,[CMD.SETLIST,[0]]));dev.setlist=s;renderSetlist();}catch(e){say(e.message);}}
+function renderSetlist(){
+ const s=dev?.setlist,host=$('sm-setlist');if(!s)return;host.replaceChildren();const input=el('input',{type:'text',value:s.slots.map(i=>i+1).join(', '),'aria-label':'Setlist program order'});
+ const save=el('button',{onclick:async()=>{try{const text=input.value.trim(),slots=text?text.split(/[, ]+/).map(x=>Number(x)-1):[];if(slots.length>32||slots.some(x=>!Number.isInteger(x)||x<0||x>7))throw Error('Enter up to 32 program numbers from 1 to 8');const r=parse[CMD.SETLIST](await sessionRequest(dev,[CMD.SETLIST,[1,slots.length,...slots]]));if(r.rc)throw Error('Setlist save failed; stop playback and check storage');dev.setlist=r;renderSetlist();}catch(e){say(e.message);}}},'Save setlist');
+ host.append(el('h3',{},'Setlist'),el('div',{class:'bar'},input,save),el('p',{class:'dim'},'An ordered list of program references, for example 1, 3, 2, 3. Use MIDI Learn to assign Setlist Next and Previous. Repeated references are allowed.'));
+}
+
+async function programRequest(args){
+ const d=dev;if(!d?.info.synthmaven?.programs)throw Error('This firmware does not support SynthMaven programs');
+ const status=parse[CMD.PROGRAMS](await sessionRequest(d,[CMD.PROGRAMS,args]));
+ if(status.rc)throw Error(['','Empty or invalid slot','Storage error','This slot contains a protected Melodee project','Stop playback before loading or saving'][status.rc]);
+ if(dev!==d)return;d.programs=status;renderPrograms();return status;
+}
+async function loadPrograms(){
+ const host=$('sm-programs');host.hidden=!dev?.info.synthmaven?.programs;if(host.hidden)return;
+ try{await programRequest([0]);}catch(e){say(e.message);}
+}
+function renderPrograms(){
+ const d=dev,p=d?.programs,host=$('sm-programs');if(!p)return;host.replaceChildren();
+ const run=fn=>async()=>{try{await fn();}catch(e){say(e.message);}};
+ const status=el('p',{'aria-live':'polite'},`Program: ${p.current<8?'P'+(p.current+1)+' · ':''}${p.name||'Unsaved'} — Scene: ${p.scene<4&&p.sceneMask&(1<<p.scene)?p.scenes[p.scene]:'None'}`);
+ const slot=el('select',{'aria-label':'Program slot'});p.slots.forEach((x,i)=>slot.append(el('option',{value:i,text:`P${i+1} · ${x.status===3?'Protected project':x.name||'Empty'}`})));slot.value=d.programSlot??(p.current<8?p.current:0);slot.onchange=()=>{d.programSlot=+slot.value;};
+ const name=el('input',{type:'text',maxlength:12,'aria-label':'Program name',value:p.name||'PROGRAM'});
+ const override=el('input',{type:'checkbox'});override.checked=!!p.override;
+ const ascii=input=>{const n=input.value.trim();if(!/^[ -~]{1,12}$/.test(n))throw Error('Use 1–12 printable characters for the name');return Array.from(n,c=>c.charCodeAt(0));};
+ const load=async index=>{await programRequest([1,index]);await afterSoundChange();await loadMasterTuning();await loadLayerRouting();};
+ const next=dir=>run(async()=>{for(let n=1;n<=8;n++){const i=((p.current<8?p.current:dir>0?-1:0)+dir*n+16)%8;if(!p.slots[i].status){await load(i);return;}}throw Error('Save a program first');});
+ host.append(el('h2',{},'Programs & scenes'),status,el('div',{class:'bar'},el('button',{onclick:next(-1)},'Program Down'),el('button',{onclick:next(1)},'Program Up'),slot,el('button',{onclick:run(()=>load(+slot.value))},'Load'),name,el('label',{},override,' Save tuning override'),el('button',{onclick:run(()=>programRequest([2,+slot.value,+override.checked,...ascii(name)]))},'Save program')));
+ const scenes=el('select',{'aria-label':'Scene slot'});p.scenes.forEach((n,i)=>scenes.append(el('option',{value:i,text:`Scene ${i+1} · ${p.sceneMask&(1<<i)?n:'Empty'}`})));scenes.value=p.scene<4?p.scene:0;
+ const sceneName=el('input',{type:'text',maxlength:12,value:p.scenes[+scenes.value]||'SCENE','aria-label':'Scene name'});
+ const recall=async i=>{await programRequest([4,i]);await afterSoundChange();await loadMasterTuning();};
+ const sceneNext=dir=>run(async()=>{for(let n=1;n<=4;n++){const i=((p.scene<4?p.scene:dir>0?-1:0)+dir*n+8)%4;if(p.sceneMask&(1<<i)){await recall(i);return;}}throw Error('Capture a scene first');});
+ host.append(el('div',{class:'bar'},el('button',{onclick:sceneNext(-1)},'Scene Down'),el('button',{onclick:sceneNext(1)},'Scene Up'),scenes,el('button',{onclick:run(()=>recall(+scenes.value))},'Recall scene'),sceneName,el('button',{onclick:run(()=>programRequest([3,+scenes.value,...ascii(sceneName)]))},'Capture scene')),el('p',{class:'dim'},'Scenes capture levels, pan, mutes, all three effect sends, HYBRID macros and tuning. Save the program to keep captured scenes. Programs preserve sequencer steps; global tuning stays unchanged unless a saved tuning override is enabled.'));
 }
 
 async function loadLayerRouting(){

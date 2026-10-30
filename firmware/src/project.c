@@ -625,9 +625,20 @@ static int proj_read_slot(uint32_t slot)
     return valid ? n : 0;
 }
 static void proj_fetch(uint32_t slot) { (void)proj_read_slot(slot); }
+/* Legacy project operations must never erase either program in a paired bank. */
+static int proj_is_sound_program(uint32_t slot)
+{
+#if MELODEE_FLASH
+    st_hdr_t h;uint8_t magic[4];int copy=st_current(OBJ_BANK0+(slot&3u),&h);
+    return copy>=0 && h.len>=4 && !st_read_range(OBJ_BANK0+(slot&3u),(uint32_t)copy,0,magic,4) && !memcmp(magic,"SMP5",4);
+#else
+    (void)slot;return 0;
+#endif
+}
 static int proj_write_slot(uint32_t slot, const uint8_t *raw, uint32_t len)
 {
     slot &= 3u;
+    if(proj_is_sound_program(slot))return 2;
 #if MELODEE_FLASH
     if (!flash_ok || st_save(OBJ_BANK0 + slot, raw, len)) return 2;
 #endif
@@ -662,6 +673,7 @@ static int proj_publish_slot(uint32_t slot,st_stream_t *w)
 }
 static int proj_save_image(uint32_t slot)
 {
+    if(proj_is_sound_program(slot))return 2;
     st_stream_t w;
     if(!flash_ok || proj_stream_generate(&w,OBJ_BANK0+(slot&3u)))return 2;
     return proj_publish_slot(slot,&w);
@@ -1563,4 +1575,5 @@ static int shared_preferences_save(void)
 #if MELODEE_FLASH
 _Static_assert(sizeof(persist_t) <= ST_PAYLOAD_MAX, "settings do not fit one flash sector");
 #endif
+#include "synthmaven_programs.c"
 #endif /* PROJ_HOST */

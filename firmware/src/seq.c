@@ -54,6 +54,7 @@ static uint32_t trk_index(const track_t *t) { return (uint32_t)(t - trk); }
 static uint32_t trk_midi_ch(uint32_t i)
 { return midi_track_only(&trk[i % NTRK]) ? midi_track_channel(&trk[i % NTRK]) : i % NTRK; }
 static uint32_t midi_event_source; /* 0: internal/test dispatch, 1 USB, 2 TRS */
+#include "synthmaven_midi.c"
 #include "midi_knobs.c"
 static int midi_track_accept(const track_t *t)
 {

@@ -6,14 +6,14 @@ int main(void)
 {
     ui_power_on();go_home();
     sm_tuning=(sm_tuning_t){.apply=15,.mask=0xfff};
-    press(B_SCL);frames(400);press(B_SCL);frames(400);
+    press(B_SCL);frames(400);
     assert(str_eq(cur_page()->title,"MASTER TUNE"));
     turn(EN_K1,1);assert(sm_tuning.scale==1 && sm_tuning.enabled);
     turn(EN_K2,3);assert(sm_tuning.octave==3);
     turn(EN_K2,20);assert(sm_tuning.octave==8);
     turn(EN_K2,-20);assert(sm_tuning.octave==0);
     turn(EN_K3,2);assert(sm_tuning.root==2);
-    press(B_SCL);frames(400);assert(str_eq(cur_page()->title,"CUSTOM TUNE"));
+    btn_down(B_SCL);frames(3100);btn_up(B_SCL);frame();assert(str_eq(cur_page()->title,"CUSTOM TUNE"));
     turn(EN_K1,6);assert(sm_tune_key==6);
     turn(EN_K2,1);assert(sm_tuning.scale==47 && sm_tuning.cents[4]==-40);
     turn(EN_K2,-1);assert(sm_tuning.cents[4]==-50);

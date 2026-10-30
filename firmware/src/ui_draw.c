@@ -1211,6 +1211,12 @@ static void ui_draw_frame(void)
         return;
     }
     if (!scr_frame()) return;
+    static uint8_t sm_notice_drawn;
+    if(sm_layer_notice_until&&(int32_t)(sm_layer_notice_until-fm1_ms)>0){
+        if(!sm_notice_drawn||ui.force){lcd_fill(0,0,240,240,T_BG);draw_text_box(0,90,240,TY_VL,sm_layers.enabled?"Layered ON":"Layered OFF",T_TEXT,1);sm_notice_drawn=1;ui.force=0;}return;
+    }
+    if(sm_notice_drawn){sm_notice_drawn=0;sm_layer_notice_until=0;ui.force=1;}
+
     if (ui.waiting_shown != head_waiting()) {
         ui.waiting_shown = (uint8_t)head_waiting();
         ui.force = 1;                                  /* restore custom headers on start/cancel/track change */

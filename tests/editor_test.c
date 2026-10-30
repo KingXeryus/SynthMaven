@@ -117,7 +117,7 @@ static int preferences(void)
     uint8_t a[4] = {0, 2, 0, 0};
     reset();
     uint32_t n = request(ED_INFO, a, 0);
-    const uint8_t caps[]={0,0x55,1,57,0x4d,2,MOTION_MAX,1,0x42,1,3,0x50,1,NPAT,CHAIN_ROWS,0x46,1,FM6_NEXPORT,0,0x43,1,16,1,0,0,0x35,1,19,16,17,18,20,0,1,0x4e,1,64,0,0,1,0x55,1,0,3,0x53,0x4d,1,3,5,96,110,111};
+    const uint8_t caps[]={0,0x55,1,57,0x4d,2,MOTION_MAX,1,0x42,1,3,0x50,1,NPAT,CHAIN_ROWS,0x46,1,FM6_NEXPORT,0,0x43,1,16,1,0,0,0x35,1,19,16,17,18,20,0,1,0x4e,1,64,0,0,1,0x55,1,0,3,0x53,0x4d,1,3,5,96,110,111,112,113,114};
     bad+=check("INFO preserves existing IDs and advertises the shared 384-slot library",ED_SONG==33&&ED_FAV_SET==38&&n>sizeof caps&&!memcmp(host_wire+n-sizeof caps-1,caps,sizeof caps));
     request(ED_UI_SET, a, 2);
     bad += check("UI_SET updates the actual palette and reports RAM-only saving",
@@ -703,6 +703,19 @@ static int midi_track_protocol(void)
                  TSEL->p[P_FXTYPE] == FX_OFF && !TSEL->p[P_FXSEND]);
     return bad;
 }
+static int program_protocol(void)
+{
+ int bad=0;reset();memset(sm_program_meta,0,sizeof sm_program_meta);sm_program_current=sm_scene_current=255;
+ uint8_t a[]={0};request(ED_SM_PROGRAM,a,1);
+ bad+=check("program status reports unset program and scene",host_wire[6]==0&&host_wire[7]==127&&host_wire[8]==127);
+ uint8_t capture[]={3,1,'B','R','I','D','G','E'};trk[0].p[P_LEVEL]=73;trk[2].p[P_FXSEND2]=34;request(ED_SM_PROGRAM,capture,sizeof capture);
+ bad+=check("scene USB captures named sound changes",host_wire[6]==0&&sm_scene_current==1);
+ trk[0].p[P_LEVEL]=21;trk[2].p[P_FXSEND2]=0;uint8_t recall[]={4,1};request(ED_SM_PROGRAM,recall,2);
+ bad+=check("scene USB recall restores level and secondary FX send",host_wire[6]==0&&trk[0].p[P_LEVEL]==73&&trk[2].p[P_FXSEND2]==34);
+ capture[2]=31;request(ED_SM_PROGRAM,capture,sizeof capture);bad+=check("scene USB rejects invalid name",host_wire[6]==1);
+ recall[1]=4;request(ED_SM_PROGRAM,recall,2);bad+=check("scene USB rejects out-of-range slot",host_wire[6]==1);
+ return bad;
+}
 static int layers_protocol(void)
 {
  int bad=0;reset();sm_layers_t want={.enabled=1,.low={0,60,72,0},.high={59,127,127,47}};
@@ -755,7 +768,7 @@ static int hybrid_protocol(void)
 }
 int main(void)
 {
-    int bad = layers_protocol() + master_tuning_protocol() + hybrid_protocol() + midi_track_protocol() + library_transfers() + native_motion_protocol() + prophet_protocol() + bank_protocol() + preferences() + framing() + uart_recovery() + steps() + song_protocol() + malformed_saves() + names_whole() +
+    int bad = program_protocol() + layers_protocol() + master_tuning_protocol() + hybrid_protocol() + midi_track_protocol() + library_transfers() + native_motion_protocol() + prophet_protocol() + bank_protocol() + preferences() + framing() + uart_recovery() + steps() + song_protocol() + malformed_saves() + names_whole() +
               native_protocol() + shared_protocol() + fm6_patches() + user_preset_roundtrip() + cz_native_protocol() + cz_dedicated_banks() + cz_casio_sysex() + concert_pitch() + scale_catalogue() + project_scale_protocol();
     printf("%s\n", bad ? "EDITOR TEST FAILED" : "editor test passed");
     return bad != 0;
