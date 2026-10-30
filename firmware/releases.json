@@ -1,5 +1,15 @@
 [
   {
+    "version": "3.5.3",
+    "product": "FM-1_93053",
+    "pkg": {
+      "dual": "../../firmware/melodee-3.5.3.fwsc"
+    },
+    "sha256": {
+      "dual": "5ccb6a0d775701fdf710a66c00c4c7be4c323a9bf9ab2229cc30de0b2111a4ba"
+    }
+  },
+  {
     "version": "3.5.2",
     "product": "FM-1_93052",
     "pkg": {

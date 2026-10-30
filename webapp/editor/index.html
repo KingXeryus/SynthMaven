@@ -2650,7 +2650,7 @@ function makeMockDevice(opt = {}) {
   const GP = [
     D("BPM", F.BPM, 40, 240, 120), D("SWG", F.PCT, 0, 100, 0), E("CLK", ["INT", "USB", "TRS"], 0), D("TUNE", F.INT, -50, 50, 0),
     ...Array.from({length:8},()=>D("",F.INT,0,127,0)),
-    E("MIDI", ["USB", "TRS"], 0), E("DRUM", ["OFF", ...Array.from({ length: 16 }, (_, i) => String(i + 1))], 10), E("ROUT", ["CH1-4", "SEL", "CH5-8", "CH9-12", "CH13-16"], 0), D("CPU", F.INT, 0, 0, 0),
+    E("MIDI", ["USB", "TRS", "BOTH"], 0), E("DRUM", ["OFF", ...Array.from({ length: 16 }, (_, i) => String(i + 1))], 10), E("ROUT", ["CH1-4", "SEL", "CH5-8", "CH9-12", "CH13-16", "PARTS"], 0), D("CPU", F.INT, 0, 0, 0),
     D("SLOT", F.INT, 1, 5, 1), E("BOOT", ["OFF", "A", "B", "C", "D"], 0), E("LOAD", NGO, 0), E("SAVE", NGO, 0),
     E("ENG", ["-", "-", "-", "SID", "-", "-", "-", "-",
       "-", "-", "DRUM", "-", "FM6", "-", "-", "CZ-1", "-", "-", "-", "PROPHET", "-", "MIDI Track", "HYBRID", "ANALOG", "DIGITAL", "VOICE", "STRINGS", "JUNO"], 0), D("A4", F.INT, 400, 480, 440, null, "Hz"),
@@ -2937,12 +2937,12 @@ function makeMockDevice(opt = {}) {
         if(a[0]===0&&a.length===1)rc=0;
         else if(a[0]===1&&a.length===2&&a[1]<=1){st.mappingLearn=a[1];rc=0;}
         else if(a[0]===2&&a[1]<24){const m=Array.from(unpack7(a.slice(2)));
-          if(m.length===12&&m[0]<=1&&m[1]<=2&&m[2]<=16&&m[3]<=127&&m[4]<=128&&m[5]<=1&&m[6]<=4&&(m[5]?m[7]<P_COUNT:m[7]<10)&&(m[8]+m[9]*256)<=2000&&(m[10]<ENG.length||m[10]===255)&&m[11]===0&&(!m[5]||m[1]===0)){
-            const c=st.mappings.findIndex((p,i)=>i!==a[1]&&p[0]&&m[0]&&p[1]===m[1]&&p[3]===m[3]&&(p[2]===m[2]||p[2]===16||m[2]===16)&&(p[4]===m[4]||p[4]===128||m[4]===128));
+          if(m.length===12&&m[0]<=1&&m[1]<=2&&m[2]<=16&&m[3]<=127&&m[4]<=128&&m[5]<=1&&m[6]<=4&&(m[5]?m[7]<P_COUNT:m[7]<10)&&(m[8]+m[9]*256)<=2000&&(m[10]<ENG.length||m[10]===255)&&m[11]<=2&&(!m[5]||m[1]===0)){
+            const c=st.mappings.findIndex((p,i)=>i!==a[1]&&p[0]&&m[0]&&(!p[11]||!m[11]||p[11]===m[11])&&p[1]===m[1]&&p[3]===m[3]&&(p[2]===m[2]||p[2]===16||m[2]===16)&&(p[4]===m[4]||p[4]===128||m[4]===128));
             if(c>=0){rc=5;conflict=c;}else{st.mappings[a[1]]=m;st.mappingLearn=0;rc=0;}
           }
         }
-        [a[0],rc,conflict,st.mappingLearn,127,0,1,1,...Array(25).fill(0),...pack7(st.mappings.flat())].forEach(b);break;
+        [a[0],a[0]===3&&a.length===1?0:rc,conflict,st.mappingLearn,127,0,1,1,...Array(25).fill(0),...pack7(st.mappings.flat())].forEach(b);break;
       }
       case CMD.PROGRAMS: {
         if(opt.noSynthMaven)return null;
@@ -5081,17 +5081,17 @@ async function mappingRequest(args,draw=true){
  if(s.rc)throw Error(s.rc===5?`Conflicts with assignment ${s.conflict+1}. Remove it or choose another message.`:['','Invalid assignment','Storage error','Protected legacy project: back up and migrate it before saving mappings','Stop playback to save assignments'][s.rc]);
  d.mapping=s;if(draw)renderMapping();return s;
 }
-async function loadMapping(){const host=$('sm-mapping');host.hidden=!dev?.info.synthmaven?.mapping;if(host.hidden)return;try{if(dev.info.synthmaven?.controller)dev.controller=parse[CMD.CONTROLLER](await sessionRequest(dev,[CMD.CONTROLLER,[0]]));await mappingRequest([0]);}catch(e){say(e.message);}}
+async function loadMapping(){const host=$('sm-mapping');host.hidden=!dev?.info.synthmaven?.mapping;if(host.hidden)return;try{if(dev.info.synthmaven?.controller)dev.controller=parse[CMD.CONTROLLER](await sessionRequest(dev,[CMD.CONTROLLER,[0]]));const capability=parse[CMD.MAPPING](await sessionRequest(dev,[CMD.MAPPING,[3]]));dev.mappingSources=capability.rc===0;await mappingRequest([0]);}catch(e){say(e.message);}}
 function renderMapping(){
  const d=dev,s=d?.mapping,host=$('sm-mapping');if(!s)return;host.replaceChildren();
  const state=d.mappingDraft??={slot:null,target:'a0',part:4,repeat:80,page:0,view:'learn'};
  const run=fn=>async()=>{try{await fn();}catch(e){say(e.message);}};
- const start=async slot=>{const m=s.maps[slot];state.slot=slot;state.target=m?.[0]?(m[5]?'p':'a')+m[7]:'a0';state.part=m?.[0]?m[6]:4;state.repeat=m?.[0]?(m[8]|m[9]<<8):80;await mappingRequest([1,1]);};
+ const start=async slot=>{const m=s.maps[slot];state.slot=slot;state.source=null;state.target=m?.[0]?(m[5]?'p':'a')+m[7]:'a0';state.part=m?.[0]?m[6]:4;state.repeat=m?.[0]?(m[8]|m[9]<<8):80;await mappingRequest([1,1]);};
  const tabs=el('nav',{class:'touch-tabs','aria-label':'MIDI setup'});
  for(const [id,name]of [['learn','Learn & actions'],['connection','Connection & routing']])tabs.append(el('button',{'aria-pressed':String((state.view||'learn')===id),onclick:()=>{state.view=id;renderMapping();}},name));
- host.append(tabs,el('p',{class:'midi-device-status'},`USB: ${s.host?'PEDAL / HOST':'COMPUTER'} · Device: ${s.device?'detected':'not detected'} · MIDI interface: ${s.midi?'detected':'not detected'}`),el('p',{id:'sm-midi-status','aria-live':'polite'},s.serial?`Last received: ${midiMessageText(s.last)} · ${s.match<24?'Matched assignment '+(s.match+1):'No match'} · triggers ${s.hits}`:'Waiting for a MIDI message'));
+ host.append(tabs,el('p',{class:'midi-device-status'},`USB: ${s.host?'USB HOST':'COMPUTER'} · Device: ${s.device?'detected':'not detected'} · MIDI interface: ${s.midi?'detected':'not detected'}`),el('p',{id:'sm-midi-status','aria-live':'polite'},s.serial?`Last received: ${midiMessageText(s.last)} · ${s.match<24?'Matched assignment '+(s.match+1):'No match'} · triggers ${s.hits}`:'Waiting for a MIDI message'));
  const connection=el('div',{class:'midi-connection'});connection.hidden=state.view!=='connection';host.append(connection);
- connection.append(el('p',{},'Use COMPUTER mode to edit over USB. Direct pedals need PEDAL / HOST mode and external power. Return to COMPUTER mode and reconnect the cable before editing: the USB port cannot connect to a pedal and the editor at the same time.'));
+ connection.append(el('p',{},'COMPUTER connects to an iPad or computer for editing and USB audio. USB HOST connects a keyboard, pad or pedal; the controller needs external power. TRS MIDI remains active in either role. Choose SYSTEM → ROUT → PARTS and send MIDI channels 1–4 to layers 1–4 independently, even with Layering on. Give each controller a different channel. Learn pedal actions on its own channel; keyboard notes need no Learn assignment. A hub supports one USB MIDI controller in the current host driver.'));
  if(window.SynthMavenNative?.routeController){connection.append(el('button',{onclick:run(()=>window.SynthMavenNative.routeController())},'Controller input · '+(window.SynthMavenNative.controller||'None')));}
  else {
   const route=el('select',{'aria-label':'Forward controller input'});route.append(el('option',{value:'',text:'None — routing off'}));
@@ -5102,7 +5102,7 @@ function renderMapping(){
  if(d.controller){const c=d.controller,mode=el('select',{'aria-label':'Controller protocol'}),port=el('select',{'aria-label':'Controller DAW port'});
   ['Automatic','Standard MIDI','Mackie Control / MCU','HUI'].forEach((name,i)=>mode.append(el('option',{value:i,text:name})));mode.value=c.override;
   for(let i=0;i<=16;i++)port.append(el('option',{value:i,text:i?'Port '+i:'Automatic port'}));port.value=c.port;
-  connection.append(el('h3',{},'Direct USB controller'),el('p',{},c.connected?`${c.product} · ${c.family} · ${['AUTO','MIDI','MCU','HUI'][c.mode]}`:'No direct controller attached; settings apply in PEDAL / HOST mode.'),el('div',{class:'bar'},mode,port,el('button',{onclick:run(async()=>{const r=parse[CMD.CONTROLLER](await sessionRequest(d,[CMD.CONTROLLER,[1,+mode.value,+port.value]]));if(r.rc)throw Error('Controller settings could not be saved. Stop playback and check storage.');d.controller=r;renderMapping();})},'Save controller settings')));
+  connection.append(el('h3',{},'Direct USB controller'),el('p',{},c.connected?`${c.product} · ${c.family} · ${['AUTO','MIDI','MCU','HUI'][c.mode]}`:'No direct controller attached; settings apply in USB HOST mode.'),el('div',{class:'bar'},mode,port,el('button',{onclick:run(async()=>{const r=parse[CMD.CONTROLLER](await sessionRequest(d,[CMD.CONTROLLER,[1,+mode.value,+port.value]]));if(r.rc)throw Error('Controller settings could not be saved. Stop playback and check storage.');d.controller=r;renderMapping();})},'Save controller settings')));
  }
 
  const workspace=el('div',{class:'midi-workspace'});workspace.hidden=state.view==='connection';host.append(workspace);
@@ -5118,8 +5118,9 @@ function renderMapping(){
    if(![...target.options].some(o=>o.value===state.target))state.target='a0';target.value=state.target;target.onchange=()=>state.target=target.value;
    const part=el('select',{'aria-label':'Target part'});['Part 1','Part 2','Part 3','Part 4','Selected part'].forEach((name,i)=>part.append(el('option',{value:i,text:name})));part.value=state.part;part.onchange=()=>state.part=+part.value;
    const repeat=el('input',{type:'number',min:0,max:2000,step:1,value:state.repeat,'aria-label':'Duplicate suppression milliseconds'});repeat.onchange=()=>{state.repeat=Math.max(0,Math.min(2000,Math.round(+repeat.value)||0));repeat.value=state.repeat;};
+   if(d.mappingSources){const input=el('select',{'aria-label':'Assignment input'});['Any input','USB only','TRS only'].forEach((text,value)=>input.append(el('option',{value,text})));if(state.source===null)state.source=(s.captured>>>20)&3;input.value=state.source;input.onchange=()=>state.source=+input.value;wizard.append(el('label',{},'Input',input));}
    wizard.append(el('label',{},'Action',target),el('div',{class:'midi-assignment-options'},el('label',{},'Part',part),el('label',{},'Repeat suppression · ms',repeat)));
-   wizard.append(el('button',{class:'primary',onclick:run(async()=>{const raw=s.captured,type=(raw>>18)&3,param=state.target[0]==='p';if(param&&type!==0)throw Error('Learn a CC knob or fader for a parameter assignment');const m=[1,type,(raw>>14)&15,raw&127,param?128:(raw>>7)&127,+param,state.part,+state.target.slice(1),state.repeat&255,state.repeat>>8,param&&+state.target.slice(1)>=d.info.pe0?d.dump.engine:255,0];await mappingRequest([2,state.slot,...pack7(m)],false);state.page=Math.floor(maps.slice(0,state.slot).filter(m=>m[0]).length/4);state.slot=null;renderMapping();})},'Save action'));
+   wizard.append(el('button',{class:'primary',onclick:run(async()=>{const raw=s.captured,type=(raw>>18)&3,param=state.target[0]==='p';if(param&&type!==0)throw Error('Learn a CC knob or fader for a parameter assignment');const m=[1,type,(raw>>14)&15,raw&127,param?128:(raw>>7)&127,+param,state.part,+state.target.slice(1),state.repeat&255,state.repeat>>8,param&&+state.target.slice(1)>=d.info.pe0?d.dump.engine:255,d.mappingSources?(state.source??0):0];await mappingRequest([2,state.slot,...pack7(m)],false);state.page=Math.floor(maps.slice(0,state.slot).filter(m=>m[0]).length/4);state.slot=null;renderMapping();})},'Save action'));
   }
   wizard.append(el('button',{onclick:run(async()=>{await mappingRequest([1,0],false);state.slot=null;renderMapping();})},'Cancel'));
  }
@@ -5127,7 +5128,7 @@ function renderMapping(){
  const entries=maps.map((m,i)=>({m,i})).filter(x=>x.m[0]),pages=Math.max(1,Math.ceil(entries.length/4));state.page=Math.max(0,Math.min(state.page||0,pages-1));
  for(const {m,i}of entries.slice(state.page*4,state.page*4+4)){
   const raw=(m[1]<<18)|(m[2]<<14)|((m[4]&127)<<7)|m[3],name=m[5]?'Parameter · '+(d.pdesc[m[7]]?.label||m[7]):SM_ACTIONS[m[7]];
-  const card=el('article',{class:'learned-action','data-assignment':i},el('strong',{},`${i+1}. ${name}`),el('span',{},midiMessageText(raw)+(m[5]?' · full range':'')),el('span',{class:'dim'},`${m[6]===4?'Selected part':'Part '+(m[6]+1)} · ${m[8]|m[9]<<8} ms`));
+  const card=el('article',{class:'learned-action','data-assignment':i},el('strong',{},`${i+1}. ${name}`),el('span',{},midiMessageText(raw)+(m[5]?' · full range':'')+' · '+(['Any input','USB','TRS'][m[11]]||'Unknown input')),el('span',{class:'dim'},`${m[6]===4?'Selected part':'Part '+(m[6]+1)} · ${m[8]|m[9]<<8} ms`));
   const relearn=el('button',{onclick:run(()=>start(i))},'Relearn'),unlearn=el('button',{onclick:run(async()=>{await mappingRequest([2,i,...pack7(Array(12).fill(0))]);})},'Unlearn');relearn.disabled=unlearn.disabled=state.slot!==null;card.append(el('div',{class:'bar'},relearn,unlearn));grid.append(card);
  }
  if(!entries.length)grid.append(el('p',{class:'dim'},'Your saved actions will appear here.'));
