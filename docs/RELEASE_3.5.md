@@ -4,7 +4,7 @@ SynthMaven 3.5 migrates to Melodee 1.5.1 while bringing over four-part programs,
 
 ## What changes
 
-- Eight named four-part factory programs, layering/splits, part volume/pan, four compact scenes and 32-entry setlists. Factory mixes use economical mono support parts; solo gain processing is unchanged.
+- Eight named four-part factory programs, layering/splits, part volume/pan, four compact scenes and 32-entry setlists. Factory mixes preserve the user-edited parts and effects; solo gain processing is unchanged.
 - 14 Western scales, 46 Arabic maqam settings and global custom tuning, selectable root, octave threshold, scale-aware chords and per-part tuning bypass. Programs override global tuning only when explicitly saved with it.
 - HYBRID native patch editing, 64 factory Vital translations, additional DX7 voices and explicit Vital JSON approximation import. Macro routes can be assigned and saved with the sound.
 - MIDI Learn in web/iOS, Learn → Assign → Save, a 16-action grid with Relearn/Unlearn, live match feedback, duplicate suppression, USB device/interface status and controller profiles including MCU/HUI.
