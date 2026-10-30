@@ -210,6 +210,7 @@ def main(pkg, version, out, nightly=None, installer_only=False, rc=None, manual=
             raise SystemExit("Release candidate version must be X.Y.Z-rc.N")
         rc_files, rc_meta = channel(rc, "release candidate", f"melodee-{rc['version']}", "next")
     html = (HERE / "index_pkg.html").read_text(encoding="utf-8")
+    html = re.sub(r"SynthMaven-[0-9.]+-User-Guide\.pdf", f"SynthMaven-{version}-User-Guide.pdf", html)
     lib = installer_libraries()
     v = re.sub(r'[^A-Za-z0-9.-]', '-', version)
     name = f"melodee-{v}.fwsc"
