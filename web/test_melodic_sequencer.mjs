@@ -1,0 +1,18 @@
+import {readFileSync} from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';import {JSDOM} from 'jsdom';
+const html=readFileSync(new URL('editor.html',import.meta.url),'utf8'),dom=new JSDOM(html),document=dom.window.document;
+const el=(tag,a={},...kids)=>{const n=document.createElement(tag);for(const[k,v]of Object.entries(a)){if(k==='text')n.textContent=v;else if(k==='onclick')n.onclick=v;else if(k==='disabled')n.disabled=v;else n.setAttribute(k,v);}n.append(...kids);return n;};
+const step={n:2,notes:[21,108,0,0],time:0,flags:0,vel:96,hit:4,acc:4,chance:100};
+const dev={sel:0,info:{nstep:16,ntrk:4,chance:true},dump:{p:[16]},steps:Array.from({length:16},()=>structuredClone(step))};
+dev.sequenceTracks=Array.from({length:4},()=>structuredClone(dev.steps));
+let sent;
+const ctx={document,el,$:id=>document.getElementById(id),dev,t:x=>x,noteName:n=>['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'][n%12]+(Math.floor(n/12)-1),pSlen:()=>0,selectTrack:i=>dev.sel=i,hitsText:()=>'',stepEdit:new Map(),performance:{now:()=>0},CMD:{TRACK_STEP:30},req:{trackStep:(track,i,s)=>({track,i,s})},sessionRequest:async(d,r)=>{sent=r;return r.s},parse:{30:x=>x},assertSession:()=>{},report:e=>{throw e}};
+let source=html.slice(html.indexOf('let selectedSeqStep=0,'),html.indexOf('$("reloadsteps").addEventListener'));
+vm.runInNewContext(source+'\nthis.render=renderSteps;this.write=writeStep;',ctx);ctx.render();
+assert.equal(document.querySelectorAll('.sequence-lane').length,4);
+assert.equal(document.querySelectorAll('.sequence-lane button').length,36);
+const row=document.querySelector('tr[data-i="0"]'),picks=row.querySelectorAll('.sequence-notes select');
+assert.equal(picks.length,4);assert.equal(picks[0].options.length,89);assert.equal(picks[0].options[1].text,'A0');assert.equal(picks[0].options[88].text,'C8');
+assert.equal(picks[0].value,'21');assert.equal(picks[1].value,'108');
+assert.equal(row.textContent.includes('Drum hits'),false);
+picks[0].value='60';await ctx.write(0,row);assert.equal(sent.track,0);assert.equal(sent.s.notes[0],60);assert.equal(sent.s.notes[1],108);assert.equal(sent.s.hit,4,'Hidden legacy drum data is preserved');
+console.log('Four melodic lanes, all 88 notes, chord slots, track-targeted edits and legacy data preservation passed');dom.window.close();

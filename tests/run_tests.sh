@@ -170,6 +170,8 @@ web_tests() {                                     # the editor mock's tables mus
         step "web pages: editor protocol + native CZ patches, package builder, update protocol" node web/test_web.mjs
         step "SynthMaven master tuning touch controls" node web/test_master_tuning.mjs
         step "SynthMaven workflow and rotary controls" node web/test_workflow.mjs
+        step "Four melodic lanes and 88-key note selection" node web/test_melodic_sequencer.mjs
+        step "Song timeline sections and playback protection" node web/test_song_arranger.mjs
         step "Learn-first MIDI assignment grid" node web/test_midi_learn_ui.mjs
         step "HYBRID editor and Vital import" node web/test_hybrid_import.mjs
         step "SynthMaven controller input routing" node web/test_controller_route.mjs

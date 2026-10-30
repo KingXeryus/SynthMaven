@@ -24,3 +24,10 @@ The installed candidate passed the iPad USB read-and-edit test, confirmed by the
 This is not a new audio-quality or sustained-performance certification. Four parts and independent drums share voice/processing resources. Bluetooth remains excluded. USB controller hosting requires suitable external power/adapters and switching away from COMPUTER role.
 
 Download the updated illustrated PDF and SHA256SUMS here or from the live installer. Release firmware is built and attested by the required shared builder. Attribution and licences are included in the licence archive.
+
+## Editor arranger workflow
+
+- Four visible melodic sequencer lanes correspond to the four program layers.
+- Four note selectors per step cover the 88-key piano range (A0–C8); existing imported out-of-range notes remain intact. Drum-pattern controls stay on the independent Drums page.
+- Song sections run left to right, with a separate pattern choice for each layer, repeat counts, duplication, move-earlier and deletion. Both editors share this layout.
+- The illustrated guide includes the melodic sequencer and updated song timeline.

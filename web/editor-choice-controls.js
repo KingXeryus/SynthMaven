@@ -13,7 +13,7 @@
   c.prev.setAttribute('aria-label','Previous '+label);c.next.setAttribute('aria-label','Next '+label);c.output.setAttribute('aria-label',label+': '+text);
  }
  function decorate(select){
-  if(choices.has(select)||['engine','preset'].includes(select.id)||select.multiple)return;
+  if(select.dataset.nativeSelect==='true'||choices.has(select)||['engine','preset'].includes(select.id)||select.multiple)return;
   const box=document.createElement('span');box.className='cycle-choice';const prev=document.createElement('button'),next=document.createElement('button'),output=document.createElement('output');prev.type=next.type='button';prev.textContent='‹';next.textContent='›';output.setAttribute('aria-live','polite');
   select.classList.add('cycle-source');select.tabIndex=-1;select.before(box);box.append(prev,select,output,next);
   const c={box,prev,next,output};choices.set(select,c);
