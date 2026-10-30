@@ -1711,8 +1711,9 @@ static void sweep_waiting_headers(const char *out)
 }
 
 #if MELODEE_USB_HOST
-/* USB HOST's ongoing state is the header's HOST tag: present in both faces and every palette while the port is a
- * host (waiting or connected), clear of the battery, octave and page marks, gone with the state. */
+/* USB HOST's ongoing state is the header tag: WAIT while the port is a host waiting for a MIDI interface, HOST once
+ * one is configured; present in both faces and every palette, clear of the battery, octave and page marks, gone with
+ * the state. */
 static void sweep_host_headers(void)
 {
     int previous_face = render_pixel;
@@ -1733,7 +1734,7 @@ static void sweep_host_headers(void)
         cur_name = name;
         draw(-1); lint();
         for (uint32_t i = 0; i < nscr; i++)
-            seen |= !strcmp(scr[i].s, "HOST") && scr[i].y0 >= 0 && scr[i].y1 <= H_HEAD;
+            seen |= !strcmp(scr[i].s, run ? "HOST" : "WAIT") && scr[i].y0 >= 0 && scr[i].y1 <= H_HEAD;
         if (!seen || toast_shown) { fprintf(rep, "MISSING %s: HOST tag in the header without a toast\n", name); nfind++; }
         uh.on = uh.run = 0;                             /* the state ends: the incremental redraw equals a full one */
         nscr = npend = 0;
@@ -1744,7 +1745,9 @@ static void sweep_host_headers(void)
             fprintf(rep, "STALE %s: HOST tag end differs from full redraw\n", name); nfind++;
         }
         for (uint32_t i = 0; i < nscr; i++)
-            if (!strcmp(scr[i].s, "HOST")) { fprintf(rep, "STALE %s: HOST tag after the state ended\n", name); nfind++; break; }
+            if (!strcmp(scr[i].s, "HOST") || !strcmp(scr[i].s, "WAIT")) {
+                fprintf(rep, "STALE %s: HOST tag after the state ended\n", name); nfind++; break;
+            }
     }
     uh.on = uh.run = 0;
     render_pixel = previous_face;
