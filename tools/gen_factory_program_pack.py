@@ -59,5 +59,5 @@ header+='static const char SM_FACTORY_PROGRAM_NAMES[8][13]='+json.dumps(names).r
 for typ,name,data in [('uint16_t','SM_FACTORY_OFF',offset),('uint8_t','SM_FACTORY_LZ',out)]:
  header+=f'static const {typ} {name}[]={{'+','.join(map(str,data))+'};\n'
 (root/'firmware/src/factory_program_pack.h').write_text(header)
-(root/'assets/factory/programs-3.5.json').write_text(json.dumps(dict(names=names,source_sha256=hashlib.sha256(raw).hexdigest(),record_bytes=3556,compact_bytes=len(source),packed_bytes=len(out),source='User-edited FM-1 saved programs, 2026-10-30; P2 renamed E. Organ'),indent=2)+'\n')
+(root/'assets/factory/programs-3.5.json').write_text(json.dumps(dict(names=names,source_sha256=hashlib.sha256(raw).hexdigest(),record_bytes=3556,compact_bytes=len(source),packed_bytes=len(out),source='Verified 2026-10-30 USB backup: saved P1 and P3 merged; other slots retain user-curated factory fallbacks'),indent=2)+'\n')
 print(len(source),'->',len(out),'bytes; exact round-trip')

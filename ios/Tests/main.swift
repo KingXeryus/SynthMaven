@@ -19,3 +19,9 @@ for bad:[UInt8] in [[0xF0,1,2,0xF7],[0xF0,125,70,76,1],[0x90,60,255],[0xF8]] {
  do{try queue.append(bad);fatalError("invalid message accepted")}catch{}
 }
 print("PASS: malformed messages and non-editor SysEx rejected")
+
+check(isFM1MIDIIdentity(names:["SoundMaven"],driver:"com.apple.AppleMIDIUSBDriver",usbVendorProduct:0x12090001),"cached SoundMaven USB identity is recognized")
+check(!isFM1MIDIIdentity(names:["SoundMaven"],driver:"virtual",usbVendorProduct:0),"unrelated SoundMaven virtual port is not an FM1")
+check(!isFM1MIDIIdentity(names:["Controller"],driver:"com.apple.AppleMIDIUSBDriver",usbVendorProduct:0x12340001),"unrelated USB controller is not an FM1")
+check(!isFM1MIDIIdentity(names:["Network Session 1"],driver:"com.apple.AppleMIDINetworkDriver",usbVendorProduct:0x12090001),"USB identity does not match network ports")
+check(isFM1MIDIIdentity(names:["Melodee FM-1"],driver:"com.apple.AppleMIDIUSBDriver",usbVendorProduct:0),"existing FM1 name discovery remains compatible")

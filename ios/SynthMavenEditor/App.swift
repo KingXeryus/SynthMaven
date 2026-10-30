@@ -81,7 +81,7 @@ final class EditorController: UIViewController, WKScriptMessageHandlerWithReply,
         let sheet = UIAlertController(title:"Controller for MIDI Learn", message:"Connect the controller and FM-1 to the iPad through a powered USB hub. Channel messages are forwarded to the FM-1 while this app is open. Current: \(midi.controllerName)", preferredStyle:.actionSheet)
         sheet.addAction(UIAlertAction(title:"None — stop routing",style:.default){[weak self] _ in try? self?.midi.routeController(nil)})
         for port in midi.ports(input:true) where port.endpoint != midi.source {
-            sheet.addAction(UIAlertAction(title:port.name,style:.default){[weak self] _ in
+            sheet.addAction(UIAlertAction(title:port.displayName,style:.default){[weak self] _ in
                 do { try self?.midi.routeController(port) } catch { self?.alert(error.localizedDescription) }
             })
         }
@@ -90,35 +90,36 @@ final class EditorController: UIViewController, WKScriptMessageHandlerWithReply,
         present(sheet,animated:true)
     }
     private func connectDetected(wireless:Bool) {
+        guard midi.available else { alert(midi.initializationError ?? "The iPad MIDI service is unavailable."); return }
         midi.refresh()
         let inputs=midi.ports(input:true), outputs=midi.ports(input:false)
         let candidates=inputs.filter { port in
-            let name=port.name.lowercased()
-            return (name.contains("synthmaven") || name.contains("fm-1") || name.contains("melodee") || name.contains("felucca")) && (wireless == (name.contains("bluetooth") || port.transport.lowercased().contains("bluetooth")))
+            port.isFM1 && (wireless == (port.name.lowercased().contains("bluetooth") || port.transport.lowercased().contains("bluetooth")))
         }
         func open(_ source:MIDIPortChoice) {
-            let matches=outputs.filter{$0.name==source.name}
+            let matches=outputs.filter{source.entity != 0 ? $0.entity==source.entity : $0.name==source.name}
             guard matches.count==1,let output=matches.first else { chooseOutput(source,wireless:wireless);return }
             do { try midi.connect(source:source,destination:output,wireless:wireless);js("connect",true) } catch { alert(error.localizedDescription) }
         }
         if candidates.count==1 { open(candidates[0]);return }
         let sheet=UIAlertController(title:candidates.isEmpty ? "FM-1 not found" : "Choose your FM-1",message:candidates.isEmpty ? (wireless ? "Enable GLO → BLE EDITOR on the FM-1, then pair it in Bluetooth." : "Set USB ROLE to COMPUTER and connect a USB data cable or powered adapter.") : "Matching input and output ports will be selected for you.",preferredStyle:.actionSheet)
-        for port in candidates {sheet.addAction(UIAlertAction(title:port.name,style:.default){_ in open(port)})}
+        for port in candidates {sheet.addAction(UIAlertAction(title:port.displayName,style:.default){_ in open(port)})}
         sheet.addAction(UIAlertAction(title:"Try again",style:.default){[weak self] _ in if wireless {self?.showPairing()} else {self?.connectDetected(wireless:false)}})
         sheet.addAction(UIAlertAction(title:"Manual MIDI ports",style:.default){[weak self] _ in self?.chooseInput(wireless:wireless)})
         sheet.addAction(UIAlertAction(title:"Cancel",style:.cancel));sheet.popoverPresentationController?.barButtonItem=navigationItem.rightBarButtonItem;present(sheet,animated:true)
     }
     private func chooseInput(wireless:Bool) {
+        guard midi.available else { alert(midi.initializationError ?? "The iPad MIDI service is unavailable."); return }
         let ports=midi.ports(input:true)
-        let detected=ports.contains { let n=$0.name.lowercased(); return n.contains("fm-1") || n.contains("synthmaven") || n.contains("felucca") }
-        let help=detected ? "Choose the FM-1 input, then its matching output." : "FM-1 is not detected by iPadOS. Set it to COMPUTER mode and use a USB data cable; if direct USB-C does not appear, try a USB adapter or powered hub. Network and other instrument ports are not the FM-1. For Bluetooth, pair SynthMaven first."
+        let detected=ports.contains { $0.isFM1 }
+        let help=detected ? "Choose the FM-1 input, then its matching output." : "No recognized FM-1 input. MIDI service is running: \(ports.count) inputs, \(midi.ports(input:false).count) outputs. If a differently named USB device appears below, select it manually. If no USB device appears, iPadOS has not exposed its MIDI interface. Set FM-1 USB ROLE to COMPUTER and USB AUDIO to IN+OUT, then reconnect with the iPad unlocked."
         let a=UIAlertController(title:"MIDI input",message:help+"\nCurrent connection: \(midi.label)",preferredStyle:.actionSheet)
-        for port in ports {a.addAction(UIAlertAction(title:port.name,style:.default){[weak self] _ in self?.chooseOutput(port,wireless:wireless || port.transport.lowercased().contains("bluetooth"))})}
+        for port in ports {a.addAction(UIAlertAction(title:port.displayName,style:.default){[weak self] _ in self?.chooseOutput(port,wireless:wireless || port.transport.lowercased().contains("bluetooth"))})}
         a.addAction(UIAlertAction(title:"Cancel",style:.cancel));a.popoverPresentationController?.barButtonItem=navigationItem.rightBarButtonItems?.first;present(a,animated:true)
     }
     private func chooseOutput(_ input:MIDIPortChoice,wireless:Bool) {
         let a=UIAlertController(title:"MIDI output",message:"Choose the output belonging to \(input.name). The editor verifies the FM-1 identity before loading controls.",preferredStyle:.actionSheet)
-        for port in midi.ports(input:false) { a.addAction(UIAlertAction(title:port.name,style:.default){[weak self] _ in
+        for port in midi.ports(input:false) { a.addAction(UIAlertAction(title:port.displayName,style:.default){[weak self] _ in
             guard let self else{return};do {try self.midi.connect(source:input,destination:port,wireless:wireless);self.js("connect",true)}catch{self.alert(error.localizedDescription)}
         }) }
         a.addAction(UIAlertAction(title:"Cancel",style:.cancel));a.popoverPresentationController?.barButtonItem=navigationItem.rightBarButtonItems?.first;present(a,animated:true)

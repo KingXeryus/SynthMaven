@@ -21,17 +21,12 @@ static uint32_t music_crc(void)
 }
 static int defaults(void)
 {
-    int ok = settings.palette == UI_DEFAULT_INDEX && !settings.zoom && !settings.lowcut &&
-        !settings_boot && settings_drumch == 10u && settings_hold == HOLD_DEF &&
-        settings_lights == LIGHTS_MID && tuning_a4 == A4_DEFAULT &&
-        settings_autosave && !settings_screen && !settings_click && settings_click_level == 1u &&
-        !settings_countin && !settings_preview && !settings_chord_add &&
-        !ua_off && !ua_off_want && !ua_tracks && !ua_tracks_want &&
-        !memcmp(&panel, &PANEL_DEFAULT, sizeof panel) && !template_used() && !template_old();
-    for (uint32_t k = 0; k < 4u; k++) ok &= settings_glo[k] == GP[GLO_KEPT[k]].def;
-    for (uint32_t i = 0; i < sizeof favorites; i++)
-        if (i < 60u || i >= 64u) ok &= !((const uint8_t *)&favorites)[i]; /* owner tag isn't a preference */
-    return ok && !favorites_user_hi;
+    /* Boot defaults now come from the user's verified factory preference asset. */
+    persist_t expected;sm_factory_unpack(&expected,sizeof expected,SM_FACTORY_SETTINGS,sizeof SM_FACTORY_SETTINGS);
+    persist_t actual=expected;settings_export(&actual);
+    int ok=!memcmp(&actual,&expected,sizeof actual) && !template_used() && !template_old();
+    if(!ok)for(uint32_t i=0;i<sizeof actual;i++)if(((uint8_t *)&actual)[i]!=((uint8_t *)&expected)[i])printf("factory preference byte %u: %u expected %u\n",i,((uint8_t *)&actual)[i],((uint8_t *)&expected)[i]);
+    return ok;
 }
 static void stale_ram(void)
 {

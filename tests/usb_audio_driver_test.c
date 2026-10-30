@@ -94,6 +94,27 @@ static void setup(uint8_t type, uint8_t request, uint16_t value, uint16_t index,
     ep0_service();
 }
 
+/* Status OUT packets contain no SETUP bytes. The DMA buffer still contains
+ * the preceding response; it must never be decoded as another request. */
+static void enumeration_status(void)
+{
+    setup(0x80, 6, 0x0100, 0, 18);
+    uint32_t setups = usb.setups;
+    regs[0][S_CSR0] = 1;
+    regs[0][S_COUNT0] = 0;
+    ep0_service();
+    assert(usb.setups == setups && ep0_command == 0x48);
+    for (uint32_t n = 1; n < 8; n++) {
+        regs[0][S_CSR0] = 1;
+        regs[0][S_COUNT0] = n;
+        ep0_service();
+        assert(usb.setups == setups && ep0_command == 0x60);
+    }
+    setup(0x80, 8, 0, 0, 1);
+    assert(usb.setups == setups + 1 && ep_cnt[0] == 1);
+    puts("USB enumeration: status OUT and short packets cannot replay stale SETUP: OK");
+}
+
 static void rate_data(uint32_t rate, uint8_t len)
 {
     ep0buf[0] = rate & 255;
@@ -565,6 +586,7 @@ static void replug(void)
 
 int main(void)
 {
+    enumeration_status();
     uint32_t count;
     uint8_t previous[UA_PACKET];
     ua_tracks = ua_tracks_want = 1; ua_cap_channels = 4;assert(ua_tracks_memory_prepare(1));

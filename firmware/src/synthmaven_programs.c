@@ -148,7 +148,9 @@ static int sm_program_bank(uint32_t bank,st_hdr_t *h,uint8_t *header)
 static void sm_config_load(void)
 {
     st_hdr_t h;uint8_t header[16],b[SM_CONFIG_BYTES];int copy=sm_program_bank(0,&h,header);
-    if(copy<0||st_read_range(OBJ_BANK0,(uint32_t)copy,SM_CONFIG_OFF,b,sizeof b)||!sm_config_valid(b))return;
+    if(copy==-1)sm_factory_unpack(b,sizeof b,SM_FACTORY_CONFIG,sizeof SM_FACTORY_CONFIG);
+    else if(copy<0||st_read_range(OBJ_BANK0,(uint32_t)copy,SM_CONFIG_OFF,b,sizeof b))return;
+    if(!sm_config_valid(b))return;
     sm_program_boot_slot=b[3]>='2'&&b[328]?b[328]-1:255;
     sm_controller_override=b[3]>='3'?b[329]:0;sm_controller_port=b[3]>='3'?b[330]:0;
     if(b[3]=='4'){for(uint32_t k=0;k<8;k++){sm_drums.steps[k]=(uint16_t)(b[331+k*2]|b[332+k*2]<<8);sm_drums.level[k]=b[347+k];sm_drums.velocity[k]=b[355+k];}sm_drums.volume=b[363];sm_drums.enabled=0;sm_drum_stop();}

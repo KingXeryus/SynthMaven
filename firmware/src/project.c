@@ -1038,6 +1038,7 @@ static void project_load(uint32_t slot)
 /* settings + learned panel table: one flash object. The flash copy wins at
  * boot (the .noinit copies are garbage after a power-off). */
 #include "settings_persist.c"
+#include "factory_settings.h"
 
 /* The template (SAVE > PROJECT, SLOT TMPL): the music without its patterns: the globals, each track's sound
  * (engine, preset, parameters, FM6 patch and function settings) and the selected track. SAVE there keeps it, LOAD makes a new project
@@ -1396,6 +1397,7 @@ static uint8_t persist_repair;                  /* boot repair must retry even w
 static uint32_t persist_retry_ms;
 #endif
 
+_Static_assert(SM_FACTORY_SETTINGS_SIZE == sizeof(persist_t), "factory settings schema");
 static void persist_boot(void)                    /* before settings_init / panel_init */
 {
 #if MELODEE_FLASH
@@ -1433,11 +1435,7 @@ static void persist_boot(void)                    /* before settings_init / pane
             tmpl_old = (uint8_t)!tmpl_take((const uint8_t *)&proj_wire_u + sizeof set_rec.p, (uint32_t)n - sizeof set_rec.p);
         }
         if (foreign) {
-            memset(&p, 0, sizeof p);
-            p.magic = PERSIST_MAGIC;
-            p.palette = palette_to_stored(UI_DEFAULT_INDEX);
-            p.panel = PANEL_DEFAULT;
-            for (uint32_t k = 0; k < 4u; k++) p.ext.glo[k] = GP[GLO_KEPT[k]].def;
+            sm_factory_unpack(&p,sizeof p,SM_FACTORY_SETTINGS,sizeof SM_FACTORY_SETTINGS);
         }
         settings_import(&p, sizeof p);            /* replaces retained RAM too, before USB enumeration */
         panel_init(); settings_init();

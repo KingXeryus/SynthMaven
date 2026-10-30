@@ -448,6 +448,14 @@ static void ep0_service(void)
         goto stall;
     }
 #endif
+    /* A control-read status OUT can be surfaced as RXPKTRDY with zero
+     * bytes. DMA still holds the previous response: do not parse it as a
+     * SETUP. Class data stages above have their own expected lengths. */
+    uint32_t setup_bytes = sie_rd(S_COUNT0);
+    if (!setup_bytes)
+        goto ack;
+    if (setup_bytes != 8u)
+        goto stall;
     for (i = 0; i < 8u; i++)
         s[i] = ep0buf[i];
     usb.setups++;

@@ -65,3 +65,14 @@ enum MIDIProblem: Error, LocalizedError {
     case invalid(String)
     var errorDescription: String? { if case .invalid(let text) = self { return text }; return nil }
 }
+
+// CoreMIDI can retain an older firmware's user-visible device name indefinitely.
+// Confirm renamed USB candidates by transport and VID/PID; the editor still
+// validates SynthMaven's protocol when connecting before reading or editing.
+func isFM1MIDIIdentity(names: [String], driver: String, usbVendorProduct: Int32) -> Bool {
+    let known = names.contains { name in
+        let n = name.lowercased()
+        return n.contains("synthmaven") || n.contains("fm-1") || n.contains("melodee") || n.contains("felucca")
+    }
+    return known || (driver.lowercased().contains("usb") && usbVendorProduct == 0x12090001)
+}

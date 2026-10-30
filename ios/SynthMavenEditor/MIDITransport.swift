@@ -6,8 +6,12 @@ struct MIDIPortChoice {
     let endpoint: MIDIEndpointRef
     let name: String
     let transport: String
+    let entity: MIDIEntityRef
+    let isFM1: Bool
+    var displayName: String { isFM1 ? "SynthMaven FM1 · \(name)" : name }
 }
 final class MIDITransport {
+    private(set) var initializationError: String?
     var onMessage: (([UInt8]) -> Void)?
     var onChange: (() -> Void)?
     var onError: ((String) -> Void)?
@@ -35,8 +39,8 @@ final class MIDITransport {
         let status = MIDIClientCreateWithBlock("SynthMaven Editor" as CFString, &client) { [weak self] _ in
             DispatchQueue.main.async { self?.refresh() }
         }
-        guard status == noErr else { return }
-        MIDIInputPortCreateWithBlock(client, "Editor input" as CFString, &input) { [weak self] list, context in
+        guard status == noErr else { initializationError = "Could not start the iPad MIDI service (\(status)). Restart SM FM1; if this persists, restart the iPad."; return }
+        let inputStatus = MIDIInputPortCreateWithBlock(client, "Editor input" as CFString, &input) { [weak self] list, context in
             guard let self else { return }
             let session = UInt(bitPattern: context)
             var data: [UInt8] = []
@@ -51,6 +55,7 @@ final class MIDITransport {
                 }
             }
         }
+        guard inputStatus == noErr else { initializationError = "Could not create MIDI input (\(inputStatus))."; return }
         MIDIInputPortCreateWithBlock(client, "Controller input" as CFString, &controllerInput) { [weak self] list, context in
             let token = UInt(bitPattern: context)
             var data: [UInt8] = []
@@ -62,8 +67,12 @@ final class MIDITransport {
                 }
             }
         }
-        MIDIOutputPortCreate(client, "Editor output" as CFString, &output)
+        let outputStatus = MIDIOutputPortCreate(client, "Editor output" as CFString, &output)
+        guard outputStatus == noErr else { initializationError = "Could not create MIDI output (\(outputStatus))."; return }
         timer = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { [weak self] _ in self?.flush() }
+        #if DEBUG
+        refresh()
+        #endif
     }
     private var receiveGeneration: UInt = 0
     var available: Bool { client != 0 && input != 0 && output != 0 }
@@ -72,7 +81,14 @@ final class MIDITransport {
         return (0..<count).compactMap { index in
             let endpoint = input ? MIDIGetSource(index) : MIDIGetDestination(index)
             guard endpoint != 0 else { return nil }
-            return MIDIPortChoice(endpoint: endpoint, name: property(endpoint, kMIDIPropertyDisplayName), transport: property(endpoint, kMIDIPropertyDriverOwner))
+            let name = property(endpoint,kMIDIPropertyDisplayName), driver = property(endpoint,kMIDIPropertyDriverOwner)
+            var entity=MIDIEntityRef(), device=MIDIDeviceRef(), vendorProduct:Int32=0
+            MIDIEndpointGetEntity(endpoint,&entity)
+            if entity != 0 { MIDIEntityGetDevice(entity,&device) }
+            if device != 0 { MIDIObjectGetIntegerProperty(device,"USBVendorProduct" as CFString,&vendorProduct) }
+            let names = [name, property(device,kMIDIPropertyName), property(device,kMIDIPropertyModel)]
+            return MIDIPortChoice(endpoint:endpoint,name:name,transport:driver,entity:entity,
+                isFM1:isFM1MIDIIdentity(names:names,driver:driver,usbVendorProduct:vendorProduct))
         }
     }
     private func property(_ object: MIDIObjectRef, _ key: CFString) -> String {
@@ -141,6 +157,17 @@ final class MIDITransport {
         onChange?()
     }
     func refresh() {
+        #if DEBUG
+        NSLog("SM FM1 MIDI: available=\(available) error=\(initializationError ?? "none") inputs=\(ports(input:true).map { $0.name }) outputs=\(ports(input:false).map { $0.name })")
+        for port in ports(input:true) {
+            var entity=MIDIEntityRef(), device=MIDIDeviceRef(), vp:Int32=0, offline:Int32=0
+            MIDIEndpointGetEntity(port.endpoint,&entity); MIDIEntityGetDevice(entity,&device)
+            MIDIObjectGetIntegerProperty(device,"USBVendorProduct" as CFString,&vp)
+            MIDIObjectGetIntegerProperty(device,kMIDIPropertyOffline,&offline)
+            NSLog("SM FM1 endpoint=\(port.name) transport=\(port.transport) device=\(property(device,kMIDIPropertyName)) model=\(property(device,kMIDIPropertyModel)) maker=\(property(device,kMIDIPropertyManufacturer)) vendorProduct=\(vp) offline=\(offline)")
+        }
+
+        #endif
         if controllerSource != 0 && !ports(input: true).contains(where: {$0.endpoint == controllerSource}) { stopController() }
         if source != 0 && (!ports(input: true).contains(where: {$0.endpoint == source}) || !ports(input: false).contains(where: {$0.endpoint == destination})) { disconnect() }
         onChange?()

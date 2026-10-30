@@ -18,7 +18,7 @@ SPECIAL={
 'SONG':[('SECTION','Select an arrangement section.'),('TRACK','Choose the track being arranged.'),('PATTERN','Select the pattern assigned to the focused track in this section.'),('REPEATS','Set section repeats from 1 to 16.')],
 'MOTION':[('ENABLE','Enable or disable motion automation.'),('LANE','Select an existing automation lane.'),('STEP','Select the step within the lane.'),('VALUE','Edit its value for the selected step.')],
 }
-GLO={'GLOBAL':'TUNE / CLOCK','SYSTEM':'MIDI / CPU','WEIGHTS':'VOICE COST','WEIGHTS 2':'CPU GUARD'}
+GLO={'GLOBAL':'TUNE / CLOCK','SYSTEM':'SYSTEM','WEIGHTS':'VOICE COST','WEIGHTS 2':'CPU GUARD'}
 
 def describe(p,c):
  l=c['label'];t=p['title'];e=p['engine']
@@ -43,7 +43,7 @@ def describe(p,c):
  if t=='ARP' and l=='RATE':return 'Arpeggiator note division relative to tempo. T values are triplets.'
  if t=='TEMPO' and l=='QNT':return 'Recording grid for the next take on all tracks. OFF preserves timing; divisions snap recording to the grid. Does not rewrite an existing take.'
  if t=='GLOBAL' and l=='TUNE':return 'Global fine pitch offset in cents, added to A4 and scale tuning.'
- if t=='SYSTEM' and l=='MIDI':return 'Choose USB or TRS as the incoming MIDI connection.'
+ if t=='SYSTEM' and l=='MIDI':return 'Choose USB or TRS for the input status display. USB shows ON when configured, ENUM while enumerating, BUS when bus frames arrive, WAIT before host activity, or OFF. This selector does not change the USB COMPUTER/PEDAL role.'
  if t=='PROJECT' and l=='SLOT':return 'Choose project A-D or the template destination. This is separate from the eight PROGRAM slots.'
  if t=='PROJECT' and l in ['LOAD','SAVE']:return l.title()+' the selected project. Turn the action knob right, then confirm with OCT+; OCT- cancels. Stop playback before saving.'
  if t=='PROGRAM' and l in ['LOAD','SAVE']:return l.title()+' the complete four-part program in the selected slot. Turn right twice within 1.5 seconds; turn left to cancel the armed action.'

@@ -9,9 +9,9 @@
     "ARAB STRINGS",
     "RNB BASS"
   ],
-  "source_sha256": "25af16d87bd535f72fa75609647ce02ddde75258c4db873db44cbc94f7da00a3",
+  "source_sha256": "450039bf65de7cf5cce46db62d6a6e657ada365fb6feec71948f7984590af3d3",
   "record_bytes": 3556,
   "compact_bytes": 14628,
-  "packed_bytes": 2891,
-  "source": "User-edited FM-1 saved programs, 2026-10-30; P2 renamed E. Organ"
+  "packed_bytes": 2885,
+  "source": "Verified 2026-10-30 USB backup: saved P1 and P3 merged; other slots retain user-curated factory fallbacks"
 }

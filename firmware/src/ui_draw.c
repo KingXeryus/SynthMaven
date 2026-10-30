@@ -159,7 +159,7 @@ static uint32_t sm_glo_page(void)
     uint32_t n=0;for(uint32_t i=0;i<ui.page;i++)if(PAGES[i].fam==FAM_GLO&&page_visible(i))n++;
     return n;
 }
-static const char *const SM_GLO_NAME[]={"TUNE/CLOCK","MIDI/CPU","VOICE COST","LAYERING","CPU GUARD","DISPLAY","USB/SAVE","CONTROLS","RECORDING","DEVICE"};
+static const char *const SM_GLO_NAME[]={"TUNE/CLOCK","SYSTEM","VOICE COST","LAYERING","CPU GUARD","DISPLAY","USB/SAVE","CONTROLS","RECORDING","DEVICE"};
 static const char *const SM_GLO_HELP[]={"PITCH / CPU / CLOCK","MIDI ROUTING / CPU","P5 / CZ-1 / FM6 / SID","LAYER OR SELECT PART","COST / BUDGET / GUARD"};
 static void head_chip_text(char *b)
 {

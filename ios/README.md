@@ -1,4 +1,4 @@
-# SM FM1 — 3.5
+# SM FM1 — 3.5.2
 
 This landscape-only iPad app bundles the same editor and protocol handlers as `web/editor.html`.
 It retains the existing SynthMaven CoreMIDI transport, bounded SysEx framing, endpoint
@@ -7,13 +7,16 @@ old SynthMaven 3.0 parameter bindings into the Melodee-based protocol.
 
 Run `python3 ios/generate_project.py`, then `ios/test.sh`. The tests build an unsigned
 iOS Simulator application; they do not install firmware or distribute TestFlight.
-The current target is version 3.5, build 14, home-screen name **SM FM1**. Both landscape orientations are supported; iPhone and portrait mode are excluded.
+The current target is version 3.5.2, build 15, home-screen name **SM FM1**. Both landscape orientations are supported; iPhone and portrait mode are excluded.
 
 ## Connecting
 
-1. Set the FM-1 USB role to COMPUTER.
+1. Set the FM-1 USB role to COMPUTER and USB Audio to IN+OUT.
 2. Connect a USB data cable, with an adapter or powered hub when required by the iPad.
-3. Choose Connect → USB cable. Matching input and output ports are selected together.
+3. Choose Connect → USB cable. Matching input and output ports from the same MIDI entity are selected together.
+   iPadOS can retain an earlier firmware name such as “SoundMaven”. USB discovery also checks the device’s
+   USB MIDI driver and VID/PID, so this cached name does not prevent connection. A virtual SoundMaven
+   port is not selected by name alone.
 4. The editor reads the firmware capabilities before enabling supported controls.
 
 Only the matching 3.5 firmware should be used for migration validation.
