@@ -52,7 +52,7 @@ static const char *const N_VPOINTS[] = {"AUTO", "1", "2", "3", "4", "5", "6", "7
                                         "14", "15"};
 static const char *const N_QUANT[] = {"OFF", "SNAP", "WHITE", "ALL", "MPC"};   /* Q_OFF .. Q_MPC (seq.c kb_map, midi_map) */
 /* chord keys (chord.c): OFF, the diatonic triad / seventh of the track's ROOT and SCALE on the key, fixed shapes */
-static const char *const N_CHRD[] = {"OFF", "DIA3", "DIA7", "MAJ", "MIN", "DOM7", "MAJ7", "MIN7", "SUS4", "POW", "AUTO", "AUTO2"};
+static const char *const N_CHRD[] = {"OFF", "DIA3", "DIA7", "MAJ", "MIN", "DOM7", "MAJ7", "MIN7", "SUS4", "POW", "AUTO", "AUTO2", "OPEN5", "NEUTRAL"};
 static const char *const N_STRUM[] = {"OFF", "1/8", "1/16", "1/32", "1/64", "1/128", "16T", "32T"};
 static const char *const N_STROKE[] = {"DOWN", "UP", "ALT"};
 static const char *const N_VOIC[] = {"CLOSE", "OPEN", "INV1", "INV2", "+OCT"};   /* VC_CLOSE .. VC_BASS */
@@ -341,8 +341,13 @@ static const param_desc_t *global_desc(uint32_t id)
     return &GP[id];
 }
 static uint32_t scale_count(const track_t *t);          /* seq.c */
+static int sm_chord_micro(const track_t *t);
 static const param_desc_t *track_desc(const track_t *t, uint32_t id)
 {
+    if(id==P_CHRD && sm_chord_micro(t)){
+        static const char *const names[]={"OFF","","","","","","","","","","","","OPEN5","NEUTRAL"};
+        static param_desc_t d;d=TP[id];d.names=names;return &d;
+    }
     if (midi_track_audio_disabled(t->eng_req, id)) {
         static param_desc_t disabled;
         disabled = TP[id]; disabled.min = disabled.max = disabled.def = t->p[id];

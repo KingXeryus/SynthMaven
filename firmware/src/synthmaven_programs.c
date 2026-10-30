@@ -13,6 +13,7 @@
 static uint8_t sm_program_meta[SM_PROGRAM_META] __attribute__((section(".pool")));
 static uint8_t sm_program_current=255,sm_scene_current=255;
 static char sm_program_name[13];
+static uint8_t sm_program_boot_slot=255;
 static const uint8_t SM_SCENE_PARAM[8]={P_LEVEL,P_PAN,P_MUTE,P_FXSEND,P_E4,P_E5,P_E6,P_E7};
 static int sm_program_meta_valid(const uint8_t *b)
 {
@@ -97,15 +98,16 @@ static int sm_factory_program(uint32_t slot)
 }
 static void sm_config_pack(uint8_t *b)
 {
-    memset(b,0,SM_CONFIG_BYTES);memcpy(b,"SMC1",4);b[4]=sm_setlist_count;b[5]=sm_setlist_pos;
+    memset(b,0,SM_CONFIG_BYTES);memcpy(b,"SMC2",4);b[328]=sm_program_current<8?sm_program_current+1:0;b[4]=sm_setlist_count;b[5]=sm_setlist_pos;
     memcpy(b+8,sm_setlist,32);memcpy(b+40,sm_maps,sizeof sm_maps);
 }
 static int sm_config_valid(const uint8_t *b)
 {
-    if(memcmp(b,"SMC1",4)||b[4]>32||b[5]>31||b[6]||b[7])return 0;
+    if((memcmp(b,"SMC1",4)&&memcmp(b,"SMC2",4))||b[4]>32||b[5]>31||b[6]||b[7])return 0;
     for(uint32_t i=0;i<32;i++)if(b[8+i]>7)return 0;
     for(uint32_t i=0;i<SM_MAP_COUNT;i++)if(!sm_map_valid(b+40+i*SM_MAP_BYTES))return 0;
-    for(uint32_t i=328;i<SM_CONFIG_BYTES;i++)if(b[i])return 0;return 1;
+    if(b[3]=='2'&&b[328]>8)return 0;
+    for(uint32_t i=b[3]=='2'?329:328;i<SM_CONFIG_BYTES;i++)if(b[i])return 0;return 1;
 }
 #if MELODEE_FLASH
 _Static_assert(SM_PROGRAM_BANK<=ST_BANK_BASE_MAX+ST_BANK_EXT_MAX,"eight programs fit existing atomic project extents");
@@ -121,6 +123,7 @@ static void sm_config_load(void)
 {
     st_hdr_t h;uint8_t header[16],b[SM_CONFIG_BYTES];int copy=sm_program_bank(0,&h,header);
     if(copy<0||st_read_range(OBJ_BANK0,(uint32_t)copy,SM_CONFIG_OFF,b,sizeof b)||!sm_config_valid(b))return;
+    sm_program_boot_slot=b[3]=='2'&&b[328]?b[328]-1:255;
     sm_setlist_count=b[4];sm_setlist_pos=b[5];memcpy(sm_setlist,b+8,32);memcpy(sm_maps,b+40,sizeof sm_maps);
 }
 static int sm_config_save(void)
@@ -129,6 +132,7 @@ static int sm_config_save(void)
     proj_wire_gen++;
     st_hdr_t h;uint8_t header[16]={0},config[SM_CONFIG_BYTES];int copy=sm_program_bank(0,&h,header);
     if(copy==-2)return 3;sm_config_pack(config);if(!sm_config_valid(config))return 1;
+    if(copy>=0){uint8_t previous[SM_CONFIG_BYTES];if(!st_read_range(OBJ_BANK0,(uint32_t)copy,SM_CONFIG_OFF,previous,sizeof previous)&&!memcmp(previous,config,sizeof config))return 0;}
     st_stream_t w;if(st_stream_begin(&w,OBJ_BANK0,SM_PROGRAM_BANK))return 2;
     uint8_t *chunk=wire_take();for(uint32_t off=16;off<SM_CONFIG_OFF;){uint32_t n=SM_CONFIG_OFF-off;if(n>sizeof proj_wire_u.raw)n=sizeof proj_wire_u.raw;
         if(copy>=0){if(st_read_range(OBJ_BANK0,(uint32_t)copy,off,chunk,n))return 2;}else memset(chunk,0,n);
@@ -335,5 +339,10 @@ static void sm_mapping_poll(void)
 static void sm_program_autosave(void)
 {
     if(sm_program_current>=8||!sm_program_name[0]||transport_busy()||wire_waiting())return;
-    if(!sm_program_save(sm_program_current,sm_program_name,sm_program_meta[0]))ui_message("PROGRAM SAVED");
+    if(!sm_program_save(sm_program_current,sm_program_name,sm_program_meta[0])){sm_config_save();ui_message("PROGRAM SAVED");}
+}
+
+static void sm_program_boot(void)
+{
+    if(sm_program_boot_slot<8)sm_program_load(sm_program_boot_slot);
 }

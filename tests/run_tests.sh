@@ -394,6 +394,7 @@ if core && [ $TABLES = 1 ]; then
     t "SynthMaven compact program backup recovery" synthmaven_program_backup_test -O1 $FW -- "$OUT/synthmaven_program_backup_test"
     t "SynthMaven delayed button shortcuts" synthmaven_shortcuts_test -O1 $FW -- "$OUT/synthmaven_shortcuts_test"
     t "SynthMaven program controls" synthmaven_program_ui_test -O1 $FW -- "$OUT/synthmaven_program_ui_test"
+    t "SynthMaven scale-safe neutral harmony" synthmaven_chords_test -O1 $FW -- "$OUT/synthmaven_chords_test"
     t "SynthMaven tuning knob controls" synthmaven_tuning_ui_test -O1 $FW -- "$OUT/synthmaven_tuning_ui_test"
     t "SynthMaven global chromatic tuning and persistence" synthmaven_tuning_test -O1 $FW -- "$OUT/synthmaven_tuning_test"
     t "SynthMaven HOME: engine, preset bank and part navigation" synthmaven_home_test -O1 $FW -- "$OUT/synthmaven_home_test"

@@ -191,8 +191,36 @@ button[aria-pressed=true],[role=tab][aria-selected=true]{border-color:var(--acce
 #layer-routing label{display:grid;gap:4px}#layer-routing select{max-width:96px}
 @media(max-width:600px){main{padding:10px}#master-tuning{padding:10px}.mt-keyboard{height:132px}#master-tuning .mt-controls{gap:10px}.browser{min-width:0}.mt-controls select{max-width:100%}}
 
-.sm-logo{position:relative;display:block;width:220px;height:64px;overflow:hidden;flex:none}.sm-logo img{position:absolute;width:220px;height:220px;left:0;top:-78px}h1 small{font-size:12px;color:var(--dim);font-weight:400}
+.sm-logo{position:relative;display:block;width:110px;height:64px;overflow:hidden;flex:none}.sm-logo img{position:absolute;width:110px;height:110px;left:0;top:-24px}h1 small{font-size:12px;color:var(--dim);font-weight:400}
 .mt-keyboard .white[aria-pressed=true]:not(.tuned){outline-color:#17171b}
+
+#p-perform{padding:8px;min-height:0}
+.perform-active main>h1,.perform-active footer{display:none}
+.perform-active main{padding-top:8px}
+.perform-active .site{margin-bottom:4px;padding-bottom:4px}
+#perform-nav{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.perform-bank{display:grid;grid-template-columns:1fr 48px 48px;gap:8px;padding:12px;background:var(--surf,#17171c);border:1px solid #45454d;border-radius:12px}
+.perform-bank>span{grid-column:1 / -1}.perform-bank>strong{align-self:center;font-size:18px;overflow-wrap:anywhere}
+.perform-bank button,.perform-views button,.perform-parts button{min-height:44px;touch-action:manipulation}
+.perform-views{grid-column:1 / -1;display:flex;gap:8px}.perform-views button{flex:1}
+.perform-parts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}.perform-parts small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.perform-knobs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.perform-control{display:grid;gap:4px;padding:8px 12px;background:linear-gradient(#24242b,#15151a);border:1px solid #45454d;border-radius:14px;min-width:0}
+.perform-control output{font-size:24px;color:#fff}.perform-control input{width:100%;min-height:44px;accent-color:#ff2c34;touch-action:pan-y}
+#perform-detail[data-view=layers]{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:12px;margin-top:12px}
+#perform-detail .mixer{margin:0;max-width:none}
+#perform-detail .strip{border-radius:12px;background:linear-gradient(#24242b,#15151a);padding:6px;gap:4px}
+#perform-detail .strip .rec,#perform-detail .strip .selb{display:none}
+#perform-detail .strip input.fader{height:100px;width:44px;accent-color:var(--accent)}
+#perform-detail .strip .snd{min-height:1.3em;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+#perform-detail #layer-routing{display:grid;grid-template-columns:1fr 1fr;gap:6px;align-content:start}
+#perform-detail #layer-routing>label:first-child{grid-column:1 / -1;display:flex;align-items:center}
+#perform-detail #layer-routing select{min-height:32px;width:100%;max-width:none;padding:4px}
+#perform-detail #layer-routing label{font-size:11px}
+@media(max-width:750px){#perform-detail[data-view=layers]{grid-template-columns:1fr}#perform-detail #layer-routing{grid-template-columns:repeat(4,1fr)}}
+#perform-detail .mt-keyboard{height:160px}#perform-detail .mt-wheel{margin:12px auto}
+@media(max-width:600px){#perform-nav{grid-template-columns:1fr}.perform-bank{padding:8px}.perform-knobs{gap:6px;grid-template-columns:repeat(2,minmax(0,1fr))}.perform-control{padding:8px}.perform-control output{font-size:20px}.perform-parts small{display:none}}
+
 </style>
 </head>
 <body>
@@ -217,6 +245,7 @@ button[aria-pressed=true],[role=tab][aria-selected=true]{border-color:var(--acce
     </div>
     <div id="status"></div>
     <nav class="tabs" id="tabs" role="tablist">
+      <button role="tab" data-tab="perform">Perform</button>
       <button role="tab" data-tab="sound" data-t="sound" data-ic="symbol_audio"></button>
       <button role="tab" data-tab="fm6" data-t="tabFm6" data-ic="ui_knob"></button>
       <button role="tab" data-tab="sequencer" data-t="tabSeq" data-ic="symbol_grid"></button>
@@ -229,6 +258,7 @@ button[aria-pressed=true],[role=tab][aria-selected=true]{border-color:var(--acce
   </header>
   <p class="hint" id="hint" hidden></p>
 
+  <section class="panel" id="p-perform" data-tab="perform" data-dev hidden><div id="perform-nav"></div><div id="perform-controls"></div><div id="perform-detail"></div></section>
   <section class="panel" id="p-sound" data-tab="sound" data-dev hidden>
     <div class="browser" id="browser">
       <label><span data-t="engine"></span><br><select id="engine"></select></label>
@@ -2220,7 +2250,7 @@ function makeMockDevice(opt = {}) {
     [[36, 42, 42, 42, 38, 42, 36, 42, 36, 42, 42, 36, 38, 42, 46, 42], [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]],
   ];
   for (let op = 0; op < 4; op++) TP.push(D("ATK", F.TIME, 0, 127, 0), D("DEC", F.TIME, 0, 127, 0), D("SUS", F.PCT, 0, 127, 127), D("REL", F.TIME, 0, 127, 0), D("LVL", F.PCT, 0, 127, 127));
-  TP.push(E("CHRD", ["OFF", "DIA3", "DIA7", "MAJ", "MIN", "DOM7", "MAJ7", "MIN7", "SUS4", "POW", "AUTO", "AUTO2"], 0),   /* the chord keys 81, 82 */
+  TP.push(E("CHRD", ["OFF", "DIA3", "DIA7", "MAJ", "MIN", "DOM7", "MAJ7", "MIN7", "SUS4", "POW", "AUTO", "AUTO2", "OPEN5", "NEUTRAL"], 0),   /* the chord keys 81, 82 */
     E("VOIC", ["CLOSE", "OPEN", "INV1", "INV2", "+OCT"], 0),
     D("DEG", F.INT, 1, 12, 1));                      /* 83: QNT MPC, the degree of each bank's pad 02 */
   TP.push(...["KICK","SNARE","CLAP","HATCL","HATOP","TOM","RIM","BELL"].map(n=>D(n,F.PCT,0,127,127)));
@@ -3248,7 +3278,7 @@ const TEXT = {
     savedLib: "Saved to the library: ", copiedLib: "Copied to the library: ", imported: "Imported: ",
     skippedN: " ({n} unreadable)", patchesN: " patches",
     putDone: "Written to the device: slot ", storedSlot: "Stored on the device: slot ", erasedSlot: "Erased slot ",
-    loadedUser: "Sound loaded (the sequence stays; its pattern is on the device under SEQ > PHRASES; hold EDIT to undo): ", reloaded: "The sound changed on the device: read again", readingBank: "Reading the slots",
+    loadedUser: "Sound loaded (the sequence stays; its pattern is on the device under SEQ > PHRASES; EDIT + OCT− to undo): ", reloaded: "The sound changed on the device: read again", readingBank: "Reading the slots",
     badEngine: "This firmware has no such engine: ", flashFail: "Write failed (rc {rc})",
     installer: "Melodee installer",
     tabSeq: "Sequencer", tabTracks: "Tracks", tabSettings: "Settings",
@@ -3284,14 +3314,14 @@ $("lang").addEventListener("click", () => { lang = lang === "ja" ? "en" : "ja"; 
 
 /* ---------------------------------------------------------------- tabs --- */
 /* one panel at a time; the last one is remembered (localStorage) and in the URL hash (#sound ...) */
-const TABS = ["sound", "fm6", "sequencer", "tracks", "library", "projects", "settings"];
+const TABS = ["perform", "sound", "fm6", "sequencer", "tracks", "library", "projects", "settings"];
 const TAB_KEY = "felucca-editor-tab";
 const TRACK_TABS = new Set(["sound", "sequencer", "tracks"]);
 let tab = (() => {
   const h = location.hash.slice(1);
   if (TABS.includes(h)) return h;
   try { const v = localStorage.getItem(TAB_KEY); if (TABS.includes(v)) return v; } catch (e) { /* no storage */ }
-  return "sound";
+  return "perform";
 })();
 const hasTracks = () => !!dev && !!dev.info && !!dev.info.ntrk;
 function showTab(name) {
@@ -3301,10 +3331,13 @@ function showTab(name) {
   try { localStorage.setItem(TAB_KEY, name); } catch (e) { /* no storage */ }
   if (location.hash !== "#" + name) history.replaceState(null, "", location.pathname + location.search + "#" + name);
   renderPanels();
+  if(name === "perform" && dev?.dump)op(async()=>{await loadPrograms();await readMixer();renderPerform();});
   if (name === "tracks" && prev !== "tracks" && hasTracks() && dev.dump) op(readMixer);
   if (name === "fm6" && prev !== "fm6" && dev && dev.dump && dev.info.fm6) op(fm6Refresh);
 }
 function renderPanels() {
+  document.body.classList.toggle("perform-active",tab==="perform");
+  placePerformPanels();
   /* the Tracks tab only with a four-track firmware */
   const tracksOk = !dev || hasTracks() || !dev.info;
   const fm6Off = !!dev && !!dev.info && !dev.info.fm6;             /* the 6-OP FM tab: firmware with FM6 */
@@ -3440,7 +3473,7 @@ async function connect() {
       }
       access.onstatechange = onState;
     }
-    const isF = (p) => /melodee|felucca/i.test(p.name || "") && p.state !== "disconnected";
+    const isF = (p) => /synthmaven|melodee|felucca/i.test(p.name || "") && p.state !== "disconnected";
     const input = [...access.inputs.values()].find(isF);
     const output = [...access.outputs.values()].find(isF);
     if (!input || !output) { sayK("nodevice"); return; }
@@ -3493,7 +3526,7 @@ function disconnect(reasonKey = "disconnected") {
 
 function onState(e) {
   const p = e.port;
-  if (!p || !/melodee|felucca/i.test(p.name || "")) return;
+  if (!p || !/synthmaven|melodee|felucca/i.test(p.name || "")) return;
   if (dev && p.state === "disconnected" && (p.id === dev.input.id || p.id === dev.output.id)) {
     disconnect("lost");
   } else if (!dev && wantConnected && p.state === "connected" && p.type === "output") {
@@ -3525,6 +3558,7 @@ async function load(d) {
   try {
     /* the first frame after opening the port can be lost: a few tries */
     d.info = parse[CMD.INFO](await sessionRequest(d, req.info(), { timeout: 500, retries: 3 }));
+    if(/synthmaven/i.test(d.info.version)&&!d.info.synthmaven?.programs)throw Error("This editor requires SynthMaven 3.5. Use the matching editor for earlier firmware.");
     $("version").textContent = d.info.version;
     const total = d.info.pcount + d.info.gcount;
     for (let i = 0; i < d.info.pcount; i++) { sayK("reading", `${i + 1}/${total}`); d.pdesc[i] = await getDescOrNull(0, i, d); }
@@ -3613,6 +3647,10 @@ async function loadSteps(d = dev) {
 
 /* --------------------------------------------------------------- UI --- */
 
+async function rereadChordDesc(d=dev){
+ if(!d?.dump)return;const id=d.pdesc.findIndex(p=>p?.label==='CHRD');if(id<0)return;
+ const desc=await getDesc(0,id,d);if(d!==dev)return;d.pdesc[id]=desc;buildGroups();
+}
 async function loadMasterTuning(){
   const d=dev,host=$("master-tuning");host.hidden=!d?.info.synthmaven?.masterTuning;
   if(host.hidden)return;
@@ -3626,7 +3664,7 @@ function renderMasterTuning(){
   host.replaceChildren();
   const heading=document.createElement('h3');heading.textContent='GLOBAL TUNING';host.append(heading);
   const controls=document.createElement('div');controls.className='mt-controls';host.append(controls);
-  const change=(fn)=>{fn(tune);renderMasterTuning();const next=tuningEncode(tune);d.tuningQueue=(d.tuningQueue||Promise.resolve()).then(async()=>{const r=parse[CMD.MASTER_TUNING](await sessionRequest(d,[CMD.MASTER_TUNING,[1,...pack7(next)]]));if(r.rc)throw Error('Tuning update rejected');}).catch(e=>{if(dev===d)say(e.message);});};
+  const change=(fn)=>{fn(tune);renderMasterTuning();const next=tuningEncode(tune);d.tuningQueue=(d.tuningQueue||Promise.resolve()).then(async()=>{const r=parse[CMD.MASTER_TUNING](await sessionRequest(d,[CMD.MASTER_TUNING,[1,...pack7(next)]]));if(r.rc)throw Error('Tuning update rejected');await rereadChordDesc(d);}).catch(e=>{if(dev===d)say(e.message);});};
   function select(label,values,current,fn){const l=document.createElement('label');l.textContent=label;const c=document.createElement('select');values.forEach((v,i)=>{const o=document.createElement('option');o.value=i;o.textContent=v;c.append(o);});c.value=current;c.onchange=()=>change(t=>fn(t,+c.value));l.append(c);controls.append(l);}
   function check(label,current,fn){const l=document.createElement('label');l.textContent=label;const c=document.createElement('input');c.type='checkbox';c.checked=current;c.onchange=()=>change(t=>fn(t,c.checked));l.append(c);controls.append(l);}
   select('Scale',MASTER_SCALES.map(s=>s.name),tune.scale,(t,v)=>{t.scale=v;t.enabled=1;});
@@ -3945,6 +3983,7 @@ async function afterSoundChange(msg = "ready", d = dev) {
   if(d.dump.p5){p5Tone=d.dump.p5.slice();p5Render();}
   await rereadEngineDesc(d);
   await rereadMpcDesc(d);
+  await rereadChordDesc(d);
   updateBrowser();
   refreshAll();
   await loadSteps(d);                                /* (a sound load keeps them; read anyway after a RELOAD) */
@@ -3961,6 +4000,7 @@ $("init").addEventListener("click", async () => {
 function refreshAll() {
   for (const [k, c] of ctl) showValue(k, c.scope ? dev.dump.g[c.id] : dev.dump.p[c.id], false);
   renderSteps();
+  renderPerform();
 }
 function report(err) { if (err && err.message !== "closed") { console.warn(err); sayK("error", err.message); } }
 
@@ -4370,11 +4410,45 @@ function renderSetlist(){
  host.append(el('h3',{},'Setlist'),el('div',{class:'bar'},input,save),el('p',{class:'dim'},'An ordered list of program references, for example 1, 3, 2, 3. Use MIDI Learn to assign Setlist Next and Previous. Repeated references are allowed.'));
 }
 
+
+let performView='quick',performDragging=false;
+window.addEventListener('pointerup',()=>{if(performDragging){performDragging=false;renderPerform();}});
+window.addEventListener('pointercancel',()=>{performDragging=false;renderPerform();});
+const performHomes=new Map(['master-tuning','mixer','layer-routing'].map(id=>[id,$(id).parentNode]));
+function placePerformPanels(){
+ const detail=$('perform-detail');if(!detail)return;detail.dataset.view=performView;
+ for(const [id,home] of performHomes){const node=$(id),show=tab==='perform'&&((performView==='tuning'&&id==='master-tuning')||(performView==='layers'&&id!=='master-tuning'));
+  const parent=show?detail:home;if(node.parentNode!==parent)parent.append(node);
+ }
+}
+function renderPerform(){
+ const d=dev,nav=$('perform-nav'),controls=$('perform-controls');if(!nav||performDragging)return;
+ if(!d?.dump){nav.replaceChildren();controls.replaceChildren();return;}
+ const p=d.programs;
+ const run=fn=>()=>op(fn);
+ const program=dir=>run(async()=>{if(!p)return;for(let n=1;n<=8;n++){const i=((p.current<8?p.current:dir>0?7:0)+dir*n+16)%8;if(!p.slots[i].status){await programRequest([1,i]);await afterSoundChange();await loadMasterTuning();await loadLayerRouting();return;}}throw Error('No available program');});
+ const scene=dir=>run(async()=>{if(!p)return;for(let n=1;n<=4;n++){const i=((p.scene<4?p.scene:dir>0?3:0)+dir*n+8)%4;if(p.sceneMask&(1<<i)){await programRequest([4,i]);await afterSoundChange();await loadMasterTuning();return;}}throw Error('Capture a scene in Edit first');});
+ const navrow=(label,name,down,up)=>el('div',{class:'perform-bank'},el('span',{class:'dim'},label),el('strong',{'aria-live':'polite'},name),el('button',{onclick:down,'aria-label':label+' Down'},'−'),el('button',{onclick:up,'aria-label':label+' Up'},'+'));
+ nav.replaceChildren(navrow('Program',p?.name?(p.current<8?'P'+(p.current+1)+' · ':'')+p.name:'Unsaved',program(-1),program(1)),navrow('Scene',p?.scene<4&&p.sceneMask&(1<<p.scene)?p.scenes[p.scene]:'None',scene(-1),scene(1)));
+ const views=el('div',{class:'perform-views'});for(const [id,label] of [['quick','Quick controls'],['layers','Layers'],['tuning','Tuning']])views.append(el('button',{'aria-pressed':performView===id,onclick:()=>{performView=id;placePerformPanels();renderPerform();}},label));nav.append(views);
+ controls.hidden=performView!=='quick';if(controls.hidden){placePerformPanels();return;}
+ const parts=el('div',{class:'perform-parts'});for(let part=0;part<Math.min(d.info.ntrk||1,4);part++)parts.append(el('button',{'aria-pressed':(d.sel||0)===part,onclick:()=>selectTrack(part)},'Part '+(part+1),el('small',{},d.mix?.tracks[part]?trackName(d.mix.tracks[part]):'')));
+ const ids=[[1,'ENV attack'],[4,'ENV release'],[9,'LFO rate'],[14,'LFO → filter']];
+ for(let i=0;i<4;i++){const id=d.info.pe0+(d.info.engines[d.dump.engine]==='HYBRID'?4:0)+i;ids.push([id,d.pdesc[id]?.label||'Engine control']);}
+ const grid=el('div',{class:'perform-knobs'});
+ for(const [id,label] of ids){const desc=d.pdesc[id];if(!desc)continue;const value=d.dump.p[id],out=el('output',{},fmtValue(desc,value).filter(Boolean).join(' '));
+  const input=el('input',{type:'range',min:desc.min,max:desc.max,step:1,value,'aria-label':label,disabled:desc.min===desc.max});
+  input.onpointerdown=()=>{performDragging=true;};
+  input.oninput=()=>{const v=+input.value;out.textContent=fmtValue(desc,v).filter(Boolean).join(' ');userSet(0,id,v,false);};input.onchange=()=>userSet(0,id,+input.value,true);
+  grid.append(el('label',{class:'perform-control'},el('span',{},label),out,input));
+ }
+ controls.replaceChildren(parts,grid);placePerformPanels();
+}
 async function programRequest(args){
  const d=dev;if(!d?.info.synthmaven?.programs)throw Error('This firmware does not support SynthMaven programs');
  const status=parse[CMD.PROGRAMS](await sessionRequest(d,[CMD.PROGRAMS,args]));
  if(status.rc)throw Error(['','Empty or invalid slot','Storage error','This slot contains a protected Melodee project','Stop playback before loading or saving'][status.rc]);
- if(dev!==d)return;d.programs=status;renderPrograms();return status;
+ if(dev!==d)return;d.programs=status;renderPrograms();renderPerform();return status;
 }
 async function loadPrograms(){
  const host=$('sm-programs');host.hidden=!dev?.info.synthmaven?.programs;if(host.hidden)return;
@@ -4423,6 +4497,7 @@ function renderMixer() {
     box.replaceChildren(...m.tracks.map((_, i) => buildStrip(i)));
   }
   m.tracks.forEach((_, i) => updateStrip(i));
+  renderPerform();
 }
 function buildStrip(i) {
   const lvDesc = {...(dev.pdesc[P.LEVEL] || {fmt:F.INT}), min:0, max:127, def:104};

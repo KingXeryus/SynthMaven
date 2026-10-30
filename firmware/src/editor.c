@@ -226,7 +226,7 @@ static void ed_sync(void)                                /* main loop */
  * (t->engine follows in the audio ISR, after a short fade) */
 static const param_desc_t *ed_tdesc(const track_t *t, uint32_t id)
 {
-    if (midi_track_audio_disabled(t->eng_req, id)) return track_desc(t, id);
+    if (id==P_CHRD || midi_track_audio_disabled(t->eng_req, id)) return track_desc(t, id);
     return param_desc_of(t->eng_req % NENGINES, id);
 }
 /* descriptor and value slot of (scope, id): scope 0 = the selected track, 1 = global */

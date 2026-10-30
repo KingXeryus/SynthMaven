@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 const html=readFileSync(new URL('editor.html',import.meta.url),'utf8');
 const proto=html.slice(html.indexOf('/*PROTO-BEGIN*/'),html.indexOf('/*PROTO-END*/'));
-const ui=html.slice(html.indexOf('async function loadMasterTuning()'),html.indexOf('function buildUI()'));
+const ui=html.slice(html.indexOf('async function rereadChordDesc('),html.indexOf('function buildUI()'));
 const dom=new JSDOM('<div id="master-tuning"></div>');
 const writes=[],errors=[];
 const d={info:{synthmaven:{masterTuning:true}},masterTuning:{enabled:1,scale:1,root:0,octave:3,quantize:0,apply:15,cents:Array(12).fill(0),mask:4095}};

@@ -13,7 +13,7 @@ static int ed_master_tuning_handle(uint32_t cmd,const uint8_t *a,uint32_t n)
         if(ed_unpack7(a+1,n-1,raw,sizeof raw)!=sizeof raw || !sm_tuning_decode(&next,raw))rc=1;
         else {
             uint32_t guard=motion_guard();sm_tuning=next;motion_unguard(guard);
-            settings_save();ui.force=1;
+            settings_save();ui.force=1;sync_reload=1;
         }
     }
     ed_b(op);ed_b(rc);

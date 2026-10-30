@@ -12,8 +12,9 @@ int main(void)
  trk[0].p[P_LEVEL]=88;trk[1].p[P_PAN]=0;assert(!sm_program_load(7));assert(!sm_scene_load(2));assert(trk[0].p[P_LEVEL]==39 && trk[1].p[P_PAN]==-37);
  step_t step=trk[0].step[0];step.n=67;trk[0].step[0]=step;assert(!sm_program_load(0));assert(trk[0].step[0].n==67);
  for(int cut=0;cut<120;cut+=7){assert(!sm_program_load(0));int old=trk[0].p[P_LEVEL];trk[0].p[P_LEVEL]=99;fail_after=cut;int rc=sm_program_save(0,"REPLACEMENT",0);fail_after=-1;assert(!sm_program_load(0));assert(trk[0].p[P_LEVEL]==(rc?old:99));assert(!sm_program_load(1)&&trk[0].p[P_LEVEL]==71);}
- assert(!sm_program_load(1));uint32_t unchanged_erases=erases;sm_program_autosave();assert(erases==unchanged_erases);
+ assert(!sm_program_load(1));sm_program_autosave();uint32_t unchanged_erases=erases;sm_program_autosave();assert(erases==unchanged_erases);
  trk[0].p[P_LEVEL]=68;sm_program_autosave();assert(!sm_program_load(1)&&trk[0].p[P_LEVEL]==68);
+ sm_program_current=255;sm_program_name[0]=0;sm_config_load();sm_program_boot();assert(sm_program_current==1&&trk[0].p[P_LEVEL]==68);
  assert(project_save(0));assert(project_erase(0));assert(!sm_program_load(1));
  reset();assert(!project_save(0));assert(sm_program_save(0,"PROTECTED",0)==3);
  puts("SynthMaven programs: eight independent slots, names, scenes, optional global tuning override, sequence preservation, torn-save recovery and legacy protection passed");return 0;

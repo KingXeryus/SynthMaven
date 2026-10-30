@@ -194,3 +194,27 @@ Checkpoint validation: `build/host/program-regression-4.log` reports **ALL HOST
 TESTS PASSED in 197 s** with SOUND=1, including the web suite, audio regressions,
 atomic program/backup/mapping tests, new shortcuts, all UI fixtures and screen
 layout/canvas parity. Device CPU/audio performance remains unverified.
+
+## Perform, neutral harmony and boot restoration checkpoint
+
+- Shared web/iOS Perform view opens by default with Program Up/Down, Scene
+  Up/Down, names, part selection and eight quick controls. Mixer and global
+  tuning reuse the same live control models. Browser mock inspection confirms
+  Quick controls fit 1280×720 without scrolling; smaller layouts remain under review.
+- Global chromatic microtuning offers OPEN5 and NEUTRAL. Incompatible stored
+  chord modes fall back to OPEN5 at tuned notes without overwriting the setting.
+  Legacy Melodee degree-addressed scales retain their established chord behavior.
+- SMC2 persists the active program in the authoritative configuration object.
+  Reboot restores the saved program/scene; unchanged configuration skips erasure.
+  SMC1 remains readable. Autosave behavior remains enabled and idle-driven.
+- USB discovery recognizes SynthMaven ports and refuses older SynthMaven wire
+  formats before parameter writes. The iOS bundle uses this same adapter.
+- `build/host/perform-neutral-regression-2.log`: ALL HOST TESTS PASSED in 202 s
+  with SOUND=1. Both neutral choices cover every maqam/root/key in a focused test.
+- `build/perform-neutral-target.log`: target checks pass, app 564,132 bytes,
+  loader 7,427 bytes, package 610,583 bytes; data SRAM tail 6,024 bytes.
+- `build/ios-perform-build.log`: MIDI tests and unsigned simulator build pass.
+
+These are local development checks. Controller profiles, final responsive UI,
+factory-program listening/device timing, USB hardware validation and all release
+and distribution gates remain outstanding. No hardware or public release changed.

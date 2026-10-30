@@ -1072,7 +1072,7 @@ static void edit_param(uint32_t slot, int32_t steps)
         }else if(id==6u)sm_tuning.quantize=(uint8_t)v;
         else if(id==7u){uint32_t bit=1u<<(song.sel%NPART);sm_tuning.apply=(uint8_t)(v?sm_tuning.apply|bit:sm_tuning.apply&~bit);}
         motion_unguard(guard);
-        if(id!=4u)settings_save();ui.force=1;return;
+        if(id!=4u){settings_save();sync_reload=1;}ui.force=1;return;
     }
     if(pg->scope==SC_SM_LAYER){if(!slot){sm_layers.enabled=(uint8_t)clamp(sm_layers.enabled+steps,0,1);settings_save();ui.force=1;}return;}
     if(pg->scope==SC_SM_MIX){trk[slot&3u].p[P_LEVEL]=(int16_t)clamp(trk[slot&3u].p[P_LEVEL]+steps,0,127);ui.force=1;return;}

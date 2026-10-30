@@ -15,7 +15,7 @@
  * key, mchord for a MIDI note) and its release ends exactly those, so CHRD / VOIC changed while it is held
  * leave nothing hanging. A note several sources hold sounds once and ends with the last of them. */
 /* Append modes: these values are stored in songs, presets and editor files. */
-enum { CH_OFF, CH_DIA3, CH_DIA7, CH_MAJ, CH_MIN, CH_DOM7, CH_MAJ7, CH_MIN7, CH_SUS4, CH_POW, CH_AUTO, CH_MELODY };
+enum { CH_OFF, CH_DIA3, CH_DIA7, CH_MAJ, CH_MIN, CH_DOM7, CH_MAJ7, CH_MIN7, CH_SUS4, CH_POW, CH_AUTO, CH_MELODY, CH_OPEN5, CH_NEUTRAL, CH_LAST=CH_NEUTRAL };
 enum { VC_CLOSE, VC_OPEN, VC_INV1, VC_INV2, VC_BASS };
 #define CHORD_MAX 4u
 #define MCHORD_N 24u                     /* MIDI notes held as chords at once (more: their root alone) */
@@ -46,6 +46,40 @@ static int chord_kit(const track_t *t)
 
 #include "chord_auto.c"
 #include "chord_melody.c"
+
+/* Adapted from SynthMaven's scale-safe OPEN5 / NEUTRAL modes. Select only
+ * existing keys by their actual tuned pitches; do not create equal-tempered
+ * thirds over a maqam. All searches are bounded and allocation-free. */
+static int sm_chord_micro(const track_t *t)
+{
+    if(sm_tuning.enabled){
+        uint32_t part=trk_index(t);if(part>=4||!(sm_tuning.apply&(1u<<part)))return 0;
+        for(uint32_t note=108;note<120;note++)if(sm_tuning_cents(&sm_tuning,part,note))return 1;
+        return 0;
+    }
+    /* Legacy degree-addressed scales keep Melodee chord semantics. The
+     * master chromatic tuning layer alone uses the neutral-only policy. */
+    return 0;
+}
+static uint32_t sm_chord_neutral(const track_t *t,uint32_t root,uint32_t mode,uint8_t *out,int32_t *rp,uint16_t *maskp)
+{
+    uint32_t mask=scale_mask(t),tonic=scale_root(t),part=trk_index(t);
+    while(root && !(mask&(1u<<((root+12-tonic)%12))))root--;
+    out[0]=(uint8_t)root;*rp=(int32_t)root;*maskp=1;uint32_t n=1;
+    if(trk_vmode(t)!=V_POLY)return n;
+    const int32_t target[3]={35000,70000,120000};
+    int32_t base=micro_active(t)?micro_pitch(t,root):(int32_t)root*10000+100*sm_tuning_cents(&sm_tuning,part,root);
+    for(uint32_t j=mode==CH_NEUTRAL?0u:1u;j<(mode==CH_NEUTRAL?2u:3u);j++){
+        int32_t best=0x7fffffff;uint32_t chosen=root;
+        for(uint32_t key=root+1;key<128;key++)if(mask&(1u<<((key+12-tonic)%12))){
+            int32_t pitch=micro_active(t)?micro_pitch(t,key):(int32_t)key*10000+100*sm_tuning_cents(&sm_tuning,part,key);
+            int32_t delta=pitch-base,cost=delta-target[j];if(cost<0)cost=-cost;
+            if(delta>0 && cost<best){best=cost;chosen=key;}
+        }
+        if(chosen>out[n-1]){out[n++]=(uint8_t)chosen;*maskp|=(uint16_t)(1u<<((chosen-root)%12));}
+    }
+    return n;
+}
 
 /* the tones of the chord (semitones above *root, ascending, iv[0] = 0) -> their number; DIA may move *root
  * down onto the scale */
@@ -107,6 +141,9 @@ static uint32_t chord_make(const track_t *t, uint32_t root, uint8_t *out, int32_
     uint16_t mask = 0;
     *rp = r;
     *maskp = 0;
+    if(mode && mode<CH_OPEN5 && sm_chord_micro(t) &&
+       (!sm_tuning.enabled || sm_tuning_applies(&sm_tuning,trk_index(t),root)))mode=CH_OPEN5;
+    if(mode>=CH_OPEN5 && mode<=CH_LAST && !chord_kit(t))return sm_chord_neutral(t,root,mode,out,rp,maskp);
     int automatic = mode == CH_AUTO || mode == CH_MELODY;
     if (automatic && micro_scale(t)) *maskp = 1;
     if (!mode || mode > CH_MELODY || chord_kit(t) || (automatic && micro_scale(t))) {
