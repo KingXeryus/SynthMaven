@@ -462,6 +462,12 @@ body[data-screen=tracks] #trackbar{display:none}.strip input.fader{height:110px}
 #p-chords .scalecurrent{font-size:11px;line-height:1.2}
 
 #seqtable .cycle-choice output{overflow-wrap:normal;white-space:nowrap}
+
+.song-section{display:grid;grid-template-columns:24px repeat(4,minmax(0,1fr)) 68px 44px 60px 44px;gap:6px;align-items:center;margin:6px 0}
+.song-track{display:flex;min-width:0;border-bottom:3px solid #ff2c34;border-radius:8px;background:#ff2c3418}
+.song-track-2{border-color:#f1a0c8;background:#f1a0c818}.song-track-3{border-color:#93cffa;background:#93cffa18}.song-track-4{border-color:#a5a9b2;background:#a5a9b218}
+.song-track select{min-width:0;width:100%;padding:4px;border:0;background:transparent;pointer-events:none;appearance:none;text-align:center}
+.song-track .cycle-choice{width:100%;min-width:0;grid-template-columns:44px minmax(0,1fr) 44px}.song-track .cycle-choice output{padding:2px;font-size:12px}.song-track button{min-width:44px;padding:4px}.song-section button,.song-section input{min-height:44px;padding:4px}.song-active{outline:2px solid #fff;border-radius:8px}.song-heading{font-size:12px;color:#b9bdc6}
 </style>
 </head>
 <body>
@@ -685,11 +691,11 @@ body[data-screen=tracks] #trackbar{display:none}.strip input.fader{height:110px}
       <p class="dim" id="backup-help"></p>
     </div>
     <div class="group" id="songchain" hidden style="margin-top:16px">
-      <h2 data-t="songTitle"></h2>
-      <p class="dim" data-t="songHelp"></p>
+      <h2>Four-track song arranger</h2>
+      <p class="dim">Build up to 16 sections. Choose a pattern for each track and 1–16 repeats. Save a project to keep the arrangement.</p>
       <p class="bar"><button id="songplay"></button><button id="songadd" data-t="songAdd"></button>
         <button id="songremove" data-t="songRemove"></button><span id="songstatus" aria-live="polite"></span></p>
-      <div id="songrows"></div>
+      <div class="song-section song-heading"><span>#</span><span>Track 1</span><span>Track 2</span><span>Track 3</span><span>Track 4</span><span>Repeats</span><span></span><span></span><span></span></div><div id="songrows"></div><nav id="songpages" class="bar" aria-label="Song section pages"></nav>
     </div>
   </section>
 
@@ -3476,7 +3482,7 @@ async function readDevicePreferences(rq, info, names, previous = null) {
     if (!previous || state.favoriteSig !== previous.state.favoriteSig || state.bankSig !== previous.state.bankSig) {
       favorites = [];
       /* MIDI Track has a loadable preset but no favorite storage in 1.5 firmware. */
-      const counts=Array.from({length:info.nengines},(_,engine)=>[engine,(names[engine]||[]).length]).filter(([engine,total])=>total>0 && info.engines[engine]!=="MIDI Track");
+      const counts=Array.from({length:info.nengines},(_,engine)=>[engine,(names[engine]||[]).length]).filter(([engine,total])=>total>0 && info.engines[engine]!=="-" && !/^MIDI Tra(?:ck)?$/i.test(info.engines[engine]));
       counts.push([info.namespace?.general??info.nengines,slots.total]);
       if(info.native)for(const engine of Object.keys(info.native))counts.push([info.namespace?.[engine]??info.nengines+(+engine===12?1:2),info.native[engine]]);
       for(const [engine,total] of counts) {
@@ -3484,7 +3490,9 @@ async function readDevicePreferences(rq, info, names, previous = null) {
         for (let start = 0; start < total; start += 32) {
           const count = Math.min(32, total - start);
           const r = parse[CMD.FAV_GET](await rq(req.favGet(engine, start, count)));
-          if (r.rc || r.engine !== engine || r.start !== start || r.count !== count) throw new Error("Invalid favorites reply");
+          // Optional favorites must never prevent editing a supported instrument.
+          if (r.rc === 1 || r.rc === 2) { delete favorites[engine]; break; }
+          if (r.rc || r.engine !== engine || r.start !== start || r.count !== count) throw new Error(`Invalid favorites reply (bank ${engine}, offset ${start})`);
           flags.push(...r.values);
         }
       }
@@ -4619,6 +4627,7 @@ $("patternpick").addEventListener("change", () => op(async () => {
   dev.pattern = r; renderPattern();
   if (r.queued === 127) await afterSoundChange();
 }));
+let songPage = 0;
 function renderSong() {
   const box = $("songchain");
   box.hidden = !dev || !dev.info?.chainRows || !dev.song;
@@ -4629,10 +4638,15 @@ function renderSong() {
   $("songremove").disabled = !!s.playing || !s.rows.length;
   $("songstatus").textContent = s.playing ? `${t("songPlaying")} ${s.row + 1}/${s.count} · ${s.remaining} ${t("songReps")}` : s.count ? "" : t("songEmpty");
   const rows = $("songrows");
-  if (rows.contains(document.activeElement)) return;
+  if (rows.contains(document.activeElement) && document.activeElement.tagName === "INPUT") return;
   rows.replaceChildren();
+  const pageSize = 4, pages = Math.max(1, Math.ceil(s.rows.length / pageSize));
+  songPage = Math.min(songPage, pages - 1);
+  const nav = $("songpages");
+  nav.replaceChildren(el("button", {text:"‹", disabled:songPage===0, "aria-label":"Previous song sections", onclick:()=>{songPage--;renderSong();}}), el("span", {text:`Sections ${s.rows.length ? songPage*pageSize+1 : 0}–${Math.min(s.rows.length,(songPage+1)*pageSize)} / ${s.rows.length}`}), el("button", {text:"›", disabled:songPage===pages-1, "aria-label":"Next song sections", onclick:()=>{songPage++;renderSong();}}));
   s.rows.forEach((r, i) => {
-    const line = el("div", { class: "bar", style: "margin:8px 0" });
+    if (i < songPage*pageSize || i >= (songPage+1)*pageSize) return;
+    const line = el("div", { class: "song-section" + (s.playing && s.row===i ? " song-active" : "") });
     line.append(el("span", { text: String(i + 1) }));
     const picks = [];
     if (dev.info.patterns) for (let track = 0; track < 4; track++) {
@@ -4640,7 +4654,9 @@ function renderSong() {
       for (let bank = 0; bank < 8; bank++) sel.append(el("option", { value: bank, text: `T${track + 1} P${bank + 1}` }));
       sel.value = String(r.banks[track]);
       sel.addEventListener("change", () => { const next = s.rows.map(x => ({ ...x, banks: [...x.banks] })); next[i].banks[track] = +sel.value; op(() => changeSong(1, next)); });
-      picks.push(sel);
+      const cell=el("div", {class:`song-track song-track-${track+1}`});
+      cell.append(sel);
+      picks.push(cell);
     } else {
       const sel = el("select", { disabled: !!s.playing, "aria-label": `${t("slot")} ${i + 1}` });
       for (let k = 0; k < 4; k++) sel.append(el("option", { value: k, text: `${t("slot")} ${k + 1}${dev.slotUsed[k] ? "" : ` (${t("empty")})`}` }));
@@ -4650,7 +4666,9 @@ function renderSong() {
     }
     const reps = el("input", { type: "number", min: 1, max: 16, value: r.repeat, disabled: !!s.playing, style: "width:64px", "aria-label": `${t("songReps")} ${i + 1}` });
     reps.addEventListener("change", () => { const v = +reps.value; if (!Number.isInteger(v) || v < 1 || v > 16) { reps.value = r.repeat; return; } const next = s.rows.map((x) => ({ ...x })); next[i].repeat = v; op(() => changeSong(1, next)); });
-    line.append(...picks, reps, el("span", { text: t("songReps") }));
+    line.append(...picks, reps);
+    const edit = (kind) => { const next=s.rows.map(x=>({...x,...(x.banks?{banks:[...x.banks]}:{})})); if(kind==='copy')next.splice(i+1,0,{...next[i],...(next[i].banks?{banks:[...next[i].banks]}:{})}); else if(kind==='delete')next.splice(i,1); else [next[i],next[i-1]]=[next[i-1],next[i]];op(()=>changeSong(1,next)); };
+    line.append(el("button",{text:"↑","aria-label":`Move section ${i+1} up`,disabled:!!s.playing||i===0,onclick:()=>edit('up')}),el("button",{text:"Copy","aria-label":`Duplicate section ${i+1}`,disabled:!!s.playing||s.rows.length>=16,onclick:()=>edit('copy')}),el("button",{text:"×","aria-label":`Delete section ${i+1}`,disabled:!!s.playing,onclick:()=>edit('delete')}));
     rows.append(line);
   });
 }
@@ -4721,7 +4739,7 @@ function renderMotion() {
   $("motion-count").textContent = `${m.count} / ${m.max}`;
   $("motion-clear").disabled = !m.count;
   const rows = $("motion-rows");
-  if (rows.contains(document.activeElement)) return;
+  if (rows.contains(document.activeElement) && document.activeElement.tagName === "INPUT") return;
   rows.replaceChildren(el("tr", {}, ...["motionStep", "motionParam", "motionValue"].map(k => el("th", {text:t(k)})), el("th")),
     ...m.events.map(e => {
       const native = e.param >= 112 && e.value >= 256, tag = native ? e.value >> 8 : 0, i = e.param - 112;
