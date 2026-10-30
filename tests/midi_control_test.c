@@ -434,10 +434,28 @@ static int drum_retrigger_accounting(void)
     settings_budget=previous_budget;return bad;
 }
 
+static int independent_parts_test(void)
+{
+    int bad=0;midi_test_reset();song.g[G_ROUTE]=5;sm_layers.enabled=1;
+    for(uint32_t i=0;i<4;i++){set_engine_of(&trk[i],HOST_SYNTH);trk[i].engine=trk[i].eng_req;}
+    queued(0x90,60,100,1);queued(0x91,64,100,2);
+    bad+=check("PARTS routes USB channel 1 to L1 and TRS channel 2 to L2 despite layering",mn_get(0,60)==1 && mn_get(1,64)==2 && !midi_owners[2] && !midi_owners[3]);
+    queued(0xB0,64,127,1);queued(0x80,60,0,1);queued(0x81,64,0,2);
+    bad+=check("USB sustain does not hold the TRS keyboard on another channel",mn_get(0,60)!=0 && !mn_get(1,64));
+    queued(0xB0,64,0,1);
+    bad+=check("USB pedal releases its own notes",!mn_get(0,60));
+    queued(0x90,62,100,1);
+    queued(0x80,62,0,2);
+    bad+=check("TRS release cannot stop a USB-owned note on the same channel",mn_get(0,62)==1);
+    queued(0x80,62,0,1);
+    bad+=check("USB owner still releases its own note",!mn_get(0,62));
+    sm_layers.enabled=0;return bad;
+}
+
 #ifndef MIDI_CONTROL_NO_MAIN
 int main(void)
 {
-    int bad = controls_test() + sustain_test() + ownership_test() + clock_test(1) + clock_test(2) + clock_arp_and_boundaries() +
+    int bad = independent_parts_test() + controls_test() + sustain_test() + ownership_test() + clock_test(1) + clock_test(2) + clock_arp_and_boundaries() +
               arp_ext_stop_test() + arp_idle_live_test() + usb_burst_test() + routing_range_test() + drum_channel_test() + drum_retrigger_accounting();
     printf("%s\n", bad ? "MIDI CONTROL/CLOCK TEST FAILED" : "MIDI control/clock integration tests passed"); return bad != 0;
 }

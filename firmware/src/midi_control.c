@@ -203,7 +203,11 @@ static void midi_note_event(uint32_t ch, uint32_t note, uint32_t vel)
             midi_release(ch, note);
         if (!t)
             return;
-        if(sm_layers.enabled && trk_index(t)<NPART && trk[0].p[P_QUANT]!=Q_MPC){sm_layer_midi_on(ch,note,vel);return;}
+        if(sm_layers.enabled && song.g[G_ROUTE]!=5 && trk_index(t)<NPART && trk[0].p[P_QUANT]!=Q_MPC){if(sm_layer_midi_on(ch,note,vel)){
+            uint32_t bit=1u<<(note&31u);
+            if(midi_event_source==2u)midi_owner_trs[ch][note>>5]|=bit;
+            else midi_owner_trs[ch][note>>5]&=~bit;
+        }return;}
         midi_expression(t, c);
         if (!midi_play(t, ch, note, vel, 0))           /* (a note the layout silences: no owner) */
             return;
@@ -215,7 +219,7 @@ static void midi_note_event(uint32_t ch, uint32_t note, uint32_t vel)
         midi_owners[trk_index(t)]++;
         c->owned[trk_index(t)]++;
     } else if (id) {
-        if (midi_event_source && midi_track_only(&trk[id - 1u]) &&
+        if (midi_event_source &&
             !!(midi_owner_trs[ch][note >> 5] & (1u << (note & 31u))) != (midi_event_source == 2u)) return;
         if (c->pedal && !drum_track(&trk[id - 1u])) {
             step_midi_edge(id - 1u, 0, 0, ch, note);   /* physical release ends step entry, even under sustain */

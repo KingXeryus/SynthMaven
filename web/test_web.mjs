@@ -73,8 +73,10 @@ const E = vm.runInNewContext(proto + `
   ok(lr.rc===1&&eq(E.layersEncode(lr.layers),E.layersEncode(layers)),"Layers: inverted range rejected without altering configuration");
   const mapRq=async a=>E.parse[E.CMD.MAPPING](await rq([E.CMD.MAPPING,a]));
   let map=await mapRq([0]);ok(map.maps.length===24&&map.host===0,"MIDI Learn: 24 assignments and COMPUTER role");
+  ok(!(await mapRq([3])).rc,"MIDI Learn: source-scoped assignment capability");
   const mapping=[1,0,0,80,127,0,4,2,80,0,255,0];map=await mapRq([2,0,...E.pack7(mapping)]);ok(!map.rc&&map.maps[0][7]===2,"MIDI Learn: accepts program action assignment");
   map=await mapRq([2,1,...E.pack7(mapping)]);ok(map.rc===5&&map.conflict===0,"MIDI Learn: reports overlapping assignment");
+  mapping[11]=1;await mapRq([2,0,...E.pack7(mapping)]);mapping[11]=2;map=await mapRq([2,1,...E.pack7(mapping)]);ok(!map.rc&&map.maps[1][11]===2,"MIDI Learn: identical USB and TRS actions remain independent");
   let list=E.parse[E.CMD.SETLIST](await rq([E.CMD.SETLIST,[1,3,0,7,0]]));ok(!list.rc&&eq(list.slots,[0,7,0]),"Setlist: ordered references allow repeats");
   const ct=E.parse[E.CMD.CONTROLLER](await rq([E.CMD.CONTROLLER,[1,3,2]]));
   ok(info.synthmaven.controller&&!ct.rc&&ct.override===3&&ct.port===2,'Controllers: capability and saved manual HUI port');
@@ -489,7 +491,7 @@ async function editorMock() {
     const rd = E.parse[E.CMD.DESC](await rq(E.req.desc(1, 14)));
     const r1 = E.parse[E.CMD.SET](await rq(E.req.set(1, 14, 5)));
     const r0 = E.parse[E.CMD.SET](await rq(E.req.set(1, 14, 0)));
-    ok(rd.label === "ROUT" && rd.def === 0 && eq(rd.names, ["CH1-4", "SEL", "CH5-8", "CH9-12", "CH13-16"]) && r1.value === 4 && r0.value === 0 && info.gcount === 45,
+    ok(rd.label === "ROUT" && rd.def === 0 && eq(rd.names, ["CH1-4", "SEL", "CH5-8", "CH9-12", "CH13-16", "PARTS"]) && r1.value === 5 && r0.value === 0 && info.gcount === 45,
       "editor: MIDI IN routing (ROUT four-channel ranges / SEL, global id 14)");
   }
   {

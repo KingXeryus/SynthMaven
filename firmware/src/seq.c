@@ -59,7 +59,7 @@ static uint32_t midi_event_source; /* 0: internal/test dispatch, 1 USB, 2 TRS */
 #include "midi_knobs.c"
 static int midi_track_accept(const track_t *t)
 {
-    return !midi_track_only(t) || !midi_event_source ||
+    return !midi_track_only(t) || !midi_event_source || song.g[G_MIDI] == 2 ||
            midi_event_source == (song.g[G_MIDI] ? 2u : 1u) || (midi_event_source == 2u && t->p[P_E1]);
 }
 
@@ -1259,7 +1259,7 @@ static void seq_tick(track_t *t, uint32_t n)
 static track_t *midi_track(uint32_t ch)
 {
     uint32_t k, route = (uint32_t)song.g[G_ROUTE];
-    uint32_t first = route > 1u ? (route - 1u) * 4u : 0u;
+    uint32_t first = route > 1u && route < 5u ? (route - 1u) * 4u : 0u;
     if (route != 1u && (ch < first || ch - first >= 4u))
         return 0;
     if (settings_drumch && ch + 1u == settings_drumch) {

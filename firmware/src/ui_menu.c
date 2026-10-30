@@ -306,7 +306,7 @@ static void draw_menu(void)
                 if (i == MI_USB) value = (const char *const[]){"In + Out", "In", "Out", "Off"}[ua_off_want & 3u];
 #endif
 #if MELODEE_USB_HOST
-                if (i == MI_USB_HOST) value = uh.want ? "PEDAL" : "COMPUTER";
+                if (i == MI_USB_HOST) value = uh.want ? "HOST" : "COMPUTER";
 #endif
                 if (i == MI_HOLD) {                         /* "0.4 s" */
                     str_cpy(b, "0.4 s", sizeof b);
@@ -531,7 +531,7 @@ static const char *sm_pref_value(uint32_t id,char *b)
     case 4:return MI_USB_NAME[ua_off_want&3];case 5:return ua_tracks_want?"4 TRACKS":"STEREO";
 #endif
 #if MELODEE_USB_HOST
-    case 6:return uh.want?"PEDAL":"COMPUTER";
+    case 6:return uh.want?"HOST":"COMPUTER";
 #endif
     case 7:return settings_autosave?"ON":"OFF";
     case 8:return PREF_BITS&PREF_PICK_OFF?"OFF":"ON";

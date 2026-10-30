@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 HELP=json.loads((ROOT/'assets/guide/control-help.json').read_text())
 FAMILY={1:'ENV',2:'LFO',3:'SEL',4:'EDIT',5:'GLO',6:'SAVE',7:'ARP',8:'SEQ',9:'EDIT hold',10:'FX'}
-PREF_RANGES={0:'NIGHT, DAY, CONTRAST, SUNSET, OCEAN, NEON, CANDY, LO-FI, GRAY',1:'RUBIK / PIXEL',2:'OFF / LOW / MID / HIGH / FULL',3:'NEVER / 5 / 15 / 30 / 60 MIN',4:'IN+OUT / IN / OUT / OFF',5:'STEREO / 4 TRACKS',6:'COMPUTER / PEDAL',7:'OFF / ON',8:'OFF / ON',9:'OFF / ON',10:'300 / 400 / 500 / 600 ms (FX hold only)',11:'OFF / REC / ON',12:'LOW / MID / HIGH',13:'OFF / 1 BAR / 2 BARS',14:'OFF / ON',15:'HOLD / ADD',16:'Turn right to open',17:'Turn right to open',255:'Unused'}
+PREF_RANGES={0:'NIGHT, DAY, CONTRAST, SUNSET, OCEAN, NEON, CANDY, LO-FI, GRAY',1:'RUBIK / PIXEL',2:'OFF / LOW / MID / HIGH / FULL',3:'NEVER / 5 / 15 / 30 / 60 MIN',4:'IN+OUT / IN / OUT / OFF',5:'STEREO / 4 TRACKS',6:'COMPUTER / HOST',7:'OFF / ON',8:'OFF / ON',9:'OFF / ON',10:'300 / 400 / 500 / 600 ms (FX hold only)',11:'OFF / REC / ON',12:'LOW / MID / HIGH',13:'OFF / 1 BAR / 2 BARS',14:'OFF / ON',15:'HOLD / ADD',16:'Turn right to open',17:'Turn right to open',255:'Unused'}
 SPECIAL={
 'PRESETS':[('LIST','Choose ALL, favorites, recent sounds or a category.'),('SOUND','Browse and load the highlighted sound into the focused part.'),('FAV','Turn right to mark a favorite; left to remove it.'),('ENGINE','Choose the engine whose presets are listed.')],
 'USER':[('SLOT','Choose one of 384 user sound slots.'),('LOAD','Turn right to select Load; confirm using OCT+.'),('ERASE','Turn right to select Erase; confirm only after backing up this sound.'),('SAVE','Turn right to select Save. Stop playback and confirm using OCT+.')],
@@ -43,7 +43,7 @@ def describe(p,c):
  if t=='ARP' and l=='RATE':return 'Arpeggiator note division relative to tempo. T values are triplets.'
  if t=='TEMPO' and l=='QNT':return 'Recording grid for the next take on all tracks. OFF preserves timing; divisions snap recording to the grid. Does not rewrite an existing take.'
  if t=='GLOBAL' and l=='TUNE':return 'Global fine pitch offset in cents, added to A4 and scale tuning.'
- if t=='SYSTEM' and l=='MIDI':return 'Choose USB or TRS for the input status display. USB shows ON when configured, ENUM while enumerating, BUS when bus frames arrive, WAIT before host activity, or OFF. This selector does not change the USB COMPUTER/PEDAL role.'
+ if t=='SYSTEM' and l=='MIDI':return 'Choose USB or TRS for the input status display. USB shows ON when configured, ENUM while enumerating, BUS when bus frames arrive, WAIT before host activity, or OFF. This selector does not change the USB COMPUTER/HOST role.'
  if t=='PROJECT' and l=='SLOT':return 'Choose project A-D or the template destination. This is separate from the eight PROGRAM slots.'
  if t=='PROJECT' and l in ['LOAD','SAVE']:return l.title()+' the selected project. Turn the action knob right, then confirm with OCT+; OCT- cancels. Stop playback before saving.'
  if t=='PROGRAM' and l in ['LOAD','SAVE']:return l.title()+' the complete four-part program in the selected slot. Turn right twice within 1.5 seconds; turn left to cancel the armed action.'

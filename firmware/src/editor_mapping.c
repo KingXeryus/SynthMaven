@@ -18,6 +18,7 @@ static int ed_sm_mapping_handle(uint32_t cmd,const uint8_t *a,uint32_t n)
     }
     if(cmd!=ED_SM_MAPPING&&cmd!=ED_SM_SETLIST)return 0;
     uint32_t op=n?a[0]:127,rc=1,conflict=127;
+
     if(cmd==ED_SM_SETLIST){
         if(op==0&&n==1)rc=0;
         else if(op==1&&n>=2&&a[1]<=32&&n==2u+a[1]){
@@ -27,7 +28,7 @@ static int ed_sm_mapping_handle(uint32_t cmd,const uint8_t *a,uint32_t n)
         }else if(op==2&&n==2&&a[1]<2)rc=(uint32_t)sm_setlist_step(a[1]?1:-1);
         ed_b(op);ed_b(rc);ed_b(sm_setlist_count);ed_b(sm_setlist_pos);for(uint32_t i=0;i<sm_setlist_count;i++)ed_b(sm_setlist[i]);return 1;
     }
-    if(op==0&&n==1)rc=0;
+    if((op==0||op==3)&&n==1)rc=0; /* op 3: source-scoped mapping capability probe */
     else if(op==1&&n==2&&a[1]<=1){sm_map_learn=a[1];rc=0;}
     else if(op==2&&n>2&&a[1]<SM_MAP_COUNT){
         uint8_t record[SM_MAP_BYTES],old[SM_MAP_BYTES];uint32_t slot=a[1];

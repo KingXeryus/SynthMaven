@@ -312,7 +312,8 @@ static void draw_head(void)
         const aafont_t *cf = TY_TX;                     /* (where you are: plain words in the track's colour;
                                                          * PATTERNS plain, the grid is in colour) */
 #if MELODEE_USB_HOST
-        int32_t hw = uh.on ? text_w(TY_LB, "HOST") + 10 : 0;   /* USB HOST: the port is a host, dim until a controller answers */
+        const char *host_status = uh.run ? "HOST" : "WAIT";
+        int32_t hw = uh.on ? text_w(TY_LB, host_status) + 10 : 0;   /* USB HOST: the port is a host, dim until a controller answers */
 #else
         int32_t hw = 0;
 #endif
@@ -369,7 +370,7 @@ static void draw_head(void)
             cv_icon_mid(236 - cw - 20, H_HEAD / 2, 16, batt_level() ? ICON_X_BAT1 : ICON_X_BAT0, T_REC, T_BG);
 #if MELODEE_USB_HOST
         if (hw)
-            cv_text_on(236 - cw - (low ? 22 : 0) - hw + 4, ty_y(H_HEAD / 2, TY_LB), TY_LB, "HOST", uh.run ? T_THEME : T_MID, T_BG);
+            cv_text_on(236 - cw - (low ? 22 : 0) - hw + 4, ty_y(H_HEAD / 2, TY_LB), TY_LB, host_status, uh.run ? T_THEME : T_MID, T_BG);
 #endif
         cv_text_r(236, ty_y(H_HEAD / 2, cf), cf, chip,
                   !ui.home && cur_page()->graph == GR_PATGRID && !ptc_on() ? T_MID : T_THEME, T_BG);
@@ -866,9 +867,13 @@ static void draw_columns(void)
         }
         if (cur_page()->id[c] == G_MIDI && cur_page()->scope == SC_GLOBAL) {   /* KNOB 1: which input's status */
             uint32_t trs = song.g[G_MIDI] != 0, rx = midi_rx_recent(trs);
-            str_cpy(val, trs ? "TRS" : "USB", 12);
+            str_cpy(val, song.g[G_MIDI]==2 ? "BOTH" : trs ? "TRS" : "USB", 12);
+            if(song.g[G_MIDI]==2)rx |= midi_rx_recent(0);
             unit = rx ? "RX" : trs ? MIDI_TRS_STATE :
                    !usb.up ? "OFF" : usb.config ? "ON" : usb.setups ? "ENUM" : usb.sof_seen ? "BUS" : "WAIT";
+#if MELODEE_USB_HOST
+            if(!trs && uh.on)unit=rx?"RX":uh.run?"HOST":"WAIT";
+#endif
             draw_column(c, "MIDI", val, unit, rx ? T_ACCENT : T_THEME, -1, ICON_AUTO);
             continue;
         }

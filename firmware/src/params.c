@@ -62,8 +62,8 @@ static const char *const N_PRIO[] = {"LAST", "LOW", "HIGH"};
 static const char *const N_ALLOC[] = {"ROT", "REUSE"};
 static const char *const N_ORDER[] = {"NOTE", "PLAY"};
 static const char *const N_CLOCK[] = {"INT", "USB", "TRS"};
-static const char *const N_MIDI_INPUT[] = {"USB", "TRS"};
-static const char *const N_ROUTE[] = {"CH1-4", "SEL", "CH5-8", "CH9-12", "CH13-16"}; /* Keep saved CH1-4/SEL ids; append ranges. */
+static const char *const N_MIDI_INPUT[] = {"USB", "TRS", "BOTH"};
+static const char *const N_ROUTE[] = {"CH1-4", "SEL", "CH5-8", "CH9-12", "CH13-16", "PARTS"}; /* Keep saved CH1-4/SEL ids; append ranges. */
 static const char *const N_NOTE[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
 static const char *const N_DASH[] = {"--"};
 static const char *const N_GO[] = {"--", "GO"};
@@ -525,7 +525,7 @@ static void param_format(const param_desc_t *d, int32_t v, char *val, const char
         if (d->names == N_ROUTE) {
             v = clamp(v, d->min, d->max);
             /* The panel's compact card fits "13-16"; editor/picker names retain the CH prefix. */
-            str_cpy(val, d->names[v] + (v == 1 ? 0 : 2), 6);
+            str_cpy(val, d->names[v] + (v == 1 || v == 5 ? 0 : 2), 6);
         } else
             str_cpy(val, d->names==N_ENGNAME && v==ENGI_PROPHET ? "P5" : d->names[v < d->min ? d->min : v > d->max ? d->max : v], 6);
         if (d->unit)

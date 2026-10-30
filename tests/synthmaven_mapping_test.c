@@ -22,5 +22,12 @@ int main(void)
  assert(!sm_program_save(0,"MAPPED",0));memset(sm_maps,0,sizeof sm_maps);sm_config_load();assert(sm_maps[1][3]==43);
  sm_setlist_count=3;sm_setlist[0]=0;sm_setlist[1]=3;sm_setlist[2]=0;assert(!sm_config_save());sm_setlist_count=0;sm_config_load();assert(sm_setlist_count==3&&sm_setlist[1]==3);assert(!sm_program_load(0));
  for(int cut=0;cut<100;cut+=9){sm_maps[0][3]=81;fail_after=cut;int rc=sm_config_save();fail_after=-1;sm_config_load();assert(sm_maps[0][3]==(rc?80:81));assert(!sm_program_load(0));sm_maps[0][3]=80;assert(!sm_config_save());}
+ rule[5]=0;rule[7]=0;rule[4]=127;rule[11]=2;rule[3]=82;
+ assert(sm_map_valid(rule));memcpy(sm_maps[2],rule,12);
+ assert(!sm_map_receive(0xb0,0,82,127,1));
+ assert(sm_map_receive(0xb0,0,82,127,2));
+ rule[11]=1;assert(sm_map_conflict(3,rule)==-1);
+ rule[11]=0;assert(sm_map_conflict(3,rule)==2);
+ sm_map_r=sm_map_w;assert(!sm_config_save());memset(sm_maps,0,sizeof sm_maps);sm_config_load();assert(sm_maps[2][11]==2);
  puts("MIDI maps: bounded deferred actions, duplicate suppression, deliberate taps, learn latch, parameter routing, conflicts, durable config and interrupted saves passed");return 0;
 }
