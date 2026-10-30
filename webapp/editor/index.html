@@ -468,6 +468,37 @@ body[data-screen=tracks] #trackbar{display:none}.strip input.fader{height:110px}
 .song-track-2{border-color:#f1a0c8;background:#f1a0c818}.song-track-3{border-color:#93cffa;background:#93cffa18}.song-track-4{border-color:#a5a9b2;background:#a5a9b218}
 .song-track select{min-width:0;width:100%;padding:4px;border:0;background:transparent;pointer-events:none;appearance:none;text-align:center}
 .song-track .cycle-choice{width:100%;min-width:0;grid-template-columns:44px minmax(0,1fr) 44px}.song-track .cycle-choice output{padding:2px;font-size:12px}.song-track button{min-width:44px;padding:4px}.song-section button,.song-section input{min-height:44px;padding:4px}.song-active{outline:2px solid #fff;border-radius:8px}.song-heading{font-size:12px;color:#b9bdc6}
+
+/* Four melodic lanes and a left-to-right song timeline. */
+#stepgrid{display:flex;flex-direction:column;gap:5px}
+.sequence-lane{display:grid;grid-template-columns:84px repeat(8,minmax(0,1fr));gap:5px;--part:255,44,52}
+.sequence-lane.song-track-2{--part:230,140,175}.sequence-lane.song-track-3{--part:158,211,240}.sequence-lane.song-track-4{--part:164,170,180}
+#stepgrid .sequence-lane button{min-height:44px;padding:3px;display:flex;flex-direction:column;gap:0;font-size:12px}
+#stepgrid .sequence-lane button.on{background:rgba(var(--part),.24);border-color:rgb(var(--part))}
+#stepgrid .sequence-pages{margin:0;justify-content:flex-end}#stepgrid .sequence-pages button{min-height:44px}
+#steptables tr[data-i]:not([hidden]){grid-template-columns:32px 2fr 1fr 48px 48px 1fr 1fr;gap:8px}
+.sequence-notes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}
+#steps #steptables .sequence-notes select{min-width:0;padding:2px;font-size:13px}
+#songrows{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+#songrows .song-section{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;background:var(--surface,#16161a);border:1px solid var(--line);border-radius:12px;padding:8px}
+#songrows .song-section>span,#songrows .song-track,#songrows .song-section>input{grid-column:1/-1;width:100%!important;box-sizing:border-box}
+#songrows .song-section>span{text-align:center;font-weight:600}
+#songchain>.song-heading{display:none}
+#songrows .song-track{min-height:44px}
+#songrows .song-section>input{max-height:44px}
+
+body[data-screen=sequencer] #trackbar{display:none}
+#p-sequencer{position:relative}#seq-workflow{padding-right:210px;min-height:44px;margin-bottom:8px}
+#patternbar{position:absolute;right:0;top:0;width:200px;display:flex;align-items:center;gap:5px;margin:0}
+#patternbar .cycle-choice{width:150px}#patternstate{display:none}
+#stepgrid .sequence-lane button{height:44px;min-height:44px;box-sizing:border-box}
+#steptables td::before{min-height:16px}#steps{padding:8px}#steps>.bar{margin:0 0 5px}#steps>h2{display:none}
+#stepgrid .sequence-pages button{width:44px;min-width:44px}
+#patternbar label{display:contents}#patternbar{flex-wrap:nowrap!important}#patternbar .cycle-choice{display:grid}
+#stepgrid .sequence-lane>button:first-child{border-left:4px solid rgb(var(--part));background:rgba(var(--part),.14)}
+#songchain{padding:8px}#songchain>p{margin:5px 0}#songrows .song-section{margin:3px 0;padding:5px;gap:3px}#songpages{margin:4px 0 0}
+#songrows .song-section>label{grid-column:1/-1;display:flex;align-items:center;gap:6px;font-size:12px}#songrows .song-section>label input{min-width:0;width:100%!important;box-sizing:border-box}
+#songpages{margin:0 0 0 auto}#songchain>.bar{margin:5px 0}#songchain .song-section>button:first-of-type{font-size:18px}
 </style>
 </head>
 <body>
@@ -693,9 +724,9 @@ body[data-screen=tracks] #trackbar{display:none}.strip input.fader{height:110px}
     <div class="group" id="songchain" hidden style="margin-top:16px">
       <h2>Four-track song arranger</h2>
       <p class="dim">Build up to 16 sections. Choose a pattern for each track and 1–16 repeats. Save a project to keep the arrangement.</p>
-      <p class="bar"><button id="songplay"></button><button id="songadd" data-t="songAdd"></button>
-        <button id="songremove" data-t="songRemove"></button><span id="songstatus" aria-live="polite"></span></p>
-      <div class="song-section song-heading"><span>#</span><span>Track 1</span><span>Track 2</span><span>Track 3</span><span>Track 4</span><span>Repeats</span><span></span><span></span><span></span></div><div id="songrows"></div><nav id="songpages" class="bar" aria-label="Song section pages"></nav>
+      <div class="bar"><button id="songplay"></button><button id="songadd" data-t="songAdd"></button>
+        <button id="songremove" data-t="songRemove"></button><span id="songstatus" aria-live="polite"></span><nav id="songpages" class="bar" aria-label="Song section pages"></nav></div>
+      <div class="song-section song-heading"><span>#</span><span>Track 1</span><span>Track 2</span><span>Track 3</span><span>Track 4</span><span>Repeats</span><span></span><span></span><span></span></div><div id="songrows"></div>
     </div>
   </section>
 
@@ -4154,6 +4185,13 @@ async function loadSteps(d = dev) {
     if (i % 8 === 0) sayK("steploading", `${i}/${n}`);
     d.steps[i] = await getStep(i, d);
   }
+  d.sequenceTracks = [];
+  for (let track=0;track<(d.info.ntrk||1);track++) {
+    if(track===(d.sel||0)){d.sequenceTracks[track]=d.steps;continue;}
+    const steps=[];
+    for(let i=0;i<n;i++)steps.push(parse[CMD.TRACK_STEP](await sessionRequest(d,req.trackStep(track,i))));
+    d.sequenceTracks[track]=steps;
+  }
   renderSteps();
   if (d.info.motionMax) await readMotion(d);
 }
@@ -4666,9 +4704,12 @@ function renderSong() {
     }
     const reps = el("input", { type: "number", min: 1, max: 16, value: r.repeat, disabled: !!s.playing, style: "width:64px", "aria-label": `${t("songReps")} ${i + 1}` });
     reps.addEventListener("change", () => { const v = +reps.value; if (!Number.isInteger(v) || v < 1 || v > 16) { reps.value = r.repeat; return; } const next = s.rows.map((x) => ({ ...x })); next[i].repeat = v; op(() => changeSong(1, next)); });
-    line.append(...picks, reps);
+    line.append(...picks, el("label", {}, "Repeats", reps));
     const edit = (kind) => { const next=s.rows.map(x=>({...x,...(x.banks?{banks:[...x.banks]}:{})})); if(kind==='copy')next.splice(i+1,0,{...next[i],...(next[i].banks?{banks:[...next[i].banks]}:{})}); else if(kind==='delete')next.splice(i,1); else [next[i],next[i-1]]=[next[i-1],next[i]];op(()=>changeSong(1,next)); };
-    line.append(el("button",{text:"↑","aria-label":`Move section ${i+1} up`,disabled:!!s.playing||i===0,onclick:()=>edit('up')}),el("button",{text:"Copy","aria-label":`Duplicate section ${i+1}`,disabled:!!s.playing||s.rows.length>=16,onclick:()=>edit('copy')}),el("button",{text:"×","aria-label":`Delete section ${i+1}`,disabled:!!s.playing,onclick:()=>edit('delete')}));
+    line.append(el("button",{text:"‹","aria-label":`Move section ${i+1} up`,disabled:!!s.playing||i===0,onclick:()=>edit('up')}),el("button",{text:"Copy","aria-label":`Duplicate section ${i+1}`,disabled:!!s.playing||s.rows.length>=16,onclick:()=>edit('copy')}),el("button",{text:"×","aria-label":`Delete section ${i+1}`,disabled:!!s.playing,onclick:()=>edit('delete')}));
+    const column=i-songPage*pageSize+1;
+    line.style.gridColumn=String(column);
+    line.firstElementChild.textContent=`Section ${i+1}`;
     rows.append(line);
   });
 }
@@ -4779,7 +4820,7 @@ setInterval(async () => {
 }, 1500);
 
 /* ---------------------------------------------------------- steps --- */
-let selectedSeqStep=0;
+let selectedSeqStep=0, sequencePage=0;
 $('p-sequencer').dataset.seqView='steps';
 for(const button of $('seq-workflow').children)button.onclick=()=>{const view=button.dataset.seqView;$('p-sequencer').dataset.seqView=view;for(const b of $('seq-workflow').children)b.setAttribute('aria-pressed',String(b===button));};
 const TIMES = ["NOTE", "TIE", "REST"];
@@ -4801,7 +4842,7 @@ function renderSteps() {
   box.dataset.len = shape;
   const tables = [];
   for (let b = 0; b < len; b += 16) {
-    const tb = el("table", {}, el("tr", {}, el("th"), el("th", { text: t("notes") }), el("th", { text: t("hits") }), el("th", { text: t("time") }),
+    const tb = el("table", {}, el("tr", {}, el("th"), el("th", { text: t("notes") }), el("th", { text: t("time") }),
       el("th", { text: t("acc") }), el("th", { text: t("slide") }), el("th", { text: t("vel") }), ...(dev.info.chance ? [el("th", { text: t("chance") })] : [])));
     for (let i = b; i < Math.min(len, b + 16); i++) {const row=stepRow(i);row.hidden=i!==selectedSeqStep;tb.append(row);}
     tb.hidden=selectedSeqStep<b||selectedSeqStep>=b+16;
@@ -4810,7 +4851,12 @@ function renderSteps() {
   box.replaceChildren(...tables);
 }
 function stepRow(i) {
-  const notes = el("input", { type: "text", placeholder: "—", spellcheck: "false" });
+  const notes = el("div", {class:"sequence-notes"});
+  for(let slot=0;slot<4;slot++){
+    const pick=el('select',{'aria-label':`Note ${slot+1} for step ${i+1}`,'data-native-select':'true'},el('option',{value:'',text:'—'}));
+    for(let midi=21;midi<=108;midi++)pick.append(el('option',{value:midi,text:noteName(midi)}));
+    notes.append(pick);
+  }
   const hits = el("input", { type: "text", placeholder: "—", spellcheck: "false", class: "hits" });
   const time = el("select", {}, ...TIMES.map((n, k) => el("option", { value: k, text: n })));
   const acc = el("input", { type: "checkbox" });
@@ -4818,8 +4864,8 @@ function stepRow(i) {
   const vel = el("input", { type: "number", min: 0, max: 127 });
   const chance = dev.info.chance ? el("input", { type: "number", min: 0, max: 100, "aria-label": `${t("chance")} ${i + 1}` }) : null;
   const tr = el("tr", { "data-i": i }, el("td", { class: "i", text: String(i + 1) }),
-    el("td", {}, notes), el("td", {}, hits), el("td", {}, time), el("td", {}, acc), el("td", {}, sl), el("td", {}, vel), ...(chance ? [el("td", {}, chance)] : []));
-  [...tr.children].forEach((cell,index)=>{const label=['Step','Notes','Drum hits','Length','Accent','Slide','Velocity','Chance'][index];cell.dataset.label=label;const control=cell.firstElementChild;if(control)control.setAttribute('aria-label',label+' for step '+(i+1));});
+    el("td", {}, notes), el("td", {}, time), el("td", {}, acc), el("td", {}, sl), el("td", {}, vel), ...(chance ? [el("td", {}, chance)] : []));
+  [...tr.children].forEach((cell,index)=>{const label=['Step','Notes · A0–C8','Length','Accent','Slide','Velocity','Chance'][index];cell.dataset.label=label;const control=cell.firstElementChild;if(control)control.setAttribute('aria-label',label+' for step '+(i+1));});
   tr._c = { notes, hits, time, acc, sl, vel, chance };
   fillStep(tr, dev.steps[i]);
   const send = () => writeStep(i, tr);
@@ -4835,7 +4881,12 @@ function stepRow(i) {
 function fillStep(tr, s) {
   const c = tr._c;
   if (!s) return;
-  c.notes.value = stepNotes(s);
+  [...c.notes.children].forEach((pick,index)=>{
+    const value=index<s.n?s.notes[index]:null;
+    // Keep imported out-of-piano-range notes intact until explicitly changed.
+    if(value!==null&&!Array.from(pick.options).some(o=>o.value===String(value)))pick.append(el('option',{value,text:noteName(value)}));
+    pick.value=value===null?'':String(value);
+  });
   c.notes.classList.remove("bad");
   c.hits.value = hitsText(s.hit | 0, s.acc | 0);
   c.hits.classList.remove("bad");
@@ -4855,23 +4906,29 @@ function updateStepRows() {
 }
 /* the step grid: one cell per step up to LEN; a cell jumps to its row in the table */
 function renderGrid() {
-  const box = $("stepgrid");
-  if (!dev || !dev.steps.length) { box.replaceChildren(); return; }
-  const len = stepLen();
-  if (box.children.length !== len) {
-    box.replaceChildren(...Array.from({ length: len }, (_, i) => el("button", { type: "button", "data-i": i, onclick: () => focusStep(i) })));
+  const box=$("stepgrid");if(!dev?.steps.length){box.replaceChildren();return;}
+  const d=dev, count=d.info.ntrk||1, pageSize=8, pages=Math.ceil(d.info.nstep/pageSize);
+  sequencePage=Math.min(sequencePage,pages-1);
+  const tracks=d.sequenceTracks||[];tracks[d.sel||0]=d.steps;
+  box.replaceChildren();
+  for(let track=0;track<count;track++){
+    const lane=el('div',{class:`sequence-lane song-track-${track+1}`});
+    lane.append(el('button',{'aria-pressed':String(track===(d.sel||0)),onclick:()=>selectTrack(track)},`Layer ${track+1}`));
+    for(let i=sequencePage*pageSize;i<Math.min(d.info.nstep,(sequencePage+1)*pageSize);i++){
+      const st=tracks[track]?.[i],on=!!st&&st.time===0&&st.n>0;
+      lane.append(el('button',{class:on?'on':'','aria-label':`Layer ${track+1} step ${i+1}`,'aria-pressed':String(track===(d.sel||0)&&i===selectedSeqStep),onclick:()=>{
+        selectedSeqStep=i;
+        if(track!==(d.sel||0))selectTrack(track);else focusStep(i);
+      }},el('span',{class:'n',text:String(i+1)}),el('span',{class:'x',text:st?st.time===1?'Tie':stepNotes(st)||'—':'…'})));
+    }
+    box.append(lane);
   }
-  for (const b of box.children) {
-    const i = +b.dataset.i, s = dev.steps[i];
-    const on = stepOn(s), tie = !!s && s.time === 1;
-    const txt = on ? [stepNotes(s), hitsText(s.hit | 0, s.acc | 0)].filter(Boolean).join(" ") : tie ? "—" : "";
-    const marks = s && on ? (s.flags & 1 ? " >" : "") + (s.flags & 2 ? " ~" : "") : "";
-    b.className = [on && "on", tie && "tie", on && s.flags & 1 && "acc", i % 4 === 0 && "beat"].filter(Boolean).join(" ");
-    b.setAttribute("aria-pressed",String(i===selectedSeqStep));
-    b.title = `${i + 1}: ${on ? txt : tie ? "TIE" : "REST"}${marks}`;
-    b.replaceChildren(el("span", { class: "n", text: String(i + 1) + marks }), el("span", { class: "x", text: txt }));
-  }
+  box.append(el('nav',{class:'bar sequence-pages'},
+    el('button',{'aria-label':'Previous steps',disabled:sequencePage===0,onclick:()=>{sequencePage--;renderGrid();}},'‹'),
+    el('span',{text:`Steps ${sequencePage*pageSize+1}–${Math.min(d.info.nstep,(sequencePage+1)*pageSize)}`}),
+    el('button',{'aria-label':'Next steps',disabled:sequencePage===pages-1,onclick:()=>{sequencePage++;renderGrid();}},'›')));
 }
+
 function focusStep(i) {
   const tr = $("steptables").querySelector(`tr[data-i="${i}"]`);
   if (!tr) return;
@@ -4883,11 +4940,12 @@ function focusStep(i) {
 }
 async function writeStep(i, tr) {
   const c = tr._c;
-  const notes = parseNotes(c.notes.value), hits = parseHits(c.hits.value);
+  const notes = [...c.notes.children].filter(p=>p.value!=='').map(p=>+p.value), hits = {hit:dev.steps[i].hit||0,acc:dev.steps[i].acc||0};
   c.notes.classList.toggle("bad", !notes);
   c.hits.classList.toggle("bad", !hits);
   if (!notes || !hits) return;
-  const old = dev.steps[i];
+  const d=dev, track=d.sel||0;
+  const old = d.steps[i];
   const all = notes.concat(old.notes.slice(notes.length)).slice(0, 4);
   let time = +c.time.value;
   if ((notes.length || hits.hit) && !old.n && !old.hit && time === 2) time = 0;   /* typing notes / hits into an empty step makes it play */
@@ -4897,8 +4955,10 @@ async function writeStep(i, tr) {
   if ((s.n || s.hit) && !s.vel) s.vel = 96;
   stepEdit.set(i, performance.now());
   try {
-    dev.steps[i] = parse[CMD.STEP_SET](await rq(req.stepSet(i, s)));
-    if (!tr.contains(document.activeElement) || document.activeElement === c.notes) fillStep(tr, dev.steps[i]);
+    const updated=parse[CMD.TRACK_STEP](await sessionRequest(d,req.trackStep(track,i,s)));
+    assertSession(d);
+    if(d.sequenceTracks?.[track])d.sequenceTracks[track][i]=updated;
+    if((d.sel||0)===track){d.steps[i]=updated;fillStep(tr,updated);renderGrid();}
   } catch (err) { report(err); }
 }
 $("reloadsteps").addEventListener("click", async () => {
