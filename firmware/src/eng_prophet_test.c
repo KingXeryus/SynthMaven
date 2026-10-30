@@ -567,7 +567,7 @@ static void p5_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const vm
 /* Sequential's factory program k (0..P5_FACTORY_N-1), unpacked (tools/gen_prophet_factory.py pack) */
 static void p5_factory(uint32_t k,p5_patch_t *p)
 {
-    const uint8_t *b=P5_FPACK+k*P5_FACTORY_BYTES;
+    uint8_t b[P5_FACTORY_BYTES];P5_DELTA_read(k,b);
     uint32_t pos=0;
     for(uint32_t i=0;i<P5_RAW_MAX;i++){
         uint32_t v=0;

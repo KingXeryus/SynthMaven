@@ -169,6 +169,9 @@ web_tests() {                                     # the editor mock's tables mus
     if command -v node >/dev/null 2>&1; then
         step "web pages: editor protocol + native CZ patches, package builder, update protocol" node web/test_web.mjs
         step "SynthMaven master tuning touch controls" node web/test_master_tuning.mjs
+        step "SynthMaven workflow and rotary controls" node web/test_workflow.mjs
+        step "Learn-first MIDI assignment grid" node web/test_midi_learn_ui.mjs
+        step "HYBRID editor and Vital import" node web/test_hybrid_import.mjs
         step "SynthMaven controller input routing" node web/test_controller_route.mjs
         step "installer UI: release selection, fetch races, cache and write lock" node web/test_installer.mjs
         step "installer safety: tab locks, wake/leave guards, throttled MIDI, preflight and interrupted resumes" node web/test_install_safety.mjs
@@ -403,6 +406,8 @@ if core && [ $TABLES = 1 ]; then
     t "SynthMaven MIDI learn and persistent mappings" synthmaven_mapping_test -O1 $FW -- "$OUT/synthmaven_mapping_test"
     t "SynthMaven compact program backup recovery" synthmaven_program_backup_test -O1 $FW -- "$OUT/synthmaven_program_backup_test"
     t "SynthMaven delayed button shortcuts" synthmaven_shortcuts_test -O1 $FW -- "$OUT/synthmaven_shortcuts_test"
+    t "Independent drum USB control" synthmaven_drum_editor_test -O1 $FW -- "$OUT/synthmaven_drum_editor_test"
+    t "Independent drum machine: timing, bounds and four-part isolation" synthmaven_drums_test -O1 $FW -- "$OUT/synthmaven_drums_test"
     t "SynthMaven program controls" synthmaven_program_ui_test -O1 $FW -- "$OUT/synthmaven_program_ui_test"
     t "SynthMaven scale-safe neutral harmony" synthmaven_chords_test -O1 $FW -- "$OUT/synthmaven_chords_test"
     t "SynthMaven tuning knob controls" synthmaven_tuning_ui_test -O1 $FW -- "$OUT/synthmaven_tuning_ui_test"
@@ -456,6 +461,7 @@ if sound && [ $TABLES = 1 ]; then
     t "native fp32: independent numerical references, exact pitch, quiet signals and fractional envelopes" synth_fpu_test \
         -O2 $FW
     job prophet
+    t "Native preset packing: every FM6 and Prophet factory row is byte-exact" preset_delta_test -O1 -Ibuild/gen
     t "SynthMaven factory programs: actual loader and bounded audio" synthmaven_factory_audio_test -O1 $FW -- "$OUT/synthmaven_factory_audio_test"
     t "SynthMaven HYBRID and DX7 banks: render and part isolation" synthmaven_port_test -O2 $FW -- "$OUT/synthmaven_port_test"
     t "modulation matrix: off = bit-identical, the math, MIDI CC1 / CC11 / aftertouch, cost, demos" mod_test \

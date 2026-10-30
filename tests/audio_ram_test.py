@@ -78,6 +78,22 @@ define void @copy_boot(i8* %d, i8* %s, i8 %fill) {
         with self.assertRaisesRegex(ValueError, 'Unsupported cross-region'):
             relocate(source.replace('i1 false', 'i1 true'), {'fm1_alnk0_irq'})
 
+    def test_compressed_ui_keeps_cold_closure_and_boot_pointers_separate(self):
+        source = IR + """define void @ui_input() {
+  call void @menu_only()
+  call void @hot(i32 1)
+  ret void
+}
+define void @menu_only() {
+  ret void
+}
+"""
+        output, selected, far = relocate(source, {'fm1_alnk0_irq'})
+        self.assertIn('ui_input', selected)
+        self.assertNotIn('menu_only', selected)
+        self.assertIn('@__audio_far_menu_only = internal global void ()* @menu_only, section ".audio_text.ui_ptr", align 4', output)
+        self.assertIn('@__audio_far_render = internal global void (i32)* @render, align 4', output)
+
     def test_callback_abi(self):
         fn=next(m for m in FUNCTION.finditer(IR) if m[2]=='accept')
         self.assertEqual(function_type(fn),'void (void (i8*, i32)*, i8*)')

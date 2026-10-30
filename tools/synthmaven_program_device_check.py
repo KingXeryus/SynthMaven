@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 import wave
 import mido
-from prophet_device import Device
+from prophet_device import Device, pack
 from usb_audio_stats import snapshot
 
 
@@ -18,6 +18,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--port', default='Melodee FM-1')
     parser.add_argument('--capture-dir', type=Path)
+    parser.add_argument('--drums',action='store_true',help='Run independent drums alongside every layered program')
     args = parser.parse_args()
     device = Device(args.port)
     failures = []
@@ -31,12 +32,18 @@ def main():
         info = device.request(1)
         if 112 not in info:
             raise RuntimeError('Connected firmware lacks the program API')
+        if args.drums:
+            masks=[0x1111,0x1010,0x5555,0x8000,0x1010,0x0400,0x0040,0x4000]
+            config=bytes(sum(([m&255,m>>8] for m in masks),[])+[90,75,55,45,55,50,40,45]+[96]*8+[80,0])
+            assert device.request(116,[1]+pack(config))[:2]==[1,0]
         for slot in range(8):
+            if args.drums:assert device.request(116,[2,0])[:2]==[2,0]
             device.silence()
             reply = device.request(112, [1, slot])
             if reply[:3] != [1, 0, slot]:
                 raise RuntimeError(f'Program {slot + 1} load failed: {reply[:5]}')
             time.sleep(.6)
+            if args.drums:assert device.request(116,[2,1])[:2]==[2,0]
             for notes in ([48], [48, 52, 55]):
                 device.silence()
                 before = snapshot(device.incoming, device.outgoing, True, True, True, True, True, True, True)
@@ -64,7 +71,7 @@ def main():
                         failures.append((slot+1, len(notes), 'capture'))
                 counters = ('audio_deadline_misses', 'core1_faults', 'core1_timeouts', 'resource_failures')
                 delta = {key: after[key] - before[key] for key in counters}
-                result = dict(program=slot+1, keys=len(notes), deltas=delta, stats=after, capture=capture)
+                result = dict(program=slot+1, keys=len(notes), drums=args.drums, deltas=delta, stats=after, capture=capture)
                 print(json.dumps(result), flush=True)
                 if any(delta.values()) or not after['core1_online']:
                     failures.append((slot+1, len(notes)))
@@ -72,6 +79,7 @@ def main():
     finally:
         try:
             device.silence()
+            if args.drums:device.request(116,[2,0])
             device.request(112, [1, 0])
         finally:
             device.close()

@@ -5,6 +5,8 @@
 /* Chromatic key identity is preserved. Offsets are relative to the chosen
  * root, never a degree-address remapping. C0 is MIDI 12; C8 is MIDI 108. */
 #define SM_TUNE_CUSTOM 47u
+#define SM_TUNE_LAST 61u
+static const uint16_t SM_WESTERN_MASKS[]={2741,1453,2477,2733,1709,1451,2773,1717,1387,661,1193,1257,1365,2925};
 #define SM_TUNE_WIRE 28u
 typedef struct {
     uint8_t enabled, scale, root, octave, quantize, apply;
@@ -15,17 +17,18 @@ static sm_tuning_t sm_tuning = {.apply=15,.mask=0xfff};
 #define SM_MAQAM_PROFILE(id,name,profile) profile,
 static const uint8_t SM_MAQAM_PROFILES[]={MAQAM_EXISTING(SM_MAQAM_PROFILE) MAQAM_ADDED(SM_MAQAM_PROFILE)};
 #undef SM_MAQAM_PROFILE
-#define SM_MAQAM_NAME(id,name,profile) name,
-static const char *const SM_TUNE_NAMES[]={"CHROMATIC",MAQAM_EXISTING(SM_MAQAM_NAME) MAQAM_ADDED(SM_MAQAM_NAME) "CUSTOM"};
+#define SM_MAQAM_NAME(id,name,profile) "A/" name,
+static const char *const SM_TUNE_NAMES[]={"W/Chromatic",MAQAM_EXISTING(SM_MAQAM_NAME) MAQAM_ADDED(SM_MAQAM_NAME) "Custom/User","W/Major","W/Natural minor","W/Harmonic minor","W/Melodic minor","W/Dorian","W/Phrygian","W/Lydian","W/Mixolydian","W/Locrian","W/Major pentatonic","W/Minor pentatonic","W/Blues","W/Whole tone","W/Diminished"};
 #undef SM_MAQAM_NAME
 static int sm_tuning_valid(const sm_tuning_t *t)
 {
-    if(t->enabled>1 || t->scale>SM_TUNE_CUSTOM || t->root>11 || t->octave>8 || t->quantize>1 || t->apply>15 || !t->mask || t->mask>0xfff)return 0;
+    if(t->enabled>1 || t->scale>SM_TUNE_LAST || t->root>11 || t->octave>8 || t->quantize>1 || t->apply>15 || !t->mask || t->mask>0xfff)return 0;
     for(uint32_t i=0;i<12;i++)if(t->cents[i]<-100 || t->cents[i]>100)return 0;
     return 1;
 }
 static uint32_t sm_tuning_mask(const sm_tuning_t *t)
 {
+    if(t->scale>SM_TUNE_CUSTOM)return SM_WESTERN_MASKS[t->scale-SM_TUNE_CUSTOM-1u];
     return !t->scale?0xfff:t->scale==SM_TUNE_CUSTOM?t->mask:MAQAM_NOTE_MASKS[t->scale-1u];
 }
 static int sm_tuning_applies(const sm_tuning_t *t,uint32_t part,uint32_t note)
@@ -37,6 +40,7 @@ static int32_t sm_tuning_cents(const sm_tuning_t *t,uint32_t part,uint32_t note)
     if(!sm_tuning_applies(t,part,note) || !t->scale)return 0;
     uint32_t key=(note+12u-t->root)%12u;
     if(t->scale==SM_TUNE_CUSTOM)return t->cents[key];
+    if(t->scale>SM_TUNE_CUSTOM)return 0;
     const uint16_t *m=MAQAM_MASKS[SM_MAQAM_PROFILES[t->scale-1u]];
     return ((m[0]>>key)&1u)*-50+((m[1]>>key)&1u)*50+((m[2]>>key)&1u)*-25;
 }

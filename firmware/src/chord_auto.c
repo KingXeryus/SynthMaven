@@ -47,7 +47,7 @@ static uint32_t chord_auto_rotate(uint32_t bits, int32_t semitones)
 }
 static int chord_auto_config(const track_t *t, const chord_auto_t *h)
 {
-    return h->n && trk_vmode(t) == V_POLY && h->scale == t->p[P_SCALE] && h->tonic == t->p[P_ROOT] + t->p[P_TRANS] &&
+    return h->n && trk_vmode(t) == V_POLY && h->scale == (int16_t)scale_mask(t) && h->tonic == harmony_root(t) &&
         h->quant == t->p[P_QUANT] && h->voicing == t->p[P_VOIC];
 }
 static int chord_auto_same(const track_t *t, const chord_auto_t *h)
@@ -172,7 +172,7 @@ static void chord_auto_voice(const track_t *t, int32_t root, const uint8_t *pitc
 
 static uint32_t chord_auto_make(const track_t *t, uint32_t input, uint8_t *out, int32_t *rp, uint16_t *maskp)
 {
-    int32_t tonic = t->p[P_ROOT] + t->p[P_TRANS], root = (int32_t)input;
+    int32_t tonic = harmony_root(t), root = (int32_t)input;
     uint32_t allowed = chord_auto_rotate(scale_mask(t), tonic);
     /* Use the same downward policy as DIA/SNAP, except the lower endpoint must
      * take the next available note instead of clamping to an out-of-scale C. */
@@ -234,7 +234,7 @@ static void chord_auto_remember(const track_t *t, int32_t root, uint16_t mask, c
     chord_auto_t *h = &chord_auto[trk_index(t)];
     h->root = (uint8_t)root; h->mask = mask; h->n = (uint8_t)n;
     for (uint32_t i = 0; i < n; i++) h->note[i] = notes[i];
-    h->scale = t->p[P_SCALE]; h->tonic = t->p[P_ROOT] + t->p[P_TRANS];
+    h->scale = (int16_t)scale_mask(t); h->tonic = harmony_root(t);
     h->quant = t->p[P_QUANT]; h->voicing = t->p[P_VOIC];
     h->melody = (uint16_t)chord_auto_melody(t, chord_auto_rotate(scale_mask(t), h->tonic));
     h->at = chord_auto_clock;

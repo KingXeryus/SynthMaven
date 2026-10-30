@@ -33,6 +33,9 @@ from make_site import manual_figures  # noqa: E402
 SRC = ROOT / "build" / "ui_new" / "NIGHT"
 MANUAL = ROOT / "web" / "manual"
 
+def figure_source(name):
+    return ROOT / "assets" / "manual" / name if name.startswith("editor-") else SRC / name
+
 
 def figure_names(manual=None):
     """PNG names embedded in the manual, in page order"""
@@ -45,7 +48,7 @@ def sources_present():
     if not SRC.is_dir():
         print(f"manual_shots: {SRC.relative_to(ROOT)} is missing", file=sys.stderr)
         sys.exit(1)
-    missing = [name for name in names if not (SRC / name).is_file()]
+    missing = [name for name in names if not figure_source(name).is_file()]
     if missing:
         print(f"manual_shots: {len(missing)} source render(s) missing from {SRC.relative_to(ROOT)}:",
               file=sys.stderr)
@@ -73,7 +76,7 @@ def sync_dir(check):
     MANUAL.mkdir(parents=True, exist_ok=True)
     missing, copied, same = [], [], 0
     for name in names:
-        src = SRC / name
+        src = figure_source(name)
         if not src.is_file():
             missing.append(name)
             continue

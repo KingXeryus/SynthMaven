@@ -1,2 +1,4 @@
 Pillow
 fonttools
+reportlab==4.4.5
+beautifulsoup4==4.14.2

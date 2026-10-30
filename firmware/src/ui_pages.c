@@ -51,7 +51,7 @@ static uint32_t pv_kind(void)
     if (pg->graph == GR_NONE || pg->graph == GR_ARP || pg->graph == GR_STEPS ||
         pg->graph == GR_CHORD)
         return PV_RINGS;
-    if (pg->graph == GR_TRK)
+    if (pg->graph == GR_TRK || pg->scope == SC_SM_MIX)
         return PV_MIXER;
     if (pg->graph == GR_ROLL && !drum_track(TSEL))
         return PV_NOTES;
@@ -908,11 +908,71 @@ static void pv_strip(uint32_t k)
     }
 }
 
+/* Four volume strips and focused split/pan, adapted from SynthMaven's legacy mixer. */
+static void sm_mix_draw(void)
+{
+    uint32_t focus=song.sel%4u;
+    for(uint32_t band=0;band<240u;band+=CV_MAX/240u){
+        cv_begin_band(240,240,T_BG,band);
+        cv_text(6,4,TY_TX,"LAYER MIXER",T_TEXT);
+        for(uint32_t k=0;k<4u;k++){
+            int32_t x=(int32_t)k*60+2;uint16_t c=T_TRK(k),bg=ux_mix(T_BG,c,18);
+            char b[16],n[3]={'L',(char)('1'+k),0};const char *unit;
+            cv_rrect(x,32,56,108,6,k==focus?c:T_LINE,T_BG);
+            cv_rrect(x+2,34,52,104,4,bg,k==focus?c:T_LINE);
+            cv_text_c(x+28,40,TY_LB,n,c,bg);
+            param_format(&TP[P_LEVEL],trk[k].p[P_LEVEL],b,&unit);
+            cv_text_c(x+28,64,TY_LB,b,T_TEXT,bg);cv_text_c(x+28,82,TY_LB,unit,T_MID,bg);
+            cv_rect(x+6,112,44,5,T_LINE);cv_rect(x+6,112,trk[k].p[P_LEVEL]*44/127,5,c);
+            if(trk[k].p[P_MUTE])cv_text_c(x+28,121,TY_LB,"MUTE",T_TEXT,bg);
+        }
+        char b[16]="PART ",note[8];const char *unit;fmt_int(b+5,(int32_t)focus+1);
+        cv_text(6,148,TY_LB,b,T_TRK(focus));note_name(note,sm_layers.low[focus]);
+        cv_text(6,168,TY_LB,"SPLIT",T_MID);cv_text(60,168,TY_LB,note,T_TEXT);
+        param_format(&TP[P_PAN],trk[focus].p[P_PAN],b,&unit);
+        cv_text(126,168,TY_LB,"PAN",T_MID);cv_text(168,168,TY_LB,b,T_TEXT);
+        cv_text(6,190,TY_LB,"K1-4: VOLUME  SELECT: PART",T_MID);
+        cv_text(6,207,TY_LB,"ALGO: SPLIT  PRESET: PAN",T_MID);
+        cv_text(6,224,TY_LB,"HOME: EXIT",T_MID);cv_blit_band(0,0);
+    }
+}
+
 /* ----------------------------------------------------------- draw --- */
 static void pv_draw(void)
 {
     uint32_t kind = pv_kind(), sig;
     int32_t px;
+    if(!ui.home&&cur_page()->fam==FAM_GLO){
+        uint32_t page=sm_glo_page();const page_t *pg=cur_page();draw_head();
+        if(pg->scope==SC_SM_PREF){
+            if(ui.force)for(uint32_t row=0;row<4;row++){
+                uint32_t id=pg->id[row];char b[24],label[32];
+                const char *value=sm_pref_value(id,b);label[0]=(char)('1'+row);label[1]=' ';str_cpy(label+2,sm_pref_label(id),30);
+                for(uint32_t band=0;band<42;band+=CV_MAX/240u){
+                    cv_begin_band(240,42,T_BG,band);
+                    cv_rrect(3,1,234,40,5,T_SURF,T_BG);
+                    cv_text(9,6,TY_LB,label,T_MID);
+                    const aafont_t *font=ty_fit(TY_TX,value,222);
+                    cv_text_r(231,18,font,value,T_TEXT,T_SURF);cv_blit_band(0,32+row*42);
+                }
+            }
+        }else{
+            card_y=Y_LABEL;col_style=CS_CARD;draw_columns();
+            if(ui.force){
+                lcd_fill(0,Y_GRAPH,240,240-Y_GRAPH,T_BG);
+                for(uint32_t band=0;band<100;band+=CV_MAX/240u){
+                    cv_begin_band(240,100,T_BG,band);
+                    cv_text(8,12,TY_TX,SM_GLO_NAME[page],T_TEXT);
+                    const char *help=SM_GLO_HELP[page];const aafont_t *font=ty_fit(TY_LB,help,224);
+                    cv_text(8,50,font,help,T_MID);cv_blit_band(0,Y_GRAPH);
+                }
+            }
+        }
+        char footer[32]="GLO ";fmt_int(footer+4,(int32_t)page+1);uint32_t len=str_len(footer);
+        str_cpy(footer+len,"/10  ",6);str_cpy(footer+len+5,SM_GLO_NAME[page],sizeof footer-len-5);
+        cv_begin(240,30,T_BG);const aafont_t *font=ty_fit(TY_LB,footer,224);cv_text(8,6,font,footer,T_THEME);cv_blit(0,210);
+        return;
+    }
     if (kind == PV_NOTES) {
         if (ui.force) {
             lcd_fill(0, H_HEAD, 240, 240 - H_HEAD, T_BG);
@@ -976,6 +1036,7 @@ static void pv_draw(void)
         return;
     }
     if (kind == PV_MIXER) {
+        if(cur_page()->scope==SC_SM_MIX){sm_mix_draw();return;}
         uint32_t k;
         if (ui.force)
             lcd_fill(0, H_HEAD, 240, 240 - H_HEAD, T_BG);

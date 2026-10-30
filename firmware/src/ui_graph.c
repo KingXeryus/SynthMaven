@@ -1026,6 +1026,15 @@ static void draw_graph(void)
         } else {
             switch (pg->graph) {
             case GR_SM_TUNING:graph_master_tuning();break;
+            case GR_SM_PROGRAM: {
+                sm_name_focus();char slot[12]="PROGRAM ";fmt_int(slot+8,sm_program_slot);
+                cv_text(12,8,TY_TX,slot,T_MID);
+                cv_text(12,36,TY_LB,sm_name_draft,T_TEXT);
+                char prefix[13];memcpy(prefix,sm_name_draft,12);prefix[sm_name_position-1]=0;
+                cv_rect(12+text_w(TY_LB,prefix),54,8,2,T_THEME);
+                cv_text(12,65,TY_LB,"ALGO: POS  PRESET: NAME",T_MID);
+                cv_text(12,84,TY_LB,"TURN LOAD / SAVE TWICE",T_MID);break;
+            }
             case GR_SM_MIX: {
                 char label[24]="PART ",note[8],pan[12]="PAN ";fmt_int(label+5,(int32_t)(song.sel%4)+1);note_name(note,sm_layers.low[song.sel%4]);fmt_int(pan+4,TSEL->p[P_PAN]);
                 cv_text(12,8,TY_TX,label,T_TEXT);cv_text(12,38,TY_TX,"SPLIT",T_MID);cv_text(100,38,TY_TX,note,T_TEXT);cv_text(12,68,TY_TX,pan,T_TEXT);break;

@@ -18,7 +18,7 @@ SRC = _ROOT / "firmware" / \
     "src" if (_ROOT / "firmware" / "src").is_dir() else _ROOT / \
     "src"   # either layout
 # the UI, the stores, the editor and the console: main loop only, never called by sound code
-SIZE_FILES = ["ui.c", "gfx.c", "favorites.c", "icons.c", "ui_graph.c", "ui_draw.c", "ui_menu.c", "ui_input.c",
+SIZE_FILES = ["editor_hybrid.c", "editor_layers.c", "editor_programs.c", "editor_mapping.c", "editor_master_tuning.c", "editor_drums.c", "synthmaven_programs.c","ui.c", "gfx.c", "favorites.c", "icons.c", "ui_graph.c", "ui_draw.c", "ui_menu.c", "ui_input.c",
               "editor_native.c", "scale_picker.c", "seq_edit.c", "seq_notes.c", "seq_undo.c", "prophet_patch.c", "native_presets.c", "prophet_user.c", "note_tools.c", "sysex_library.c", "fm6_store.c", "cz_store.c", "editor_prophet.c", "ui_browser.c", "ui_designer.c", "ui_designer_input.c", "ui_layer.c", "ui_list.c", "ui_motion.c", "ui_name.c",
               "ui_boot.c", "ui_view.c", "ui_midi_knobs.c", "editor_library.c", "shared_presets.c", "tracks.c",
               "ui_new.c", "ui_pages.c", "ui_patterns.c", "ui_popup.c", "ui_scales.c", "ui_sections.c", "ui_slots.c", "ui_stage.c",

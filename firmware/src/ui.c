@@ -1,6 +1,10 @@
+static uint8_t sm_drum_lane, sm_drum_cursor;
+static int sm_config_save(void);
 static uint32_t sm_layer_notice_until;
+static char sm_program_name[13];
 static int sm_program_save(uint32_t slot,const char *name,int tuning_override);
 static int sm_program_load(uint32_t slot);
+static int sm_program_step(int direction);
 static int sm_program_name_at(uint32_t slot,char *name);
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Kerem Kilic (Ellic Studio)
@@ -343,7 +347,7 @@ static int transport_busy(void)
 {
     int busy;
     fm1_irq_off();
-    busy = song.playing || seq_counting() || chain_busy() || transport_req == 1u;
+    busy = sm_drums.enabled || song.playing || seq_counting() || chain_busy() || transport_req == 1u;
     fm1_irq_on();
     return busy;
 }
@@ -375,6 +379,7 @@ static void seq_midi_reset(void)                    /* a new page/track ends MID
 static void undo_seal(void);
 static void page_entered(void)
 {
+    sm_io_arm=0;sm_name_slot=255;
     ui.preset_audition = 0;
     const page_t *pg = cur_page();
     if (pg->graph == GR_SCALE_PICKER && !ui.scale_picker_seen) {
@@ -598,19 +603,52 @@ static void open_family(uint32_t fam)
         slot_save_sheet();                       /* SAVE: USER; OCT+ then its slot's sheet on Save here (ui_slots.c) */
 }
 
-/* GLO always enters the mixer from another family. Subsequent taps visit the
- * global settings, then return to the mixer; recording has no navigation role. */
+/* Legacy SynthMaven inline program naming and double-turn actions. */
+static void sm_name_focus(void)
+{
+    if(sm_name_slot==(uint8_t)sm_program_slot)return;
+    memset(sm_name_draft,0,sizeof sm_name_draft);
+    if(sm_program_name_at((uint32_t)sm_program_slot-1u,sm_name_draft))str_cpy(sm_name_draft,"PROGRAM",13);
+    sm_name_slot=(uint8_t)sm_program_slot;sm_name_position=1;sm_io_arm=0;
+}
+static void sm_name_edit(int32_t steps)
+{
+    static const char letters[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
+    sm_name_focus();uint32_t at=(uint32_t)sm_name_position-1u,n=sizeof letters-1u,j;
+    for(j=0;j<at;j++)if(!sm_name_draft[j])sm_name_draft[j]=' ';
+    for(j=0;j<n&&letters[j]!=sm_name_draft[at];j++){}
+    if(j==n)j=0;
+    sm_name_draft[at]=letters[((int32_t)j+steps%(int32_t)n+(int32_t)n)%(int32_t)n];
+    sm_name_draft[12]=0;sm_io_arm=0;ui.force=1;
+}
+static void sm_program_knob(uint32_t slot,int32_t steps)
+{
+    sm_name_focus();
+    if(slot==0){sm_program_slot=(int16_t)clamp(sm_program_slot+steps,1,8);sm_name_focus();}
+    else if(slot==1)sm_name_edit(steps);
+    else if(steps<0)sm_io_arm=0;
+    else if(sm_io_arm!=slot||fm1_ms-sm_io_time>1500u){sm_io_arm=(uint8_t)slot;sm_io_time=fm1_ms;ui_message(slot==2?"AGAIN: LOAD":"AGAIN: SAVE");}
+    else {
+        sm_io_arm=0;
+        int rc=slot==2?sm_program_load((uint32_t)sm_program_slot-1u):sm_program_save((uint32_t)sm_program_slot-1u,sm_name_draft,sm_program_override);
+        ui_message(rc==0?(slot==2?"PROGRAM LOADED":"PROGRAM SAVED"):rc==4?"STOP PLAYBACK":rc==3?"PROTECTED PROJECT":"PROGRAM IO ERROR");
+    }
+    ui.force=1;
+}
+
+/* GLO contains global settings only; hold EDIT for the four-layer mixer. */
+static const char *sm_pref_label(uint32_t id);
+static const char *sm_pref_value(uint32_t id,char *b);
+static void sm_pref_edit(uint32_t id,int32_t steps);
 static void open_global(void)
 {
-    uint32_t i;
-    if (!ui.home && cur_page()->fam == FAM_TRK) {
-        ui.page = (uint8_t)page_first(FAM_GLO);
-    } else if (!ui.home && cur_page()->fam == FAM_GLO) {
-        for (i = ui.page + 1u; i < NPAGES && (PAGES[i].fam != FAM_GLO || !page_visible(i)); i++) {}
-        ui.page = (uint8_t)(i < NPAGES ? i : page_first(FAM_TRK));
-    } else {
-        ui.page = (uint8_t)page_first(FAM_TRK);
+    uint32_t first = page_first(FAM_GLO), next = first;
+    if (!ui.home && cur_page()->fam == FAM_GLO) {
+        for (next = ui.page + 1u; next < NPAGES &&
+             (PAGES[next].fam != FAM_GLO || !page_visible(next)); next++) {}
+        if (next == NPAGES) next = first;
     }
+    ui.page = (uint8_t)next;
     ui.home = 0;
     page_entered();
 }
@@ -1030,12 +1068,13 @@ static void apply_preset_to(track_t *t, uint32_t pi)
     t->p[P_ED_FLT] = pr->fenv;
     t->p[P_VOICE] = pr->mono ? V_LEGATO : V_POLY;   /* mono presets keep the legato feel */
     if(t->eng_req==ENGI_PROPHET)p5_preset_loaded(t,pi);
+    sm_classic_preset_loaded(t,pi);
     cz_factory_loaded(t);
     cz_track_accept(t);
     fm6_track_loaded(t);                              /* FM6: the preset's patch */
     if(t->eng_req==ENGI_HYBRID){
         uint32_t guard=motion_guard();
-        hy_set_patch(trk_index(t),&HY_FACTORY[clamp(t->p[P_E3],0,HY_NFACTORY-1)]);
+        {hy_patch_t patch;hy_factory_read(clamp(t->p[P_E3],0,HY_NFACTORY-1),&patch);hy_set_patch(trk_index(t),&patch);}
         motion_unguard(guard);
     }
     load_end(t);
@@ -1241,7 +1280,7 @@ static uint32_t act_cols(void)                   /* the columns that are actions
     const page_t *pg = cur_page();
     if (ui.home)
         return 0;
-    if(pg->scope==SC_SM_PROGRAM)return 6u;
+    if(pg->scope==SC_SM_PROGRAM)return 0;
     if (pg->graph == GR_SONG)
         return 1u;                               /* PLAY / STOP (also the PLAY button; TAKE JAM: REC held) */
     if (pg->graph == GR_SLICES)

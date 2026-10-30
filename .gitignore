@@ -21,3 +21,7 @@ ios/Generated/
 
 # Private device backups are never release assets.
 /output/backups/
+
+# Generated guide and visual review artifacts
+/output/pdf/
+/tmp/

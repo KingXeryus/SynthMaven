@@ -272,13 +272,17 @@ def main(pkg, version, out, nightly=None, installer_only=False, rc=None, manual=
     if not installer_only:
         publish_manual(man_src, man, version, preserve_nightly=True)
         shutil.copy(HERE / "editor.html", ed / "index.html")
-        for f in ("fukiai.ttf", "FUKIAI-LICENSE.txt", "fm1backup.js"):
+        shutil.copytree(HERE / "branding", ed / "branding", dirs_exist_ok=True)
+        guide = HERE.parent / "output" / "pdf" / f"SynthMaven-{version}-User-Guide.pdf"
+        if guide.is_file():
+            shutil.copy(guide, man / guide.name)
+        for f in ("fukiai.ttf", "FUKIAI-LICENSE.txt", "fm1backup.js", "viewport-pages.js", "workspace-pages.js", "sound-visuals.js", "native-workspace.js", "editor-choice-controls.js"):
             if (HERE / f).exists():
                 shutil.copy(HERE / f, ed / f)
         (out / "index.html").write_text(
-            '<!doctype html><meta charset="utf-8"><title>Melodee</title>'
+            '<!doctype html><meta charset="utf-8"><title>SynthMaven</title>'
             '<meta http-equiv="refresh" content="0; url=webapp/installer/">'
-            '<a href="webapp/installer/">Melodee installer</a>\n', encoding="utf-8")
+            '<a href="webapp/installer/">SynthMaven installer</a>\n', encoding="utf-8")
     print(f"site: {out}: webapp/installer ({len(html)} B), webapp/editor, firmware/{name} ({len(raw)} B), {product}")
 
 

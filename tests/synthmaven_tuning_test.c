@@ -30,13 +30,29 @@ int main(void)
     bad+=check("global tuning persists within unchanged settings record",sizeof saved==604u && settings_import(&saved,sizeof saved) && sm_tuning.cents[4]==-37 && sm_tuning.root==2 && sm_tuning.octave==3);
     project_save(0);sm_tuning.root=7;project_load(0);
     bad+=check("ordinary project loads do not replace global tuning",sm_tuning.root==7 && sm_tuning.cents[4]==-37);
-    for(uint32_t scale=1;scale<SM_TUNE_CUSTOM;scale++)for(uint32_t root=0;root<12;root++){
+    for(uint32_t scale=1;scale<=SM_TUNE_LAST;scale++)for(uint32_t root=0;root<12;root++){
         sm_tuning.scale=scale;sm_tuning.root=root;
         for(uint32_t n=48;n<96;n++){
             int32_t a=sm_tuning_cents(&sm_tuning,0,n),b=sm_tuning_cents(&sm_tuning,0,n+12);
             if(a!=b || a<-100 || a>100 || !sm_tuning_mask(&sm_tuning))bad++;
         }
     }
+    for(unsigned scale=48;scale<=SM_TUNE_LAST;scale++){
+        sm_tuning.scale=scale;sm_tuning.root=0;sm_tuning.enabled=1;
+        for(unsigned note=60;note<72;note++)bad+=check("Western scales retain equal-tempered pitch",sm_tuning_cents(&sm_tuning,0,note)==0);
+        sm_tuning_encode(bytes,&sm_tuning);bad+=check("Western IDs persist",sm_tuning_decode(&copy,bytes)&&copy.scale==scale);
+    }
+    sm_tuning.scale=48;sm_tuning.quantize=1;
+    bad+=check("Western major masks C sharp and snaps it to C",sm_tuning_mask(&sm_tuning)==2741&&sm_tuning_snap(&sm_tuning,0,61)==60);
+    sm_tuning.root=2;bad+=check("Western major transposes with root",sm_tuning_snap(&sm_tuning,0,65)==64);
+    sm_tuning=(sm_tuning_t){.enabled=1,.scale=48,.root=2,.quantize=1,.apply=15,.octave=3,.mask=4095};
+    for(unsigned p=0;p<4;p++){
+        trk[p].eng_req=ENGI_HYBRID;voice_scale_pitch(&trk[p],&v,65);
+        bad+=check("all playback sources snap F to E in D major at voice onset",v.pitch16==64*16);
+        voice_scale_pitch(&trk[p],&v,41);bad+=check("all playback sources preserve notes below tuning floor",v.pitch16==41*16);
+    }
+    sm_tuning.apply=14;voice_scale_pitch(&trk[0],&v,65);bad+=check("bypassed part retains F and chromatic harmony",v.pitch16==65*16&&scale_mask(&trk[0])==4095);
+    trk[0].eng_req=ENGI_DRUM;sm_tuning.apply=15;voice_scale_pitch(&trk[0],&v,65);bad+=check("drum pitches are not snapped",v.pitch16==65*16);
     printf("SynthMaven tuning: 46 maqam profiles, all roots, octave threshold, bypass and settings: %s\n",bad?"FAIL":"PASS");
     return bad?1:0;
 }

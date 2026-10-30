@@ -63,7 +63,11 @@ def analyze(ir, dis, src):
         frames[name] = total
         direct[name] = calls
     # Possible function-pointer values: globals and local function-address uses.
-    taken = set(REFERENCE.findall(FUNCTION.sub('', ir))) & fns.keys()
+    # Generated far-call cells are private direct-call trampolines, not
+    # candidates for unrelated same-signature callbacks (e.g. sheet actions).
+    # Their exact targets are still added to the call graph below.
+    globals_ir = re.sub(r'^@__audio_far_[^\n]*$', '', FUNCTION.sub('', ir), flags=re.M)
+    taken = set(REFERENCE.findall(globals_ir)) & fns.keys()
     for name, m in fns.items():
         for line in m[5].splitlines():
             refs = set(REFERENCE.findall(line)) & fns.keys()

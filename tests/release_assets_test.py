@@ -20,8 +20,7 @@ from fm1_recover import APP_LO, Package, sha256
 from fm1pkg_make import release_product, sfc, ufw
 from recovery_test import make_package
 
-MAJOR, MINOR, PATCH = A.VERSION.split("-", 1)[0].split(".")
-PRODUCT = f"FM-1_9{MAJOR}{int(MINOR):02d}{PATCH}"
+PRODUCT = release_product(A.VERSION)
 
 
 class ReleaseTests(unittest.TestCase):

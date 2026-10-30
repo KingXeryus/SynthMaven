@@ -6,7 +6,12 @@
 #include <assert.h>
 #include "../firmware/src/tuning.h"
 #define __attribute__(x)
-#define NENGINES 23u
+#define NENGINES 32u
+#define ENGI_SM_ACID 28u
+#define ENGI_SM_WSEQ 29u
+#define ENGI_SM_VPS 30u
+#define ENGI_SM_ANALOG 23u
+#define ENGI_SM_JUNO 27u
 #define ENGI_HYBRID 22u
 #define USER_GENERAL 16u
 #define USER_NATIVE_P5 20u

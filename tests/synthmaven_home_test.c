@@ -14,7 +14,7 @@ int main(void)
     turn(EN_PRESET, -1);
     assert(TSEL->preset == ENG_HYBRID.npresets - 1 && TSEL->eng_req == ENGI_HYBRID);
     turn(EN_ALGO, 1);
-    assert(TSEL->eng_req == eng_vis(0) && song.sel == part);
+    assert(TSEL->eng_req == ENGI_SM_ANALOG && song.sel == part);
     turn(EN_ALGO, -1);
     assert(TSEL->eng_req == ENGI_HYBRID && song.sel == part);
     unsigned engine = trk[0].eng_req, preset = trk[0].preset;

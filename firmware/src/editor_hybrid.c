@@ -21,7 +21,7 @@ static int ed_hybrid_handle(uint32_t cmd,const uint8_t *a,uint32_t n)
             ui.force=1;
         }
     }else if(n!=2u)rc=1;
-    else if(op==2u)patch=HY_FACTORY[index];
+    else if(op==2u)hy_factory_read(index,&patch);
     else {uint32_t guard=motion_guard();patch=*hy_patch_of(index);motion_unguard(guard);}
     ed_b(op);ed_b(index);ed_b(rc);
     if(!rc && op!=1u)ed_bk_pack((const uint8_t *)&patch,sizeof patch);

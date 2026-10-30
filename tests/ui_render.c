@@ -454,7 +454,7 @@ static void eng(uint32_t e) { set_engine_of(TSEL, e); }
 
 enum { S_HOME, S_HOME_IDLE, S_HOME_NOTE, S_HOME_CHORD, S_HOME_INVERSION, S_HOME_WIDE, S_HOME_RELEASED, S_HOME_FM6, S_MESSAGE, S_MESSAGE_KEY, S_PRESETS, S_PRESETS_NOFAV, S_PRESETS_CAT, S_PRESETS_PENDING, S_PRESETS_RECENT, S_USER, S_PROJECT, S_PROJECT_BOOT, S_TEMPO,
        S_SONG_EMPTY, S_SONG, S_STEP, S_PATTERN, S_MOTION, S_DRUM, S_MIXER, S_MIXER_PAN,
-       S_ENV, S_ENVDEST, S_LFO, S_MOD, S_SCL, S_CHORD, S_CHORD_WIDE, S_CHORD_OFF, S_CHORD_KIT, S_CHORD_AUTO, S_CHORD_AUTO_SET, S_CHORD_AUTO_MICRO, S_CHORD_MELODY, S_CHORD_MELODY_OPEN, S_ARP, S_VOICE, S_GLOBAL, S_SYSTEM,
+       S_ENV, S_ENVDEST, S_LFO, S_MOD, S_SCL, S_CHORD, S_CHORD_WIDE, S_CHORD_OFF, S_CHORD_KIT, S_CHORD_AUTO, S_CHORD_AUTO_SET, S_CHORD_AUTO_MICRO, S_CHORD_MELODY, S_CHORD_MELODY_OPEN, S_ARP, S_VOICE, S_GLOBAL, S_SYSTEM, S_GLO_WEIGHT, S_GLO_LAYER, S_GLO_GUARD, S_GLO_DISPLAY, S_GLO_USB, S_GLO_CONTROLS, S_GLO_RECORDING, S_GLO_DEVICE,
        S_EDIT_SID, S_EDIT_DIGITAL, S_OP_ENV, S_EDIT_WHEEL, S_EDIT_PHYS,
        S_ALG1, S_ALG2, S_ALG3, S_ALG4, S_ALG5, S_ALG6, S_ALG7, S_ALG8, S_OP_LEVEL,
        S_FM6_ALG1, S_FM6_ALG5, S_FM6_ALG22, S_FM6_ALG32, S_FM6_FREQ, S_FM6_EG, S_FM6_PEG, S_FM6_STORE, S_CZ1_ENV,
@@ -483,11 +483,11 @@ enum { S_HOME, S_HOME_IDLE, S_HOME_NOTE, S_HOME_CHORD, S_HOME_INVERSION, S_HOME_
        S_REF_SHEET_MOTION, S_REF_MOD, S_REF_PICKER_MOD, S_REF_ARP, S_REF_PATTERN,
        S_REF_FMEG, S_REF_GRID, S_REF_SCALES, S_FX_PHASER, S_FX_WIDTH, S_FX_FORMANT, S_FX_TAPE, S_FX_SPIT, S_FX_ROOM, S_FX_CHORUS, S_FX_FULL, S_FX_SLOT2, S_FX_SLOT3, S_FX_RACK, S_FX_RACK_SPLIT, S_FX_RACK_PICK, S_FX_RACK_LIST, S_FX_BUS1, S_FX_BUS2, S_FX_BUS3, S_FX_SHARED, S_FX_SHARED_SPLIT, S_FX_SHARED_SHEET, S_FX_TONE_DARK, S_FX_TONE_THIN, S_BOOT_MIGRATION, S_BOOT_UPDATE, S_BOOT_ERROR, S_BOOT_COMPLETE, S_BOOT_WIPE_CONFIRM, S_BOOT_WIPING, S_BOOT_UPDATE_ERROR, S_MAP_DRUM_KIT, S_MAP_DRUM_HIT, S_MAP_DRUM_CATEGORY,
        S_STAGE_UNUSED1, S_STAGE_UNUSED3, S_MIXER_UNUSED2, S_MENU_TRACKS,
-       S_FX_MIDIVERB, S_FX_MIDIDELAY, S_FX_MIDI_RACK, S_FX_MIDI_LIST, S_PUNCH_PEEK, S_PUNCH_ACTIVE, S_PUNCH_LOCK, S_PUNCH_MEMORY, S_PUNCH_END, S_REVERB, S_PEDAL_DRIVE, S_PEDAL_CRUSH, S_PEDAL_PHASER, S_PEDAL_CHORUS, S_PEDAL_FLANGER, S_PUNCH_LOOP, S_PEDAL_FOLD, S_STAGE_MIDI, S_STAGE_MIDI_PARTIAL, S_MIXER_MIDI, S_PATGRID_MIDI, S_SONG_MIDI, S_GLO_MIDI, S_MENU_MIDI_GENERAL, S_MENU_MIDI_MINILAB, S_MENU_MIDI_MODE, S_PATGRID_PRESET, S_PATGRID_PRESET_PENDING, S_COUNT };
+       S_FX_MIDIVERB, S_FX_MIDIDELAY, S_FX_MIDI_RACK, S_FX_MIDI_LIST, S_PUNCH_PEEK, S_PUNCH_ACTIVE, S_PUNCH_LOCK, S_PUNCH_MEMORY, S_PUNCH_END, S_REVERB, S_PEDAL_DRIVE, S_PEDAL_CRUSH, S_PEDAL_PHASER, S_PEDAL_CHORUS, S_PEDAL_FLANGER, S_PUNCH_LOOP, S_PEDAL_FOLD, S_STAGE_MIDI, S_STAGE_MIDI_PARTIAL, S_MIXER_MIDI, S_PATGRID_MIDI, S_SONG_MIDI, S_GLO_MIDI, S_MENU_MIDI_GENERAL, S_MENU_MIDI_MINILAB, S_MENU_MIDI_MODE, S_PATGRID_PRESET, S_PATGRID_PRESET_PENDING, S_SM_TUNE, S_SM_CUSTOM, S_SM_MIX, S_SM_PROGRAM, S_SM_LAYER, S_SM_ENGINE_22_1, S_SM_ENGINE_22_2, S_SM_ENGINE_23_1, S_SM_ENGINE_23_2, S_SM_ENGINE_24_1, S_SM_ENGINE_24_2, S_SM_ENGINE_25_1, S_SM_ENGINE_25_2, S_SM_ENGINE_26_1, S_SM_ENGINE_26_2, S_SM_ENGINE_27_1, S_SM_ENGINE_27_2, S_SM_ENGINE_28_1, S_SM_ENGINE_28_2, S_SM_ENGINE_29_1, S_SM_ENGINE_29_2, S_SM_ENGINE_30_1, S_SM_ENGINE_30_2, S_COUNT };
 static const char *const S_NAME[S_COUNT] = {"home", "home_idle", "home_note", "home_chord", "home_inversion", "home_wide", "home_released", "home_fm6", "message", "message_key", "presets", "presets_nofav", "presets_cat", "presets_pending", "presets_recent", "user",
     "project", "project_boot", "tempo", "song_empty", "song", "step", "pattern", "motion", "drum",
     "mixer", "mixer_pan", "env", "env_dest", "lfo", "mod", "scl", "chord", "chord_wide", "chord_off", "chord_kit", "chord_auto", "chord_auto_set", "chord_auto_micro", "chord_melody", "chord_melody_open", "arp",
-    "voice", "global", "system", "edit_sid", "edit_fm6", "op_env", "edit_wheel",
+    "voice", "global", "system", "weights", "layering", "weights_2", "display", "usb_save", "controls", "recording", "device", "edit_sid", "edit_fm6", "op_env", "edit_wheel",
     "edit_phys", "alg_1", "alg_2", "alg_3", "alg_4", "alg_5", "alg_6", "alg_7", "alg_8", "op_level", "fm6_alg_01", "fm6_alg_05", "fm6_alg_22", "fm6_alg_32", "fm6_freq", "fm6_eg", "fm6_peg", "fm6_store", "cz1_env", "confirm_seq", "confirm_project", "confirm_user",
     "confirm_motion", "confirm_erase", "menu", "about", "about_rec", "about_credits", "about_end", "uboot", "calibration",
     "batt_0", "batt_1", "batt_2", "batt_3", "batt_usb", "motion_rec", "motion_off", "song_home",
@@ -509,7 +509,7 @@ static const char *const S_NAME[S_COUNT] = {"home", "home_idle", "home_note", "h
     "stage_long", "stage_3tracks_long", "stage_2tracks_long", "stage_1track_long",
     "ref_stage_held", "ref_stage_released", "ref_stage_cutoff", "ref_stage_drum", "ref_browser", "ref_patterns", "ref_song", "ref_env", "ref_lfo", "ref_edit_osc", "ref_mixer", "ref_notes", "ref_settings", "ref_dialog", "ref_sheet_sound", "ref_sheet_song", "ref_picker_wave", "ref_picker_mode", "ref_sections_p5", "ref_map_p5", "ref_map_fm6", "ref_scl_list", "ref_sheet_project", "ref_sheet_note", "ref_sheet_hit", "ref_motion", "ref_sheet_motion", "ref_mod", "ref_picker_mod", "ref_arp", "ref_pattern", "ref_fmeg", "ref_grid", "ref_scales", "fx_phaser", "fx_width", "fx_formant", "fx_tape", "fx_spit", "fx_room", "fx_chorus", "fx_full", "fx_slot2", "fx_slot3", "fx_rack", "fx_rack_split", "fx_rack_pick", "fx_rack_list", "fx_bus1", "fx_bus2", "fx_bus3", "fx_shared", "fx_shared_split", "fx_shared_sheet", "fx_tone_dark", "fx_tone_thin", "boot_migration", "boot_update", "boot_error", "boot_complete", "boot_wipe_confirm", "boot_wiping", "boot_update_error", "map_drum_kit", "map_drum_hit", "map_drum_category",
     "stage_unused_1track", "stage_unused_3tracks", "mixer_unused_2tracks", "menu_unused_tracks",
-    "fx_midiverb", "fx_mididelay", "fx_midi_rack", "fx_midi_list", "punch_peek", "punch_active", "punch_lock", "punch_memory", "punch_end", "fx_reverb", "fx_pedal_drive", "fx_pedal_crush", "fx_pedal_phaser", "fx_pedal_chorus", "fx_pedal_flanger", "punch_loop", "fx_pedal_fold", "stage_midi", "stage_midi_partial", "mixer_midi", "patterns_midi", "song_midi", "layer_glo_midi", "menu_midi_general", "menu_midi_minilab", "menu_midi_mode", "patterns_preset", "patterns_preset_pending"};
+    "fx_midiverb", "fx_mididelay", "fx_midi_rack", "fx_midi_list", "punch_peek", "punch_active", "punch_lock", "punch_memory", "punch_end", "fx_reverb", "fx_pedal_drive", "fx_pedal_crush", "fx_pedal_phaser", "fx_pedal_chorus", "fx_pedal_flanger", "punch_loop", "fx_pedal_fold", "stage_midi", "stage_midi_partial", "mixer_midi", "patterns_midi", "song_midi", "layer_glo_midi", "menu_midi_general", "menu_midi_minilab", "menu_midi_mode", "patterns_preset", "patterns_preset_pending", "sm_master_tune", "sm_custom_tune", "sm_layer_mix", "sm_program", "sm_layer_notice", "sm_engine_22_1", "sm_engine_22_2", "sm_engine_23_1", "sm_engine_23_2", "sm_engine_24_1", "sm_engine_24_2", "sm_engine_25_1", "sm_engine_25_2", "sm_engine_26_1", "sm_engine_26_2", "sm_engine_27_1", "sm_engine_27_2", "sm_engine_28_1", "sm_engine_28_2", "sm_engine_29_1", "sm_engine_29_2", "sm_engine_30_1", "sm_engine_30_2"};
 
 /* the scenes of the UI design screens: the state the UI-redesign
  * prototype drew them from (its setup(): two pattern tracks, the drum pattern on track 4, a synthetic scope),
@@ -928,6 +928,18 @@ static void setup(int s)
         return;
     }
     switch (s) {
+    case S_SM_TUNE: case S_SM_CUSTOM:
+        song.playing=0;sm_tuning.enabled=1;sm_tuning.scale=s==S_SM_TUNE?1:SM_TUNE_CUSTOM;
+        sm_tuning.root=0;sm_tuning.octave=3;sm_tuning.cents[2]=-37;sm_tune_key=2;
+        go_title(s==S_SM_TUNE?"MASTER TUNE":"CUSTOM TUNE");break;
+    case S_SM_MIX:
+        song.playing=0;song.sel=1;sm_layers.enabled=1;sm_layers.low[1]=48;
+        for(uint32_t k=0;k<4;k++)trk[k].p[P_LEVEL]=(int16_t)(101-k*12);
+        trk[1].p[P_PAN]=-18;go_title("LAYER MIX");break;
+    case S_SM_PROGRAM:
+        song.playing=0;sm_program_slot=8;go_title("PROGRAM");break;
+    case S_SM_LAYER:
+        song.playing=0;go_home();sm_layers.enabled=1;sm_layer_notice_until=fm1_ms+1500;break;
     case S_STAGE_MIDI: case S_STAGE_MIDI_PARTIAL: case S_MIXER_MIDI:
     case S_PATGRID_MIDI: case S_SONG_MIDI: case S_GLO_MIDI:
         ui_power_on(); song.ntrk=s==S_STAGE_MIDI_PARTIAL?5u:NTRK;
@@ -1332,8 +1344,34 @@ static void setup(int s)
     }
     case S_ARP: go_title("ARP"); break;
     case S_VOICE: go_title("VOICE"); break;
+    case S_SM_ENGINE_22_1: eng(22); go_title("EDIT 1"); break;
+    case S_SM_ENGINE_22_2: eng(22); go_title("EDIT 2"); break;
+    case S_SM_ENGINE_23_1: eng(23); go_title("EDIT 1"); break;
+    case S_SM_ENGINE_23_2: eng(23); go_title("EDIT 2"); break;
+    case S_SM_ENGINE_24_1: eng(24); go_title("EDIT 1"); break;
+    case S_SM_ENGINE_24_2: eng(24); go_title("EDIT 2"); break;
+    case S_SM_ENGINE_25_1: eng(25); go_title("EDIT 1"); break;
+    case S_SM_ENGINE_25_2: eng(25); go_title("EDIT 2"); break;
+    case S_SM_ENGINE_26_1: eng(26); go_title("EDIT 1"); break;
+    case S_SM_ENGINE_26_2: eng(26); go_title("EDIT 2"); break;
+    case S_SM_ENGINE_27_1: eng(27); go_title("EDIT 1"); break;
+    case S_SM_ENGINE_27_2: eng(27); go_title("EDIT 2"); break;
+    case S_SM_ENGINE_28_1: eng(28); go_title("EDIT 1"); break;
+    case S_SM_ENGINE_28_2: eng(28); go_title("EDIT 2"); break;
+    case S_SM_ENGINE_29_1: eng(29); go_title("EDIT 1"); break;
+    case S_SM_ENGINE_29_2: eng(29); go_title("EDIT 2"); break;
+    case S_SM_ENGINE_30_1: eng(30); go_title("EDIT 1"); break;
+    case S_SM_ENGINE_30_2: eng(30); go_title("EDIT 2"); break;
     case S_GLOBAL: go_title("GLOBAL"); break;
     case S_SYSTEM: go_title("SYSTEM"); break;
+    case S_GLO_WEIGHT: go_title("WEIGHTS"); break;
+    case S_GLO_LAYER: go_title("LAYERING"); break;
+    case S_GLO_GUARD: go_title("WEIGHTS 2"); break;
+    case S_GLO_DISPLAY: go_title("DISPLAY"); break;
+    case S_GLO_USB: go_title("USB / SAVE"); break;
+    case S_GLO_CONTROLS: go_title("CONTROLS"); break;
+    case S_GLO_RECORDING: go_title("RECORDING"); break;
+    case S_GLO_DEVICE: go_title("DEVICE"); break;
     case S_EDIT_SID: eng(3); go_title("EDIT 1"); break;
     case S_EDIT_DIGITAL: eng(E_FM); go_title("EDIT 1"); break;
     case S_OP_ENV: eng(1); go_title("OP1 ENV"); break;
@@ -2019,6 +2057,7 @@ static void aud_page(const char *page, int playing)
     ui.force = 1; frame(); aud_frames(4);
     idle = aud_frames(8) / 8u;
     for (k = 0; k < 4u; k++) {
+        if(cur_page()->scope==SC_SM_PREF&&cur_page()->id[k]>=16u)continue; /* blocking calibration / About actions have dedicated renders */
         int32_t d;
         for (d = -1; d <= 1; d += 2) {
             uint64_t s0 = host_sent;

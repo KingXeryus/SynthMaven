@@ -22,6 +22,14 @@ int main(void){
  unsigned n=chord_make(t,60,notes,&root,&shape);assert(n==3&&notes[1]==67&&notes[2]==72);assert(t->p[P_CHRD]==CH_MAJ);
  sm_tuning.apply=14;assert(!sm_chord_micro(t)&&track_desc(t,P_CHRD)->names[CH_MAJ][0]);
  sm_tuning.apply=15;sm_tuning.octave=5;assert(chord_make(t,48,notes,&root,&shape)==3&&notes[1]==52);
+ sm_tuning.octave=0;sm_tuning.scale=48;t->p[P_ROOT]=9;t->p[P_TRANS]=7;
+ for(unsigned tonic=0;tonic<12;tonic++){sm_tuning.root=tonic;
+  for(unsigned mode=CH_AUTO;mode<=CH_MELODY;mode++){t->p[P_CHRD]=mode;
+   for(unsigned key=48;key<84;key++){unsigned count=chord_make(t,key,notes,&root,&shape);
+    for(unsigned i=0;i<count;i++)assert(sm_tuning_mask(&sm_tuning)&(1u<<((notes[i]+12-tonic)%12)));
+   }
+  }
+ }
  sm_tuning.enabled=0;assert(!sm_chord_micro(t));
  puts("Scale-safe chords: both neutral choices, every maqam/root/key, descriptor filtering, saved-mode fallback, bypass and octave threshold passed");return 0;
 }

@@ -99,8 +99,34 @@ static int dx_favorite_set(uint32_t preset,int on)
     if(on)p[16+k/8]|=(uint8_t)(1u<<(k%8));else p[16+k/8]&=(uint8_t)~(1u<<(k%8));
     return 1;
 }
+/* ACID/WSEQ/VPS: three 32-preset sets in retired NOISE row 11.
+ * Preserve its low 128 legacy star bits; initialize only a tagged upper half. */
+static int compact_favorite_index(uint32_t engine)
+{
+    return engine==ENGI_SM_ACID?0:engine==ENGI_SM_WSEQ?1:engine==ENGI_SM_VPS?2:-1;
+}
+static int compact_favorite_has(uint32_t engine,uint32_t preset)
+{
+    int index=compact_favorite_index(engine);const uint8_t *p=favorites.factory[11];
+    return index>=0&&preset<32&&p[28]=='C'&&p[29]=='M'&&p[30]=='P'&&p[31]==1&&
+        ((p[16+index*4+preset/8]>>(preset%8))&1u);
+}
+static int compact_favorite_set(uint32_t engine,uint32_t preset,int on)
+{
+    int index=compact_favorite_index(engine);uint8_t *p=favorites.factory[11];
+    if(index<0||preset>=32||compact_favorite_has(engine,preset)==!!on)return 0;
+    if(p[28]!='C'||p[29]!='M'||p[30]!='P'||p[31]!=1){
+        memset(p+16,0,12);p[28]='C';p[29]='M';p[30]='P';p[31]=1;
+    }
+    uint8_t *b=p+16+index*4+preset/8;
+    if(on)*b|=(uint8_t)(1u<<(preset%8));else *b&=(uint8_t)~(1u<<(preset%8));
+    return 1;
+}
+/* Classic ANALOG needs four bytes: row 0 is NOT free (Prophet starts at byte 2). */
 static int favorite_has(uint32_t engine, uint32_t preset)
 {
+    if(compact_favorite_index(engine)>=0)return compact_favorite_has(engine,preset);
+    if(engine>=ENGI_SM_ANALOG && engine<=ENGI_SM_JUNO){static const uint8_t rows[5]={9,1,2,5,6};engine=rows[engine-ENGI_SM_ANALOG];}
     if(engine==ENGI_HYBRID)return hy_favorite_has(preset);
     if(engine==ENGI_FM6 && preset>=DX_FAVORITE_FIRST)return dx_favorite_has(preset);
     if(engine==ENGI_PROPHET)return p5_favorite_has(preset,1);
@@ -112,6 +138,8 @@ static int favorite_has(uint32_t engine, uint32_t preset)
 }
 static int favorite_set(uint32_t engine, uint32_t preset, int on)
 {
+    if(compact_favorite_index(engine)>=0)return compact_favorite_set(engine,preset,on);
+    if(engine>=ENGI_SM_ANALOG && engine<=ENGI_SM_JUNO){static const uint8_t rows[5]={9,1,2,5,6};engine=rows[engine-ENGI_SM_ANALOG];}
     if(engine==ENGI_HYBRID)return hy_favorite_set(preset,on);
     if(engine==ENGI_FM6 && preset>=DX_FAVORITE_FIRST)return dx_favorite_set(preset,on);
     if(engine==ENGI_PROPHET)return p5_favorite_set(preset,on,1);

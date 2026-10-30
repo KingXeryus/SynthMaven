@@ -679,3 +679,87 @@ static void stage_draw(void)
             stage_free(k, &stage.col[k]);
     stage_band();
 }
+
+/* SynthMaven program overview: all four parts remain visible while editing.
+ * Rendering is foreground-only and cached; no additional audio work or state. */
+static void sm_program_home_draw(void)
+{
+    static uint32_t drawn;
+    uint32_t sig=ux.gen*977u+ux.pal*31u+song.sel+sm_layers.enabled*17u;
+    char names[4][24];
+    for(uint32_t k=0;k<4;k++){
+        sound_name(&trk[k],names[k]);
+        sig=str_hash(sig,names[k])+trk[k].eng_req*131u+trk[k].p[P_LEVEL]*23u+
+            (uint32_t)(trk[k].p[P_PAN]+64)*37u+trk[k].p[P_MUTE]*101u+
+            sm_layers.low[k]*43u+sm_layers.high[k]*47u;
+    }
+    char feedback[48]="SELECT PART / HOME DRUM";
+    if(stage_knobs_out()){
+        const page_t *sp=stage_page();int16_t *value;const param_desc_t *d=page_desc(sp,ui.hot_col&3u,&value);
+        if(d&&value){char val[16];const char *unit;stage_value(sp,d,*value,val,&unit);
+            str_cpy(feedback,stage_label(ui.hot_col&3u,d),sizeof feedback);uint32_t at=str_len(feedback);
+            str_cpy(feedback+at," ",sizeof feedback-at);at=str_len(feedback);str_cpy(feedback+at,val,sizeof feedback-at);
+        }
+    }
+    sig=str_hash(str_hash(sig,sm_program_name),feedback);
+    if(!ui.force&&sig==drawn)return;drawn=sig;
+    lcd_fill(0,30,240,210,T_BG);
+    draw_text_box(6,32,228,TY_LB,sm_program_name[0]?sm_program_name:"UNSAVED PROGRAM",T_TEXT,0);
+    for(uint32_t row=0;row<2;row++)for(uint32_t band=0;band<82;band+=CV_MAX/236u){
+        cv_begin_band(236,82,T_BG,band);
+        for(uint32_t col=0;col<2;col++){
+            uint32_t k=row*2+col;int32_t x=(int32_t)col*120;
+            int selected=song.sel==k,active=!trk[k].p[P_MUTE]&&(sm_layers.enabled||selected);
+            uint16_t edge=selected?T_TEXT:T_TRK(k),bg=ux_mix(T_SURF,T_TRK(k),selected?24:14);
+            char label[20],level[12],pan[12];
+            cv_rrect(x,0,116,82,8,edge,T_BG);cv_rrect(x+1,1,114,80,7,bg,edge);
+            label[0]=(char)('1'+k);label[1]=' ';str_cpy(label+2,active?"ON":"OFF",sizeof label-2);
+            cv_free_text(x+8,5,TY_LB,label,active?T_TEXT:T_DIM,bg,100);
+            char first[24],second[24];str_cpy(first,names[k],sizeof first);second[0]=0;
+            uint32_t cut=(uint32_t)str_len(first);
+            while(cut&&text_w(TY_LB,first)>100){first[--cut]=0;}
+            if(names[k][cut]){str_cpy(second,names[k]+cut,sizeof second);}
+            cv_free_text(x+8,24,TY_LB,first,T_TEXT,bg,100);
+            cv_free_text(x+8,44,TY_LB,second,T_TEXT,bg,100);
+            fmt_int(level,trk[k].p[P_LEVEL]);fmt_int(pan,trk[k].p[P_PAN]);
+            str_cpy(label,"V ",sizeof label);str_cpy(label+2,level,sizeof label-2);
+            cv_free_text(x+8,62,TY_LB,label,T_TEXT,bg,60);
+            str_cpy(label,"P ",sizeof label);str_cpy(label+2,pan,sizeof label-2);
+            cv_free_text(x+70,62,TY_LB,label,T_MID,bg,40);
+        }
+        cv_blit_band(2,52+row*86);
+    }
+    draw_text_box(4,220,232,TY_LB,feedback,T_MID,1);
+}
+
+static void sm_drum_home_draw(void)
+{
+    static uint32_t drawn;
+    uint32_t sig=ux.gen*977u+ux.pal*31u+sm_drum_lane+sm_drum_cursor*17u+sm_drums.enabled*101u+song.g[G_BPM]*131u;
+    uint32_t playing=sm_drum_audio.running?(sm_drum_audio.step+15u)%16u:16u;
+    sig=sig*31u+playing;
+    for(uint32_t k=0;k<8;k++)sig=sig*31u+sm_drums.steps[k]+sm_drums.level[k]*17u+sm_drums.velocity[k];
+    if(!ui.force&&sig==drawn)return;drawn=sig;
+    lcd_fill(0,30,240,210,T_BG);
+    draw_text_box(5,32,230,TY_LB,sm_drums.enabled?"DRUM MACHINE  /  RUN":"DRUM MACHINE  /  STOP",T_TEXT,0);
+    /* Eight independent lanes; each group of four columns is one beat. */
+    for(uint32_t lane=0;lane<8;lane++){
+        int y=50+(int)lane*17;
+        draw_text_box(4,y,66,TY_LB,sm_drum_names[lane],lane==sm_drum_lane?T_TEXT:T_MID,0);
+        for(uint32_t step=0;step<16;step++){
+            int x=73+(int)step*10;
+            uint16_t color=(sm_drums.steps[lane]&(1u<<step))?T_THEME:T_SURF;
+            if(step==playing)color=T_TEXT;
+            lcd_fill(x,y+2,8,12,color);
+            if(lane==sm_drum_lane&&step==sm_drum_cursor){
+                lcd_fill(x,y,8,1,T_TEXT);lcd_fill(x,y+15,8,1,T_TEXT);
+            }
+        }
+    }
+    char text[40],num[12];
+    fmt_int(num,sm_drums.level[sm_drum_lane]);str_cpy(text,"LEVEL ",sizeof text);str_cpy(text+6,num,sizeof text-6);
+    draw_text_box(5,190,110,TY_LB,text,T_TEXT,0);
+    fmt_int(num,song.g[G_BPM]);str_cpy(text,"BPM ",sizeof text);str_cpy(text+4,num,sizeof text-4);
+    draw_text_box(125,190,110,TY_LB,text,T_TEXT,0);
+    draw_text_box(4,211,232,TY_LB,"1 STEP 2 HIT 3 VOL 4 BPM",T_MID,1);
+}

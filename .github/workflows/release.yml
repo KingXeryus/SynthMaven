@@ -47,11 +47,11 @@ jobs:
           if draft=$(gh release view "$GITHUB_REF_NAME" --json isDraft --jq .isDraft); then
             test "$draft" = true || { echo 'Refusing to rebuild a public release'; exit 1; }
             gh release edit "$GITHUB_REF_NAME" --draft=true \
-              --title "Melodee $version" --notes-file "docs/RELEASE_$version.md" \
+              --title "SynthMaven $version" --notes-file "docs/RELEASE_$version.md" \
               "${release_flags[@]}"
           else
             gh release create "$GITHUB_REF_NAME" --verify-tag --draft \
-              --title "Melodee $version" --notes-file "docs/RELEASE_$version.md" \
+              --title "SynthMaven $version" --notes-file "docs/RELEASE_$version.md" \
               "${release_flags[@]}"
           fi
 
@@ -87,12 +87,13 @@ jobs:
         export PARALLEL=2 MELODEE_DUAL_CORE=1 MELODEE_CORE1_FALLBACK=0
         export MELODEE_RAM_AUDIO=1 MELODEE_CACHE_RAM=1 MELODEE_ADMISSION=0
         export MELODEE_AUDIO_PROFILE=0 MELODEE_AUDIO_BENCH=0
-        tests/run_tests.sh
+        SOUND=1 tests/run_tests.sh
         # Carry stable manual renders through the shared workflow's packages artifact.
         # This archive is removed from the draft before the complete release goes live.
         if [[ "$GITHUB_REF" == refs/tags/* && "$GITHUB_REF_NAME" != *-* ]]; then
           python3 tools/manual_shots.py
           python3 tools/manual_shots.py --require
+          python3 tools/make_synthmaven_guide.py --version "${GITHUB_REF_NAME#v}" --output "build/release-assets/SynthMaven-${GITHUB_REF_NAME#v}-User-Guide.pdf"
           tar -czf build/release-assets/manual-screenshots.tar.gz -C web/manual \
             $(find web/manual -name '*.png' | sed 's|^web/manual/||')
         fi
@@ -178,6 +179,8 @@ jobs:
           mv build/release-assets/manual-screenshots.tar.gz build/manual-screenshots.tar.gz
           tar -xzf build/manual-screenshots.tar.gz -C web/manual
           python3 tools/manual_shots.py --require
+          mkdir -p output/pdf
+          cp build/release-assets/SynthMaven-*-User-Guide.pdf output/pdf/
       - name: Validate release provenance and every archive checksum
         run: |
           version=$(python tools/fm1_recover.py --version | awk '{print $NF}')
@@ -198,6 +201,7 @@ jobs:
           gh release upload "$GITHUB_REF_NAME" \
             build/release-assets/fm1-recover-*.zip \
             "build/release-assets/melodee-$version-licenses.zip" \
+            build/release-assets/SynthMaven-*-User-Guide.pdf \
             build/release-assets/BUILD_INFO.json build/release-assets/SHA256SUMS --clobber
           if [[ "$version" != *-* ]]; then
             # A retry of this job may already have removed the temporary asset.
@@ -208,7 +212,7 @@ jobs:
             fi
           fi
           gh release edit "$GITHUB_REF_NAME" --draft=false \
-            --title "Melodee $version" --notes-file "docs/RELEASE_$version.md" \
+            --title "SynthMaven $version" --notes-file "docs/RELEASE_$version.md" \
             "${release_flags[@]}"
       - name: Prepare correction while preserving published firmware
         if: github.ref == 'refs/heads/release/recovery-v1.3.1'
@@ -266,7 +270,7 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add .
           if ! git diff --cached --quiet; then
-            git commit -m "release: publish Melodee $version"
+            git commit -m "release: publish SynthMaven $version"
             git push origin HEAD:gh-pages
           fi
       - name: Publish release candidate beside stable and nightly

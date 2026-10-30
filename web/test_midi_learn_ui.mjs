@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: GPL-3.0-only
+import {readFileSync} from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';import {JSDOM} from 'jsdom';
+const html=readFileSync(new URL('editor.html',import.meta.url),'utf8'),dom=new JSDOM('<div id="sm-mapping"></div>'),document=dom.window.document;
+const el=(tag,attrs={},...children)=>{const n=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==='text')n.textContent=v;else if(k.startsWith('on'))n[k]=v;else n.setAttribute(k,v);}n.append(...children);return n;};
+const maps=Array.from({length:24},()=>Array(12).fill(0)),calls=[],errors=[];
+const dev={mapping:{maps,learn:0,serial:0},info:{pe0:20},dump:{engine:0},pdesc:[{label:'Cutoff',min:0,max:127}],input:{}};
+const ctx={document,window:{},dev,el,$:id=>document.getElementById(id),access:null,controllerRoute:null,pack7:x=>x,say:x=>errors.push(x)};
+ctx.mappingRequest=async(a,draw=true)=>{calls.push(a);if(a[0]===1)dev.mapping.learn=a[1]?1:0;if(a[0]===2){maps[a[1]]=a.slice(2);dev.mapping.learn=0;}if(draw)ctx.renderMapping();return dev.mapping;};
+vm.createContext(ctx);vm.runInContext(html.slice(html.indexOf('const SM_ACTIONS='),html.indexOf('async function mappingRequest')),ctx);
+vm.runInContext(html.slice(html.indexOf('function renderMapping(){'),html.indexOf('\nsetInterval(async()=>{if(!dev?.info.synthmaven?.mapping')),ctx);
+const button=text=>[...document.querySelectorAll('button')].find(b=>b.textContent===text),tick=()=>new Promise(r=>setImmediate(r));
+ctx.renderMapping();assert.equal(document.querySelector('[aria-label="Assign action"]'),null);
+button('＋ Learn new action').click();await tick();assert.equal(dev.mapping.learn,1);assert.equal(document.querySelector('[aria-label="Assign action"]'),null);
+dev.mapping.learn=2;dev.mapping.captured=(2<<14)|(127<<7)|74;ctx.renderMapping();
+const target=document.querySelector('[aria-label="Assign action"]');assert.ok(target);target.value='a2';target.onchange();assert.equal(maps[0][0],0,'capture and assign do not save');
+button('Save action').click();await tick();assert.equal(maps[0][7],2);assert.equal(maps[0][3],74);assert.equal(document.querySelectorAll('.learned-action').length,1);
+button('Relearn').click();await tick();assert.equal(maps[0][3],74,'old message survives until Save');button('Cancel').click();await tick();assert.equal(maps[0][3],74);
+button('Relearn').click();await tick();dev.mapping.learn=2;dev.mapping.captured=(2<<14)|(127<<7)|75;ctx.renderMapping();button('Save action').click();await tick();assert.equal(maps[0][3],75);assert.equal(maps[0][7],2,'relearn retains action');
+button('Unlearn').click();await tick();assert.equal(maps[0][0],0);
+for(let i=0;i<16;i++)maps[i]=[1,0,0,i,127,0,4,i%10,80,0,255,0];maps[20]=[1,0,0,99,127,0,4,1,80,0,255,0];ctx.renderMapping();
+assert.equal(button('＋ Learn new action').disabled,true);assert.equal(document.querySelectorAll('.learned-action').length,4);
+for(let i=0;i<3;i++)button('Next actions').click();assert.equal(document.querySelector('.learned-action').dataset.assignment,'12');assert.equal(button('Next actions').disabled,true);assert.equal(maps[20][0],1,'legacy mappings are preserved');
+assert.deepEqual(errors,[]);console.log('MIDI Learn UI: learn-first, explicit save, relearn/cancel preservation, unlearn, 16 assignments and grid paging passed');

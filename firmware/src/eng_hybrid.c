@@ -90,7 +90,8 @@ static const uint16_t HY_SYNC_DIV[] = {12, 16, 24, 32, 48, 64, 96, 128, 192, 288
 #define HY_NSYNC NELEM(HY_SYNC_DIV)
 
 #include "vital_factory.h"
-#include "hybrid_patches.h"     /* HY_FACTORY[], HY_NFACTORY, N_HY_PATCH[] */
+#include "hybrid_patches.h"
+#include "hybrid_factory_pack.h"     /* HY_FACTORY[], HY_NFACTORY, N_HY_PATCH[] */
 
 /* ------------------------------------------------------------ helpers --- */
 /* a state-variable filter that also gives the band and the high-pass (Simper; tsvf_coef's scaling) */
@@ -507,10 +508,11 @@ static void hy_set_patch(uint32_t part, const hy_patch_t *p)
 /* Foreground snapshot: include a pending editor patch even before audio takes it. */
 static const hy_patch_t *hy_patch_of(uint32_t part)
 {
-    if(part>=NPART)return &HY_FACTORY[0];
+    static hy_patch_t snapshot; /* foreground only; copied by each caller */
+    if(part>=NPART){hy_factory_read(0,&snapshot);return &snapshot;}
     if(hy_gen[part]!=hy_gen_seen[part])return &hy_in[part];
     int32_t slot=trk[part].p[P_E3];
-    if(hy_slot_seen[part]!=slot+1)return &HY_FACTORY[clamp(slot,0,HY_NFACTORY-1)];
+    if(hy_slot_seen[part]!=slot+1){hy_factory_read(clamp(slot,0,HY_NFACTORY-1),&snapshot);return &snapshot;}
     return &hy_cur[part];
 }
 
@@ -543,7 +545,7 @@ static void hy_block(track_t *t)
         hy_slot_seen[p] = (int16_t)(slot + 1);
         hy_compile(p);
     } else if (hy_slot_seen[p] != slot + 1) {
-        hy_cur[p] = HY_FACTORY[(uint32_t)clamp(slot, 0, (int32_t)HY_NFACTORY - 1)];
+        hy_factory_read((uint32_t)clamp(slot, 0, (int32_t)HY_NFACTORY - 1),&hy_cur[p]);
         hy_slot_seen[p] = (int16_t)(slot + 1);
         hy_compile(p);
     }

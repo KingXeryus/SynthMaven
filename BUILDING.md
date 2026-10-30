@@ -132,7 +132,7 @@ replace these attested artifacts.
 For a downloaded package from a release using this workflow:
 
 ```sh
-gh attestation verify melodee-<version>.fwsc --repo keremimo/melodee \
+gh attestation verify melodee-<version>.fwsc --repo KingXeryus/SynthMaven \
   --signer-workflow zvenson/fm1-build/.github/workflows/build.yml \
   --source-ref refs/tags/v<version>
 ```
@@ -268,7 +268,7 @@ signal), `SOUND=only` runs them alone.
 ## Install
 
 Use the web installer in Chrome or Edge:
-<https://keremimo.github.io/melodee/webapp/installer/>. It installs the released package.
+<https://kingxeryus.github.io/SynthMaven/webapp/installer/>. It installs the released package.
 
 From the command line (needs `pip3 install mido python-rtmidi`):
 

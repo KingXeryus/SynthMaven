@@ -1,0 +1,257 @@
+{
+  "source": "SynthMaven Oriental AU/Source/Scales.h",
+  "scales": [
+    {
+      "name": "Western/Major",
+      "cents": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "mask": 2741
+    },
+    {
+      "name": "Western/Natural minor",
+      "cents": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "mask": 1453
+    },
+    {
+      "name": "Western/Harmonic minor",
+      "cents": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "mask": 2477
+    },
+    {
+      "name": "Western/Melodic minor",
+      "cents": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "mask": 2733
+    },
+    {
+      "name": "Western/Dorian",
+      "cents": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "mask": 1709
+    },
+    {
+      "name": "Western/Phrygian",
+      "cents": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "mask": 1451
+    },
+    {
+      "name": "Western/Lydian",
+      "cents": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "mask": 2773
+    },
+    {
+      "name": "Western/Mixolydian",
+      "cents": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "mask": 1717
+    },
+    {
+      "name": "Western/Locrian",
+      "cents": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "mask": 1387
+    },
+    {
+      "name": "Western/Major pentatonic",
+      "cents": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "mask": 661
+    },
+    {
+      "name": "Western/Minor pentatonic",
+      "cents": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "mask": 1193
+    },
+    {
+      "name": "Western/Blues",
+      "cents": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "mask": 1257
+    },
+    {
+      "name": "Western/Whole tone",
+      "cents": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "mask": 1365
+    },
+    {
+      "name": "Western/Diminished",
+      "cents": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "mask": 2925
+    }
+  ]
+}

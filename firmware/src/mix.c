@@ -78,6 +78,7 @@ static uint32_t division_samples(uint32_t quarter, uint32_t div)
 static uint32_t div_samples(uint32_t div) { return division_samples(beat_samples(), div); }
 
 #include "punch.c"
+#include "synthmaven_drums.c"
 
 /* External sequencing uses musical units, independent of the measured tempo.
  * 24 clocks/beat and every division divide exactly; tempo estimates only set
@@ -100,6 +101,7 @@ static uint8_t track_capture_on;
 static int32_t track_capture[CTL * NPART];
 #endif
 
+#include "sm_juno_chorus.c"
 typedef struct {
     int16_t level, pan;
     uint8_t valid;
@@ -132,6 +134,20 @@ static __attribute__((noinline)) void mix_spread(track_t *t, int32_t *b, uint32_
         mix_add(((x*glm)>>12)+((y*gld)>>12),((x*grm)>>12)+((y*grd)>>12),i,send);
     }
     t->peak=pk;
+}
+static void mix_juno(track_t *t,int32_t *b,uint32_t n){
+ const int32_t level=LEVEL_Q12[t->p[P_LEVEL]&127],pan=t->p[P_PAN];
+ const int32_t gl=4096-(pan>0?pan*64:0),gr=4096+(pan<0?pan*64:0);
+ const uint32_t send=fx_send_on?fx_send_gain(t):0u;int32_t peak=t->peak;
+ for(uint32_t i=0;i<n;i++){
+  int32_t l=clamp((int32_t)(((int64_t)(b[i]+jc_side[i])*level)>>12),-524287,524287);
+  int32_t r=clamp((int32_t)(((int64_t)(b[i]-jc_side[i])*level)>>12),-524287,524287);
+  int32_t a=l<0?-l:l,ar=r<0?-r:r;if(ar>a)a=ar;if(a>peak)peak=a;
+#if MELODEE_USB_AUDIO
+  if(track_capture_on)track_capture[i*NPART+(uint32_t)(t-trk)]=(l+r)/2;
+#endif
+  mix_add((int32_t)(((int64_t)l*gl)>>12),(int32_t)(((int64_t)r*gr)>>12),i,send);
+ }t->peak=peak;
 }
 #if MELODEE_MIX_FAST
 #define MIX_MONO_GENERAL mix_mono_general
@@ -276,7 +292,8 @@ static __attribute__((noinline)) void mix_part(track_t *t,uint32_t n)
     AP_START(mix_start);
     if(rendered){
         mix_solo(t,part_buf,n);
-        if(spread_on)mix_spread(t,part_buf,n);
+        if(juno_chorus(t,part_buf,n))mix_juno(t,part_buf,n);
+        else if(spread_on)mix_spread(t,part_buf,n);
         else{
             mix_cache_t *mc=&mix_cache[(uint32_t)(t-trk)];
             if(!mc->valid || mc->level!=t->p[P_LEVEL] || mc->pan!=t->p[P_PAN])mix_cache_update(t,mc);
@@ -284,6 +301,7 @@ static __attribute__((noinline)) void mix_part(track_t *t,uint32_t n)
             mix(t,part_buf,n,mc);
         }
     }
+    if(!rendered)jc_idle(t);
     AP_END(AP_MIX,mix_start);
     if(mod.on)mod_end(t);
     if(extra){void (*volatile run)(uint32_t)=mix_extra_sends;run(n);}
@@ -327,6 +345,7 @@ static __attribute__((noinline)) void mix_block(int32_t *out,uint32_t n)
 #if MELODEE_BATCH_AUDIO && !MELODEE_LEGACY_EXTRAS
     batch_ready=0;part_buf=part_storage;spread_buf=spread_storage;
 #endif
+    sm_drum_mix(mix_l,mix_r,n,beat_samples(),1);
     fx_bus_start(n);
     /* Dry gain overlaps the shared wet processing; limiter sees their sum. */
     for(uint32_t i=0;i<n;i++){mix_l[i]=((mix_l[i]>>2)*(int32_t)song.master_q12)>>10;mix_r[i]=((mix_r[i]>>2)*(int32_t)song.master_q12)>>10;}

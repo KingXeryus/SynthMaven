@@ -74,13 +74,25 @@ _Static_assert(NSTEP <= 128u && NTRK * NPAT <= 64u, "recorded-note identifiers")
 #define ENGI_MIDI 21u            /* 20 reserved for the Prophet user-preset namespace */
 #define SYNTHMAVEN_SYNTH 1
 #define ENGI_HYBRID 22u
-#define NENGINES 23               /* append engines without reusing preset namespaces */
+#define ENGI_SM_ANALOG 23u
+#define ENGI_SM_DIGITAL 24u
+#define ENGI_SM_VOICE 25u
+#define ENGI_SM_STRINGS 26u
+#define ENGI_SM_JUNO 27u
+#define ENGI_SM_ACID 28u
+#define ENGI_SM_MACRO 31u /* unimplemented engine ID remains retired */
+#define ENGI_SM_VPS 30u
+#define ENGI_SM_TERRAIN 31u
+#define ENGI_SM_FMX 16u
+#define ENGI_SM_WSEQ 29u
+#define ENGI_SM_VECTOR 18u
+#define NENGINES 32               /* append engines without reusing preset namespaces */
 #define USER_NATIVE_FM 17u
 #define USER_NATIVE_CZ 18u
 #define USER_NONE 65535u
 #define ENGI_ANALOG 0u           /* retired in 1.2: never selectable (eng_ok), its stored sounds play silent */
 #define ENGI_DIGITAL 1u          /* retired: never selectable (eng_ok), its stored sounds play silent */
-#define NENG_SHOWN (7u + MELODEE_SLICE + 6u * MELODEE_LEGACY_EXTRAS)   /* the engines one can pick: PRESETS, the EDIT
+#define NENG_SHOWN (15u + MELODEE_SLICE + 6u * MELODEE_LEGACY_EXTRAS)   /* the engines one can pick: PRESETS, the EDIT
                                                 * layer, the editor, in the display order of engines.c ENGINE_ORDER */
 #define ENGI_SLICE 13u           /* reserved without MELODEE_SLICE: never selectable (eng_ok) */
 #ifdef SMP_USER_SLOTS
@@ -286,12 +298,8 @@ typedef struct {
     int32_t gstep;               /* glide TIME mode: 1/16 st per control tick, 0 = RATE mode */
     int32_t fine;                /* unison detune: phase increment * (1 + fine / 4096) */
     int32_t scale_fine;          /* note-on snapshot: scale pitch below 1/16 semitone */
-    uint32_t ph[3];
-#if MELODEE_LEGACY_EXTRAS
-    int32_t s[8];                /* retired VOICE/NOISE also use slots 6 and 7 */
-#else
-    int32_t s[6];                /* current engines: slots 0..5, including drum gates */
-#endif
+    uint32_t ph[4];              /* classic VOICE uses the fourth slot for its private noise state */
+    int32_t s[8];                /* restored ANALOG, DIGITAL and VOICE require slots 6/7 */
     uint32_t age;
     uint8_t mvel;                /* mod.c: the note-on velocity (before UNISON scaling) and RAND of the note */
     int16_t mrnd;

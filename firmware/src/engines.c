@@ -24,6 +24,11 @@
 #include "eng_fm6.c"            /* FM6: 6-operator FM rendered as Dexed renders it (fm6_core.c) */
 #include "eng_midi.c"
 #include "eng_hybrid.c"
+#include "eng_sm_classic.c"
+#include "eng_sm_acid.c"
+#include "eng_sm_vps.c"
+#include "eng_sm_wseq.c"
+
 #if MELODEE_SLICE
 #include "eng_slice.c"
 #else
@@ -150,11 +155,13 @@ static const engine_t *const ENGINES[NENGINES] = {
 #endif
     &ENG_RETIRED,                /* 14: retired OBXF; stored index reserved */
     &ENG_CZ,                     /* 15: native Casio CZ-1 */
-    &ENG_RETIRED, &ENG_RETIRED, &ENG_RETIRED, /* 16..18 reserved */
+    &ENG_RETIRED, &ENG_RETIRED, &ENG_RETIRED, /* previously unused IDs, SynthMaven 3.5 */
     &ENG_P5_TEST,                /* 19: Prophet (ANALOG's ID 0 stays reserved) */
     &ENG_RETIRED,                /* 20: Prophet user-preset namespace */
     &ENG_MIDI,                   /* 21: USB MIDI Track */
     &ENG_HYBRID,                 /* 22: SynthMaven HYBRID */
+    &ENG_SMC_ANALOG,&ENG_SMC_DIGITAL,&ENG_SMC_FORMANT,&ENG_SMC_STRINGS,&ENG_SMC_JUNO,
+    &ENG_ACID,&ENG_WSEQ,&ENG_VPS,&ENG_RETIRED,
 };
 
 /* a track's engine number as an index (the audio paths: a compare, cheaper than % NENGINES; a bad number: 0) */
@@ -196,6 +203,8 @@ static const uint8_t ENGINE_ORDER[NENG_SHOWN] = {
     10,                          /* DRUM */
     ENGI_MIDI,
     ENGI_HYBRID,
+    ENGI_SM_ANALOG,ENGI_SM_DIGITAL,ENGI_SM_VOICE,ENGI_SM_STRINGS,ENGI_SM_JUNO,
+    ENGI_SM_ACID,ENGI_SM_VPS,ENGI_SM_WSEQ,
 };
 
 /* Retired synth records (ANALOG and DIGITAL since 2.0 too) retain their stored identity and render silence.
@@ -211,7 +220,7 @@ static int eng_extra_retired(uint32_t e)
  * eng_vis(n), e's place among them eng_rank(e), the next / previous one eng_step(e, dir) (wraps) */
 static int eng_ok(uint32_t e)
 {
-    return e < NENGINES && e != USER_NATIVE_P5 && !(e >= 16u && e <= 18u) && !eng_extra_retired(e) && e != 4u && e != 8u && e != 14u && (MELODEE_SLICE || e != ENGI_SLICE);
+    return e < NENGINES && e != USER_NATIVE_FM && e != ENGI_SM_MACRO && e != ENGI_SM_FMX && e != ENGI_SM_VECTOR && e != ENGI_SM_TERRAIN && e != USER_NATIVE_P5 && !eng_extra_retired(e) && e != 4u && e != 8u && e != 14u && (MELODEE_SLICE || e != ENGI_SLICE);
 }
 static uint32_t eng_sound_idx(uint32_t e)
 {

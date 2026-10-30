@@ -241,7 +241,7 @@ class NightlySite(unittest.TestCase):
             self.build_site(dual, "1.1.0", site)
             manual = site / "webapp/manual"
             text = (manual / "index.html").read_text()
-            self.assertIn("<h1>Manual</h1>", text)
+            self.assertIn("<h1>SynthMaven user guide</h1>", text)
             self.assertNotIn('id="manual-ver"', text)
             self.assertFalse((manual / "versions.json").exists())
             self.assertFalse(any(p.is_dir() and p.name.startswith("v") for p in manual.iterdir()))
@@ -260,7 +260,7 @@ class NightlySite(unittest.TestCase):
             self.assertFalse((manual / "gone.png").exists())
             self.assertFalse((manual / "orphan.png").exists())
             self.assertTrue((manual / "home.png").is_file())
-            self.assertIn("<h1>Manual</h1>", (manual / "index.html").read_text())
+            self.assertIn("<h1>SynthMaven user guide</h1>", (manual / "index.html").read_text())
 
     def test_manual_figure_list_comes_from_the_html(self):
         self.assertEqual(manual_shots.figure_names(self.manual), manual_figures(self.manual))

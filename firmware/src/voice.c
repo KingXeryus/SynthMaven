@@ -355,6 +355,7 @@ static void glide_set(track_t *t, voice_t *v, int glide)
 static void voice_scale_pitch(const track_t *t, voice_t *v, uint32_t note)
 {
     if(sm_tuning.enabled && t->eng_req!=ENGI_DRUM){
+        note=sm_tuning_snap(&sm_tuning,(uint32_t)(t-trk),note);
         int32_t pitch=clamp((int32_t)note*10000+100*sm_tuning_cents(&sm_tuning,(uint32_t)(t-trk),note),0,1270000);
         v->pitch16=pitch*16/10000;
         v->scale_fine=(pitch*16-v->pitch16*10000)*2367/1600000;

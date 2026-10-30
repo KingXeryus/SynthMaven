@@ -12,7 +12,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>Install Melodee</title>
+<title>Install SynthMaven</title>
 <link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='4'/%3E%3C/svg%3E">
 <style>/*INSTALLER_STYLE*/</style>
 </head>
@@ -31,25 +31,39 @@
 <div class="demo" id="demo" hidden><span data-t="demo">Demo: a simulated FM-1. Nothing is written.</span> <a href="./" data-t="demoleave">Leave the demo</a></div>
 
 <header class="site">
-  <a class="brand" href="../editor/">Melodee</a>
+  <a class="brand" href="../editor/">SynthMaven</a>
   <nav>
     <a href="../editor/" data-t="navEditor">Editor</a>
     <a href="./" aria-current="page" data-t="navInstall">Install</a>
     <a href="../manual/" data-t="navManual">Manual</a>
-    <button type="button" class="lang" id="lang" lang="ja">日本語</button>
+    <button type="button" class="lang" id="lang" hidden>English</button>
   </nav>
 </header>
 
 <main>
   <section class="hero">
     <p class="kicker" data-t="kicker">Firmware for the M-VAVE FM-1</p>
-    <h1><span data-t="title">Install Melodee</span> <span class="v" id="hver"></span></h1>
+    <h1><span data-t="title">Install SynthMaven</span> <span class="v" id="hver"></span></h1>
     <p class="lede" data-t="lede">Synths, sequencing and effects for the FM-1, installed over USB from this page.</p>
     <ul class="facts">
       <li data-t="factBrowser">Chrome or Edge</li>
       <li data-t="factCable">A USB data cable</li>
       <li data-t="factTime">About 3 minutes</li>
     </ul>
+  </section>
+
+  <section class="sm-features" aria-labelledby="sm-adds">
+    <h2 id="sm-adds">What SynthMaven adds</h2>
+    <ul>
+      <li>HYBRID with 64 Vital-derived translations, DX7 sounds and eight player-edited factory programs (including E. Organ): layering, keyboard splits, pan and volume mixing.</li>
+      <li>107 restored classic sound presets plus 42 ACID, VPS and WSEQ presets and an independent eight-lane drum machine alongside all four layers, with a dedicated drum Home screen.</li>
+      <li>Global chromatic microtuning with 46 maqam settings, selectable roots and octave boundaries, custom cents editing and scale-aware harmony.</li>
+      <li>Scenes, setlists and USB pedal switching. Learn a message, assign its action, then save: a 16-action grid offers Relearn and Unlearn, with supported controller profiles and MCU/HUI controls.</li>
+      <li>A shared web/iPad Perform screen with program and scene navigation, quick controls, mixer and tuning keyboard. Hybrid-style mixer, sequencer and drum-grid layouts, touch-sized controls and screen pages instead of scrolling. Play/Stop controls the connected FM-1 over USB.</li>
+      <li>Ten named and numbered GLO pages bring device-wide controls together, including saved color themes, display, USB, recording and performance preferences.</li>
+    </ul>
+    <p><a href="../manual/">User guide</a> · <a href="../manual/SynthMaven-3.5-User-Guide.pdf">Download illustrated PDF</a> · <a href="https://github.com/KingXeryus/SynthMaven/releases">Release notes and recovery downloads</a></p>
+    <p><strong>USB-only release.</strong> Direct pedals/controllers require a powered adapter or hub. Every firmware flash resets user settings and musical storage: export a backup first. Older SynthMaven backups require their matching firmware for restoration.</p>
   </section>
 
   <div class="banner" id="resumebanner" hidden>

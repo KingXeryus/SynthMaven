@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: GPL-3.0-only
+import {readFileSync} from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';import {JSDOM} from 'jsdom';
+const html=readFileSync(new URL('editor.html',import.meta.url),'utf8'),dom=new JSDOM(html),document=dom.window.document;
+const el=(tag,attrs={},...children)=>{const n=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==='text')n.textContent=v;else if(k==='onclick')n.onclick=v;else n.setAttribute(k,v);}n.append(...children);return n;};
+const selected=[];const ctx={document,Event:dom.window.Event,el,$:id=>document.getElementById(id),tab:'perform',showTab:n=>selected.push(n)};
+const src=html.slice(html.indexOf('/* WORKFLOW-UI-BEGIN */'),html.indexOf('/* WORKFLOW-UI-END */'));
+vm.runInNewContext(src+'\nglobalThis.test={workflowTabs,syncWorkflow,renderShapeNavigation,rotaryControl,rotaryExact};',ctx);
+assert.deepEqual(Array.from(ctx.test.workflowTabs('fm6')),['sound','effects','motionfx','native','fm6']);assert.deepEqual(Array.from(ctx.test.workflowTabs('tracks')),['sequencer','drums','tracks','projects']);
+assert.deepEqual(Array.from(ctx.test.workflowTabs('chords')),['tuning','chords']);
+ctx.test.syncWorkflow();assert.equal(document.querySelector('[data-workflow=perform]').getAttribute('aria-pressed'),'true');document.querySelector('[data-workflow=tuning]').click();assert.equal(selected.at(-1),'tuning');
+for(const label of ['EDIT HYBRID','ENV','LFO','FX SEND','SCL','MOD'])document.getElementById('groups').append(el('div',{},el('h2',{text:label})));
+ctx.tab='sound';ctx.test.renderShapeNavigation();assert.equal(document.querySelectorAll('#groups>[data-shape-hidden=false]').length,1);
+[...document.querySelectorAll('#shape-nav button')].find(b=>b.textContent==='Envelopes').click();assert.equal(document.querySelector('#groups>[data-shape-hidden=false]').textContent,'ENV');
+assert.equal(document.querySelector('#effects-groups h2').textContent,'FX SEND');assert.equal(document.querySelector('#motionfx-groups h2').textContent,'LFO');assert.equal(document.querySelector('#chords-groups h2').textContent,'SCL');
+const input=el('input',{type:'range',min:'-64',max:'63',step:'1',value:'0','aria-label':'Pan'});let writes=0;input.onchange=()=>writes++;
+const dial=ctx.test.rotaryControl(input),exact=ctx.test.rotaryExact(input,'Pan');document.body.append(dial,exact);assert.equal(writes,0);
+exact.value='-37';exact.dispatchEvent(new dom.window.Event('change'));assert.equal(input.value,'-37');assert.equal(writes,1);assert.match(dial.querySelector('.dial-pointer').style.transform,/rotate/);
+input.value='63';input.dispatchEvent(new dom.window.Event('input'));assert.equal(exact.value,'63');assert.equal(dial.querySelectorAll('path')[1].getAttribute('stroke-dasharray'),'100 100');
+assert.equal(document.getElementById('tuning-visibility'),null,'tuning keyboard remains visible without a hide toggle');
+console.log('Workflow: page grouping, task visibility, rotary/exact entry synchronization and audio-invariant view changes passed');
+// Native FM editing: changing views/operators must never transmit a patch.
+ctx.FM6=vm.runInNewContext(html.slice(html.indexOf('/*PROTO-BEGIN*/'),html.indexOf('/*PROTO-END*/'))+';FM6',{setTimeout,clearTimeout,setInterval,clearInterval});
+ctx.fm6v=new Uint8Array(155);ctx.fm6Ok=()=>false;ctx.setTimeout=setTimeout;ctx.clearTimeout=clearTimeout;ctx.fm6Timer=null;
+vm.runInNewContext(html.slice(html.indexOf('const FM6_WAVES'),html.indexOf('function renderFm6Imported()'))+';globalThis.fmTest={renderFm6Workflow,renderFm6Voice,renderFm6Ops};',ctx);
+ctx.fmTest.renderFm6Workflow();ctx.fmTest.renderFm6Voice();ctx.fmTest.renderFm6Ops();
+assert.equal(document.querySelector('[data-fm-section=patches]').hidden,true);
+const before=Array.from(ctx.fm6v);
+[...document.querySelectorAll('#fm6-workflow button')].find(b=>b.textContent==='Operators').click();
+assert.equal(document.querySelector('[data-fm-section=operators]').hidden,false);
+[...document.querySelectorAll('#fm6ops button')].find(b=>b.textContent.startsWith('OP 6')).click();
+[...document.querySelectorAll('#fm6ops button')].find(b=>b.textContent==='Envelope').click();
+assert.equal(document.querySelectorAll('#fm6ops .dial').length,8);
+assert.deepEqual(Array.from(ctx.fm6v),before,'FM section and operator changes preserve voice bytes');
+const rate=document.querySelector('#fm6ops .dial-value');rate.value='47';rate.dispatchEvent(new dom.window.Event('change'));
+assert.equal(ctx.fm6v[ctx.FM6.at(6,'R1')],47,'exact value edits the selected operator');
+console.log('FM touch workspace: section selection, all six operators, envelope controls and exact-value editing passed');

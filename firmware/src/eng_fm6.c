@@ -180,7 +180,7 @@ static void fm6_factory(uint32_t k, uint8_t *pk)
     uint8_t v[FP_SIZE + 1u];
     /* Preserve all Melodee indices, including INIT at 24; append SynthMaven's bank. */
     if (k >= FM6_NFAC + 1u && k < FM6_NFAC + 1u + FM6_NSTOCK) {
-        memcpy(pk, FM6_STOCK[k - FM6_NFAC - 1u], FM6_PACKED);
+        FM6_DELTA_read(FM6_NFACTORY+k-FM6_NFAC-1u,pk);
         return;
     }
     if (k >= FM6_NFAC) {
@@ -188,7 +188,7 @@ static void fm6_factory(uint32_t k, uint8_t *pk)
         return;
     }
     if (k < FM6_NFACTORY) {
-        memcpy(pk, FM6_FACTORY[k], FM6_PACKED);
+        FM6_DELTA_read(k,pk);
         return;
     }
     fm6_rom_patch(&FM6_ROM[(k - FM6_NFACTORY) % FM6_NROM], v);

@@ -1074,12 +1074,10 @@ static void edit_param(uint32_t slot, int32_t steps)
         motion_unguard(guard);
         if(id!=4u){settings_save();sync_reload=1;}ui.force=1;return;
     }
+    if(pg->scope==SC_SM_PREF){sm_pref_edit(pg->id[slot],steps);return;}
     if(pg->scope==SC_SM_LAYER){if(!slot){sm_layers.enabled=(uint8_t)clamp(sm_layers.enabled+steps,0,1);settings_save();ui.force=1;}return;}
     if(pg->scope==SC_SM_MIX){trk[slot&3u].p[P_LEVEL]=(int16_t)clamp(trk[slot&3u].p[P_LEVEL]+steps,0,127);ui.force=1;return;}
-    if(pg->scope==SC_SM_PROGRAM && (slot==0 || slot==3)){
-        int16_t *value=slot==0?&sm_program_slot:&sm_program_override;
-        *value=(int16_t)clamp(*value+steps,slot==0?1:0,slot==0?8:1);ui.force=1;return;
-    }
+    if(pg->scope==SC_SM_PROGRAM){sm_program_knob(slot,steps);return;}
     if(pg->scope==SC_DRUM){drum_sound_edit(slot,steps);return;}
     if(pg->scope==SC_DRUMHIT){drum_hit_edit(slot,steps);return;}
     if (pg->scope == SC_STEP) {
@@ -1678,7 +1676,7 @@ static uint32_t btn_hold(uint32_t *t0, uint32_t label, uint32_t now, int hold_ok
     if ((fm1_in.buttons >> panel.btn[label]) & 1u) {
         if (!*t0)
             *t0 = (now | 1u) & ~2u;
-        else if (hold_ok && !(*t0 & 2u) && now - (*t0 & ~3u) > (label==B_EDIT||label==B_GLO?2000u:label==B_ENV||label==B_SCL?3000u:700u) * 1000u * FM1_TICKS_PER_US) {
+        else if (hold_ok && !(*t0 & 2u) && now - (*t0 & ~3u) > (label==B_EDIT||label==B_GLO?2000u:label==B_ENV||label==B_SCL||((label==B_OCTUP||label==B_OCTDN)&&ui.home)?3000u:700u) * 1000u * FM1_TICKS_PER_US) {
             *t0 |= 2u;
             return BT_HOLD;
         }
@@ -1723,7 +1721,7 @@ static void page_tap(uint32_t b)
         for(uint32_t i=0;i<NPAGES;i++)if(PAGES[i].scope==SC_MASTER_TUNE&&PAGES[i].id[0]==0){ui.page=(uint8_t)i;ui.home=0;page_entered();return;}
     }
     if (b == B_GLO) {
-        open_global();                                  /* MIXER -> GLOBAL -> SYSTEM -> MIXER */
+        open_global();                                  /* cycle global settings; mixer remains on EDIT hold */
         return;
     }
     if (b == B_EDIT && song.seq_mode && !ui.home && cur_page()->graph == GR_ROLL) {   /* the DRUM grid: EDIT clears
@@ -2123,7 +2121,21 @@ static void ui_input(void)
     else if(sm_env==BT_TAP&&!step_modifier_context()&&!ui.menu&&!ui.confirm&&!name_on())page_tap(B_ENV);
     if(sm_scl==BT_HOLD){for(uint32_t i=0;i<NPAGES;i++)if(PAGES[i].scope==SC_MASTER_TUNE&&PAGES[i].id[0]==4){ui.page=(uint8_t)i;ui.home=0;page_entered();break;}}
     else if(sm_scl==BT_TAP&&!step_modifier_context()&&!ui.menu&&!ui.confirm&&!name_on())page_tap(B_SCL);
-    uint32_t octup = btn_hold(&ui.oct_t0, B_OCTUP, now, page_sheet() != 0u);   /* held: the page's sheet */
+    /* HOME octave taps wait for release; a lone three-second hold selects a program. */
+    static uint32_t sm_octdn_t0;
+    uint32_t sm_octmask=(1u<<panel.btn[B_OCTDN])|(1u<<panel.btn[B_OCTUP]);
+    int sm_oct_home=ui.home&&!oct_nav()&&!ui.ly&&!(fm1_in.buttons&~sm_octmask);
+    uint32_t sm_octdn=btn_hold(&sm_octdn_t0,B_OCTDN,now,sm_oct_home);
+    uint32_t octup = btn_hold(&ui.oct_t0, B_OCTUP, now, sm_oct_home || page_sheet() != 0u);
+    if(sm_oct_home){
+        if(oct_eat&1u)sm_octdn=BT_NONE;if(oct_eat&2u)octup=BT_NONE;
+        if(pressed&sm_octmask){oct_deferred_value=octave_control();oct_deferred=1;}
+        pressed&=~sm_octmask;
+        if((fm1_in.buttons&sm_octmask)==sm_octmask){sm_octdn_t0|=2u;ui.oct_t0|=2u;*octave_control()=0;sm_octdn=octup=BT_NONE;}
+        if(sm_octdn==BT_HOLD||octup==BT_HOLD){if(sm_program_step(octup==BT_HOLD?1:-1))ui_message("STOP PLAYBACK");ui.force=1;}
+        else if(sm_octdn==BT_TAP||octup==BT_TAP){int8_t *v=oct_deferred_value?oct_deferred_value:octave_control();int n=*v+(octup==BT_TAP?1:-1);*v=(int8_t)clamp(n,-3,3);}
+        octup=BT_NONE;
+    }   /* held: the page's sheet */
     uint32_t oct;
     if (octup == BT_HOLD) {
         oct_eat |= 2u;                                  /* (its release is no OCT+) */
@@ -2385,6 +2397,7 @@ static void ui_input(void)
         b = panel_btn_of(id);
         switch (b) {
         case B_PLAY:
+            if(ui.home&&ui.home_pg){sm_drums.enabled^=1u;ui.force=1;break;}
             if ((fm1_in.buttons >> panel.btn[B_REC]) & 1u) {   /* REC + PLAY: record now */
                 rec_play();
                 break;
@@ -2530,7 +2543,10 @@ static void ui_input(void)
 
     s = panel_enc(EN_PRESET);
     if (s) step_edit_combo();
-    if(s&&!ui.home&&cur_page()->scope==SC_SM_MIX){
+    if(s&&ui.home&&ui.home_pg){
+        sm_drum_cursor=(uint8_t)((sm_drum_cursor+s%16+16)%16);ui.force=1;
+    } else if(s&&!ui.home&&cur_page()->scope==SC_SM_PROGRAM){sm_name_edit(s);
+    } else if(s&&!ui.home&&cur_page()->scope==SC_SM_MIX){
         TSEL->p[P_PAN]=(int16_t)clamp(TSEL->p[P_PAN]+s,-64,63);ui.force=1;
     } else if (s && ui.home) {
         sm_home_preset(s);
@@ -2560,16 +2576,19 @@ static void ui_input(void)
     }
     if ((s = panel_enc(EN_ALGO)) != 0) {           /* ALGORITHM: the selected track, on every page */
         step_edit_combo();
-        if(!ui.home&&cur_page()->scope==SC_SM_MIX){sm_layers.low[song.sel%4]=(uint8_t)clamp(sm_layers.low[song.sel%4]+s,33,93);if(sm_layers.high[song.sel%4]<sm_layers.low[song.sel%4])sm_layers.high[song.sel%4]=127;settings_save();ui.force=1;}
+        if(!ui.home&&cur_page()->scope==SC_SM_PROGRAM){sm_name_focus();sm_name_position=(int16_t)(1+(sm_name_position-1+s%12+12)%12);sm_io_arm=0;ui.force=1;}
+        else if(!ui.home&&cur_page()->scope==SC_SM_MIX){sm_layers.low[song.sel%4]=(uint8_t)clamp(sm_layers.low[song.sel%4]+s,33,93);if(sm_layers.high[song.sel%4]<sm_layers.low[song.sel%4])sm_layers.high[song.sel%4]=127;settings_save();ui.force=1;}
+        else if (ui.home&&ui.home_pg){sm_drum_lane=(uint8_t)((sm_drum_lane+s%8+8)%8);ui.force=1;}
         else if (ui.home) sm_home_engine(s);
         else track_select((uint32_t)clamp((int32_t)song.sel + (s > 0 ? 1 : -1), 0, (int32_t)trk_n() - 1));
     }
     if (!glo_select_layer && (s = panel_enc(EN_SELECT)) != 0) { /* SELECT: pages; with SEQ / a step key / ENV / SCL: below */
         step_edit_combo();
-        if(!ui.home&&cur_page()->scope==SC_SM_MIX){song.sel=(uint8_t)(((int)song.sel+s%4+4)%4);ui.force=1;}
+        if(ui.home&&ui.home_pg){sm_drum_lane=(uint8_t)((sm_drum_lane+s%8+8)%8);ui.force=1;}
+        else if(!ui.home&&cur_page()->scope==SC_SM_MIX){song.sel=(uint8_t)(((int)song.sel+s%4+4)%4);ui.force=1;}
         else if(!ui.home&&cur_page()->scope==SC_MASTER_TUNE&&cur_page()->id[0]==0){edit_param(0,s);}
         else if(!ui.home && cur_page()->scope==SC_SM_PROGRAM){
-            sm_program_slot=(int16_t)(1+((sm_program_slot-1+s)%8+8)%8);ui.force=1;
+            sm_program_slot=(int16_t)(1+((sm_program_slot-1+s)%8+8)%8);sm_name_focus();ui.force=1;
         } else if(bulk_jog(s)) {
         } else if (pattern_keys_on() && (fm1_in.buttons & (1u << panel.btn[B_SEQ]))) {
             ui.seq_t0 |= 2u;
@@ -2592,7 +2611,14 @@ static void ui_input(void)
         if (k == 0u && cur_page()->graph == GR_ROLL && step_gesture(s))   /* KNOB 1 too, as SELECT (ENV / SCL / a key
                                                                          * held) */
             continue;
-        page_knob(k, s);
+        if(ui.home&&ui.home_pg){
+            uint32_t guard=motion_guard();
+            if(k==0)sm_drum_cursor=(uint8_t)((sm_drum_cursor+s%16+16)%16);
+            if(k==1){if(s>0)sm_drums.steps[sm_drum_lane]|=1u<<sm_drum_cursor;else sm_drums.steps[sm_drum_lane]&=~(1u<<sm_drum_cursor);}
+            if(k==2)sm_drums.level[sm_drum_lane]=(uint8_t)clamp(sm_drums.level[sm_drum_lane]+s,0,127);
+            if(k==3)song.g[G_BPM]=(int16_t)clamp(song.g[G_BPM]+s,GP[G_BPM].min,GP[G_BPM].max);
+            motion_unguard(guard);ui.force=1;
+        }else page_knob(k, s);
     }
     if (step_modifier_context()) {
         seq_entry_finish();                             /* final SELECT detent precedes key release */

@@ -5,8 +5,10 @@
 int main(void)
 {
     int bad=0; reset(); up_boot();
-    bad+=check("engine and native collection IDs remain unchanged",NENGINES==23 && ENGI_HYBRID==22 && ENGI_MIDI==21 && !eng_ok(20) && USER_GENERAL==16 && USER_NATIVE_FM==17 && USER_NATIVE_CZ==18 && ENGI_PROPHET==19 && USER_NATIVE_P5==20);
+    bad+=check("engine and native collection IDs remain unchanged",NENGINES==32 && ENGI_HYBRID==22 && ENGI_MIDI==21 && !eng_ok(20) && USER_GENERAL==16 && USER_NATIVE_FM==17 && USER_NATIVE_CZ==18 && ENGI_PROPHET==19 && USER_NATIVE_P5==20);
     const uint8_t retired[]={2,5,6,7,9,11};
+    bad+=check("excluded engine and native namespace IDs stay unavailable",!eng_ok(16)&&!eng_ok(17)&&!eng_ok(18)&&!eng_ok(31));
+    bad+=check("compact engines available without removing FM6 or HYBRID",eng_ok(28)&&eng_ok(29)&&eng_ok(30)&&eng_ok(12)&&eng_ok(22));
     for(uint32_t j=0;j<NELEM(retired);j++) {
         uint32_t e=retired[j];
         bad+=check("retired engine absent from browser and DSP resources",!eng_ok(e) && !ENGINES[e]->npresets && !eng_state_size(e));
@@ -22,6 +24,12 @@ int main(void)
         int16_t values[P_COUNT];up_values(up_rec(j),values);
         bad+=check("retired user patch retains all native edit values",!memcmp(values+P_E0,TSEL->p+P_E0,16));
         bad+=check("retirement does not clear existing favorite identifiers",favorite_has(e,3));
+    }
+    favorite_set(11,3,1);
+    for(uint32_t e=28;e<=30;e++){
+        bad+=check("compact favorite can be added",favorite_set(e,5,1)&&favorite_has(e,5));
+        bad+=check("compact favorite does not alter legacy stars",favorite_has(11,3));
+        bad+=check("compact favorite can be removed",favorite_set(e,5,0)&&!favorite_has(e,5));
     }
     for(uint32_t k=0;k<NENG_SHOWN;k++)bad+=check("browser lists only available engines",eng_ok(eng_vis(k)));
     printf("Engine retirement test %s\n",bad?"FAILED":"passed");return !!bad;

@@ -5,6 +5,7 @@
 import argparse
 import hashlib
 import json
+from preset_delta_pack import emit
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -55,10 +56,12 @@ def pack(patches):
                 raise ValueError(f"program {n + 1}: packing does not round-trip")
             pos += width[k]
     rows = lambda v: ["    " + ",".join(map(str, v[i:i + 32])) + "," for i in range(0, len(v), 32)]
-    return ([f"#define P5_FACTORY_BYTES {per}u",
+    result = ([f"#define P5_FACTORY_BYTES {per}u",
              "static const uint8_t P5_FBASE[133] = {"] + rows(base) + ["};",
              "static const uint8_t P5_FWIDTH[133] = {"] + rows(width) + ["};",
-             f"static const uint8_t P5_FPACK[{len(data)}] = {{"] + rows(list(data)) + ["};"])
+             "#if !MELODEE_FLASH", f"static const uint8_t P5_FPACK[{len(data)}] = {{"] + rows(list(data)) + ["};", "#endif"])
+    result.append(emit("P5_DELTA",[data[i:i+per] for i in range(0,len(data),per)]))
+    return result
 
 
 def main():

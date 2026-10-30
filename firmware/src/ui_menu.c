@@ -155,12 +155,14 @@ static int32_t menu_document(int32_t y, int draw)
 {
     uint32_t i;
     if (draw) {                                       /* (docs/design: mock/r6_pages About, the large type) */
-        cv_text(6, y + 2, TY_HR, "Melodee", T_THEME);
+        cv_text(6, y + 2, TY_LB, "SynthMaven", T_THEME);
         cv_text(6, y + 60, TY_TX, MELODEE_VERSION, T_TEXT);
         cv_text(6, y + 86, TY_LB, __DATE__, T_MID);
         draw_about_qr(158, y + 66);
     }
-    y = menu_text("Multi-engine synthesizer", y + 146, T_SEC, draw);
+    y = menu_text("SynthMaven / Melodee base", y + 146, T_SEC, draw);
+    y = menu_text("kingxeryus.github.io/SynthMaven", y + 6, T_MID, draw);
+    y = menu_text("MELODEE / UPSTREAM", y + 6, T_SEC, draw);
     y = menu_text("\xA9 2026 Kerem Kilic, Ellic Studio", y + 6, T_TEXT, draw);
     y = menu_text("Based on Felucca by Leo Kuroshita, H\xFCgelton Instruments", y, T_TEXT, draw);
     y = menu_text("GPL-3.0-only", y, T_TEXT, draw);
@@ -353,26 +355,8 @@ static void menu_close(void)
     go_home();
 }
 
-/* menu: PRESETS moves, OCT+ confirms, OCT- cancels (ABOUT -> list -> close) */
-static void menu_input(uint32_t oct)                  /* oct: ui_input.c oct_taps */
+static void menu_change(int32_t s,uint32_t ok)
 {
-    int32_t s;
-    uint32_t ok = (oct >> 1) & 1u, back = oct & 1u;
-    if (back) {
-        if (ui.menu >= 2)
-            ui.menu = 1, ui.force = 1;
-        else
-            menu_close();
-        return;
-    }
-    if ((s = panel_enc(EN_K2)) != 0 && ui.menu == 1)  /* KNOB 2 the row (the standard; PRESETS too) */
-        ui.menu_sel = (uint8_t)clamp((int32_t)ui.menu_sel + s, 0, (int32_t)MI_COUNT - 1);
-    if ((s = panel_enc(EN_PRESET)) != 0 && ui.menu == 1)
-        ui.menu_sel = (uint8_t)((ui.menu_sel + (s > 0 ? 1u : MI_COUNT - 1u)) % MI_COUNT);
-    else if (s != 0 && ui.menu >= 2) {             /* bounded document scrolling */
-        ui.menu_scroll = (uint16_t)clamp((int32_t)ui.menu_scroll + clamp(s, -128, 128) * 18, 0, menu_scroll_max());
-    }
-    s = panel_enc(EN_K1);
     if ((s || ok) && ui.menu == 1 && (ui.menu_sel == MI_MIDI_KNOBS || ui.menu_sel == MI_MIDI_MODE)) {
         volatile uint8_t *p = ui.menu_sel == MI_MIDI_KNOBS ? &settings_midi_knobs : &settings_midi_knob_mode;
         uint32_t n = ui.menu_sel == MI_MIDI_KNOBS ? MK_PROFILES : MK_MODES, v = *p % n;
@@ -491,5 +475,79 @@ static void menu_input(uint32_t oct)                  /* oct: ui_input.c oct_tap
             break;
         }
     }
+}
+
+/* menu: PRESETS moves, OCT+ confirms, OCT- cancels (ABOUT -> list -> close) */
+static void menu_input(uint32_t oct)                  /* oct: ui_input.c oct_taps */
+{
+    int32_t s;
+    uint32_t ok = (oct >> 1) & 1u, back = oct & 1u;
+    if (back) {
+        if (ui.menu >= 2)
+            ui.menu = 1, ui.force = 1;
+        else
+            menu_close();
+        return;
+    }
+    if ((s = panel_enc(EN_K2)) != 0 && ui.menu == 1)  /* KNOB 2 the row (the standard; PRESETS too) */
+        ui.menu_sel = (uint8_t)clamp((int32_t)ui.menu_sel + s, 0, (int32_t)MI_COUNT - 1);
+    if ((s = panel_enc(EN_PRESET)) != 0 && ui.menu == 1)
+        ui.menu_sel = (uint8_t)((ui.menu_sel + (s > 0 ? 1u : MI_COUNT - 1u)) % MI_COUNT);
+    else if (s != 0 && ui.menu >= 2) {             /* bounded document scrolling */
+        ui.menu_scroll = (uint16_t)clamp((int32_t)ui.menu_scroll + clamp(s, -128, 128) * 18, 0, menu_scroll_max());
+    }
+    s = panel_enc(EN_K1);
+    menu_change(s,ok);
     enc_drop();                                        /* swallow the rest while the menu is up */
+}
+
+/* GLO reuses the same preference implementation as the HOME settings menu. */
+static uint32_t sm_pref_menu(uint32_t id)
+{
+    static const uint8_t map[]={MI_COLOR,MI_FONT,MI_LIGHTS,MI_SCREEN,
+#if MELODEE_USB_AUDIO
+        MI_USB,MI_USB_INPUT,
+#else
+        MI_BACK,MI_BACK,
+#endif
+#if MELODEE_USB_HOST
+        MI_USB_HOST,
+#else
+        MI_BACK,
+#endif
+        MI_AUTOSAVE,MI_PICKER,MI_ACCEL,MI_HOLD,MI_CLICK,MI_CLICK_LEVEL,MI_COUNTIN,MI_PREVIEW,MI_ADD,MI_PANEL,MI_ABOUT};
+    return id<sizeof map?map[id]:MI_BACK;
+}
+static const char *sm_pref_label(uint32_t id){return id<18?MI_NAME[sm_pref_menu(id)]:"";}
+static const char *sm_pref_value(uint32_t id,char *b)
+{
+    static const char *const screen[]={"NEVER","5 MIN","15 MIN","30 MIN","60 MIN"},*const click[]={"OFF","REC","ON"},*const level[]={"LOW","MID","HIGH"},*const count[]={"OFF","1 BAR","2 BARS"};
+    switch(id){
+    case 0:return UI_PALETTES[settings.palette%NPALETTES].name;
+    case 1:return TY_PIXEL?"PIXEL":"RUBIK";
+    case 2:return LIGHTS_NAME[settings_lights%LIGHTS_N];
+    case 3:return screen[scr_get()];
+#if MELODEE_USB_AUDIO
+    case 4:return MI_USB_NAME[ua_off_want&3];case 5:return ua_tracks_want?"4 TRACKS":"STEREO";
+#endif
+#if MELODEE_USB_HOST
+    case 6:return uh.want?"PEDAL":"COMPUTER";
+#endif
+    case 7:return settings_autosave?"ON":"OFF";
+    case 8:return PREF_BITS&PREF_PICK_OFF?"OFF":"ON";
+    case 9:return PREF_BITS&PREF_ACCEL_OFF?"OFF":"ON";
+    case 10:fmt_int(b,HOLD_MS[settings_hold%4]);str_cpy(b+str_len(b)," ms (FX)",10);return b;
+    case 11:return click[settings_click%3];
+    case 12:return level[settings_click_level%3];
+    case 13:return count[settings_countin%3];
+    case 14:return settings_preview?"ON":"OFF";case 15:return settings_chord_add?"ADD":"HOLD";
+    case 16:case 17:return "TURN RIGHT";default:return "";
+    }
+}
+static void sm_pref_edit(uint32_t id,int32_t steps)
+{
+    if(id>=18||(!steps))return;
+    uint8_t saved=ui.menu_sel;ui.menu=1;ui.menu_sel=(uint8_t)sm_pref_menu(id);
+    menu_change(steps,id>=16&&steps>0);if(ui.menu==1)ui.menu=0;
+    ui.menu_sel=saved;settings_save();ui.force=1;
 }

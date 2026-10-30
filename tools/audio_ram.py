@@ -21,6 +21,10 @@ ROOTS = {'fm1_alnk0_irq', 'audio_block', 'mix_block', 'ua_audio', 'click_render'
 CALLBACKS = {'note_on', 'render', 'amp', 'block', 'done', 'alloc', 'legato',
              'mono_key', 'post', 'units', 'cap', 'keys', 'desc'}
 COLD_CALLBACKS = {'preset_make'}
+# Foreground UI handlers run only after SRAM boot expansion. Keep these
+# bounded functions in the compressed image to fit the application slot;
+# unlike audio roots, do not relocate their complete (storage/USB) closure.
+COMPRESSED_UI = {'ui_input', 'ed_handle', 'draw_columns', 'draw_head'}
 
 
 def engine_roots(src):
@@ -109,6 +113,8 @@ def relocate(ir, roots):
     if 'fm1_alnk0_irq' not in selected:
         raise ValueError('Audio ISR is missing from the optimized module')
 
+    selected.update(COMPRESSED_UI & functions.keys())
+
     sections = {name: (re.search(r'\bsection "([^"]+)"', m[4]) or [None, ''])[1]
                 for name, m in functions.items()}
     for name in selected:
@@ -117,6 +123,7 @@ def relocate(ir, roots):
         elif sections[name] not in ('.audio_text', '.audio_libc', '.dsp_text', '.ram_text'):
             raise ValueError(f'Unexpected audio section for {name}: {sections[name]}')
     far = {}
+    ui_far, other_far = set(), set()
 
     def rewrite(match):
         name = match[2]
@@ -135,6 +142,7 @@ def relocate(ir, roots):
                         raise ValueError('Unsupported cross-region memory intrinsic')
                     typ = function_type(functions[target])
                     far[target] = typ
+                    (ui_far if name in COMPRESSED_UI or target in COMPRESSED_UI else other_far).add(target)
                     local = f'%audio_far_{len(body)}'
                     body.append(f'  {local} = load volatile {typ}*, {typ}** @__audio_far_{target}, align 4')
                     args = args[:3]
@@ -161,6 +169,7 @@ def relocate(ir, roots):
                     target = call[1]
                     typ = function_type(functions[target])
                     far[target] = typ
+                    (ui_far if name in COMPRESSED_UI or target in COMPRESSED_UI else other_far).add(target)
                     local = f'%audio_far_{len(body)}'
                     body.append(f'  {local} = load volatile {typ}*, {typ}** @__audio_far_{target}, align 4')
                     line = line[:call.start(1)-1] + local + line[call.end(1):]
@@ -168,8 +177,11 @@ def relocate(ir, roots):
         return header + '\n' + '\n'.join(body) + '\n}'
 
     result = FUNCTION.sub(rewrite, ir)
-    globals_ir = '\n'.join(f'@__audio_far_{name} = internal global {typ}* @{name}, align 4'
-                           for name, typ in sorted(far.items()))
+    # UI-only jump pointers are read after boot expansion; include them in
+    # that image rather than consuming the nearly full low data SRAM bank.
+    globals_ir = '\n'.join(f'@__audio_far_{name} = internal global {typ}* @{name}, '
+                           + ('section ".audio_text.ui_ptr", ' if name in ui_far - other_far else '')
+                           + 'align 4' for name, typ in sorted(far.items()))
     result += '\n' + globals_ir + '\n'
     return result, sorted(selected), sorted(far)
 

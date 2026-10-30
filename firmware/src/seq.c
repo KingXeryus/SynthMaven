@@ -88,10 +88,11 @@ static uint32_t key_place(uint32_t k)
 }
 enum { GK_ACC = NLANE, GK_PGDN, GK_PGUP };       /* black keys 9..11 on the grid */
 
-static uint32_t scale_root(const track_t *t){return sm_tuning.enabled?sm_tuning.root:(uint32_t)t->p[P_ROOT];}
+static uint32_t scale_root(const track_t *t){return sm_tuning.enabled?((sm_tuning.apply&(1u<<trk_index(t)))?sm_tuning.root:0u):(uint32_t)t->p[P_ROOT];}
+static int32_t harmony_root(const track_t *t){return (int32_t)scale_root(t)+(sm_tuning.enabled?0:t->p[P_TRANS]);}
 static uint32_t scale_mask(const track_t *t)
 {
-    if(sm_tuning.enabled)return sm_tuning_mask(&sm_tuning);
+    if(sm_tuning.enabled)return (sm_tuning.apply&(1u<<trk_index(t)))?sm_tuning_mask(&sm_tuning):0xfffu;
     const micro_scale_t *s = micro_scale(t);
     if (s) { /* approximate pitch classes for the keyboard LEDs only */
         uint32_t mask = 0;

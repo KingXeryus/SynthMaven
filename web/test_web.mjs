@@ -43,6 +43,28 @@ const E = vm.runInNewContext(proto + `
   ok(info.synthmaven?.hybrid&&info.synthmaven.major===3&&info.synthmaven.minor===5,"SynthMaven: explicit versioned HYBRID capability");
   ok(E.HYBRID_PK.length===100&&E.HYBRID_PK.every(E.hybridValid),"HYBRID: all native factory patches pass strict editor validation");
   ok(info.synthmaven.layers,"SynthMaven: explicit four-part layer capability");
+  {
+  ok(info.synthmaven.transport,"Sequencer: explicit transport capability");
+  const play=E.parse[E.CMD.TRANSPORT](await rq([E.CMD.TRANSPORT,[1]]));
+  const stop=E.parse[E.CMD.TRANSPORT](await rq([E.CMD.TRANSPORT,[2]]));
+  ok(!play.rc&&play.playing&&!stop.rc&&!stop.playing,"Sequencer: independent Play and Stop round trip");
+  ok(info.synthmaven.drums,"Drums: independently advertised capability");
+  let drums=E.parse[E.CMD.DRUMS](await rq([E.CMD.DRUMS,[0]]));
+  const raw=[...drums.raw];raw[1]^=128;raw[23]=127;
+  drums=E.parse[E.CMD.DRUMS](await rq([E.CMD.DRUMS,[1,...E.pack7(raw)]]));
+  ok(!drums.rc&&eq(raw,drums.raw),"Drums: step 16 and lane level survive packed round-trip");
+  const badDrums=[...raw];badDrums[24]=128;
+  drums=E.parse[E.CMD.DRUMS](await rq([E.CMD.DRUMS,[1,...E.pack7(badDrums)]]));
+  ok(drums.rc===1&&eq(raw,drums.raw),"Drums: invalid velocity preserves pattern");
+  drums=E.parse[E.CMD.DRUMS](await rq([E.CMD.DRUMS,[2,1]]));
+  ok(drums.enabled===1,"Drums: independent start");
+  drums=E.parse[E.CMD.DRUMS](await rq([E.CMD.DRUMS,[4]]));
+  ok(drums.rc===4,"Drums: refuse flash save during playback");
+  await rq([E.CMD.DRUMS,[2,0]]);
+  drums=E.parse[E.CMD.DRUMS](await rq([E.CMD.DRUMS,[4]]));
+  ok(!drums.rc&&!drums.enabled,"Drums: stopped save");
+
+  }
   const layers={enabled:1,low:[0,60,72,0],high:[59,127,127,47]};
   let lr=E.parse[E.CMD.LAYERS](await rq(E.req.layersPut(layers)));
   ok(!lr.rc&&eq(E.layersEncode(lr.layers),E.layersEncode(layers)),"Layers: inclusive split ranges survive USB round-trip");
@@ -77,6 +99,11 @@ const E = vm.runInNewContext(proto + `
   const malformed=E.tuningEncode(tune);malformed[14]=127;
   tr=E.parse[E.CMD.MASTER_TUNING](await rq([E.CMD.MASTER_TUNING,[1,...E.pack7(malformed)]]));
   ok(tr.rc===1&&eq(E.tuningEncode(tr.tuning),E.tuningEncode(tune)),"Tuning: invalid incoming update leaves state unchanged");
+  for(let scale=48;scale<=61;scale++){
+    const western={...tune,scale,cents:Array(12).fill(0)};
+    const reply=E.parse[E.CMD.MASTER_TUNING](await rq(E.req.tuningPut(western)));
+    ok(!reply.rc&&reply.tuning.scale===scale,"Tuning: Western profile "+scale+" survives USB apply/read");
+  }
   await rq(E.req.set(1,20,22));
   const raw=Array.from(E.HYBRID_PK[36]);raw[2]=256-37;
   let r=E.parse[E.CMD.HYBRID](await rq(E.req.hybridPut(0,raw)));
@@ -313,7 +340,7 @@ async function editorMock() {
   inp.onmidimessage = (e) => link.receive(e.data);
   const rq = async (r, o) => link.request(r, o);
   const info = E.parse[E.CMD.INFO](await rq(E.req.info()));
-  ok(info.nengines === 23 && info.engines[22] === "HYBRID" && info.engines[20] === "-" && info.engines[21] === "MIDI Track" && info.engines[14] === "-" && info.engines[1] === "-" && info.engines[12] === "FM6" && info.engines[13] === "-"
+  ok(info.nengines === 32 && info.engines[22] === "HYBRID" && info.engines[20] === "-" && info.engines[21] === "MIDI Track" && info.engines[14] === "-" && info.engines[1] === "-" && info.engines[12] === "FM6" && info.engines[13] === "-"
  && info.engines[2] === "-" && info.engines[5] === "-" && info.engines[6] === "-" && info.engines[7] === "-" && info.engines[8] === "-" && info.engines[9] === "-" && info.engines[10] === "DRUM" && info.engines[11] === "-" && info.pcount === 124 && info.pe0 === 116 && info.engines[4] === "-",
     "editor: INFO");
   let descs = 0;
@@ -421,15 +448,15 @@ async function editorMock() {
   ok(!prefs.favorites[info.namespace.general][31] && !E.devicePresetRows(info, names, prefs).some((r) => r.user), "editor: erased slot disappears and loses star");
   {   /* the lists in the device's order: FM6 second, MIDI Track last, "-" never; the numbers stay */
     const shown = E.engineOrder(info.engines).map((i) => info.engines[i]);
-    ok(shown.join() === "PROPHET,FM6,CZ-1,SID,DRUM,MIDI Track,HYBRID" &&
-       E.engineOrder(info.engines)[1] === 12 && E.engineOrder(info.engines).at(-1) === 22,
+    ok(shown.join() === "PROPHET,FM6,CZ-1,SID,DRUM,MIDI Track,HYBRID,ANALOG,DIGITAL,VOICE,STRINGS,JUNO,ACID,VPS,WSEQ" &&
+       E.engineOrder(info.engines)[1] === 12 && E.engineOrder(info.engines).at(-1) === 29,
        "editor: engines listed FM6 second, HYBRID appended (indices kept)");
-    ok(E.engineOrder(["ANALOG", "X", "-", "DRUM", "FM6"]).join() === "0,4,3,1", "editor: an unknown engine follows the known ones");
+    ok(E.engineOrder(["ANALOG", "X", "-", "DRUM", "FM6"]).join() === "4,3,0,1", "editor: an unknown engine follows the known ones");
     m.state.favorites[10][0] = m.state.favorites[12][0] = true;
     await rq(E.req.uiSet(3, 0));
     prefs = await E.readDevicePreferences(rq, info, names, prefs);
     const rows = E.devicePresetRows(info, names, prefs).filter((r) => !r.user), eng = [...new Set(rows.map((r) => r.engine))];
-    ok(eng[0] === 19 && eng[1] === 12 && eng[eng.length - 1] === 22, "editor: device presets in the device's engine order");
+    ok(eng[0] === 19 && eng[1] === 12 && eng[eng.length - 1] === 29, "editor: device presets in the device's engine order");
   }
   const none = await E.readDevicePreferences(() => { throw new Error("unexpected request"); }, { uiCaps: 0 }, []);
   ok(none === null, "editor: old firmware receives no unsupported preference requests");
@@ -845,7 +872,7 @@ async function editorLibrarian() {
   const ctx = { keys, engines: info.engines, firmware: info.version, pe0: info.pe0 };
   const pts = [cap, { ...bass, engineName: info.engines[bass.engine], tags: ["bass", "device"] }];
   const file = JSON.parse(JSON.stringify(E.libraryFile("library", pts, ctx)));
-  ok(file.format === "felucca-library" && file.version === 1 && file.pCount === info.pcount && file.paramLabels.length === info.pcount && file.paramLabels[81] === "CHRD" && file.paramLabels[82] === "VOIC" && file.paramLabels[83] === "DEG" && file.paramLabels.slice(92, 96).join() === "SYNC,TRIG,POL,SPRD" && file.engines.length === 23,
+  ok(file.format === "felucca-library" && file.version === 1 && file.pCount === info.pcount && file.paramLabels.length === info.pcount && file.paramLabels[81] === "CHRD" && file.paramLabels[82] === "VOIC" && file.paramLabels[83] === "DEG" && file.paramLabels.slice(92, 96).join() === "SYNC,TRIG,POL,SPRD" && file.engines.length === 32,
     "library file: versioned, with P_COUNT, labels and engines");
   const back = E.readLibraryFile(file, ctx);
   const oldKeys = keys.slice(); oldKeys[8] = "FX";
@@ -1416,7 +1443,7 @@ function editorTabs() {
   const tabs = [...html.matchAll(/<button role="tab" data-tab="(\w+)"/g)].map((x) => x[1]);
   const panels = [...html.matchAll(/<section class="panel" id="p-(\w+)" data-tab="(\w+)"/g)].map((x) => [x[1], x[2]]);
   const TABS = JSON.parse((/const TABS = (\[[^\]]*\]);/.exec(html) || [])[1] || "[]");
-  ok(tabs.length === 8 && js(tabs) === js(TABS) && js(panels.map((x) => x[1])) === js(TABS) && panels.every(([a, b]) => a === b),
+  ok(tabs.length === 14 && js(tabs) === js(TABS) && js(panels.map((x) => x[1]).sort()) === js([...TABS].sort()) && panels.every(([a, b]) => a === b),
     `editor: ${tabs.length} tabs, one panel each (${tabs.join(" ")})`);
   ok(/localStorage\.setItem\(TAB_KEY/.test(html) && /try \{ localStorage/.test(html) && /history\.replaceState\([^)]*"#" \+ name\)/.test(html)
     && /addEventListener\("hashchange"/.test(html), "editor: last tab in localStorage (try/catch) and in the URL hash");
@@ -1430,7 +1457,7 @@ function editorTabs() {
   const odd = [...ja].filter((k) => !en.has(k)).concat([...en].filter((k) => !ja.has(k)));
   ok(!miss.length && !odd.length, `editor: every string in ja and en (${used.size} used${miss.length ? ", missing " + miss : ""}${odd.length ? ", one language only " + odd : ""})`);
   /* the page script parses (the browser's view of it) */
-  const script = html.slice(html.indexOf("<script>") + 8, html.lastIndexOf("</script>"));
+  const script = html.slice(html.indexOf("<script>") + 8, html.indexOf("</script>", html.indexOf("<script>")));
   let err = null;
   try { new vm.Script(script); } catch (e) { err = e.message; }
   ok(!err, "editor: page script compiles" + (err ? ` (${err})` : ""));

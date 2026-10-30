@@ -189,3 +189,16 @@
     .row .btn { flex: 1; }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; } }
+
+/* SynthMaven: high contrast, red primary accents, blue/gray secondary. */
+:root, :root[data-theme="dark"], :root[data-theme="light"] {
+ --paper:#090a0c; --card:#17191e; --ink:#f7f8fa; --dim:#bbc1cb; --faint:#a4acba;
+ --line:#424956; --chip:#272c35; --warn:#ff858e; --warn-bg:#29191f; --warn-line:#b63b49;
+ --ok:#9ec7ff; --ok-bg:#17263b; --bad:#ff858e; --bad-bg:#29191f; --focus:#8abaff;
+ color-scheme:dark;
+}
+.site,main,footer { max-width: min(1400px, 68vw); }
+.sm-features { margin:0 0 28px; padding:20px; background:var(--card); border:1px solid var(--line); border-radius:16px; }
+.sm-features h2 { color:#ff737e; }.sm-features li { margin:0 0 10px; }
+.sm-features a { color:#b7d3ff; }.hero { padding-top:32px; }
+@media(max-width:1000px){.site,main,footer{max-width:100%;}}

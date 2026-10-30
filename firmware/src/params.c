@@ -94,7 +94,7 @@ static const char *const N_MSRC[] = {"OFF", "LFO", "ENV", "VEL", "KEY", "RAND", 
 static const char *const N_MDST[] = {"OFF", "PITCH", "CUT", "SHP", "AMP", "PAN", "", "", "", "", "RATE",
                                      "VIB", "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "DEPTH"};
 static const char *const N_ENGNAME[] = {"-", "-", MELODEE_LEGACY_EXTRAS ? "PHASE" : "-", "SID", "-", MELODEE_LEGACY_EXTRAS ? "VOICE" : "-", MELODEE_LEGACY_EXTRAS ? "TRIO" : "-", MELODEE_LEGACY_EXTRAS ? "WHEEL" : "-", "-", MELODEE_LEGACY_EXTRAS ? "PHYS" : "-",
-                                             "DRUM", MELODEE_LEGACY_EXTRAS ? "NOISE" : "-", "FM6", MELODEE_SLICE ? "SLICE" : "-", "-", "CZ-1", "-", "-", "-", "PROPHET", "-", "MIDI Track", "HYBRID"};
+                                             "DRUM", MELODEE_LEGACY_EXTRAS ? "NOISE" : "-", "FM6", MELODEE_SLICE ? "SLICE" : "-", "-", "CZ-1", "-", "-", "-", "PROPHET", "-", "MIDI Track", "HYBRID", "ANALOG", "DIGITAL", "VOICE", "STRINGS", "JUNO", "ACID", "WSEQ", "VPS", "-"};
 
 #define PD(l, f, mn, mx, df) {l, f, mn, mx, df, 0, 0}
 #define PE(l, n, df) {l, F_ENUM, 0, (int16_t)(sizeof(n) / sizeof(n[0]) - 1), df, n, 0}
@@ -583,12 +583,12 @@ static void param_format(const param_desc_t *d, int32_t v, char *val, const char
 enum { FAM_HOME, FAM_ENV, FAM_LFO, FAM_SCL, FAM_EDIT, FAM_GLO, FAM_SAVE, FAM_ARP, FAM_SEQ, FAM_TRK,
        FAM_FX, FAM_COUNT };
 enum { SC_TRACK, SC_GLOBAL, SC_ENGINE, SC_STEP, SC_TRK,   /* SC_TRK: the TRACKS page (ui_input.c tracks_edit) */
-       SC_FM6, SC_FMOP, SC_CZ, SC_CZ1, SC_P5, SC_P5STORE, SC_DRUM, SC_DRUMHIT, SC_MASTER_TUNE, SC_SM_PROGRAM, SC_SM_MIX, SC_SM_LAYER };                         /* FM6: its patch, functions; operator fm6_opsel;
+       SC_FM6, SC_FMOP, SC_CZ, SC_CZ1, SC_P5, SC_P5STORE, SC_DRUM, SC_DRUMHIT, SC_MASTER_TUNE, SC_SM_PROGRAM, SC_SM_MIX, SC_SM_LAYER, SC_SM_PREF };                         /* FM6: its patch, functions; operator fm6_opsel;
                                                                   * CZ1: a native CZ-1 tone (cz_edit.h) */
 enum { GR_NONE, GR_ADSR, GR_LFO, GR_STEPS, GR_ARP, GR_SCALE, GR_ROLL, GR_BROWSE, GR_SLOTS, GR_USER, GR_TRK,
        GR_MOD, GR_PATS, GR_SONG, GR_MOTION, GR_CHORD, GR_SLICES,
        GR_FMEG, GR_FMPEG, GR_FMSTORE, GR_CZTOOLS, GR_SCALE_PICKER, GR_DRUMHIT, GR_PATGRID,
-       GR_FXRACK, GR_SM_MIX, GR_SM_TUNING }; /* NOTES shares GR_ROLL for steps and recorded events */
+       GR_FXRACK, GR_SM_MIX, GR_SM_TUNING, GR_SM_PROGRAM }; /* NOTES shares GR_ROLL for steps and recorded events */
 
 typedef struct {
     const char *title;
@@ -609,7 +609,7 @@ typedef struct {
 static int16_t sm_tune_key,sm_tune_cell[4];
 static const char *const SM_OCTAVES[]={"C0","C1","C2","C3","C4","C5","C6","C7","C8"};
 static const param_desc_t SM_TUNE_DESC[]={
-    {"SCALE",F_ENUM,0,SM_TUNE_CUSTOM,0,SM_TUNE_NAMES,0},
+    {"SCALE",F_ENUM,0,SM_TUNE_LAST,0,SM_TUNE_NAMES,0},
     {"FROM",F_ENUM,0,8,0,SM_OCTAVES,0},
     {"ROOT",F_NOTE,0,11,0,0,0},
     {"USE",F_ONOFF,0,1,0,0,0},
@@ -619,9 +619,12 @@ static const param_desc_t SM_TUNE_DESC[]={
     {"PART",F_ONOFF,0,1,1,0,0}
 };
 static int16_t sm_program_slot=1,sm_program_override,sm_program_action;
+static int16_t sm_name_position=1;
+static uint8_t sm_name_slot=255,sm_io_arm;
+static uint32_t sm_io_time;
+static char sm_name_draft[13];
 static const param_desc_t SM_PROGRAM_DESC[]={
-    {"SLOT",F_INT,1,8,1,0,0}, PE("LOAD",N_GO,0), PE("SAVE",N_GO,0),
-    {"TUNE",F_ONOFF,0,1,0,0,0}
+    {"SLOT",F_INT,1,8,1,0,0}, {"NAME",F_INT,1,12,1,0,0}, PE("LOAD",N_GO,0), PE("SAVE",N_GO,0)
 };
 static int16_t sm_layer_cell;
 static const param_desc_t SM_LAYER_DESC={"LAYER",F_ONOFF,0,1,0,0,0};
@@ -725,7 +728,13 @@ static const page_t PAGES[] = {
     {"WEIGHTS", FAM_GLO, SC_GLOBAL, GR_NONE, {G_WP5, G_WCZ, G_WFM6, G_WSID}},        /* budget points per voice */
     {"LAYERING",FAM_GLO,SC_SM_LAYER,GR_NONE,{0,255,255,255}},
     {"WEIGHTS 2", FAM_GLO, SC_GLOBAL, GR_NONE, {G_WDRUM, G_BUDGET, 0xFF, G_SAFETY}},  /* SAFETY: overload voice cuts */
-    {"PROGRAM", FAM_SAVE, SC_SM_PROGRAM, GR_NONE, {0,1,2,3}},
+    {"DISPLAY",FAM_GLO,SC_SM_PREF,GR_NONE,{0,1,2,3}},
+    {"USB / SAVE",FAM_GLO,SC_SM_PREF,GR_NONE,{4,5,6,7}},
+    {"CONTROLS",FAM_GLO,SC_SM_PREF,GR_NONE,{8,9,10,255}},
+    {"RECORDING",FAM_GLO,SC_SM_PREF,GR_NONE,{11,12,13,14}},
+    {"DEVICE",FAM_GLO,SC_SM_PREF,GR_NONE,{15,16,17,255}},
+
+    {"PROGRAM", FAM_SAVE, SC_SM_PROGRAM, GR_SM_PROGRAM, {0,1,2,3}},
     {"PRESETS", FAM_SAVE, SC_GLOBAL, GR_BROWSE, {0xFF, 0xFF, 0xFF, 0xFF}},   /* browser: KNOB 1 LIST, 2 / PRESETS the sounds */
     {"USER", FAM_SAVE, SC_GLOBAL, GR_USER, {0xFF, 0xFF, 0xFF, 0xFF}},       /* user presets: SLOT LOAD ERASE SAVE */
     {"PROJECT", FAM_SAVE, SC_GLOBAL, GR_SLOTS, {G_SLOT, G_BOOT, G_LOAD, G_SAVE}},
@@ -852,10 +861,11 @@ static const param_desc_t *fx_rack_desc(const page_t *pg, uint32_t slot, int16_t
 static const param_desc_t *page_desc(const page_t *pg, uint32_t slot, int16_t **valp)
 {
     uint32_t id = pg->id[slot];
+    if(pg->scope==SC_SM_PREF){*valp=0;return 0;}
     if(pg->scope==SC_SM_LAYER){if(slot){*valp=0;return 0;}sm_layer_cell=sm_layers.enabled;*valp=&sm_layer_cell;return &SM_LAYER_DESC;}
     if(pg->scope==SC_SM_MIX){*valp=&trk[slot&3u].p[P_LEVEL];return &SM_MIX_DESC[slot&3u];}
     if(pg->scope==SC_SM_PROGRAM){
-        *valp=slot==0?&sm_program_slot:slot==3?&sm_program_override:&sm_program_action;
+        *valp=slot==0?&sm_program_slot:slot==1?&sm_name_position:&sm_program_action;
         return &SM_PROGRAM_DESC[slot&3u];
     }
     if(pg->scope==SC_MASTER_TUNE){

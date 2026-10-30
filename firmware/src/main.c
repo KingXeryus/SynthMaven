@@ -206,6 +206,16 @@ static void __attribute__((noinline)) sm_controller_host_poll(void)
 }
 #endif
 
+#include "sm_boot_icon.h"
+static void sm_boot_icon(void){
+ uint32_t off=0;
+ for(uint32_t y=0;y<96;y++){
+  lcd_sync();uint32_t x=0;
+  while(x<96){uint32_t run=SM_BOOT_RLE[off++],count=(run>>2)+1;uint16_t color=SM_BOOT_PALETTE[run&3u];while(count--)cv_px[x++]=color;}
+  lcd_blit(72,48+y,96,1,cv_px);
+ }
+ lcd_sync();
+}
 static void fm1_main(void)
 {
     int32_t knob = 512 * 16;
@@ -213,8 +223,8 @@ static void fm1_main(void)
     settings_init();                           /* a readable default palette before loading flash */
     lcd_init();                                /* maintenance must be visible before any boot writes */
     lcd_fill(0, 0, 240, 240, T_BG);
-    draw_text_box(0, 70, 240, TY_HR, "MELODEE", T_THEME, 1);   /* (large type) */
-    draw_text_box(0, 140, 240, TY_TX, "Starting up", T_MID, 1);
+    sm_boot_icon();   /* (large type) */
+    draw_text_box(0, 188, 240, TY_TX, "Starting up", T_MID, 1);
     lcd_sync();
     dsp_tables_init();                        /* the RAM lookup tables (FM6), before anything renders */
     persist_boot();
@@ -226,8 +236,8 @@ static void fm1_main(void)
     clock_boot();                             /* the voice budget at the clock found (never changed) */
     if (boot_work.state != 2u) {
         lcd_fill(0, 0, 240, 240, T_BG);
-        draw_text_box(0, 70, 240, TY_HR, "MELODEE", T_THEME, 1);
-        draw_text_box(0, 140, 240, TY_TX, "Multi-engine synth", T_MID, 1);
+        sm_boot_icon();
+        draw_text_box(0, 188, 240, TY_TX, "Multi-engine synth", T_MID, 1);
     }
     if (melodee_dbg.magic != DBG_MAGIC) {
         memset(&melodee_dbg, 0, sizeof melodee_dbg);

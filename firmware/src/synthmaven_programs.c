@@ -68,47 +68,72 @@ static int sm_scene_load(uint32_t slot)
     for(uint32_t part=0;part<4;part++){trk[part].p[P_FXSEND2]=v[104+part*2];trk[part].p[P_FXSEND3]=v[105+part*2];}
     sm_tuning=tuning;sm_scene_current=(uint8_t)slot;motion_unguard(guard);sync_reload=1;ui.force=1;return 0;
 }
-static const char SM_FACTORY_PROGRAM_NAMES[8][13]={"STAGE PIANO","VELVET EP","COPPER LEAD","ORIENT LEAD","DISCO POLY","BRASS STACK","SILK STRINGS","NEON BASS"};
-/* Melodee-native adaptations: one lead instrument and quiet mono support.
- * These are new recipes, not binary reinterpretations of SynthMaven 3.0. */
+#include "factory_program_pack.h"
+/* Decode into the existing stopped-program transfer workspace, no extra audio RAM. */
 static int sm_factory_program(uint32_t slot)
 {
-    static const uint8_t main_engine[8]={ENGI_FM6,ENGI_FM6,ENGI_HYBRID,ENGI_FM6,ENGI_HYBRID,ENGI_FM6,ENGI_FM6,ENGI_FM6};
-    static const uint8_t main_preset[8]={32,35,4,57,12,25,28,10};
-    static const uint8_t support[3]={24,1,4};static const int8_t pan[4]={0,-18,18,0};
-    if(slot>=8)return 1;if(transport_busy())return 4;
+    if(slot>=8)return 1;if(transport_busy()||wire_waiting())return 4;
+#if MELODEE_FLASH
+    uint8_t *raw=(uint8_t *)proj_image_store();
+#else
+    static uint8_t raw[14356]; /* host fixtures have no flash-transfer workspace */
+#endif
+    uint32_t in=0,out=0;
+    while(in<sizeof SM_FACTORY_LZ){
+        uint32_t flags=SM_FACTORY_LZ[in++];
+        for(uint32_t bit=0;bit<8&&in<sizeof SM_FACTORY_LZ;bit++){
+            if(flags&(1u<<bit)){
+                uint32_t distance=1u+SM_FACTORY_LZ[in]+((uint32_t)SM_FACTORY_LZ[in+1]<<8),n=SM_FACTORY_LZ[in+2]+3u;in+=3;
+                if(distance>out||out+n>SM_FACTORY_OFF[8])return 1;
+                while(n--){raw[out]=raw[out-distance];out++;}
+            }else {if(out>=SM_FACTORY_OFF[8])return 1;raw[out++]=SM_FACTORY_LZ[in++];}
+        }
+    }
+    if(out!=SM_FACTORY_OFF[8])return 1;
+    const uint8_t *r=raw+SM_FACTORY_OFF[slot],*master=r+14,*meta=master+20,*part=meta+SM_PROGRAM_META;
+    sm_layers_t layers;sm_tuning_t tuning;
+    if(!sm_program_meta_valid(meta)||!sm_layers_decode(&layers,meta+4)||!sm_tuning_decode(&tuning,meta+20))return 1;
     uint32_t guard=motion_guard();panic_req|=15u;undo_depth++;
     for(uint32_t k=0;k<4;k++){
-        track_t *t=&trk[k];set_engine_of(t,k?ENGI_FM6:main_engine[slot]);apply_preset_to(t,k?support[k-1]:main_preset[slot]);
-        t->p[P_LEVEL]=k?(k==1?45:32):101;t->p[P_PAN]=pan[k];t->p[P_MUTE]=0;t->p[P_AMODE]=0;t->p[P_CHRD]=0;
-        t->p[P_VOICE]=k||slot==2||slot==3||slot==7?1:0;t->p[P_TRANS]=k==1?-12:k==2?12:0;
-        t->p[P_SPRD]=0;for(uint32_t f=0;f<3;f++){t->p[P_FXTYPE+f*4]=0;t->p[P_FXSEND+f]=0;}
-        if(k){uint8_t patch[FP_SIZE+1];memcpy(patch,fm6_patch_of(k),sizeof patch);for(uint32_t op=0;op<6;op++){patch[op*FP_OP+3]=65;patch[op*FP_OP+7]=0;}fm6_set_patch(k,patch);}
+        track_t *t=&trk[k];set_engine_of(t,part[0]);t->preset=part[1];t->user=t->user_native=0;part+=2;
+        for(uint32_t i=0;i<P_COUNT;i++){
+            int16_t v=(int16_t)(part[i*2]|(uint16_t)part[i*2+1]<<8);
+            if(i<P_SLEN||i>P_SGATE)t->p[i]=v;
+        }part+=P_COUNT*2;
+        if(t->eng_req==ENGI_HYBRID){hy_patch_t v;memcpy(&v,part,sizeof v);hy_set_patch(k,&v);part+=128;}
+        else if(t->eng_req==ENGI_FM6){uint8_t v[FP_SIZE+1];fm6_unpack(part,v);fm6_set_patch(k,v);part+=128;memcpy(fm6_fn[k],part,FM6_NFN);part+=FM6_NFN;}
+        else if(t->eng_req==ENGI_CZ){memcpy(cz_patch_of(k),part,sizeof(cz_patch_t));cz_track_accept(t);part+=sizeof(cz_patch_t);}
+        else if(t->eng_req==ENGI_PROPHET){memcpy(&p5_patch[k],part,sizeof(p5_patch_t));p5_ready[k]=1;part+=sizeof(p5_patch_t);}
+        else if(t->eng_req==ENGI_DRUM){memcpy(drum_patch_of(k),part,sizeof(drum_patch_t));part+=sizeof(drum_patch_t);}
+        track_fx_normalize(t->p);
     }
-    undo_depth--;song.sel=0;for(uint32_t f=0;f<3;f++)song.g[G_MFXTYPE+f*4]=0;
-    sm_layers=(sm_layers_t){.enabled=1,.high={127,127,127,127}};memset(sm_program_meta,0,sizeof sm_program_meta);
-    sm_program_current=(uint8_t)slot;sm_scene_current=0;memcpy(sm_program_name,SM_FACTORY_PROGRAM_NAMES[slot],13);
-    motion_unguard(guard);
-    sm_scene_store(0,"MAIN");
-    int16_t levels[4];for(uint32_t k=0;k<4;k++){levels[k]=trk[k].p[P_LEVEL];trk[k].p[P_LEVEL]=(int16_t)clamp(levels[k]-(k?16:8),0,127);}
-    sm_scene_store(1,"INTIMATE");for(uint32_t k=0;k<4;k++)trk[k].p[P_LEVEL]=levels[k];
-    trk[2].p[P_LEVEL]=44;sm_scene_store(2,"AIR");trk[2].p[P_LEVEL]=levels[2];
-    for(uint32_t k=1;k<4;k++)trk[k].p[P_MUTE]=1;sm_scene_store(3,"SOLO");for(uint32_t k=1;k<4;k++)trk[k].p[P_MUTE]=0;
-    sm_scene_current=0;sm_program_meta_capture(sm_program_meta,0);sync_reload=1;ui.force=1;return 0;
+    undo_depth--;
+    for(uint32_t i=0;i<12;i++)song.g[G_MFXTYPE+i]=master[i];
+    song.g[G_FXRETURN]=master[12];song.g[G_FXMODE]=master[13];
+    for(uint32_t i=0;i<3;i++)song.g[G_MFXTONE+i]=(int16_t)master[14+i]-64;
+    sm_layers=layers;if(meta[0])sm_tuning=tuning;song.sel=r[12]<4?r[12]:0;
+    memcpy(sm_program_meta,meta,SM_PROGRAM_META);memcpy(sm_program_name,r,12);sm_program_name[12]=0;
+    sm_program_current=(uint8_t)slot;sm_scene_current=meta[1];motion_unguard(guard);
+    undo_clear();list_forget();sync_reload=1;ui.force=1;return 0;
 }
+_Static_assert(14356u<=BANK_STORE_SIZE,"factory decoder workspace");
+_Static_assert(P_COUNT==124u&&FM6_PACKED==128u,"factory capture layout");
 static void sm_config_pack(uint8_t *b)
 {
-    memset(b,0,SM_CONFIG_BYTES);memcpy(b,"SMC3",4);b[329]=sm_controller_override;b[330]=sm_controller_port;b[328]=sm_program_current<8?sm_program_current+1:0;b[4]=sm_setlist_count;b[5]=sm_setlist_pos;
+    memset(b,0,SM_CONFIG_BYTES);memcpy(b,"SMC4",4);b[329]=sm_controller_override;b[330]=sm_controller_port;b[328]=sm_program_current<8?sm_program_current+1:0;b[4]=sm_setlist_count;b[5]=sm_setlist_pos;
     memcpy(b+8,sm_setlist,32);memcpy(b+40,sm_maps,sizeof sm_maps);
+    for(uint32_t k=0;k<8;k++){b[331+k*2]=(uint8_t)sm_drums.steps[k];b[332+k*2]=(uint8_t)(sm_drums.steps[k]>>8);b[347+k]=sm_drums.level[k];b[355+k]=sm_drums.velocity[k];}
+    b[363]=sm_drums.volume; /* playback is never resumed by a boot/load */
 }
 static int sm_config_valid(const uint8_t *b)
 {
-    if((memcmp(b,"SMC1",4)&&memcmp(b,"SMC2",4)&&memcmp(b,"SMC3",4))||b[4]>32||b[5]>31||b[6]||b[7])return 0;
+    if((memcmp(b,"SMC1",4)&&memcmp(b,"SMC2",4)&&memcmp(b,"SMC3",4)&&memcmp(b,"SMC4",4))||b[4]>32||b[5]>31||b[6]||b[7])return 0;
     for(uint32_t i=0;i<32;i++)if(b[8+i]>7)return 0;
     for(uint32_t i=0;i<SM_MAP_COUNT;i++)if(!sm_map_valid(b+40+i*SM_MAP_BYTES))return 0;
     if(b[3]>='2'&&b[328]>8)return 0;
-    if(b[3]=='3'&&(b[329]>3||b[330]>16))return 0;
-    for(uint32_t i=b[3]=='3'?331:b[3]=='2'?329:328;i<SM_CONFIG_BYTES;i++)if(b[i])return 0;return 1;
+    if(b[3]>='3'&&(b[329]>3||b[330]>16))return 0;
+    if(b[3]=='4'){for(uint32_t i=347;i<=363;i++)if(b[i]>127)return 0;}
+    for(uint32_t i=b[3]=='4'?364:b[3]=='3'?331:b[3]=='2'?329:328;i<SM_CONFIG_BYTES;i++)if(b[i])return 0;return 1;
 }
 #if MELODEE_FLASH
 _Static_assert(SM_PROGRAM_BANK<=ST_BANK_BASE_MAX+ST_BANK_EXT_MAX,"eight programs fit existing atomic project extents");
@@ -125,7 +150,8 @@ static void sm_config_load(void)
     st_hdr_t h;uint8_t header[16],b[SM_CONFIG_BYTES];int copy=sm_program_bank(0,&h,header);
     if(copy<0||st_read_range(OBJ_BANK0,(uint32_t)copy,SM_CONFIG_OFF,b,sizeof b)||!sm_config_valid(b))return;
     sm_program_boot_slot=b[3]>='2'&&b[328]?b[328]-1:255;
-    sm_controller_override=b[3]=='3'?b[329]:0;sm_controller_port=b[3]=='3'?b[330]:0;
+    sm_controller_override=b[3]>='3'?b[329]:0;sm_controller_port=b[3]>='3'?b[330]:0;
+    if(b[3]=='4'){for(uint32_t k=0;k<8;k++){sm_drums.steps[k]=(uint16_t)(b[331+k*2]|b[332+k*2]<<8);sm_drums.level[k]=b[347+k];sm_drums.velocity[k]=b[355+k];}sm_drums.volume=b[363];sm_drums.enabled=0;sm_drum_stop();}
     sm_setlist_count=b[4];sm_setlist_pos=b[5];memcpy(sm_setlist,b+8,32);memcpy(sm_maps,b+40,sizeof sm_maps);
 }
 static int sm_config_save(void)

@@ -154,6 +154,13 @@ static void sec_chip(uint32_t i, char *b, uint32_t n);
 static int sec_map_on(void);
 static void sound_name(const track_t *t, char *b);
 static int ptc_on(void);                                /* ui_patterns.c */
+static uint32_t sm_glo_page(void)
+{
+    uint32_t n=0;for(uint32_t i=0;i<ui.page;i++)if(PAGES[i].fam==FAM_GLO&&page_visible(i))n++;
+    return n;
+}
+static const char *const SM_GLO_NAME[]={"TUNE/CLOCK","MIDI/CPU","VOICE COST","LAYERING","CPU GUARD","DISPLAY","USB/SAVE","CONTROLS","RECORDING","DEVICE"};
+static const char *const SM_GLO_HELP[]={"PITCH / CPU / CLOCK","MIDI ROUTING / CPU","P5 / CZ-1 / FM6 / SID","LAYER OR SELECT PART","COST / BUDGET / GUARD"};
 static void head_chip_text(char *b)
 {
     const page_t *pg = cur_page();
@@ -165,10 +172,12 @@ static void head_chip_text(char *b)
         str_cpy(b, "copy 1 to 1", 16);
         b[5] = (char)('1' + ui.ptc_src % NPAT);
         b[10] = (char)('1' + ui.ptc_dst % NPAT);
+    } else if (ui.home&&ui.home_pg) {str_cpy(b,"DRUMS",16);
     } else if (ui.home) {                               /* Stage: the engine (a kit: its name, "909 KIT") */
         if (browse_pending()) { uint32_t kk, s = browse_shown(&kk); e = src_engine(s, kk); }
         if (ENGINES[eng_idx(e)] == &ENG_DRUM && !browse_pending()) sound_name(TSEL, b);
         else str_cpy(b, ENGINES[eng_idx(e)]->name, 16);
+    } else if(pg->fam==FAM_GLO){str_cpy(b,SM_GLO_NAME[sm_glo_page()],16);
     } else if (sec_map_on()) {                          /* the map: the engine */
         str_cpy(b, ENGINES[e]->name, 16);
     } else if (pg->graph == GR_ROLL && grid_on()) {     /* the drum grid */
@@ -202,7 +211,7 @@ static void head_pages(int32_t x, int32_t x1)          /* (x: after the transpor
         }
     if (n < 2u)
         return;
-    if (x + (int32_t)n * 12 + 10 > x1 - 6) {            /* (no room for the dots; none for that either: nothing) */
+    if (pg->fam==FAM_GLO || x + (int32_t)n * 12 + 10 > x1 - 6) {            /* (no room for the dots; none for that either: nothing) */
         char b[8];
         fmt_int(b, (int32_t)k + 1);
         str_cpy(b + str_len(b), "/", 2);
@@ -564,7 +573,8 @@ static void sound_name(const track_t *t, char *b)
 {
     const engine_t *e = ENGINES[t->eng_req % NENGINES];
     b[0] = 0;
-    if(t->eng_req==ENGI_PROPHET)p5_short_name(t,b,16);
+    if(t->eng_req==ENGI_HYBRID){memcpy(b,hy_patch_of(trk_index(t))->name,10);b[10]=0;}
+    else if(t->eng_req==ENGI_PROPHET)p5_short_name(t,b,16);
     else if(t->user_native && user_of(t)<USER_NONE)native_name(t->eng_req,user_of(t),b);
     else if (user_of(t) < UP_SLOTS)
         up_name(user_of(t), b);
@@ -1163,9 +1173,9 @@ static void draw_page(void)
         draw_columns();
         melodee_dbg.stage = 5;
         if (ui.home && ui.home_pg)                      /* HOME's second page (ui_view.c) */
-            view_draw();
+            sm_drum_home_draw();
         else if (ui.home)                               /* Stage: its panel and the lanes (ui_stage.c), no footer */
-            stage_draw();
+            sm_program_home_draw();
         else
             draw_graph();
     }
