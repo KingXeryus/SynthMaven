@@ -21,8 +21,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--version', default='3.5')
-    parser.add_argument('--output', type=Path, default=ROOT/'output/pdf/SynthMaven-3.5-User-Guide.pdf')
+    parser.add_argument('--version', default='3.5.1')
+    parser.add_argument('--output', type=Path, default=ROOT/'output/pdf/SynthMaven-3.5.1-User-Guide.pdf')
     args = parser.parse_args()
     source = ROOT/'web/manual/index.html'
     soup = BeautifulSoup(source.read_text(), 'html.parser')

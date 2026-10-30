@@ -1,8 +1,15 @@
 {
-  "version": "3.5",
-  "status": "development",
-  "base": {"repository": "https://github.com/keremimo/melodee", "tag": "v1.5.1", "commit": "6a608ba122ac42293908d394e26713e31ec52fb0"},
-  "donor": {"repository": "https://github.com/KingXeryus/SynthMaven", "commit": "e49239e"},
+  "version": "3.5.1",
+  "status": "release-candidate",
+  "base": {
+    "repository": "https://github.com/keremimo/melodee",
+    "tag": "v1.5.1",
+    "commit": "6a608ba122ac42293908d394e26713e31ec52fb0"
+  },
+  "donor": {
+    "repository": "https://github.com/KingXeryus/SynthMaven",
+    "commit": "e49239e"
+  },
   "bluetooth": false,
   "release_validated": false
 }
