@@ -1,0 +1,12 @@
+import {readFileSync} from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';import {JSDOM} from 'jsdom';
+const html=readFileSync(new URL('editor.html',import.meta.url),'utf8'),dom=new JSDOM(html),d=dom.window.document;
+const el=(tag,a={},...kids)=>{const n=d.createElement(tag);for(const[k,v]of Object.entries(a)){if(k==='text')n.textContent=v;else if(k==='onclick')n.onclick=v;else if(k==='disabled')n.disabled=v;else n.setAttribute(k,v);}n.append(...kids);return n;};
+const dev={info:{patterns:8,chainRows:16},song:{rows:Array.from({length:5},(_,i)=>({banks:[i,0,0,0],repeat:1})),count:5,playing:false}};
+const ctx={document:d,el,$:id=>d.getElementById(id),dev,t:x=>x,op:fn=>fn(),changeSong:(_,rows)=>{dev.song={...dev.song,rows,count:rows.length};ctx.draw();}};
+vm.runInNewContext(html.slice(html.indexOf('let songPage = 0;'),html.indexOf('async function changeSong('))+'\nthis.draw=renderSong;',ctx);ctx.draw();
+assert.equal(d.querySelectorAll('#songrows .song-section').length,4);
+d.querySelector('[aria-label="Duplicate section 1"]').focus();d.querySelector('[aria-label="Duplicate section 1"]').click();assert.equal(dev.song.rows.length,6);assert.equal(d.querySelector('#songpages').textContent.includes('/ 6'),true);
+d.querySelector('[aria-label="Next song sections"]').click();assert.equal(d.querySelectorAll('#songrows .song-section').length,2);
+d.querySelector('[aria-label="Delete section 6"]').click();assert.equal(dev.song.rows.length,5);
+dev.song.playing=true;ctx.draw();assert.equal(d.querySelector('[aria-label="Duplicate section 5"]').disabled,true);assert.equal(d.getElementById('songplay').textContent,'songStop');
+console.log('Song arranger: four-section pages, duplicate/delete with focused controls, and playback edit protection passed.');dom.window.close();

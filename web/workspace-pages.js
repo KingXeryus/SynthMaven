@@ -12,7 +12,7 @@
   }
   refresh();return refresh;
  }
- const project=$('p-projects');if(project){const top=make('div'),saved=make('div');top.className='project-top';saved.className='group';saved.id='project-slots-card';for(const node of [...project.children]){if(node.id==='backup-panel')break;saved.append(node);}const backup=$('backup-panel');backup.classList.add('group');top.append(saved,backup);project.prepend(top);}
+ const project=$('p-projects');if(project){const top=make('div'),saved=make('div');top.className='project-top';saved.className='group';saved.id='project-slots-card';for(const node of [...project.children]){if(node.id==='backup-panel')break;saved.append(node);}const backup=$('backup-panel');backup.classList.add('group');top.append(saved,backup);project.prepend(top);const song=$('songchain');const refresh=sections(project,()=>[{id:'arranger',name:'Song arranger',node:song},{id:'storage',name:'Projects & backup',node:top}],'Projects');new MutationObserver(refresh).observe(song,{attributes:true,attributeFilter:['hidden']});}
  const library=$('p-library'),bank=$('bankpane').parentElement;bank.id='library-bank-section';
  const libRefresh=sections(library,()=>[{id:'device',name:'Device sounds',node:$('device-presets')},{id:'library',name:'My library',node:$('libpane')},{id:'bank',name:'User slots',node:bank}],'Library');
  new MutationObserver(libRefresh).observe($('device-presets'),{attributes:true,attributeFilter:['hidden']});

@@ -145,6 +145,12 @@ const E = vm.runInNewContext(proto + `
   const prefs=await E.readDevicePreferences(rq,info,factoryNames);
   ok(prefs.slots.total===384 && prefs.favorites[info.namespace.general].length===384 && prefs.favorites[19].length===factoryNames[19].length,
      "shared: 1.5 startup reads the complete factory and shared-slot favorites");
+  const shortened={...info,engines:info.engines.map(n=>n==='MIDI Track'?'MIDI Tra':n)};
+  let midiQueried=false;
+  await E.readDevicePreferences(async request=>{if(request[0]===E.CMD.FAV_GET&&request[1][0]===21)midiQueried=true;return rq(request);},shortened,factoryNames);
+  ok(!midiQueried,"favorites: device's eight-character MIDI Tra label is never queried");
+  const unavailable=await E.readDevicePreferences(async request=>request[0]===E.CMD.FAV_GET&&request[1][0]===19?[1]:rq(request),info,factoryNames);
+  ok(!unavailable.favorites[19] && unavailable.slots.total===384,"favorites: unsupported optional bank does not block connection");
   const midi=E.devicePresetRows(info,factoryNames,prefs).find(row=>row.engine===21);
   ok(midi && midi.canFavorite===false && !prefs.favorites[21],
      "shared: MIDI Track remains loadable without unsupported favorites");

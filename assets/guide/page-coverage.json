@@ -1,0 +1,1745 @@
+[
+  {
+    "page": 10,
+    "title": "Start here: controls and storage",
+    "source": "Start here: controls and storage",
+    "font_size": 10,
+    "bottom": 370.54976377952755
+  },
+  {
+    "page": 11,
+    "title": "Install, back up and recover",
+    "source": "Install, back up and recover",
+    "font_size": 10,
+    "bottom": 370.54976377952755
+  },
+  {
+    "page": 12,
+    "title": "USB computer, iPad and powered-host setup",
+    "source": "USB computer, iPad and powered-host setup",
+    "font_size": 10,
+    "bottom": 370.54976377952755
+  },
+  {
+    "page": 13,
+    "title": "HOME: four-part program",
+    "source": "HOME: four-part program",
+    "font_size": 10,
+    "bottom": 386.7497637795276
+  },
+  {
+    "page": 14,
+    "title": "Shortcuts and secondary actions",
+    "source": "Shortcuts and secondary actions",
+    "font_size": 10,
+    "bottom": 343.54976377952755
+  },
+  {
+    "page": 15,
+    "title": "NAME: entering a sound or project name",
+    "source": "NAME: entering a sound or project name",
+    "font_size": 10,
+    "bottom": 455.1497637795276
+  },
+  {
+    "page": 16,
+    "title": "SCALE PICKER: categories and favorites",
+    "source": "SCALE PICKER: categories and favorites",
+    "font_size": 10,
+    "bottom": 442.54976377952755
+  },
+  {
+    "page": 17,
+    "title": "Layering notification",
+    "source": "Layering notification",
+    "font_size": 10,
+    "bottom": 442.54976377952755
+  },
+  {
+    "page": 18,
+    "title": "FX",
+    "source": "ref_3_0_0",
+    "font_size": 10,
+    "bottom": 348.9497637795276
+  },
+  {
+    "page": 19,
+    "title": "SHARED",
+    "source": "ref_3_4_0",
+    "font_size": 10,
+    "bottom": 323.7497637795277
+  },
+  {
+    "page": 20,
+    "title": "ENV",
+    "source": "ref_3_8_0",
+    "font_size": 10,
+    "bottom": 361.54976377952755
+  },
+  {
+    "page": 21,
+    "title": "ENV DEST",
+    "source": "ref_3_9_0",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 22,
+    "title": "LFO",
+    "source": "ref_3_10_0",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 23,
+    "title": "LFO 2",
+    "source": "ref_3_11_0",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 24,
+    "title": "LFO DEST",
+    "source": "ref_3_12_0",
+    "font_size": 10,
+    "bottom": 323.7497637795276
+  },
+  {
+    "page": 25,
+    "title": "MOD",
+    "source": "ref_3_13_0",
+    "font_size": 10,
+    "bottom": 323.7497637795277
+  },
+  {
+    "page": 26,
+    "title": "SCL",
+    "source": "ref_3_15_0",
+    "font_size": 10,
+    "bottom": 224.74976377952757
+  },
+  {
+    "page": 27,
+    "title": "MASTER TUNE",
+    "source": "ref_3_16_0",
+    "font_size": 10,
+    "bottom": 323.74976377952754
+  },
+  {
+    "page": 28,
+    "title": "CUSTOM TUNE",
+    "source": "ref_3_17_0",
+    "font_size": 10,
+    "bottom": 311.1497637795276
+  },
+  {
+    "page": 29,
+    "title": "CHORD",
+    "source": "ref_3_18_0",
+    "font_size": 10,
+    "bottom": 298.54976377952767
+  },
+  {
+    "page": 30,
+    "title": "SID / EDIT 1",
+    "source": "ref_3_20_0",
+    "font_size": 10,
+    "bottom": 298.54976377952767
+  },
+  {
+    "page": 31,
+    "title": "SID / EDIT 2",
+    "source": "ref_3_21_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 32,
+    "title": "SID / VOICE",
+    "source": "ref_3_107_0",
+    "font_size": 10,
+    "bottom": 163.54976377952747
+  },
+  {
+    "page": 33,
+    "title": "TUNE / CLOCK",
+    "source": "ref_3_110_0",
+    "font_size": 10,
+    "bottom": 336.3497637795275
+  },
+  {
+    "page": 34,
+    "title": "MIDI / CPU",
+    "source": "ref_3_111_0",
+    "font_size": 10,
+    "bottom": 336.3497637795275
+  },
+  {
+    "page": 35,
+    "title": "VOICE COST",
+    "source": "ref_3_112_0",
+    "font_size": 10,
+    "bottom": 273.3497637795277
+  },
+  {
+    "page": 36,
+    "title": "LAYERING",
+    "source": "ref_3_113_0",
+    "font_size": 10,
+    "bottom": 361.5497637795275
+  },
+  {
+    "page": 37,
+    "title": "CPU GUARD",
+    "source": "ref_3_114_0",
+    "font_size": 10,
+    "bottom": 336.3497637795275
+  },
+  {
+    "page": 38,
+    "title": "DISPLAY",
+    "source": "ref_3_115_0",
+    "font_size": 10,
+    "bottom": 323.74976377952765
+  },
+  {
+    "page": 39,
+    "title": "USB / SAVE",
+    "source": "ref_3_116_0",
+    "font_size": 10,
+    "bottom": 311.1497637795275
+  },
+  {
+    "page": 40,
+    "title": "CONTROLS",
+    "source": "ref_3_117_0",
+    "font_size": 10,
+    "bottom": 323.7497637795275
+  },
+  {
+    "page": 41,
+    "title": "RECORDING",
+    "source": "ref_3_118_0",
+    "font_size": 10,
+    "bottom": 336.3497637795275
+  },
+  {
+    "page": 42,
+    "title": "DEVICE",
+    "source": "ref_3_119_0",
+    "font_size": 10,
+    "bottom": 336.3497637795275
+  },
+  {
+    "page": 43,
+    "title": "PROGRAM",
+    "source": "ref_3_120_0",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 44,
+    "title": "PRESETS",
+    "source": "ref_3_121_0",
+    "font_size": 10,
+    "bottom": 374.1497637795276
+  },
+  {
+    "page": 45,
+    "title": "USER",
+    "source": "ref_3_122_0",
+    "font_size": 10,
+    "bottom": 374.1497637795276
+  },
+  {
+    "page": 46,
+    "title": "PROJECT",
+    "source": "ref_3_123_0",
+    "font_size": 10,
+    "bottom": 323.7497637795276
+  },
+  {
+    "page": 47,
+    "title": "ARP",
+    "source": "ref_3_124_0",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 48,
+    "title": "ARP 2",
+    "source": "ref_3_125_0",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 49,
+    "title": "NOTES",
+    "source": "ref_3_126_0",
+    "font_size": 10,
+    "bottom": 374.1497637795276
+  },
+  {
+    "page": 50,
+    "title": "PATTERN",
+    "source": "ref_3_127_0",
+    "font_size": 10,
+    "bottom": 323.7497637795276
+  },
+  {
+    "page": 51,
+    "title": "TEMPO",
+    "source": "ref_3_128_0",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 52,
+    "title": "LAYER MIX",
+    "source": "ref_3_130_0",
+    "font_size": 10,
+    "bottom": 323.7497637795276
+  },
+  {
+    "page": 53,
+    "title": "PATTERNS",
+    "source": "ref_3_131_0",
+    "font_size": 10,
+    "bottom": 323.7497637795276
+  },
+  {
+    "page": 54,
+    "title": "SONG",
+    "source": "ref_3_132_0",
+    "font_size": 10,
+    "bottom": 374.1497637795276
+  },
+  {
+    "page": 55,
+    "title": "MOTION",
+    "source": "ref_3_133_0",
+    "font_size": 10,
+    "bottom": 374.1497637795276
+  },
+  {
+    "page": 56,
+    "title": "DRUM / EDIT 1",
+    "source": "ref_10_20_0",
+    "font_size": 10,
+    "bottom": 311.1497637795276
+  },
+  {
+    "page": 57,
+    "title": "DRUM / EDIT 2",
+    "source": "ref_10_21_0",
+    "font_size": 10,
+    "bottom": 311.1497637795276
+  },
+  {
+    "page": 58,
+    "title": "DRUM / DRUM SOUND",
+    "source": "ref_10_22_0",
+    "font_size": 10,
+    "bottom": 348.9497637795276
+  },
+  {
+    "page": 59,
+    "title": "DRUM / DRUM MIX",
+    "source": "ref_10_23_0",
+    "font_size": 10,
+    "bottom": 348.9497637795276
+  },
+  {
+    "page": 60,
+    "title": "DRUM / LANES",
+    "source": "ref_10_105_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 61,
+    "title": "DRUM / LANES 2",
+    "source": "ref_10_106_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 62,
+    "title": "DRUM / DRUM HIT",
+    "source": "ref_10_134_0",
+    "font_size": 10,
+    "bottom": 348.9497637795276
+  },
+  {
+    "page": 63,
+    "title": "FX / NOTE TAIL",
+    "source": "ref_12_0_10",
+    "font_size": 10,
+    "bottom": 348.9497637795276
+  },
+  {
+    "page": 64,
+    "title": "FX / NOTE ECHO",
+    "source": "ref_12_0_11",
+    "font_size": 10,
+    "bottom": 348.9497637795276
+  },
+  {
+    "page": 65,
+    "title": "FX 1 / PHASER",
+    "source": "ref_12_1_1",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 66,
+    "title": "FX 1 / WIDTH",
+    "source": "ref_12_1_2",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 67,
+    "title": "FX 1 / FORMANT",
+    "source": "ref_12_1_3",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 68,
+    "title": "FX 1 / TAPE",
+    "source": "ref_12_1_4",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 69,
+    "title": "FX 1 / SPIT",
+    "source": "ref_12_1_5",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 70,
+    "title": "FX 1 / ROOM",
+    "source": "ref_12_1_7",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 71,
+    "title": "FX 1 / REVERB",
+    "source": "ref_12_1_8",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 72,
+    "title": "FX 1 / CHORUS",
+    "source": "ref_12_1_9",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 73,
+    "title": "FX 1 / NOTE ECHO",
+    "source": "ref_12_1_11",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 74,
+    "title": "FX 1 / DRIVE",
+    "source": "ref_12_1_12",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 75,
+    "title": "FX 1 / CRUSH",
+    "source": "ref_12_1_16",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 76,
+    "title": "FX 1 / FLANGER",
+    "source": "ref_12_1_17",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 77,
+    "title": "FX 1 / PEDAL PHASER",
+    "source": "ref_12_1_18",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 78,
+    "title": "FX 1 / PEDAL CHORUS",
+    "source": "ref_12_1_19",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 79,
+    "title": "FX 2 / PHASER",
+    "source": "ref_12_2_1",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 80,
+    "title": "FX 2 / WIDTH",
+    "source": "ref_12_2_2",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 81,
+    "title": "FX 2 / FORMANT",
+    "source": "ref_12_2_3",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 82,
+    "title": "FX 2 / TAPE",
+    "source": "ref_12_2_4",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 83,
+    "title": "FX 2 / SPIT",
+    "source": "ref_12_2_5",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 84,
+    "title": "FX 2 / ROOM",
+    "source": "ref_12_2_7",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 85,
+    "title": "FX 2 / REVERB",
+    "source": "ref_12_2_8",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 86,
+    "title": "FX 2 / CHORUS",
+    "source": "ref_12_2_9",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 87,
+    "title": "FX 2 / NOTE ECHO",
+    "source": "ref_12_2_11",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 88,
+    "title": "FX 2 / DRIVE",
+    "source": "ref_12_2_12",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 89,
+    "title": "FX 2 / CRUSH",
+    "source": "ref_12_2_16",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 90,
+    "title": "FX 2 / FLANGER",
+    "source": "ref_12_2_17",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 91,
+    "title": "FX 2 / PEDAL PHASER",
+    "source": "ref_12_2_18",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 92,
+    "title": "FX 2 / PEDAL CHORUS",
+    "source": "ref_12_2_19",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 93,
+    "title": "FX 3 / PHASER",
+    "source": "ref_12_3_1",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 94,
+    "title": "FX 3 / WIDTH",
+    "source": "ref_12_3_2",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 95,
+    "title": "FX 3 / FORMANT",
+    "source": "ref_12_3_3",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 96,
+    "title": "FX 3 / TAPE",
+    "source": "ref_12_3_4",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 97,
+    "title": "FX 3 / SPIT",
+    "source": "ref_12_3_5",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 98,
+    "title": "FX 3 / ROOM",
+    "source": "ref_12_3_7",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 99,
+    "title": "FX 3 / REVERB",
+    "source": "ref_12_3_8",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 100,
+    "title": "FX 3 / CHORUS",
+    "source": "ref_12_3_9",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 101,
+    "title": "FX 3 / NOTE ECHO",
+    "source": "ref_12_3_11",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 102,
+    "title": "FX 3 / DRIVE",
+    "source": "ref_12_3_12",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 103,
+    "title": "FX 3 / CRUSH",
+    "source": "ref_12_3_16",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 104,
+    "title": "FX 3 / FLANGER",
+    "source": "ref_12_3_17",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 105,
+    "title": "FX 3 / PEDAL PHASER",
+    "source": "ref_12_3_18",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 106,
+    "title": "FX 3 / PEDAL CHORUS",
+    "source": "ref_12_3_19",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 107,
+    "title": "SEND FX 1 / PHASER",
+    "source": "ref_12_5_1",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 108,
+    "title": "SEND FX 1 / WIDTH",
+    "source": "ref_12_5_2",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 109,
+    "title": "SEND FX 1 / FORMANT",
+    "source": "ref_12_5_3",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 110,
+    "title": "SEND FX 1 / TAPE",
+    "source": "ref_12_5_4",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 111,
+    "title": "SEND FX 1 / SPIT",
+    "source": "ref_12_5_5",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 112,
+    "title": "SEND FX 1 / ROOM",
+    "source": "ref_12_5_7",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 113,
+    "title": "SEND FX 1 / REVERB",
+    "source": "ref_12_5_8",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 114,
+    "title": "SEND FX 1 / CHORUS",
+    "source": "ref_12_5_9",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 115,
+    "title": "SEND FX 1 / NOTE ECHO",
+    "source": "ref_12_5_11",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 116,
+    "title": "SEND FX 1 / DRIVE",
+    "source": "ref_12_5_12",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 117,
+    "title": "SEND FX 1 / CRUSH",
+    "source": "ref_12_5_16",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 118,
+    "title": "SEND FX 1 / FLANGER",
+    "source": "ref_12_5_17",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 119,
+    "title": "SEND FX 1 / PEDAL PHASER",
+    "source": "ref_12_5_18",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 120,
+    "title": "SEND FX 1 / PEDAL CHORUS",
+    "source": "ref_12_5_19",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 121,
+    "title": "SEND FX 2 / PHASER",
+    "source": "ref_12_6_1",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 122,
+    "title": "SEND FX 2 / WIDTH",
+    "source": "ref_12_6_2",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 123,
+    "title": "SEND FX 2 / FORMANT",
+    "source": "ref_12_6_3",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 124,
+    "title": "SEND FX 2 / TAPE",
+    "source": "ref_12_6_4",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 125,
+    "title": "SEND FX 2 / SPIT",
+    "source": "ref_12_6_5",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 126,
+    "title": "SEND FX 2 / ROOM",
+    "source": "ref_12_6_7",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 127,
+    "title": "SEND FX 2 / REVERB",
+    "source": "ref_12_6_8",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 128,
+    "title": "SEND FX 2 / CHORUS",
+    "source": "ref_12_6_9",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 129,
+    "title": "SEND FX 2 / NOTE ECHO",
+    "source": "ref_12_6_11",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 130,
+    "title": "SEND FX 2 / DRIVE",
+    "source": "ref_12_6_12",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 131,
+    "title": "SEND FX 2 / CRUSH",
+    "source": "ref_12_6_16",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 132,
+    "title": "SEND FX 2 / FLANGER",
+    "source": "ref_12_6_17",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 133,
+    "title": "SEND FX 2 / PEDAL PHASER",
+    "source": "ref_12_6_18",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 134,
+    "title": "SEND FX 2 / PEDAL CHORUS",
+    "source": "ref_12_6_19",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 135,
+    "title": "SEND FX 3 / PHASER",
+    "source": "ref_12_7_1",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 136,
+    "title": "SEND FX 3 / WIDTH",
+    "source": "ref_12_7_2",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 137,
+    "title": "SEND FX 3 / FORMANT",
+    "source": "ref_12_7_3",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 138,
+    "title": "SEND FX 3 / TAPE",
+    "source": "ref_12_7_4",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 139,
+    "title": "SEND FX 3 / SPIT",
+    "source": "ref_12_7_5",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 140,
+    "title": "SEND FX 3 / ROOM",
+    "source": "ref_12_7_7",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 141,
+    "title": "SEND FX 3 / REVERB",
+    "source": "ref_12_7_8",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 142,
+    "title": "SEND FX 3 / CHORUS",
+    "source": "ref_12_7_9",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 143,
+    "title": "SEND FX 3 / NOTE ECHO",
+    "source": "ref_12_7_11",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 144,
+    "title": "SEND FX 3 / DRIVE",
+    "source": "ref_12_7_12",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 145,
+    "title": "SEND FX 3 / CRUSH",
+    "source": "ref_12_7_16",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 146,
+    "title": "SEND FX 3 / FLANGER",
+    "source": "ref_12_7_17",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 147,
+    "title": "SEND FX 3 / PEDAL PHASER",
+    "source": "ref_12_7_18",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 148,
+    "title": "SEND FX 3 / PEDAL CHORUS",
+    "source": "ref_12_7_19",
+    "font_size": 10,
+    "bottom": 348.94976377952753
+  },
+  {
+    "page": 149,
+    "title": "FM6 / EDIT 1",
+    "source": "ref_12_20_0",
+    "font_size": 10,
+    "bottom": 323.74976377952754
+  },
+  {
+    "page": 150,
+    "title": "FM6 / EDIT 2",
+    "source": "ref_12_21_0",
+    "font_size": 10,
+    "bottom": 323.7497637795276
+  },
+  {
+    "page": 151,
+    "title": "FM6 / STORE",
+    "source": "ref_12_40_0",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 152,
+    "title": "FM6 / ALGO",
+    "source": "ref_12_41_0",
+    "font_size": 10,
+    "bottom": 311.1497637795276
+  },
+  {
+    "page": 153,
+    "title": "FM6 / FREQ",
+    "source": "ref_12_42_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 154,
+    "title": "FM6 / OUT",
+    "source": "ref_12_43_0",
+    "font_size": 10,
+    "bottom": 311.1497637795275
+  },
+  {
+    "page": 155,
+    "title": "FM6 / EG RATE",
+    "source": "ref_12_44_0",
+    "font_size": 10,
+    "bottom": 285.9497637795276
+  },
+  {
+    "page": 156,
+    "title": "FM6 / EG LVL",
+    "source": "ref_12_45_0",
+    "font_size": 10,
+    "bottom": 285.9497637795276
+  },
+  {
+    "page": 157,
+    "title": "FM6 / SCALE",
+    "source": "ref_12_46_0",
+    "font_size": 10,
+    "bottom": 323.74976377952754
+  },
+  {
+    "page": 158,
+    "title": "FM6 / CURVE",
+    "source": "ref_12_47_0",
+    "font_size": 10,
+    "bottom": 311.1497637795275
+  },
+  {
+    "page": 159,
+    "title": "FM6 / PITCH EG",
+    "source": "ref_12_48_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 160,
+    "title": "FM6 / PITCH LV",
+    "source": "ref_12_49_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 161,
+    "title": "FM6 / FM LFO",
+    "source": "ref_12_50_0",
+    "font_size": 10,
+    "bottom": 194.14976377952755
+  },
+  {
+    "page": 162,
+    "title": "FM6 / FM BEND",
+    "source": "ref_12_52_0",
+    "font_size": 8.5,
+    "bottom": 49.519763779527565
+  },
+  {
+    "page": 163,
+    "title": "CZ-1 / CZ TOOLS",
+    "source": "ref_15_56_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 164,
+    "title": "CZ-1 / CZ LINE",
+    "source": "ref_15_57_0",
+    "font_size": 10,
+    "bottom": 323.74976377952754
+  },
+  {
+    "page": 165,
+    "title": "CZ-1 / CZ DETUNE",
+    "source": "ref_15_58_0",
+    "font_size": 10,
+    "bottom": 348.9497637795276
+  },
+  {
+    "page": 166,
+    "title": "CZ-1 / CZ VIBRATO",
+    "source": "ref_15_59_0",
+    "font_size": 10,
+    "bottom": 311.1497637795276
+  },
+  {
+    "page": 167,
+    "title": "CZ-1 / CZ WINDOW",
+    "source": "ref_15_60_0",
+    "font_size": 10,
+    "bottom": 323.74976377952754
+  },
+  {
+    "page": 168,
+    "title": "CZ-1 / CZ1 WAVE",
+    "source": "ref_15_61_0",
+    "font_size": 10,
+    "bottom": 273.3497637795278
+  },
+  {
+    "page": 169,
+    "title": "CZ-1 / CZ1 TOUCH",
+    "source": "ref_15_62_0",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 170,
+    "title": "CZ-1 / C1 PIT R1-4",
+    "source": "ref_15_63_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 171,
+    "title": "CZ-1 / C1 PIT R5-8",
+    "source": "ref_15_64_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 172,
+    "title": "CZ-1 / C1 PIT L1-4",
+    "source": "ref_15_65_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 173,
+    "title": "CZ-1 / C1 PIT L5-8",
+    "source": "ref_15_66_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 174,
+    "title": "CZ-1 / C1 PIT POINT",
+    "source": "ref_15_67_0",
+    "font_size": 10,
+    "bottom": 323.74976377952754
+  },
+  {
+    "page": 175,
+    "title": "CZ-1 / C1 WAV R1-4",
+    "source": "ref_15_68_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 176,
+    "title": "CZ-1 / C1 WAV R5-8",
+    "source": "ref_15_69_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 177,
+    "title": "CZ-1 / C1 WAV L1-4",
+    "source": "ref_15_70_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 178,
+    "title": "CZ-1 / C1 WAV L5-8",
+    "source": "ref_15_71_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 179,
+    "title": "CZ-1 / C1 WAV POINT",
+    "source": "ref_15_72_0",
+    "font_size": 10,
+    "bottom": 323.74976377952754
+  },
+  {
+    "page": 180,
+    "title": "CZ-1 / C1 AMP R1-4",
+    "source": "ref_15_73_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 181,
+    "title": "CZ-1 / C1 AMP R5-8",
+    "source": "ref_15_74_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 182,
+    "title": "CZ-1 / C1 AMP L1-4",
+    "source": "ref_15_75_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 183,
+    "title": "CZ-1 / C1 AMP L5-8",
+    "source": "ref_15_76_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 184,
+    "title": "CZ-1 / C1 AMP POINT",
+    "source": "ref_15_77_0",
+    "font_size": 10,
+    "bottom": 323.74976377952754
+  },
+  {
+    "page": 185,
+    "title": "CZ-1 / CZ2 WAVE",
+    "source": "ref_15_78_0",
+    "font_size": 10,
+    "bottom": 273.3497637795278
+  },
+  {
+    "page": 186,
+    "title": "CZ-1 / CZ2 TOUCH",
+    "source": "ref_15_79_0",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 187,
+    "title": "CZ-1 / C2 PIT R1-4",
+    "source": "ref_15_80_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 188,
+    "title": "CZ-1 / C2 PIT R5-8",
+    "source": "ref_15_81_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 189,
+    "title": "CZ-1 / C2 PIT L1-4",
+    "source": "ref_15_82_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 190,
+    "title": "CZ-1 / C2 PIT L5-8",
+    "source": "ref_15_83_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 191,
+    "title": "CZ-1 / C2 PIT POINT",
+    "source": "ref_15_84_0",
+    "font_size": 10,
+    "bottom": 323.74976377952754
+  },
+  {
+    "page": 192,
+    "title": "CZ-1 / C2 WAV R1-4",
+    "source": "ref_15_85_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 193,
+    "title": "CZ-1 / C2 WAV R5-8",
+    "source": "ref_15_86_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 194,
+    "title": "CZ-1 / C2 WAV L1-4",
+    "source": "ref_15_87_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 195,
+    "title": "CZ-1 / C2 WAV L5-8",
+    "source": "ref_15_88_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 196,
+    "title": "CZ-1 / C2 WAV POINT",
+    "source": "ref_15_89_0",
+    "font_size": 10,
+    "bottom": 323.74976377952754
+  },
+  {
+    "page": 197,
+    "title": "CZ-1 / C2 AMP R1-4",
+    "source": "ref_15_90_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 198,
+    "title": "CZ-1 / C2 AMP R5-8",
+    "source": "ref_15_91_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 199,
+    "title": "CZ-1 / C2 AMP L1-4",
+    "source": "ref_15_92_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 200,
+    "title": "CZ-1 / C2 AMP L5-8",
+    "source": "ref_15_93_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 201,
+    "title": "CZ-1 / C2 AMP POINT",
+    "source": "ref_15_94_0",
+    "font_size": 10,
+    "bottom": 323.74976377952754
+  },
+  {
+    "page": 202,
+    "title": "PROPHET / EDIT 1",
+    "source": "ref_19_20_0",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 203,
+    "title": "PROPHET / EDIT 2",
+    "source": "ref_19_21_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 204,
+    "title": "PROPHET / P5 STORE",
+    "source": "ref_19_24_0",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 205,
+    "title": "PROPHET / P5 OSC A",
+    "source": "ref_19_25_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 206,
+    "title": "PROPHET / P5 OSC B",
+    "source": "ref_19_26_0",
+    "font_size": 10,
+    "bottom": 311.1497637795276
+  },
+  {
+    "page": 207,
+    "title": "PROPHET / P5 B WAVES",
+    "source": "ref_19_27_0",
+    "font_size": 10,
+    "bottom": 323.74976377952754
+  },
+  {
+    "page": 208,
+    "title": "PROPHET / P5 MIXER",
+    "source": "ref_19_28_0",
+    "font_size": 10,
+    "bottom": 323.7497637795276
+  },
+  {
+    "page": 209,
+    "title": "PROPHET / P5 FILTER",
+    "source": "ref_19_29_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 210,
+    "title": "PROPHET / P5 FLT ENV",
+    "source": "ref_19_30_0",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 211,
+    "title": "PROPHET / P5 AMP ENV",
+    "source": "ref_19_31_0",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 212,
+    "title": "PROPHET / P5 ENV MOD",
+    "source": "ref_19_32_0",
+    "font_size": 10,
+    "bottom": 323.7497637795276
+  },
+  {
+    "page": 213,
+    "title": "PROPHET / P5 POLYMOD",
+    "source": "ref_19_33_0",
+    "font_size": 10,
+    "bottom": 311.1497637795276
+  },
+  {
+    "page": 214,
+    "title": "PROPHET / P5 MOD FLT",
+    "source": "ref_19_34_0",
+    "font_size": 10,
+    "bottom": 323.74976377952754
+  },
+  {
+    "page": 215,
+    "title": "PROPHET / P5 LFO",
+    "source": "ref_19_35_0",
+    "font_size": 10,
+    "bottom": 323.7497637795276
+  },
+  {
+    "page": 216,
+    "title": "PROPHET / P5 WHEEL",
+    "source": "ref_19_36_0",
+    "font_size": 10,
+    "bottom": 311.1497637795276
+  },
+  {
+    "page": 217,
+    "title": "PROPHET / P5 WHEEL 2",
+    "source": "ref_19_37_0",
+    "font_size": 10,
+    "bottom": 311.1497637795276
+  },
+  {
+    "page": 218,
+    "title": "PROPHET / P5 UNISON",
+    "source": "ref_19_38_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 219,
+    "title": "PROPHET / P5 BEND",
+    "source": "ref_19_39_0",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 220,
+    "title": "MIDI Track / EDIT 1",
+    "source": "ref_21_20_0",
+    "font_size": 10,
+    "bottom": 311.1497637795276
+  },
+  {
+    "page": 221,
+    "title": "HYBRID / EDIT 1",
+    "source": "ref_22_20_0",
+    "font_size": 10,
+    "bottom": 311.1497637795276
+  },
+  {
+    "page": 222,
+    "title": "HYBRID / EDIT 2",
+    "source": "ref_22_21_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 223,
+    "title": "ANALOG / EDIT 1",
+    "source": "ref_23_20_0",
+    "font_size": 10,
+    "bottom": 311.1497637795276
+  },
+  {
+    "page": 224,
+    "title": "ANALOG / EDIT 2",
+    "source": "ref_23_21_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 225,
+    "title": "DIGITAL / EDIT 1",
+    "source": "ref_24_20_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 226,
+    "title": "DIGITAL / EDIT 2",
+    "source": "ref_24_21_0",
+    "font_size": 10,
+    "bottom": 323.7497637795276
+  },
+  {
+    "page": 227,
+    "title": "VOICE / EDIT 1",
+    "source": "ref_25_20_0",
+    "font_size": 10,
+    "bottom": 348.9497637795276
+  },
+  {
+    "page": 228,
+    "title": "VOICE / EDIT 2",
+    "source": "ref_25_21_0",
+    "font_size": 10,
+    "bottom": 348.9497637795276
+  },
+  {
+    "page": 229,
+    "title": "STRINGS / EDIT 1",
+    "source": "ref_26_20_0",
+    "font_size": 10,
+    "bottom": 311.1497637795276
+  },
+  {
+    "page": 230,
+    "title": "STRINGS / EDIT 2",
+    "source": "ref_26_21_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 231,
+    "title": "JUNO / EDIT 1",
+    "source": "ref_27_20_0",
+    "font_size": 10,
+    "bottom": 336.34976377952756
+  },
+  {
+    "page": 232,
+    "title": "JUNO / EDIT 2",
+    "source": "ref_27_21_0",
+    "font_size": 10,
+    "bottom": 323.74976377952754
+  },
+  {
+    "page": 233,
+    "title": "ACID / EDIT 1",
+    "source": "ref_28_20_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 234,
+    "title": "ACID / EDIT 2",
+    "source": "ref_28_21_0",
+    "font_size": 10,
+    "bottom": 348.9497637795276
+  },
+  {
+    "page": 235,
+    "title": "WSEQ / EDIT 1",
+    "source": "ref_29_20_0",
+    "font_size": 10,
+    "bottom": 298.54976377952767
+  },
+  {
+    "page": 236,
+    "title": "WSEQ / EDIT 2",
+    "source": "ref_29_21_0",
+    "font_size": 10,
+    "bottom": 298.5497637795276
+  },
+  {
+    "page": 237,
+    "title": "VPS / EDIT 1",
+    "source": "ref_30_20_0",
+    "font_size": 10,
+    "bottom": 311.1497637795276
+  },
+  {
+    "page": 238,
+    "title": "VPS / EDIT 2",
+    "source": "ref_30_21_0",
+    "font_size": 10,
+    "bottom": 311.1497637795276
+  },
+  {
+    "page": 239,
+    "title": "Editor / Perform: quick edits",
+    "source": "Editor / Perform: quick edits",
+    "font_size": 10,
+    "bottom": 409.54976377952755
+  },
+  {
+    "page": 240,
+    "title": "Editor / Tone",
+    "source": "Editor / Tone",
+    "font_size": 10,
+    "bottom": 422.1497637795276
+  },
+  {
+    "page": 241,
+    "title": "Editor / Filter",
+    "source": "Editor / Filter",
+    "font_size": 10,
+    "bottom": 431.1497637795276
+  },
+  {
+    "page": 242,
+    "title": "Editor / Envelopes",
+    "source": "Editor / Envelopes",
+    "font_size": 10,
+    "bottom": 422.1497637795276
+  },
+  {
+    "page": 243,
+    "title": "Editor / Modulation",
+    "source": "Editor / Modulation",
+    "font_size": 10,
+    "bottom": 422.1497637795276
+  },
+  {
+    "page": 244,
+    "title": "Editor / Effects",
+    "source": "Editor / Effects",
+    "font_size": 10,
+    "bottom": 422.1497637795276
+  },
+  {
+    "page": 245,
+    "title": "Editor / LFO and arpeggiator",
+    "source": "Editor / LFO and arpeggiator",
+    "font_size": 10,
+    "bottom": 443.7497637795276
+  },
+  {
+    "page": 246,
+    "title": "Editor / Native patch import",
+    "source": "Editor / Native patch import",
+    "font_size": 10,
+    "bottom": 400.54976377952755
+  },
+  {
+    "page": 247,
+    "title": "Editor / DX7 / FM6",
+    "source": "Editor / DX7 / FM6",
+    "font_size": 10,
+    "bottom": 409.5497637795276
+  },
+  {
+    "page": 248,
+    "title": "Editor / Sequencer",
+    "source": "Editor / Sequencer",
+    "font_size": 10,
+    "bottom": 400.54976377952755
+  },
+  {
+    "page": 249,
+    "title": "Editor / Independent drum machine",
+    "source": "Editor / Independent drum machine",
+    "font_size": 10,
+    "bottom": 422.1497637795276
+  },
+  {
+    "page": 250,
+    "title": "Editor / Programs, scenes and setlists",
+    "source": "Editor / Programs, scenes and setlists",
+    "font_size": 10,
+    "bottom": 400.54976377952755
+  },
+  {
+    "page": 251,
+    "title": "Editor / Projects and full backup",
+    "source": "Editor / Projects and full backup",
+    "font_size": 10,
+    "bottom": 400.54976377952755
+  },
+  {
+    "page": 252,
+    "title": "Editor / Global microtuning",
+    "source": "Editor / Global microtuning",
+    "font_size": 10,
+    "bottom": 387.9497637795276
+  },
+  {
+    "page": 253,
+    "title": "Editor / Saved scales and Scala",
+    "source": "Editor / Saved scales and Scala",
+    "font_size": 10,
+    "bottom": 400.54976377952755
+  },
+  {
+    "page": 254,
+    "title": "Editor / Scale keyboard and chords",
+    "source": "Editor / Scale keyboard and chords",
+    "font_size": 10,
+    "bottom": 431.1497637795276
+  },
+  {
+    "page": 255,
+    "title": "Editor / Library",
+    "source": "Editor / Library",
+    "font_size": 10,
+    "bottom": 409.54976377952755
+  },
+  {
+    "page": 256,
+    "title": "Editor / Settings",
+    "source": "Editor / Settings",
+    "font_size": 10,
+    "bottom": 409.5497637795276
+  },
+  {
+    "page": 257,
+    "title": "Editor / MIDI Learn",
+    "source": "Editor / MIDI Learn",
+    "font_size": 10,
+    "bottom": 387.9497637795276
+  },
+  {
+    "page": 258,
+    "title": "Editor / Four-track song arranger",
+    "source": "Editor / Four-track song arranger",
+    "font_size": 10,
+    "bottom": 294.3497637795276
+  }
+]
