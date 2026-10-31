@@ -81,7 +81,7 @@ def main():
     if not 0<=a.level<=127:p.error('level 0..127')
     if a.output.exists():p.error('Preserve existing artifacts: output must be new')
     if not (a.backup/'manifest.json').is_file():p.error('Existing backup required')
-    a.output.mkdir(parents=True);d=ReliableDevice('Melodee');streams=contextlib.ExitStack()
+    a.output.mkdir(parents=True);d=ReliableDevice('SynthMaven FM1');streams=contextlib.ExitStack()
     quotas=json.loads(a.contract.read_text())['caps'];d.performance_fx=d.performance_modulation=True
     d.performance_metadata=True
     d.performance_production=a.production

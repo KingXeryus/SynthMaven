@@ -259,7 +259,7 @@ def finalize_cases(directory, usb, statuses):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--port', default='Melodee')
+    p.add_argument('--port', default='SynthMaven FM1')
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--build-manifest', type=Path, required=True,
                    help='Manifest identifying the installed package, source and build flags')

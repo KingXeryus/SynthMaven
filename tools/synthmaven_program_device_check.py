@@ -16,7 +16,7 @@ from usb_audio_stats import snapshot
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--port', default='Melodee FM-1')
+    parser.add_argument('--port', default='SynthMaven FM1')
     parser.add_argument('--capture-dir', type=Path)
     parser.add_argument('--drums',action='store_true',help='Run independent drums alongside every layered program')
     args = parser.parse_args()

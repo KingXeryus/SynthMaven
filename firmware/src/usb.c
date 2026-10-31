@@ -12,7 +12,7 @@
  * MELODEE_CDC=1 adds a CDC-ACM serial function (IAD composite: EP2 notify,
  * EP3 bulk data) for the console in console.c.
  * MELODEE_USB_AUDIO=1 instead adds one duplex UAC1 function (usb_audio.c),
- * "Melodee": stereo playback (EP2 OUT, explicit feedback on EP3) and
+ * "SynthMaven FM1": stereo playback (EP2 OUT, explicit feedback on EP3) and
  * stereo master or four-track recording (EP2 IN), 16 or 24 bit at 44.1 kHz.
  * Their endpoints are served from the TIMER5 ISR by elapsed time (ua_service,
  * main.c), nested in the render too; usb_poll never runs nested, so the two
@@ -154,7 +154,7 @@ static void midi_out_event(uint32_t pkt) { (void)midi_track_emit(pkt); }
 
 /* ------------------------------------------------------- descriptors --- */
 /* interfaces: 0 audio control, 1 MIDI streaming, then CDC's two, or duplex audio's three (usb_audio_desc.h).
- * bcdDevice: 3.00 MIDI, 3.01 with CDC, 3.30..3.37 with USB audio.
+ * bcdDevice: 3.00 MIDI, 3.01 with CDC, 3.40..3.47 with USB audio (raised with the name, so hosts read it again).
  * Each audio layout has its own revision (hosts cache descriptors per version). */
 #if MELODEE_USB_AUDIO
 #ifndef UA_TRACKS_MEMORY
@@ -171,7 +171,7 @@ static void midi_out_event(uint32_t pkt) { (void)midi_track_emit(pkt); }
 #endif
 #include "usb_audio_stream.c"
 #define CFG_LEN 396
-static const uint8_t DEV_DESC[18] = {18, 1, 0x00, 0x02, 0xEF, 0x02, 0x01, 64, 0x09, 0x12, 0x01, 0x00, 0x30, 0x03,
+static const uint8_t DEV_DESC[18] = {18, 1, 0x00, 0x02, 0xEF, 0x02, 0x01, 64, 0x09, 0x12, 0x01, 0x00, 0x40, 0x03,
                                      1, 2, 0, 1};        /* misc/IAD; ua_cfg_build selects the revision */
 static const uint8_t CFG_DESC[] = {
     9, 2, 0x8C, 0x01, 5, 1, 0, 0x80, 50,                /* 396 bytes, five interfaces */
@@ -224,17 +224,13 @@ static const uint8_t CFG_DESC[] = {
 };
 typedef char cfg_len_ok[sizeof CFG_DESC == CFG_LEN ? 1 : -1];
 static const uint8_t STR0[4] = {4, 3, 0x09, 0x04};
-static const uint8_t STR1[] = {26, 3, 'E', 0, 'l', 0, 'l', 0, 'i', 0, 'c', 0, ' ', 0, 'S', 0, 't', 0, 'u', 0, 'd', 0,
-                               'i', 0, 'o', 0};
-/* Keep FM-1 in the USB name: macOS may retain this MIDI port name after a
- * firmware switch, and other installers recognise the hardware family. */
+static const uint8_t STR1[] = {22, 3, 'S', 0, 'y', 0, 'n', 0, 't', 0, 'h', 0, 'M', 0, 'a', 0, 'v', 0, 'e', 0, 'n', 0};
+/* macOS may retain an older firmware's MIDI port name after a firmware switch,
+ * so every host below still accepts the Melodee names too. */
 #ifdef MELODEE_LOADER
-static const uint8_t STR2[] = {40, 3, 'M', 0, 'e', 0, 'l', 0, 'o', 0, 'd', 0, 'e', 0, 'e', 0, ' ', 0,
-                               'F', 0, 'M', 0, '-', 0, '1', 0, ' ', 0, 'U', 0, 'p', 0,
-                               'd', 0, 'a', 0, 't', 0, 'e', 0};
+static const uint8_t STR2[] = {44, 3, 'S', 0, 'y', 0, 'n', 0, 't', 0, 'h', 0, 'M', 0, 'a', 0, 'v', 0, 'e', 0, 'n', 0, ' ', 0, 'F', 0, 'M', 0, '1', 0, ' ', 0, 'U', 0, 'p', 0, 'd', 0, 'a', 0, 't', 0, 'e', 0};
 #else
-static const uint8_t STR2[] = {26, 3, 'M', 0, 'e', 0, 'l', 0, 'o', 0, 'd', 0, 'e', 0, 'e', 0, ' ', 0,
-                               'F', 0, 'M', 0, '-', 0, '1', 0};
+static const uint8_t STR2[] = {30, 3, 'S', 0, 'y', 0, 'n', 0, 't', 0, 'h', 0, 'M', 0, 'a', 0, 'v', 0, 'e', 0, 'n', 0, ' ', 0, 'F', 0, 'M', 0, '1', 0};
 #endif
 #if MELODEE_USB_AUDIO                                   /* audio uses the product name (STR2) */
 static uint8_t ua_cfg[sizeof CFG_DESC];                 /* the configuration as sent (usb_audio.c ua_cfg_build) */

@@ -35,7 +35,7 @@ For two USB controllers, use a computer/iPad as the host and route both MIDI inp
 
 ### Connection checks
 
-The SYSTEM MIDI status shows recent RX activity. With USB selected in HOST mode it shows HOST after a MIDI interface has been configured, or WAIT while waiting for one. This status no longer reports OFF merely because the computer-facing USB interface is inactive.
+The SYSTEM MIDI MODE status shows recent RX activity. With USB selected in HOST mode it shows HOST after a MIDI interface has been configured, or WAIT while waiting for one. This status no longer reports OFF merely because the computer-facing USB interface is inactive.
 
 The shared header shows WAIT until the MIDI interface is configured, then HOST; it does not depend on space remaining in the MIDI knob card.
 

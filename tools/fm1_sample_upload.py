@@ -44,10 +44,10 @@ class Link:
         except ImportError:
             sys.exit("needs mido: pip install mido python-rtmidi")
         self.mido = mido
-        outs = [n for n in mido.get_output_names() if re.search("melodee|felucca", n, re.I)]
-        ins = [n for n in mido.get_input_names() if re.search("melodee|felucca", n, re.I)]
+        outs = [n for n in mido.get_output_names() if re.search("synthmaven|melodee|felucca", n, re.I)]
+        ins = [n for n in mido.get_input_names() if re.search("synthmaven|melodee|felucca", n, re.I)]
         if not outs or not ins:
-            sys.exit("no MIDI port named Melodee: connect the FM-1 (running Melodee) by USB")
+            sys.exit("no MIDI port named SynthMaven FM1: connect it by USB")
         self.o = mido.open_output(outs[0])
         self.i = mido.open_input(ins[0])
         for _ in range(3):                          # the first frame after opening the port can be lost
@@ -137,4 +137,4 @@ if __name__ == "__main__":
     try:
         main()
     except TimeoutError as e:
-        sys.exit(f"{e}: is Melodee running, and no other app using its MIDI port?")
+        sys.exit(f"{e}: is SynthMaven running, and no other app using its MIDI port?")

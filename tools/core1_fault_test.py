@@ -29,7 +29,7 @@ RC = {0: 'ok', 1: 'no worker (dual core off or already retired)', 2: 'job comple
 
 
 def find_port(name):
-    names = (name,) if name else ('Melodee', 'Felucca')   # (macOS may keep the old port name)
+    names = (name,) if name else ('SynthMaven FM1', 'Melodee', 'Felucca')   # (macOS may keep the old port name)
     return next((p for p in mido.get_input_names() if any(n in p for n in names)), None), \
         next((p for p in mido.get_output_names() if any(n in p for n in names)), None)
 

@@ -125,9 +125,9 @@ class FakeFM1:
             if self.stall_after and self.served >= self.stall_after:
                 return
             if addr == I.FINISH_CHECK:
-                threading.Timer(0.05, self.boot, (self.loader, "Melodee Update")).start()
+                threading.Timer(0.05, self.boot, (self.loader, "SynthMaven FM1 Update")).start()
             elif addr == I.FINISH_WRITE:
-                threading.Timer(0.05, self.boot, (self.after_write, "Melodee")).start()
+                threading.Timer(0.05, self.boot, (self.after_write, "SynthMaven FM1")).start()
             else:
                 self.next()
 
@@ -192,7 +192,7 @@ def installs():
     ok(rc == 0 and dev.bad == 0 and dev.upgrades == 2 and dev.served == 11 and "done: the FM-1 runs FM-1_900" in out
        and "100%" in out, f"install: running -> loader -> Melodee ({dev.served} reads)")
 
-    dev = FakeFM1(image, identity="ota-FM-1_900", name="Melodee Update")
+    dev = FakeFM1(image, identity="ota-FM-1_900", name="SynthMaven FM1 Update")
     rc, out, err = cli([p, "--yes"], dev)
     ok(rc == 0 and dev.bad == 0 and dev.upgrades == 1 and "update mode" in out, "install: device already in update mode -> finishes the write")
 
@@ -200,11 +200,11 @@ def installs():
     rc, out, err = cli([p], dev, answer=False)
     ok(rc == 1 and dev.upgrades == 0 and "cancelled" in out, "install: answer no -> nothing sent but the handshake")
 
-    dev = FakeFM1(image, identity="FM-1_905", name="Melodee")
+    dev = FakeFM1(image, identity="FM-1_905", name="SynthMaven FM1")
     rc, out, err = cli(["--info"], dev)
     ok(rc == 0 and "FM-1_905" in out and "running" in out and dev.upgrades == 0, "--info: identity of the connected FM-1")
 
-    dev = FakeFM1(image, identity="ota-FM-1_900", name="Melodee Update")
+    dev = FakeFM1(image, identity="ota-FM-1_900", name="SynthMaven FM1 Update")
     rc, out, err = cli(["--info"], dev)
     ok(rc == 0 and "update loader" in out, "--info: device in update mode")
 
@@ -217,7 +217,7 @@ def errors():
     rc, out, err = cli([p, "--yes"], FakeFM1(image, name="IAC Driver Bus 1"))
     ok(rc == 3 and "not found" in err and "IAC Driver" in err, "no FM-1 port -> exit 3, lists the MIDI inputs")
     dev = FakeFM1(image)
-    rc, out, err = cli([p, "--yes", "--port", "Melodee"], dev)
+    rc, out, err = cli([p, "--yes", "--port", "SynthMaven FM1"], dev)
     ok(rc == 3 and dev.upgrades == 0, "--port that matches nothing -> exit 3")
     dev = FakeFM1(image, name="My Interface")
     rc, out, err = cli(["--info", "--port", "my int"], dev)
@@ -228,11 +228,11 @@ def errors():
     ok(rc == 4 and "disconnected" in err and "nothing was written" in err and time.monotonic() - t0 < 3,
        "unplugged in step 1 -> exit 4 'lost', nothing written")
     t0 = time.monotonic()
-    rc, out, err = cli([p, "--yes"], FakeFM1(image, identity="ota-FM-1_900", name="Melodee Update", unplug_after=3))
+    rc, out, err = cli([p, "--yes"], FakeFM1(image, identity="ota-FM-1_900", name="SynthMaven FM1 Update", unplug_after=3))
     ok(rc == 4 and "run the install again" in err and time.monotonic() - t0 < 3, "unplugged during the write -> exit 4 at once")
-    rc, out, err = cli([p, "--yes"], FakeFM1(image, identity="ota-FM-1_900", name="Melodee Update", stall_after=3))
+    rc, out, err = cli([p, "--yes"], FakeFM1(image, identity="ota-FM-1_900", name="SynthMaven FM1 Update", stall_after=3))
     ok(rc == 4 and "stopped answering" in err, "loader stops answering -> exit 4 after the idle time")
-    rc, out, err = cli([p, "--yes"], FakeFM1(image, identity="ota-FM-1_900", name="Melodee Update", bad_addr=len(image)))
+    rc, out, err = cli([p, "--yes"], FakeFM1(image, identity="ota-FM-1_900", name="SynthMaven FM1 Update", bad_addr=len(image)))
     ok(rc == 4 and "outside the package" in err, "read past the package -> exit 4")
 
     rc, out, err = cli([p, "--yes"], FakeFM1(image, after_write="FM-1_015"))
@@ -256,7 +256,7 @@ def errors():
     dev = FakeFM1(I.logical_image(package(marker=False)))
     rc, out, err = cli([plain, "--yes", "--force"], dev)
     ok(rc == 0 and dev.bad == 0, "... installs with --force")
-    dev = FakeFM1(image, identity=I.MELODEE_LOADER, name="Melodee Update")
+    dev = FakeFM1(image, identity=I.MELODEE_LOADER, name="SynthMaven FM1 Update")
     rc, out, err = cli([plain, "--yes", "--force"], dev)
     ok(rc == 6 and dev.upgrades == 0 and "nothing was sent" in err, "... but never resumes in an update loader")
     rc, out, err = cli([pkgfile("short.fwsc", b"\0" * 100), "--yes"], FakeFM1(image))
@@ -275,7 +275,7 @@ def loaders():
     rc, out, err = cli([p, "--yes"], dev)
     ok(rc == 6 and dev.upgrades == 0 and "nothing was sent" in err and "official FM-1.fwsc" in err and "device:" not in out,
        "Melodee package, FM-1 in the official loader -> exit 6 before asking, nothing sent")
-    dev = FakeFM1(image, identity="ota-FM-1_123", name="Melodee Update")
+    dev = FakeFM1(image, identity="ota-FM-1_123", name="SynthMaven FM1 Update")
     rc, out, err = cli([p, "--yes"], dev)
     ok(rc == 6 and dev.upgrades == 0 and "report" in err, "an unknown loader -> exit 6, nothing sent")
     dev = FakeFM1(image, loader=I.STOCK_LOADER)
@@ -306,22 +306,22 @@ def official():
         print("official V15 restore: skipped (needs FM-1_v15.fwsc in the repo root)")
         return
     raw = v15.read_bytes()
-    dev = FakeFM1(I.logical_image(raw), identity="FM-1_900", name="Melodee", after_write="FM-1_015", loader=I.STOCK_LOADER)
+    dev = FakeFM1(I.logical_image(raw), identity="FM-1_900", name="SynthMaven FM1", after_write="FM-1_015", loader=I.STOCK_LOADER)
     rc, out, err = cli([str(v15), "--yes"], dev)
     ok(rc == 0 and dev.bad == 0 and "FM-1_015" in out and dev.identity == "FM-1_015",
        "official V15 (FM-1.fwsc) from Melodee: installed without --force, back as FM-1_015")
     dev = FakeFM1(I.logical_image(raw), identity=I.STOCK_LOADER, name="FM-1", after_write="FM-1_015")
     rc, out, err = cli([str(v15), "--yes"], dev)
     ok(rc == 0 and dev.upgrades == 1 and dev.identity == "FM-1_015", "official V15 resumes in the official loader")
-    dev = FakeFM1(I.logical_image(raw), identity=I.MELODEE_LOADER, name="Melodee Update", after_write="FM-1_015")
+    dev = FakeFM1(I.logical_image(raw), identity=I.MELODEE_LOADER, name="SynthMaven FM1 Update", after_write="FM-1_015")
     rc, out, err = cli([str(v15), "--yes"], dev)
     ok(rc == 6 and dev.upgrades == 0 and "Melodee package first" in err, "official V15 never resumes in Melodee's loader")
-    dev = FakeFM1(I.logical_image(raw), identity="FM-1_900", name="Melodee", after_write="FM-1_015")
+    dev = FakeFM1(I.logical_image(raw), identity="FM-1_900", name="SynthMaven FM1", after_write="FM-1_015")
     rc, out, err = cli([str(v15), "--yes"], dev)
     ok(rc == 6 and dev.served == 4 and dev.identity == I.MELODEE_LOADER, "official V15 is not written when step 1 starts Melodee's loader")
     bad = bytearray(raw)
     bad[-1] ^= 1
-    dev = FakeFM1(I.logical_image(bytes(bad)), identity="FM-1_900", name="Melodee")
+    dev = FakeFM1(I.logical_image(bytes(bad)), identity="FM-1_900", name="SynthMaven FM1")
     rc, out, err = cli([pkgfile("v15mod.fwsc", bytes(bad)), "--yes"], dev)
     ok(rc == 2 and "official V15" in err and dev.sent == [], "a modified V15 is still refused (no MIDI)")
 

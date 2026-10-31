@@ -11,7 +11,7 @@ from prophet_device import Device, pack, unpack
 
 
 def main():
-    device = Device('Melodee FM-1')
+    device = Device('SynthMaven FM1')
     original_tuning = original_maps = None
     checks = []
     try:

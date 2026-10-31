@@ -8,7 +8,7 @@ struct MIDIPortChoice {
     let transport: String
     let entity: MIDIEntityRef
     let isFM1: Bool
-    var displayName: String { isFM1 ? "SynthMaven FM1 · \(name)" : name }
+    var displayName: String { isFM1 && !name.lowercased().contains("synthmaven") ? "SynthMaven FM1 · \(name)" : name }
 }
 final class MIDITransport {
     private(set) var initializationError: String?
@@ -127,8 +127,8 @@ final class MIDITransport {
     }
     private func fail(_ text: String) { disconnect(); onError?(text) }
     func routeController(_ port: MIDIPortChoice?) throws {
-        if let port, port.endpoint == source { throw MIDIProblem.invalid("Choose the controller, not the FM-1 input") }
-        guard port == nil || source != 0 else { throw MIDIProblem.invalid("Connect the FM-1 first") }
+        if let port, port.endpoint == source { throw MIDIProblem.invalid("Choose the controller, not the SynthMaven FM1 input") }
+        guard port == nil || source != 0 else { throw MIDIProblem.invalid("Connect the SynthMaven FM1 first") }
         stopController()
         if let port {
             let result = MIDIPortConnectSource(controllerInput, port.endpoint, UnsafeMutableRawPointer(bitPattern: controllerGeneration))

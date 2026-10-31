@@ -63,9 +63,20 @@ static int32_t midi_panel_delta[NE];
 static int16_t midi_panel_absolute[NE];
 static uint8_t midi_panel_mask;
 static int32_t midi_edit_value = -1;             /* scoped to page_knob's normal parameter editor */
+#define PANEL_K4_MUTE_MS 400u
+static uint32_t panel_k4_mute;                 /* KNOB 4 left the menu: its spin is ignored until it rests this long */
 static int32_t panel_enc(uint32_t role)
 {
     int32_t value=fm1_enc_take(panel.enc[role]) * panel.dir[role];
+    if (panel_k4_mute && role == EN_K4) {
+        int moved = value || midi_panel_delta[role];
+        if ((int32_t)(fm1_ms - panel_k4_mute) >= 0) panel_k4_mute = 0;
+        else {
+            if (moved) panel_k4_mute = fm1_ms + PANEL_K4_MUTE_MS;
+            midi_panel_delta[role] = 0;
+            return 0;
+        }
+    }
     if (value) {                               /* a local turn wins over remote input in this pass */
         midi_panel_absolute[role] = -1;
         midi_panel_mask &= (uint8_t)~(1u << role);

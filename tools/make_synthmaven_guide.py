@@ -51,7 +51,7 @@ def pages():
  return out
 
 def main():
- ap=argparse.ArgumentParser();ap.add_argument('--version',default='3.5.7');ap.add_argument('--output',type=Path,default=ROOT/'output/pdf/SynthMaven-3.5.7-User-Guide.pdf');args=ap.parse_args()
+ ap=argparse.ArgumentParser();ap.add_argument('--version',default='3.5.8');ap.add_argument('--output',type=Path,default=ROOT/'output/pdf/SynthMaven-3.5.8-User-Guide.pdf');args=ap.parse_args()
  specs=pages();indexpages=math.ceil(len(specs)/33);args.output.parent.mkdir(parents=True,exist_ok=True)
  c=canvas.Canvas(str(args.output),pagesize=A4);c.setTitle('SynthMaven '+args.version+' - Screen-by-screen User Guide');manifest=[]
  def text(txt,x,y,w,size=10,bold=False):

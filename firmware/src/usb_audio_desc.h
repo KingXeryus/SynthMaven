@@ -2,7 +2,7 @@
  * Copyright (C) 2026 Kerem Kilic (Ellic Studio) */
 /* One UAC1 duplex function: stereo playback, selectable capture; PCM16/24 at 44.1 kHz.
  * This template has four tracks; ua_cfg_build patches capture to stereo by default.
- * IF2 control groups IF3 playback and IF4 recording into one "Melodee" device.
+ * IF2 control groups IF3 playback and IF4 recording into one "SynthMaven FM1" device.
  * EP2 OUT plays stereo, EP3 IN supplies explicit feedback, EP2 IN records.
  * Playback goes through FU5, advertising standard master mute and volume.
  * Capture packets are prepared ahead of the refill deadline (usb_audio.c).

@@ -39,9 +39,9 @@ def usb_streams(path, format='int24', mode='stereo'):
         raise ValueError('USB capture mode stereo/stems and format int16/int24')
     channels = 4 if mode == 'stems' else 2
     devices = sd.query_devices()
-    inputs = [i for i, d in enumerate(devices) if d['name'] in ('Melodee', 'Melodee In')
+    inputs = [i for i, d in enumerate(devices) if d['name'] in ('SynthMaven FM1', 'Melodee', 'Melodee In')
               and d['max_input_channels'] == channels]
-    outputs = [i for i, d in enumerate(devices) if d['name'] in ('Melodee', 'Melodee Out')
+    outputs = [i for i, d in enumerate(devices) if d['name'] in ('SynthMaven FM1', 'Melodee', 'Melodee Out')
                and d['max_output_channels'] >= 2]
     if not inputs or not outputs:
         raise RuntimeError(f'USB {mode} requires an existing {channels}-channel Melodee input and stereo output; configure the device before this run')

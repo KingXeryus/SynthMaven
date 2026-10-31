@@ -43,7 +43,7 @@ static void ua_cfg_build(void)
      * the host reads the format and packet stride that ua_audio will produce.
      * Use the applied settings here; pending knob edits keep the old layout. */
     memcpy(ua_dev_desc, DEV_DESC, sizeof ua_dev_desc);
-    ua_dev_desc[12] = (uint8_t)(0x30u + (ua_off & 3u) + (ua_tracks ? 4u : 0u));
+    ua_dev_desc[12] = (uint8_t)(0x40u + (ua_off & 3u) + (ua_tracks ? 4u : 0u));
     ua_if_play = play ? UA_IF_PLAY : UA_NO_IF;
     ua_if_cap = cap ? (play ? UA_IF_CAP : UA_IF_PLAY) : UA_NO_IF;
     for (i = 0; i < sizeof CFG_DESC; i += CFG_DESC[i]) {

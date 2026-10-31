@@ -22,7 +22,7 @@ The bundled editor includes the Routing tab for layers and the drummer. Forwardi
 4. The editor reads the firmware capabilities before enabling supported controls.
 
 Only the matching 3.5 firmware should be used for migration validation.
-A port name such as “Melodee FM-1” is not sufficient evidence of its protocol version.
+A port name such as “SynthMaven FM1” is not sufficient evidence of its protocol version.
 Direct Bluetooth is excluded from this candidate and has its own later validation gate.
 
 ## Learning a controller

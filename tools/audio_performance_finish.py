@@ -11,7 +11,7 @@ def main():
     p.add_argument('--output',type=Path,required=True);p.add_argument('--seconds',type=float,default=60);p.add_argument('--demo-only',action='store_true');a=p.parse_args()
     if a.output.exists():p.error('Output must be new; existing artifacts are preserved')
     if not (a.backup/'manifest.json').is_file() or not (a.stress/'0.bin').is_file():p.error('Existing original/stress state required')
-    a.output.mkdir(parents=True);d=ReliableDevice('Melodee');d.performance_production=d.performance_metadata=True;d.performance_fx=d.performance_modulation=False
+    a.output.mkdir(parents=True);d=ReliableDevice('SynthMaven FM1');d.performance_production=d.performance_metadata=True;d.performance_fx=d.performance_modulation=False
     try:
         verify(d,a.backup)
         m=metadata(d)

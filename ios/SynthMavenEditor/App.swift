@@ -70,15 +70,15 @@ final class EditorController: UIViewController, WKScriptMessageHandlerWithReply,
         a.addAction(UIAlertAction(title:"OK",style:.default));present(a,animated:true)
     }
     @objc func connections() {
-        let sheet = UIAlertController(title:"Connect to your FM-1",message:"Connect by USB. Matching MIDI ports are selected automatically. Direct Bluetooth is not included in this USB-first build.",preferredStyle:.actionSheet)
+        let sheet = UIAlertController(title:"Connect to your SynthMaven FM1",message:"Connect by USB. Matching MIDI ports are selected automatically. Direct Bluetooth is not included in this USB-first build.",preferredStyle:.actionSheet)
         sheet.addAction(UIAlertAction(title:"USB cable",style:.default){[weak self] _ in self?.connectDetected(wireless:false)})
         if midi.source != 0 { sheet.addAction(UIAlertAction(title:"Disconnect",style:.destructive){[weak self] _ in self?.midi.disconnect()}) }
         sheet.addAction(UIAlertAction(title:"Cancel",style:.cancel))
         sheet.popoverPresentationController?.barButtonItem=navigationItem.rightBarButtonItem;present(sheet,animated:true)
     }
     private func chooseController() {
-        guard midi.source != 0 else { alert("Connect the FM-1 first."); return }
-        let sheet = UIAlertController(title:"Controller for MIDI Learn", message:"Connect the controller and FM-1 to the iPad through a powered USB hub. Channel messages are forwarded to the FM-1 while this app is open. Current: \(midi.controllerName)", preferredStyle:.actionSheet)
+        guard midi.source != 0 else { alert("Connect the SynthMaven FM1 first."); return }
+        let sheet = UIAlertController(title:"Controller for MIDI Learn", message:"Connect the controller and SynthMaven FM1 to the iPad through a powered USB hub. Channel messages are forwarded to the SynthMaven FM1 while this app is open. Current: \(midi.controllerName)", preferredStyle:.actionSheet)
         sheet.addAction(UIAlertAction(title:"None — stop routing",style:.default){[weak self] _ in try? self?.midi.routeController(nil)})
         for port in midi.ports(input:true) where port.endpoint != midi.source {
             sheet.addAction(UIAlertAction(title:port.displayName,style:.default){[weak self] _ in
@@ -102,7 +102,7 @@ final class EditorController: UIViewController, WKScriptMessageHandlerWithReply,
             do { try midi.connect(source:source,destination:output,wireless:wireless);js("connect",true) } catch { alert(error.localizedDescription) }
         }
         if candidates.count==1 { open(candidates[0]);return }
-        let sheet=UIAlertController(title:candidates.isEmpty ? "FM-1 not found" : "Choose your FM-1",message:candidates.isEmpty ? (wireless ? "Enable GLO → BLE EDITOR on the FM-1, then pair it in Bluetooth." : "Set USB ROLE to COMPUTER and connect a USB data cable or powered adapter.") : "Matching input and output ports will be selected for you.",preferredStyle:.actionSheet)
+        let sheet=UIAlertController(title:candidates.isEmpty ? "SynthMaven FM1 not found" : "Choose your SynthMaven FM1",message:candidates.isEmpty ? (wireless ? "Enable GLO → BLE EDITOR on the SynthMaven FM1, then pair it in Bluetooth." : "Set USB ROLE to COMPUTER and connect a USB data cable or powered adapter.") : "Matching input and output ports will be selected for you.",preferredStyle:.actionSheet)
         for port in candidates {sheet.addAction(UIAlertAction(title:port.displayName,style:.default){_ in open(port)})}
         sheet.addAction(UIAlertAction(title:"Try again",style:.default){[weak self] _ in if wireless {self?.showPairing()} else {self?.connectDetected(wireless:false)}})
         sheet.addAction(UIAlertAction(title:"Manual MIDI ports",style:.default){[weak self] _ in self?.chooseInput(wireless:wireless)})
@@ -112,20 +112,20 @@ final class EditorController: UIViewController, WKScriptMessageHandlerWithReply,
         guard midi.available else { alert(midi.initializationError ?? "The iPad MIDI service is unavailable."); return }
         let ports=midi.ports(input:true)
         let detected=ports.contains { $0.isFM1 }
-        let help=detected ? "Choose the FM-1 input, then its matching output." : "No recognized FM-1 input. MIDI service is running: \(ports.count) inputs, \(midi.ports(input:false).count) outputs. If a differently named USB device appears below, select it manually. If no USB device appears, iPadOS has not exposed its MIDI interface. Set FM-1 USB ROLE to COMPUTER and USB AUDIO to IN+OUT, then reconnect with the iPad unlocked."
+        let help=detected ? "Choose the SynthMaven FM1 input, then its matching output." : "No recognized SynthMaven FM1 input. MIDI service is running: \(ports.count) inputs, \(midi.ports(input:false).count) outputs. If a differently named USB device appears below, select it manually. If no USB device appears, iPadOS has not exposed its MIDI interface. Set SynthMaven FM1 USB ROLE to COMPUTER and USB AUDIO to IN+OUT, then reconnect with the iPad unlocked."
         let a=UIAlertController(title:"MIDI input",message:help+"\nCurrent connection: \(midi.label)",preferredStyle:.actionSheet)
         for port in ports {a.addAction(UIAlertAction(title:port.displayName,style:.default){[weak self] _ in self?.chooseOutput(port,wireless:wireless || port.transport.lowercased().contains("bluetooth"))})}
         a.addAction(UIAlertAction(title:"Cancel",style:.cancel));a.popoverPresentationController?.barButtonItem=navigationItem.rightBarButtonItems?.first;present(a,animated:true)
     }
     private func chooseOutput(_ input:MIDIPortChoice,wireless:Bool) {
-        let a=UIAlertController(title:"MIDI output",message:"Choose the output belonging to \(input.name). The editor verifies the FM-1 identity before loading controls.",preferredStyle:.actionSheet)
+        let a=UIAlertController(title:"MIDI output",message:"Choose the output belonging to \(input.name). The editor verifies the SynthMaven FM1 identity before loading controls.",preferredStyle:.actionSheet)
         for port in midi.ports(input:false) { a.addAction(UIAlertAction(title:port.displayName,style:.default){[weak self] _ in
             guard let self else{return};do {try self.midi.connect(source:input,destination:port,wireless:wireless);self.js("connect",true)}catch{self.alert(error.localizedDescription)}
         }) }
         a.addAction(UIAlertAction(title:"Cancel",style:.cancel));a.popoverPresentationController?.barButtonItem=navigationItem.rightBarButtonItems?.first;present(a,animated:true)
     }
     @objc func bluetooth() {
-        let a=UIAlertController(title:"Bluetooth MIDI",message:"Direct FM-1 Bluetooth editing requires compatible firmware with experimental Bluetooth editing enabled. Keep Bluetooth off when not editing. Older firmware needs a bidirectional SysEx-capable MIDI bridge. Pairing alone does not establish compatibility; Connect verifies the FM-1 protocol.",preferredStyle:.alert)
+        let a=UIAlertController(title:"Bluetooth MIDI",message:"Direct SynthMaven FM1 Bluetooth editing requires compatible firmware with experimental Bluetooth editing enabled. Keep Bluetooth off when not editing. Older firmware needs a bidirectional SysEx-capable MIDI bridge. Pairing alone does not establish compatibility; Connect verifies the SynthMaven FM1 protocol.",preferredStyle:.alert)
         a.addAction(UIAlertAction(title:"Pair MIDI device",style:.default){[weak self] _ in self?.showPairing()})
         a.addAction(UIAlertAction(title:"Use paired device",style:.default){[weak self] _ in self?.chooseInput(wireless:true)})
         a.addAction(UIAlertAction(title:"Cancel",style:.cancel));present(a,animated:true)

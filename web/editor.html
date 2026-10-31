@@ -585,7 +585,7 @@ body[data-screen=sequencer] #trackbar{display:none}
         <button id="czexport">Export .syx</button><button id="czlibrary">Add to library</button></p>
       <div id="czbankpanel" hidden>
         <h3>CZ-1 user banks</h3>
-        <p class="dim">Eight banks of 16 tones, stored on the FM-1. Larger imported files fill consecutive banks.</p>
+        <p class="dim">Eight banks of 16 tones, stored on the SynthMaven FM1. Larger imported files fill consecutive banks.</p>
         <p class="bar"><label>Bank <select id="czbank"></select></label><label>Patch <select id="czslot"></select></label>
           <button id="czbankrefresh">Refresh banks</button><button id="czbankload">Load patch</button>
           <button id="czbankstore">Save tone</button><button id="czbankerase">Erase patch</button></p>
@@ -2653,7 +2653,7 @@ function makeMockDevice(opt = {}) {
   const GP = [
     D("BPM", F.BPM, 40, 240, 120), D("SWG", F.PCT, 0, 100, 0), E("CLK", ["INT", "USB", "TRS"], 0), D("TUNE", F.INT, -50, 50, 0),
     ...Array.from({length:8},()=>D("",F.INT,0,127,0)),
-    E("MIDI", ["USB", "TRS", "BOTH"], 2), E("DRUM", ["OFF", ...Array.from({ length: 16 }, (_, i) => String(i + 1))], 10), E("ROUT", ["CH1-4", "SEL", "CH5-8", "CH9-12", "CH13-16", "PARTS"], 0), D("CPU", F.INT, 0, 0, 0),
+    E("MIDI MODE", ["USB", "TRS", "BOTH"], 2), E("DRUM", ["OFF", ...Array.from({ length: 16 }, (_, i) => String(i + 1))], 10), E("ROUT", ["CH1-4", "SEL", "CH5-8", "CH9-12", "CH13-16", "PARTS"], 0), D("CPU", F.INT, 0, 0, 0),
     D("SLOT", F.INT, 1, 5, 1), E("BOOT", ["OFF", "A", "B", "C", "D"], 0), E("LOAD", NGO, 0), E("SAVE", NGO, 0),
     E("ENG", ["-", "-", "-", "SID", "-", "-", "-", "-",
       "-", "-", "DRUM", "-", "FM6", "-", "-", "CZ-1", "-", "-", "-", "PROPHET", "-", "MIDI Track", "HYBRID", "ANALOG", "DIGITAL", "VOICE", "STRINGS", "JUNO"], 0), D("A4", F.INT, 400, 480, 440, null, "Hz"),
@@ -3415,11 +3415,11 @@ function makeMockDevice(opt = {}) {
     return frame(cmd, out);
   }
 
-  /* a WebMIDI-like access object: one input and one output named "Melodee" */
-  const input = { id: "mock-in", name: "Melodee", type: "input", state: "connected", onmidimessage: null };
+  /* a WebMIDI-like access object: one input and one output named "SynthMaven FM1" */
+  const input = { id: "mock-in", name: "SynthMaven FM1", type: "input", state: "connected", onmidimessage: null };
   let busy = false;
   const output = {
-    id: "mock-out", name: "Melodee", type: "output", state: "connected",
+    id: "mock-out", name: "SynthMaven FM1", type: "output", state: "connected",
     send(data) {
       const f = unframe(data);
       if (!f) { console.error("mock: refused a frame that is not F0 7D 46 4C ... F7", data); return; }
@@ -3641,9 +3641,9 @@ const TEXT = {
     motion: "モーション", motionOn: "再生", motionClear: "モーションを消去", motionConfirm: "選択トラックのモーションを消しますか？", chance: "確率 %", motionStep: "ステップ", motionParam: "パラメーター", motionValue: "値",
     backupTitle: "全体バックアップ", backupExport: "バックアップ保存", backupImport: "バックアップ復元", backupHelp: "現在の曲・A〜D・音色バンク・ユーザーサンプル・設定を、このパソコンへ保存。", backupOld: "全体バックアップには対応版への更新が必要です。", backupConfirm: "全体バックアップを復元しますか？ 現在の曲、保存データとサンプルを置き換えます。USBを抜かないでください。", backupWorking: "バックアップ処理中 ", backupDone: "バックアップを保存しました", backupRestored: "全体バックアップを復元しました",
     deviceDisplay: "本体の画面",
-    deviceDisplayHelp: "FM-1 の画面に反映し、保存します。再生中の変更は停止後に保存されます。",
+    deviceDisplayHelp: "SynthMaven FM1 の画面に反映し、保存します。再生中の変更は停止後に保存されます。",
     devicePresets: "本体のプリセット",
-    deviceFavHelp: "お気に入りと表示フィルターは FM-1 と同期します。パソコンのライブラリの音色は、本体のユーザースロットに保存してから登録してください。",
+    deviceFavHelp: "お気に入りと表示フィルターは SynthMaven FM1 と同期します。パソコンのライブラリの音色は、本体のユーザースロットに保存してから登録してください。",
     deviceList: "表示",
     deviceAll: "すべてのプリセット",
     deviceFavorites: "お気に入りのみ",
@@ -3673,9 +3673,9 @@ const TEXT = {
     foot: "Chrome か Edge で使えます。", iconsCredit: "アイコン: Fukiai（MIT）Hügelton Instruments",
     nomidi: "このブラウザでは使えません。Chrome か Edge で開いてください。",
     denied: "MIDI（SysEx）の使用が許可されませんでした。",
-    nodevice: "Melodee が見つかりません。USB で接続して、もう一度押してください。",
+    nodevice: "SynthMaven FM1 が見つかりません。USB で接続して、もう一度押してください。",
     connecting: "接続中", reading: "読み込み中 ", steploading: "ステップを読み込み中 ",
-    ready: "接続しました", disconnected: "切断されました", lost: "Melodee が外されました",
+    ready: "SynthMaven FM1 に接続しました", disconnected: "切断されました", lost: "SynthMaven FM1 が外されました",
     noreply: "応答がありません", error: "エラー: ", busy: "処理中",
     applying: "書き込み中 ", applied: "読み込みました", badfile: "ファイルを読み込めません: ",
     savedSlot: "保存しました: スロット ", loadedSlot: "読み込みました: スロット ", emptySlot: "空のスロットです: ",
@@ -3711,10 +3711,10 @@ const TEXT = {
     putDone: "本体に書き込みました: スロット ", storedSlot: "本体に保存しました: スロット ", erasedSlot: "消去しました: スロット ",
     loadedUser: "音色を読み込みました（シーケンスはそのまま。パターンは本体の SEQ > PHRASES から。SAVE 長押しで元に戻せます）: ", reloaded: "本体で音色が変わったので読み直しました", readingBank: "スロットを読み込み中",
     badEngine: "このファームウェアにないエンジンです: ", flashFail: "書き込みに失敗しました（rc {rc}）",
-    installer: "Melodee インストーラー",
+    installer: "SynthMaven インストーラー",
     tabSeq: "シーケンサー", tabTracks: "トラック", tabSettings: "設定",
-    needDevice: "FM-1 を接続すると編集できます。", smpNone: "このファームウェアにはユーザーサンプルのスロットがありません。",
-    bankConnect: "FM-1 を接続すると本体のユーザープリセットも扱えます。", bankNone: "このファームウェアにはユーザープリセットがありません。",
+    needDevice: "SynthMaven FM1 を接続すると編集できます。", smpNone: "このファームウェアにはユーザーサンプルのスロットがありません。",
+    bankConnect: "SynthMaven FM1 を接続すると本体のユーザープリセットも扱えます。", bankNone: "このファームウェアにはユーザープリセットがありません。",
     mixer: "ミキサー", mixHelp: "本体の MIXER ページと同じ 4 トラック。フェーダーはレベル。パンはどのトラックも選択を変えずに書き込みます（0.8 のファームウェアでは一瞬そのトラックを選びます）。REC は本体での録音待機の表示です。",
     level: "レベル", pan: "パン", mute: "ミュート", rec: "REC", selectTrack: "選択", selectedTrack: "選択中",
     projHelp: "プロジェクトは本体の状態をまとめて保存します: 4 トラックの音色とパターン、曲の並び順、選択中のトラック、グローバル設定。",
@@ -3735,9 +3735,9 @@ const TEXT = {
     motion: "Motion", motionOn: "Play motion", motionClear: "Clear motion", motionConfirm: "Clear this track's motion?", chance: "Chance %", motionStep: "Step", motionParam: "Parameter", motionValue: "Value",
     backupTitle: "Complete backup", backupExport: "Save backup", backupImport: "Restore backup", backupHelp: "Save the current music, A–D, sound banks and settings to this computer.", backupOld: "Complete backups need firmware with archive support.", backupConfirm: "Restore this complete backup? Current music, saved data and samples will be replaced. Keep USB connected.", backupWorking: "Backing up / restoring ", backupDone: "Backup saved", backupRestored: "Complete backup restored",
     deviceDisplay: "Device display",
-    deviceDisplayHelp: "Changes apply to the FM-1 screen and save. Changes made while playing save after STOP.",
+    deviceDisplayHelp: "Changes apply to the SynthMaven FM1 screen and save. Changes made while playing save after STOP.",
     devicePresets: "Device presets",
-    deviceFavHelp: "Stars and the favorites filter sync with the FM-1. Save computer-library sounds to a device user slot before starring them.",
+    deviceFavHelp: "Stars and the favorites filter sync with the SynthMaven FM1. Save computer-library sounds to a device user slot before starring them.",
     deviceList: "Show",
     deviceAll: "All presets",
     deviceFavorites: "Favorites only",
@@ -3767,9 +3767,9 @@ const TEXT = {
     foot: "Works in Chrome or Edge.", iconsCredit: "Icons: Fukiai (MIT), Hügelton Instruments",
     nomidi: "This browser cannot do it. Open the page in Chrome or Edge.",
     denied: "MIDI (SysEx) access was not allowed.",
-    nodevice: "Melodee not found. Connect it by USB and press Connect again.",
+    nodevice: "SynthMaven FM1 not found. Connect it by USB and press Connect again.",
     connecting: "Connecting", reading: "Reading ", steploading: "Reading steps ",
-    ready: "Connected", disconnected: "Disconnected", lost: "Melodee was unplugged",
+    ready: "Connected to SynthMaven FM1", disconnected: "Disconnected", lost: "SynthMaven FM1 was unplugged",
     noreply: "No reply from the device", error: "Error: ", busy: "Busy",
     applying: "Writing ", applied: "Loaded", badfile: "Cannot read the file: ",
     savedSlot: "Saved to slot ", loadedSlot: "Loaded slot ", emptySlot: "Empty slot: ",
@@ -3805,10 +3805,10 @@ const TEXT = {
     putDone: "Written to the device: slot ", storedSlot: "Stored on the device: slot ", erasedSlot: "Erased slot ",
     loadedUser: "Sound loaded (the sequence stays; its pattern is on the device under SEQ > PHRASES; EDIT + OCT− to undo): ", reloaded: "The sound changed on the device: read again", readingBank: "Reading the slots",
     badEngine: "This firmware has no such engine: ", flashFail: "Write failed (rc {rc})",
-    installer: "Melodee installer",
+    installer: "SynthMaven installer",
     tabSeq: "Sequencer", tabTracks: "Programs", tabSettings: "Settings",
-    needDevice: "Connect the FM-1 to edit.", smpNone: "This firmware has no user sample slots.",
-    bankConnect: "Connect the FM-1 to see its user presets too.", bankNone: "This firmware has no user presets.",
+    needDevice: "Connect the SynthMaven FM1 to edit.", smpNone: "This firmware has no user sample slots.",
+    bankConnect: "Connect the SynthMaven FM1 to see its user presets too.", bankNone: "This firmware has no user presets.",
     mixer: "Mixer", mixHelp: "The four tracks of the device's MIXER page. The fader is the level. Pan is written to any track without changing the selection (firmware 0.8: by selecting it for a moment). REC shows a track armed for live recording on the device.",
     level: "Level", pan: "Pan", mute: "Mute", rec: "REC", selectTrack: "Select", selectedTrack: "Selected",
     projHelp: "A project keeps the sounds and patterns of all four tracks, the song chain, the selected track and the global settings.",
@@ -3977,7 +3977,7 @@ const LAYOUT = (pe0) => [
   { t: "GLOBAL", tab: "setgroups", pages: [["GLOBAL", 1, [21, 41, 2, 3]], ["SYSTEM", 1, [14]]] }, /* device workload budget */
 ];
 /* globals that are actions or placeholders on the device: buttons instead, or hidden */
-const G_SKIP = new Set(["SLOT", "NAME", "BOOT", "LOAD", "SAVE", "ENG", "SET", "CLRSQ", "INIT", "MIDI", "SYNC", "DRUM", "CPU", "CLK"]);
+const G_SKIP = new Set(["SLOT", "NAME", "BOOT", "LOAD", "SAVE", "ENG", "SET", "CLRSQ", "INIT", "MIDI", "MIDI MODE", "SYNC", "DRUM", "CPU", "CLK"]);
 const key = (s, id) => s + ":" + id;
 const engName = () => (dev && dev.info && dev.dump ? dev.info.engines[dev.dump.engine] : "");
 const gEng = () => { const i = dev.gdesc.findIndex((d) => d && d.label === "ENG"); return i >= 0 ? i : 20; };
@@ -4239,7 +4239,7 @@ function renderScaleLibrary(host,d,tune,change){
  const box=document.createElement('div');box.className='mt-library';const rows=readScaleLibrary();
  const name=document.createElement('input');name.type='text';name.maxLength=48;name.placeholder='Custom scale name';name.setAttribute('aria-label','Custom scale name');name.value=d.scaleName||'';name.oninput=()=>d.scaleName=name.value;
  const list=document.createElement('select');list.setAttribute('aria-label','Saved custom scale');for(const row of rows){const o=document.createElement('option');o.textContent=row.name;o.value=row.name;list.append(o);}if(d.scaleName&&rows.some(r=>r.name===d.scaleName))list.value=d.scaleName;
- const status=document.createElement('p');status.className='dim';status.setAttribute('role','status');status.textContent='Saved on this browser or iPad. Loading sends the scale to the FM-1; export a copy to move it between editors.';
+ const status=document.createElement('p');status.className='dim';status.setAttribute('role','status');status.textContent='Saved on this browser or iPad. Loading sends the scale to the SynthMaven FM1; export a copy to move it between editors.';
  function button(label,fn){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{try{fn();}catch(e){status.textContent=e.message;}};return b;}
  const save=button('Save as new',()=>{const n=name.value.trim();if(!n)throw Error('Enter a scale name.');if(rows.some(r=>r.name===n))throw Error('That name is already saved. Use a new name.');const profile=tune.scale===47?tune:MASTER_SCALES[tune.scale];const row={name:n,root:tune.root,mask:profile.mask,cents:profile.cents.slice()};if(!validSavedScale(row))throw Error('Invalid scale.');localStorage.setItem(SM_SCALE_LIBRARY,JSON.stringify([...rows,row]));d.scaleName=n;renderMasterTuning();});
  const load=button('Load scale',()=>{const r=rows.find(r=>r.name===list.value);if(!r)return;d.scaleName=r.name;change(t=>Object.assign(t,{scale:47,enabled:1,root:r.root,mask:r.mask,cents:r.cents.slice()}));});load.disabled=!rows.length;
@@ -4763,7 +4763,7 @@ $("backup-export").addEventListener("click", () => op(async () => {
   assertSession(d);
   const file = await captureBackup((r, o) => sessionRequest(d, r, o), d.info.version, backupProgress);
   assertSession(d);
-  download(`Melodee-backup-${new Date().toISOString().slice(0, 10)}.json`, file);
+  download(`SynthMaven-FM1-backup-${new Date().toISOString().slice(0, 10)}.json`, file);
   sayK("backupDone");
 }));
 $("backup-import").addEventListener("click", () => { if (dev?.info?.backupCaps & 2) $("backup-file").click(); });
@@ -5029,7 +5029,7 @@ function renderDrums(){
  const details=el('div',{class:'drum-detail'});
  for(const [label,offset]of [['Level',16],['Velocity',24]]){const input=el('input',{type:'range',min:0,max:127,step:1,value:s.raw[offset+drumLane],'aria-label':`${DRUM_NAMES[drumLane]} ${label}`}),out=el('output',{},String(input.value));input.oninput=()=>out.textContent=input.value;input.onchange=write(r=>r[offset+drumLane]=+input.value);details.append(el('label',{},`${DRUM_NAMES[drumLane]} · ${label}`,input,out));}
  details.append(el('button',{onclick:run(()=>drumRequest([3,drumLane,s.raw[24+drumLane]]))},'Audition '+DRUM_NAMES[drumLane]));
- host.replaceChildren(el('h2',{},'Drum machine'),el('div',{class:'drum-toolbar'},play,stop,el('button',{id:'drum-step-bank',onclick:()=>{drumBank=(drumBank+1)%(16/bankSize);renderDrums();}},`Steps ${drumBank*bankSize+1}–${(drumBank+1)*bankSize}`),el('button',{onclick:()=>{drumLaneBank=1-drumLaneBank;drumLane=drumLaneBank*4;renderDrums();}},drumLaneBank?'Lanes 5–8':'Lanes 1–4'),el('label',{},'Tempo',tempo),el('label',{},'Drum level',volume),el('button',{onclick:run(()=>drumRequest([4]))},'Save pattern')),el('div',{class:'drum-scroll'},grid),details,el('p',{class:'dim'},'Independent of the four sound layers · 16 steps · shared FM-1 tempo. Tap a cell to toggle; select a lane to adjust its level and velocity.'));
+ host.replaceChildren(el('h2',{},'Drum machine'),el('div',{class:'drum-toolbar'},play,stop,el('button',{id:'drum-step-bank',onclick:()=>{drumBank=(drumBank+1)%(16/bankSize);renderDrums();}},`Steps ${drumBank*bankSize+1}–${(drumBank+1)*bankSize}`),el('button',{onclick:()=>{drumLaneBank=1-drumLaneBank;drumLane=drumLaneBank*4;renderDrums();}},drumLaneBank?'Lanes 5–8':'Lanes 1–4'),el('label',{},'Tempo',tempo),el('label',{},'Drum level',volume),el('button',{onclick:run(()=>drumRequest([4]))},'Save pattern')),el('div',{class:'drum-scroll'},grid),details,el('p',{class:'dim'},'Independent of the four sound layers · 16 steps · shared SynthMaven FM1 tempo. Tap a cell to toggle; select a lane to adjust its level and velocity.'));
 }
 setInterval(async()=>{if(tab!=='drums'||document.hidden||busy||!dev?.info.synthmaven?.drums||!dev.link.idle)return;try{const s=await drumRequest([0]);for(const cell of $('drum-workspace').querySelectorAll('[data-step]'))cell.dataset.head=String(s.enabled&&+cell.dataset.step===s.step);}catch(e){say(e.message);}},250);
 window.addEventListener('resize',()=>{if(tab==='drums'&&dev?.drums)renderDrums();});
@@ -5114,7 +5114,7 @@ function renderMapping(){
  connection.append(el('p',{},'COMPUTER connects to an iPad or computer for editing and USB audio. USB HOST connects a keyboard, pad or pedal; the controller needs external power. TRS MIDI remains active in either role. With Routing off, choose SYSTEM → ROUT → PARTS and send MIDI channels 1–4 to layers 1–4 independently, even with Layering on. Give each controller a different channel. Learn pedal actions on its own channel; keyboard notes need no Learn assignment. A hub supports one USB MIDI controller in the current host driver.'));
  if(window.SynthMavenNative?.routeController){connection.append(el('button',{onclick:run(()=>window.SynthMavenNative.routeController())},'Controller input · '+(window.SynthMavenNative.controller||'None')));}
  else {
-  connection.append(el('h3',{},'Controllers on this computer'),el('p',{class:'dim'},s.host?'Forwarding is unavailable while the FM-1 is in USB HOST.':'Send each controller to a target, or use it as it is. Only channel messages are forwarded; forwarding stops if the editor closes or the computer sleeps.'));
+  connection.append(el('h3',{},'Controllers on this computer'),el('p',{class:'dim'},s.host?'Forwarding is unavailable while the SynthMaven FM1 is in USB HOST.':'Send each controller to a target, or use it as it is. Only channel messages are forwarded; forwarding stops if the editor closes or the computer sleeps.'));
   const inputs=[...(access?.inputs.values()||[])].filter(i=>i!==d.input&&i.state!=='disconnected');
   if(!inputs.length)connection.append(el('p',{class:'dim'},'No other MIDI inputs found on this computer.'));
   for(const input of inputs){
@@ -5181,7 +5181,7 @@ function renderRouting(d,state){
  const live=d.routes,draft=state.route??={enabled:live.enabled,input:[...live.input],channel:[...live.channel],low:[...d.routeLayers.low],high:[...d.routeLayers.high]};
  const box=el('section',{class:'midi-routing'}),touch=()=>{state.routeDirty=true;renderMapping();};
  const on=el('input',{type:'checkbox','aria-label':'Use custom routing'});on.checked=!!draft.enabled;on.onchange=()=>{draft.enabled=on.checked?1:0;touch();};
- box.append(el('label',{class:'midi-route-switch'},on,'Use custom routing'),el('p',{class:'dim'},draft.enabled?'Choose which input and MIDI channel plays each layer and the drummer. Saved on the FM-1, so it also applies in USB HOST.':'Off: MIDI follows SYSTEM → ROUT, as before.'));
+ box.append(el('label',{class:'midi-route-switch'},on,'Use custom routing'),el('p',{class:'dim'},draft.enabled?'Choose which input and MIDI channel plays each layer and the drummer. Saved on the SynthMaven FM1, so it also applies in USB HOST.':'Off: MIDI follows SYSTEM → ROUT, as before.'));
  const table=el('div',{class:'midi-route-table'});table.hidden=!draft.enabled;box.append(table);
  table.append(el('div',{class:'midi-route-row midi-route-head'},...['Target','Input','Channel','Lowest note','Highest note','Note range'].map(text=>el('span',{},text))));
  ROUTE_TARGETS.forEach((name,i)=>{
@@ -5205,8 +5205,8 @@ function renderRouting(d,state){
   if(draft.enabled)d.routeLayers=parse[CMD.LAYERS](await sessionRequest(d,req.layersPut(layers))).layers;
   const r=parse[CMD.ROUTES](await sessionRequest(d,[CMD.ROUTES,[1,...pack7(routesEncode(draft))]]));
   if(r.rc)throw Error('Routing could not be saved');d.routes=r;state.route=null;state.routeDirty=false;renderMapping();
- }catch(e){say(e.message);}}},'Save to FM-1');save.disabled=blocked||!state.routeDirty;
- box.append(el('div',{class:'bar midi-route-save'},save,el('span',{class:'dim'},blocked?'Fix the conflict before saving.':state.routeDirty?'Unsaved changes. Saving releases held notes, so save between songs.':'Saved on the FM-1. Applies in COMPUTER and USB HOST.')));
+ }catch(e){say(e.message);}}},'Save to SynthMaven FM1');save.disabled=blocked||!state.routeDirty;
+ box.append(el('div',{class:'bar midi-route-save'},save,el('span',{class:'dim'},blocked?'Fix the conflict before saving.':state.routeDirty?'Unsaved changes. Saving releases held notes, so save between songs.':'Saved on the SynthMaven FM1. Applies in COMPUTER and USB HOST.')));
  return box;
 }
 

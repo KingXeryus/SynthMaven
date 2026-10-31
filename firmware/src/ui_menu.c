@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Kerem Kilic (Ellic Studio)
  * Portions Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
-/* Melodee menu (HOME held): COLOR, FONT (the type: RUBIK or PIXEL, ui.c TY_*), HOLD (the layer threshold), LIGHTS (the keys' and buttons'
- * glow: ui_input.c ui_leds), KNOB ACCEL (ui_input.c accel_by), USB AUDIO (IN+OUT, IN, OUT or OFF; usb.c ua_off_set),
+/* Melodee menu (HOME held): SELECT cycles the rows, KNOB 1 changes the row, KNOB 4 leaves. COLOR, FONT (the type: RUBIK or PIXEL,
+ * ui.c TY_*), MIDI MODE (the G_MIDI input: USB, TRS or BOTH), USB ROLE, KNOB ACCEL (ui_input.c accel_by), USB AUDIO (IN+OUT, IN, OUT or OFF; usb.c ua_off_set),
  * USB INPUT (stereo master or four track stems; usb.c ua_tracks_set),
- * USB HOST (the USB-C port hosts a USB-MIDI controller instead of talking to a computer; not saved; usb_host.c),
+ * USB ROLE (the USB-C port hosts a USB-MIDI controller instead of talking to a computer; not saved; usb_host.c),
  * AUTOSAVE (automatic project saves after five seconds stopped and untouched), HOME SELECT (what SELECT turns on HOME:
  * ui.c HS_*), GLO SELECT (what SELECT turns with GLO held, on any page: the same choices), UNUSED TRACKS (SHOW:
  * Stage and MIXER keep a greyed "Add track" row for each place not in use; HIDE: the tracks in use only, ui.c
@@ -13,26 +13,27 @@
  * PRESETS scrolls from ABOUT through all credits. ui.menu: 1 list, 2 information. */
 /* ------------------------------------------------------------ menu --- */
 #define MENU_HEAD H_HEAD                 /* the menu's own title strip */
-enum { MI_COLOR, MI_FONT, MI_HOLD, MI_LIGHTS,
-#if MELODEE_USB_AUDIO
-       MI_USB, MI_USB_INPUT,
-#endif
+enum { MI_COLOR, MI_FONT, MI_MIDI_IN,
 #if MELODEE_USB_HOST
        MI_USB_HOST,
 #endif
-       MI_MIDI_KNOBS, MI_MIDI_MODE,
-       MI_CLICK, MI_CLICK_LEVEL, MI_COUNTIN, MI_PREVIEW, MI_ADD, MI_AUTOSAVE, MI_PICKER, MI_ACCEL, MI_HOME_SEL, MI_GLO_SEL, MI_TRACKS, MI_SCREEN, MI_PANEL, MI_ABOUT, MI_DESIGNER, MI_BACK,
-       MI_COUNT };
-static const char *const MI_NAME[MI_COUNT] = {"COLOR", "FONT", "HOLD", "LIGHTS",
 #if MELODEE_USB_AUDIO
-                                              "USB AUDIO", "USB INPUT",
+       MI_USB, MI_USB_INPUT,
 #endif
+       MI_MIDI_KNOBS, MI_KNOB_MODE,
+       MI_CLICK, MI_CLICK_LEVEL, MI_COUNTIN, MI_PREVIEW, MI_ADD, MI_AUTOSAVE, MI_PICKER, MI_ACCEL, MI_HOME_SEL, MI_GLO_SEL, MI_TRACKS, MI_SCREEN, MI_PANEL, MI_ABOUT, MI_DESIGNER, MI_BACK,
+       MI_COUNT,
+       MI_HOLD = MI_COUNT, MI_LIGHTS, MI_NAMED };      /* past the list: edited from GLO's preferences only (sm_pref_menu) */
+static const char *const MI_NAME[MI_NAMED] = {"COLOR", "FONT", "MIDI MODE",
 #if MELODEE_USB_HOST
                                               "USB ROLE",
 #endif
-                                              "MIDI KNOBS", "MIDI MODE",
+#if MELODEE_USB_AUDIO
+                                              "USB AUDIO", "USB INPUT",
+#endif
+                                              "MIDI KNOBS", "KNOB MODE",
                                               "AUDIO CLICK", "CLICK LEVEL", "COUNT-IN", "NOTE PREVIEW", "CHORD ENTRY",
-                                              "AUTOSAVE", "PICKER POPUPS", "KNOB ACCEL", "HOME SELECT", "GLO SELECT", "UNUSED TRACKS", "SCREEN OFF", "CALIBRATION", "ABOUT", "SOUND DESIGNER", "BACK"};
+                                              "AUTOSAVE", "PICKER POPUPS", "KNOB ACCEL", "HOME SELECT", "GLO SELECT", "UNUSED TRACKS", "SCREEN OFF", "CALIBRATION", "ABOUT", "SOUND DESIGNER", "BACK", "HOLD", "LIGHTS"};
 #if MELODEE_USB_AUDIO
 /* USB AUDIO's four settings, as ua_off_want (UA_OFF_OUT | UA_OFF_IN) */
 static const char *const MI_USB_NAME[4] = {"IN+OUT", "IN", "OUT", "OFF"};
@@ -240,7 +241,7 @@ static void draw_menu(void)
 {
     uint32_t i, pass, sig = ui.menu * 7u + ui.menu_sel * 131u + settings.palette * 1009u + settings.lowcut * 7919u +
                             settings_hold * 3511u + settings_lights * 6151u + settings_autosave * 15485863u +
-                            settings_midi_knobs * 997u + settings_midi_knob_mode * 10007u +
+                            settings_midi_knobs * 997u + settings_midi_knob_mode * 10007u + (uint32_t)song.g[G_MIDI] * 49999u +
 #if MELODEE_USB_AUDIO
                             ua_off_want * 92821u + ua_tracks_want * 324161u +
 #endif
@@ -292,7 +293,8 @@ static void draw_menu(void)
                       i==MI_PREVIEW?(settings_preview?"ON":"OFF"):(settings_chord_add?"ADD":"HOLD");
                 if (i == MI_ACCEL) value = PREF_BITS & PREF_ACCEL_OFF ? "OFF" : "ON";
                 if (i == MI_MIDI_KNOBS) value = MI_MIDI_KNOB_NAME[settings_midi_knobs % MK_PROFILES];
-                if (i == MI_MIDI_MODE) value = MI_MIDI_MODE_NAME[settings_midi_knob_mode % MK_MODES];
+                if (i == MI_KNOB_MODE) value = MI_MIDI_MODE_NAME[settings_midi_knob_mode % MK_MODES];
+                if (i == MI_MIDI_IN) value = N_MIDI_INPUT[song.g[G_MIDI] % 3];
                 if (i == MI_PICKER) value = PREF_BITS & PREF_PICK_OFF ? "OFF" : "ON";
                 if (i == MI_FONT) value = TY_PIXEL ? "PIXEL" : "RUBIK";
                 if (i == MI_AUTOSAVE) value = settings_autosave ? "ON" : "OFF";
@@ -300,7 +302,6 @@ static void draw_menu(void)
                 if (i == MI_GLO_SEL) value = HS_NAME[glo_select()];
                 if (i == MI_TRACKS) value = GLO_SELECT & TRACKS_HIDE ? "HIDE" : "SHOW";
                 if (i == MI_SCREEN) value = (const char *const[]){"NEVER", "5 MIN", "15 MIN", "30 MIN", "60 MIN"}[scr_get()];
-                if (i == MI_LIGHTS) value = LIGHTS_NAME[settings_lights % LIGHTS_N];
 #if MELODEE_USB_AUDIO
                 if (i == MI_USB_INPUT) value = ua_tracks_want ? "4 TRACKS" : "STEREO";
                 if (i == MI_USB) value = (const char *const[]){"In + Out", "In", "Out", "Off"}[ua_off_want & 3u];
@@ -308,11 +309,6 @@ static void draw_menu(void)
 #if MELODEE_USB_HOST
                 if (i == MI_USB_HOST) value = uh.want ? "HOST" : "COMPUTER";
 #endif
-                if (i == MI_HOLD) {                         /* "0.4 s" */
-                    str_cpy(b, "0.4 s", sizeof b);
-                    b[2] = (char)('0' + HOLD_MS[settings_hold % 4u] / 100u);
-                    value = b;
-                }
                 if (i == MI_COLOR) {                        /* the palette's four track colours as swatches */
                     uint32_t k;
                     int32_t x;
@@ -357,7 +353,7 @@ static void menu_close(void)
 
 static void menu_change(int32_t s,uint32_t ok)
 {
-    if ((s || ok) && ui.menu == 1 && (ui.menu_sel == MI_MIDI_KNOBS || ui.menu_sel == MI_MIDI_MODE)) {
+    if ((s || ok) && ui.menu == 1 && (ui.menu_sel == MI_MIDI_KNOBS || ui.menu_sel == MI_KNOB_MODE)) {
         volatile uint8_t *p = ui.menu_sel == MI_MIDI_KNOBS ? &settings_midi_knobs : &settings_midi_knob_mode;
         uint32_t n = ui.menu_sel == MI_MIDI_KNOBS ? MK_PROFILES : MK_MODES, v = *p % n;
         *p = (uint8_t)(s > 0 ? (v + 1u < n ? v + 1u : v) : s < 0 ? (v ? v - 1u : 0u) : (v + 1u) % n);
@@ -365,6 +361,12 @@ static void menu_change(int32_t s,uint32_t ok)
         /* No old mapping's pending turns may edit rows under the new mapping. */
         memset(midi_panel_delta, 0, sizeof midi_panel_delta);
         midi_panel_mask = 0;
+    }
+    if ((s != 0 || ok) && ui.menu == 1 && ui.menu_sel == MI_MIDI_IN) {
+        /* KNOB 1 steps USB TRS BOTH, OCT+ steps and wraps; kept like the GLO page's MIDI (project.c glo_poll) */
+        int32_t v = song.g[G_MIDI] % 3;
+        song.g[G_MIDI] = (int16_t)(s > 0 ? (v < 2 ? v + 1 : 2) : s < 0 ? (v ? v - 1 : 0) : (v + 1) % 3);
+        ui.force = 1; ok = 0;
     }
     if (s != 0 && ui.menu == 1 && ui.menu_sel == MI_COLOR) {
         settings.palette = (settings.palette + (s > 0 ? 1u : NPALETTES - 1u)) % NPALETTES;   /* (wraps) */
@@ -477,11 +479,15 @@ static void menu_change(int32_t s,uint32_t ok)
     }
 }
 
-/* menu: PRESETS moves, OCT+ confirms, OCT- cancels (ABOUT -> list -> close) */
+/* menu: SELECT (or PRESETS) moves, KNOB 1 changes, OCT+ confirms; KNOB 4 or OCT- leaves (ABOUT -> list -> close) */
 static void menu_input(uint32_t oct)                  /* oct: ui_input.c oct_taps */
 {
     int32_t s;
     uint32_t ok = (oct >> 1) & 1u, back = oct & 1u;
+    if ((s = panel_enc(EN_K4)) != 0) {            /* the rest of this spin must not reach what is underneath */
+        panel_k4_mute = fm1_ms + PANEL_K4_MUTE_MS;
+        back = 1;
+    }
     if (back) {
         if (ui.menu >= 2)
             ui.menu = 1, ui.force = 1;
@@ -489,9 +495,9 @@ static void menu_input(uint32_t oct)                  /* oct: ui_input.c oct_tap
             menu_close();
         return;
     }
-    if ((s = panel_enc(EN_K2)) != 0 && ui.menu == 1)  /* KNOB 2 the row (the standard; PRESETS too) */
-        ui.menu_sel = (uint8_t)clamp((int32_t)ui.menu_sel + s, 0, (int32_t)MI_COUNT - 1);
-    if ((s = panel_enc(EN_PRESET)) != 0 && ui.menu == 1)
+    s = panel_enc(EN_SELECT);                          /* (one detent, one row, however fast the knob turns) */
+    s += panel_enc(EN_PRESET);
+    if (s != 0 && ui.menu == 1)
         ui.menu_sel = (uint8_t)((ui.menu_sel + (s > 0 ? 1u : MI_COUNT - 1u)) % MI_COUNT);
     else if (s != 0 && ui.menu >= 2) {             /* bounded document scrolling */
         ui.menu_scroll = (uint16_t)clamp((int32_t)ui.menu_scroll + clamp(s, -128, 128) * 18, 0, menu_scroll_max());

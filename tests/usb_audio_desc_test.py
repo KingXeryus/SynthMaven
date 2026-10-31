@@ -20,15 +20,19 @@ def descriptors(audio, cdc, loader=0):
         str(ROOT / "firmware/src/usb.c"),
     ], text=True)
     # Check the actual advertised name in MIDI-only, CDC, audio and loader
-    # builds. Other installers must recognise it even when macOS caches it
-    # across a firmware change; a name containing only Melodee is filtered out.
+    # builds. Every host must accept it, and the old name macOS can cache
+    # across a firmware change.
     body = re.search(r"STR2\[.*?\]\s*=\s*\{(.*?)\};", source, re.S)[1]
     values = [ast.literal_eval(x.strip()) for x in body.split(",") if x.strip()]
     product = bytes(ord(x) if isinstance(x, str) else x for x in values)
     assert product[0] == len(product) and product[1] == 3
     name = product[2:].decode("utf-16-le")
-    assert name == ("Melodee FM-1 Update" if loader else "Melodee FM-1")
-    assert re.search(r"fm-1|felucca|ota|composite|sinco|usb-midi", name, re.I)
+    assert name == ("SynthMaven FM1 Update" if loader else "SynthMaven FM1")
+    for host, pattern in ((ROOT / "web/fm1ota.js", r"/(synthmaven[^/]*)/i"), (ROOT / "tools/fm1_install.py", r'r"(synthmaven[^"]*)"'),
+                          (ROOT / "web/editor.html", r"/(synthmaven\|[^/]*)/i")):
+        accepted = re.search(pattern, host.read_text())[1]
+        assert re.search(accepted, name, re.I), host
+        assert re.search(accepted, "Melodee FM-1", re.I), host   # macOS can retain the old name
     body = re.search(r"CFG_DESC\[.*?\]\s*=\s*\{(.*?)\};", source, re.S)[1]
     data = bytes(int(x.strip(), 0) for x in body.split(",") if x.strip())
     assert int.from_bytes(data[2:4], "little") == len(data)

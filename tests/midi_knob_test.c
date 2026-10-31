@@ -178,7 +178,7 @@ static int page_and_local_controls(void)
     ui.menu = 1; ui.menu_sel = MI_MIDI_KNOBS;
     menu_input(2); menu_input(2);
     bad += check("settings menu enables the MiniLab profile", settings_midi_knobs == MK_MINILAB);
-    ui.menu_sel = MI_MIDI_MODE; menu_input(2);
+    ui.menu_sel = MI_KNOB_MODE; menu_input(2);
     bad += check("settings menu selects the encoder mode", settings_midi_knob_mode == MK_REL1);
     knob_reset(MK_MINILAB, MK_REL2);
     set_engine_of(TSEL, ENGI_MIDI); events_block(CTL); usb.config = 1; mo_r = mo_w = 0;

@@ -28,5 +28,6 @@ int main(void){
  assert(settings_legacy_valid(&preferences));
  assert((preferences.ext.usb_off&3u)==0);
  uint8_t config[SM_CONFIG_BYTES];sm_factory_unpack(config,sizeof config,SM_FACTORY_CONFIG,sizeof SM_FACTORY_CONFIG);assert(sm_config_valid(config));
+ assert(config[328]==1); /* a fresh install starts on Program 1 */
  printf("Program archive: %u-byte paired bank, USB export/restore, scenes and invalid-upload rollback passed\n",(unsigned)sizeof archive);return 0;
 }

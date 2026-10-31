@@ -1410,7 +1410,7 @@ static void setup(int s)
     case S_CONFIRM_ERASE: song.playing = 0; up_store(6, "A VERY LONG SOUND NAME"); ui.confirm = CF_ERASE_USER; ui.confirm_trk = 6; break;
     case S_MENU_MIDI_GENERAL: ui.menu=1; ui.menu_sel=MI_MIDI_KNOBS; settings_midi_knobs=MK_GENERAL; break;
     case S_MENU_MIDI_MINILAB: ui.menu=1; ui.menu_sel=MI_MIDI_KNOBS; settings_midi_knobs=MK_MINILAB; break;
-    case S_MENU_MIDI_MODE: ui.menu=1; ui.menu_sel=MI_MIDI_MODE; settings_midi_knob_mode=MK_ABSOLUTE; break;
+    case S_MENU_MIDI_MODE: ui.menu=1; ui.menu_sel=MI_KNOB_MODE; settings_midi_knob_mode=MK_ABSOLUTE; break;
     case S_MENU: ui.menu = 1; ui.menu_sel = 0; song.rec = 1; break;
     case S_ABOUT: ui.menu = 2; ui.menu_scroll = 0; break;
     case S_ABOUT_REC: ui.menu = 2; ui.menu_scroll = 0; song.rec = 1; break;          /* the REC mark beside OCT- BACK */

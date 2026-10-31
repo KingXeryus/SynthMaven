@@ -24,4 +24,5 @@ check(isFM1MIDIIdentity(names:["SoundMaven"],driver:"com.apple.AppleMIDIUSBDrive
 check(!isFM1MIDIIdentity(names:["SoundMaven"],driver:"virtual",usbVendorProduct:0),"unrelated SoundMaven virtual port is not an FM1")
 check(!isFM1MIDIIdentity(names:["Controller"],driver:"com.apple.AppleMIDIUSBDriver",usbVendorProduct:0x12340001),"unrelated USB controller is not an FM1")
 check(!isFM1MIDIIdentity(names:["Network Session 1"],driver:"com.apple.AppleMIDINetworkDriver",usbVendorProduct:0x12090001),"USB identity does not match network ports")
+check(isFM1MIDIIdentity(names:["SynthMaven FM1"],driver:"com.apple.AppleMIDIUSBDriver",usbVendorProduct:0),"current FM1 name is recognized")
 check(isFM1MIDIIdentity(names:["Melodee FM-1"],driver:"com.apple.AppleMIDIUSBDriver",usbVendorProduct:0),"existing FM1 name discovery remains compatible")

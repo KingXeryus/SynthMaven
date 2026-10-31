@@ -47,7 +47,7 @@ def run(d,modes,tracks,extreme,duration,bus=False,notes=()):
                 resource_used=s1['resource_used'],voices=s1['voices_active'],audio_max_us=s1['audio_max_us'],eq_status=after['eq_status'])
     print(json.dumps(result),flush=True)
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--port',default='Melodee');p.add_argument('--seconds',type=float,default=1);p.add_argument('--bus',action='store_true');p.add_argument('--voices',action='store_true');p.add_argument('--sustain',type=float,default=6);a=p.parse_args();d=Device(a.port)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--port',default='SynthMaven FM1');p.add_argument('--seconds',type=float,default=1);p.add_argument('--bus',action='store_true');p.add_argument('--voices',action='store_true');p.add_argument('--sustain',type=float,default=6);a=p.parse_args();d=Device(a.port)
     notes=[(c,48+c*7+k*4) for c in range(3) for k in range(2)]+[(3,36)] if a.voices else []
     if notes:
         import mido

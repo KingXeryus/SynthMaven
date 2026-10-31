@@ -250,7 +250,7 @@ def measure(d, directory, seconds, load_stress=False):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=('prepare', 'measure', 'restore', 'summary', 'mark'))
-    parser.add_argument('--port', default='Melodee')
+    parser.add_argument('--port', default='SynthMaven FM1')
     parser.add_argument('--directory', type=Path, default=Path('build/ui-load-comparison'))
     parser.add_argument('--seconds', type=float, default=440)
     parser.add_argument('--load-stress', action='store_true',

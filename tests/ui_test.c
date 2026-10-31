@@ -1702,6 +1702,40 @@ static int test_display_preferences(void)
 {
     int bad = 0;
     track_t sounds[NPART];
+    ui_power_on();
+    {
+        uint32_t row, named = 1;
+        int16_t midi = song.g[G_MIDI];
+        hold(B_HOME);
+        bad += check("HOME menu: MIDI MODE and USB ROLE take the places of HOLD and LIGHTS",
+                     !strcmp(MI_NAME[2], "MIDI MODE")
+#if MELODEE_USB_HOST
+                     && !strcmp(MI_NAME[3], "USB ROLE")
+#endif
+                     );
+        for (row = 0; row < MI_COUNT; row++) named &= strcmp(MI_NAME[row], "HOLD") && strcmp(MI_NAME[row], "LIGHTS");
+        bad += check("  HOLD and LIGHTS stay out of the list", named);
+        turn(EN_SELECT, 1); turn(EN_SELECT, 1);
+        bad += check("  SELECT moves the row", ui.menu_sel == MI_MIDI_IN);
+        turn(EN_K2, 1);
+        bad += check("  KNOB 2 no longer moves it", ui.menu_sel == MI_MIDI_IN);
+        song.g[G_MIDI] = 0;
+        turn(EN_K1, 1);
+        bad += check("  KNOB 1 steps USB to TRS", song.g[G_MIDI] == 1);
+        turn(EN_K1, 5);
+        bad += check("  and stops at BOTH", song.g[G_MIDI] == 2);
+        ui.menu_sel = 0; turn(EN_SELECT, -1);
+        bad += check("  SELECT wraps from the top row to the last", ui.menu_sel == MI_COUNT - 1u);
+        ui.menu_sel = MI_ABOUT; press(B_OCTUP); turn(EN_K4, 1);
+        bad += check("  KNOB 4 steps back from ABOUT to the list", ui.menu == 1);
+        turn(EN_K4, 1);
+        bad += check("  and the same spin does not close the list", ui.menu == 1);
+        panel_k4_mute = 0; turn(EN_K4, 1);
+        bad += check("  KNOB 4 leaves the list", !ui.menu && panel_k4_mute);
+        { uint32_t until = panel_k4_mute; fm1_enc_take(panel.enc[EN_K4]); bad += check("  the rest of the spin stays muted", until && !panel_enc(EN_K4)); }
+        panel_k4_mute = 0;
+        song.g[G_MIDI] = midi;
+    }
     uint16_t before[240 * 240];
     ui_power_on();
     memcpy(sounds, trk, sizeof sounds);

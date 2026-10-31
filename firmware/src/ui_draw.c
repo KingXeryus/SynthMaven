@@ -443,7 +443,7 @@ static const struct { const char *k, *s; } CELL_SHORT[] = {
     {"AT LFO", "ATLFO"}, {"AT FLT", "ATFLT"}, {"FILTER", "FILT"}, {"FINE B", "FINEB"}, {"GLMOD", "GLMD"},
     {"SECTION", "SECT"}, {"LENGTH", "LEN"}, {"REPEAT", "REP"}, {"JITTER", "JITT"}, {"VIBRATO", "VIB"},
     {"TEMPO", "BPM"}, {"SNAPPY", "SNAP"}, {"SEND 1", "FX 1"}, {"SEND 2", "FX 2"}, {"SEND 3", "FX 3"},
-    {"DIFFUSE", "DIFF"}};
+    {"DIFFUSE", "DIFF"}, {"MIDI MODE", "MODE"}};
 static const char *cell_label(const char *label, int32_t room)
 {
     uint32_t i;
@@ -874,7 +874,7 @@ static void draw_columns(void)
 #if MELODEE_USB_HOST
             if(!trs && uh.on)unit=rx?"RX":uh.run?"HOST":"WAIT";
 #endif
-            draw_column(c, "MIDI", val, unit, rx ? T_ACCENT : T_THEME, -1, ICON_AUTO);
+            draw_column(c, d->label, val, unit, rx ? T_ACCENT : T_THEME, -1, ICON_AUTO);
             continue;
         }
         if ((act_cols() >> c) & 1u) {

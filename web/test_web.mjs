@@ -1582,7 +1582,7 @@ class FakeFM1 {
     this.afterWrite = afterWrite; this.loader = loader;     // the loader step 1 starts (the package's own)
     this.image = image; this.unplugAfter = unplugAfter; this.served = 0; this.bad = 0;
     this.access = { inputs: new Map(), outputs: new Map() };
-    this.boot(identity, identity === "FM-1_015" ? "FM-1" : "Melodee");
+    this.boot(identity, identity === "FM-1_015" ? "FM-1" : "SynthMaven FM1");
   }
   boot(identity, name) {
     this.identity = identity; this.waiting = null; this.queue = [];
@@ -1616,8 +1616,8 @@ class FakeFM1 {
       this.waiting = null;
       this.served++;
       if (this.served >= this.unplugAfter) { this.input.state = this.output.state = "disconnected"; return; }
-      if (addr === 0xE0000000) setTimeout(() => this.boot(this.loader, this.loader === STOCK_LOADER ? "FM-1" : "Melodee Update"), 300);
-      else if (addr === 0xF0000000) setTimeout(() => this.boot(this.afterWrite, this.afterWrite === "FM-1_015" ? "FM-1" : "Melodee"), 300);
+      if (addr === 0xE0000000) setTimeout(() => this.boot(this.loader, this.loader === STOCK_LOADER ? "FM-1" : "SynthMaven FM1 Update"), 300);
+      else if (addr === 0xF0000000) setTimeout(() => this.boot(this.afterWrite, this.afterWrite === "FM-1_015" ? "FM-1" : "SynthMaven FM1"), 300);
       else this.next();
     }
   }
@@ -1659,13 +1659,13 @@ async function updater() {
   for (const [i, [product, own, other]] of pairs.entries()) {
     ok(refused[i], `fm1ota.js: ${product} is not written when step 1 starts ${other}`);
     const waiting = new FakeFM1(image, {afterWrite:product});
-    waiting.boot(other, "Melodee Update");
+    waiting.boot(other, "SynthMaven FM1 Update");
     const resumedWrong = await new Updater(waiting.access).resume(image, null, product, own);
     ok(resumedWrong === false && waiting.served === 0 && waiting.identity === other,
       `fm1ota.js: ${product} never resumes in ${other}`);
   }
   const unnamed = new FakeFM1(image);
-  unnamed.boot(MELODEE_LOADER, "Melodee Update");
+  unnamed.boot(MELODEE_LOADER, "SynthMaven FM1 Update");
   ok(await new Updater(unnamed.access).resume(image, null, "FM-1_900") === false && unnamed.served === 0,
     "fm1ota.js: resume without the package's loader identity writes nothing");
   const recovery = new FakeFM1(image, {afterWrite:"FM-1_015"});
@@ -1675,7 +1675,7 @@ async function updater() {
     "fm1ota.js: an interrupted return to stock resumes in the official loader");
 
   const dev2 = new FakeFM1(image, { unplugAfter: 3 });
-  dev2.boot(MELODEE_LOADER, "Melodee Update");
+  dev2.boot(MELODEE_LOADER, "SynthMaven FM1 Update");
   const t0 = Date.now();
   const done = await new Updater(dev2.access).resume(image, null, null, MELODEE_LOADER);
   ok(done === false && Date.now() - t0 < 6000, "fm1ota.js: unplugged during the write -> stops at once");
