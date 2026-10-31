@@ -19,7 +19,7 @@
 #define NPOLY 8                  /* the voices of an engine without its own cap (its per-voice state: engines.c eng_state) */
 #define NPART 4                  /* synth parts: tracks 1..4 */
 #ifndef VBUDGET
-#define VBUDGET (MELODEE_RAM_AUDIO ? 24u : 16u) /* shared weighted voices; RAM profile uses 24 with CPU1 online
+#define VBUDGET (MELODEE_RAM_AUDIO ? 32u : 16u) /* shared weighted voices; RAM profile uses 32 with CPU1 online
                                                  * at 360 MHz (voice.c voice_budget: scaled with a kept 320) */
 #endif
 #ifndef MELODEE_ADMISSION

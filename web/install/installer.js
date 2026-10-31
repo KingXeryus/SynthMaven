@@ -103,7 +103,7 @@ const TEXT = {
     tipBrick: "If it doesn't start at all, see “If the FM-1 won't start” on this page.",
     endPartialH: "SynthMaven is installed, m-bootloader isn't",
     endPartial: "SynthMaven {v} is installed. m-bootloader could not be written and nothing else was changed. You can try again later from this page.",
-    btnEditor: "Open the editor", btnManual: "Read the manual", btnClose: "Close", btnResume: "Resume installation",
+    btnEditor: "Open the editor", btnManual: "Open the illustrated PDF guide", btnClose: "Close", btnResume: "Resume installation",
     btnRetry: "Try again",
     e_notfound: "The FM-1 stopped answering before anything was written.",
     e_model: "The connected device is not an FM-1.",
@@ -209,7 +209,7 @@ const TEXT = {
     tipBrick: "まったく起動しない場合は、このページの「FM-1 が起動しないとき」を見てください。",
     endPartialH: "Melodee はインストールされ、m-bootloader はされていません",
     endPartial: "Melodee {v} はインストールされました。m-bootloader は書き込めず、ほかには何も変更されていません。あとでこのページからもう一度試せます。",
-    btnEditor: "エディターを開く", btnManual: "マニュアルを読む", btnClose: "閉じる", btnResume: "インストールを再開",
+    btnEditor: "エディターを開く", btnManual: "図解PDFガイドを開く", btnClose: "閉じる", btnResume: "インストールを再開",
     btnRetry: "もう一度",
     e_notfound: "何も書き込まれる前に FM-1 が応答しなくなりました。",
     e_model: "接続されている機器は FM-1 ではありません。",
@@ -626,7 +626,7 @@ function endRun(state, err) {
       tips.push(t("tipEditor"));
       if (plan.boot) tips.push(t("tipBoot"));
     }
-    if (!r.isStock) { link("btnEditor", "../editor/", true); link("btnManual", "../manual/"); }
+    if (!r.isStock) { link("btnEditor", "../editor/", true); link("btnManual", $("guidePdf")?.getAttribute("href") || "../manual/", true); }
     button("btnClose", r.isStock, closeRun);
     setPct(100);
     document.title = t("titleDone");
