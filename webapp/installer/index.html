@@ -271,7 +271,7 @@
       <li>A shared web/iPad Perform screen with program and scene navigation, quick controls, mixer and tuning keyboard. Hybrid-style mixer, sequencer and drum-grid layouts, touch-sized controls and screen pages instead of scrolling. Play/Stop controls the connected FM-1 over USB.</li>
       <li>Ten named and numbered GLO pages bring device-wide controls together, including saved color themes, display, USB, recording and performance preferences.</li>
     </ul>
-    <p><a href="../manual/">User guide</a> · <a href="../manual/SynthMaven-3.5.3-User-Guide.pdf">Download complete illustrated PDF guide</a> · <a href="https://github.com/KingXeryus/SynthMaven/releases">Release notes and recovery downloads</a></p>
+    <p><a href="../manual/">User guide</a> · <a id="guidePdf" href="../manual/SynthMaven-3.5.5-User-Guide.pdf">Download complete illustrated PDF guide</a> · <a href="https://github.com/KingXeryus/SynthMaven/releases">Release notes and recovery downloads</a></p>
     <p>The downloadable guide includes screen illustrations, control references and step-by-step workflows for firmware settings, sound editing, programs, scenes, tuning, sequencing, MIDI, USB host setup and the existing web/iPad editors.</p>
     <p><strong>USB-only release.</strong> Direct pedals/controllers require a powered adapter or hub. Every firmware flash resets user settings and musical storage: export a backup first. Older SynthMaven backups require their matching firmware for restoration.</p>
   </section>
@@ -2135,7 +2135,7 @@ function fakeAccess(options = {}) {
 return {fakeAccess};
 })();
 
-const meta = {"version": "3.5.3", "product": "FM-1_93053", "pkg": {"dual": "../../firmware/melodee-3.5.3.fwsc"}, "sha256": {"dual": "5ccb6a0d775701fdf710a66c00c4c7be4c323a9bf9ab2229cc30de0b2111a4ba"}, "nightly": null, "rc": null, "releases": [{"version": "3.5.3", "product": "FM-1_93053", "pkg": {"dual": "../../firmware/melodee-3.5.3.fwsc"}, "sha256": {"dual": "5ccb6a0d775701fdf710a66c00c4c7be4c323a9bf9ab2229cc30de0b2111a4ba"}}, {"version": "3.5.2", "product": "FM-1_93052", "pkg": {"dual": "../../firmware/melodee-3.5.2.fwsc"}, "sha256": {"dual": "81fd9d0a6799a251081dd2fa7e156759c0b4ef7992e5672348e3ab534ecd1a0e"}}, {"version": "3.5.1", "product": "FM-1_93051", "pkg": {"dual": "../../firmware/melodee-3.5.1.fwsc"}, "sha256": {"dual": "9a06105cfdc7c82803b225628e69031b0bc44593d2b025d599dd9283a35204bb"}}], "boot": {"version": "1.2", "pkg": "../../firmware/m-bootloader-1.2.fwsc", "sha256": "0e89141f52d1f2d62198d4f69147a2c15c8360806e64d48002990a6fdab6d6dd", "license": "MIT", "source": "https://github.com/jvitkauskas/m-bootloader/releases/tag/v1.2", "commit": "22e2559906f9fc4e077f2d6aee20bf332300439e"}};
+const meta = {"version": "3.5.5", "product": "FM-1_93055", "pkg": {"dual": "../../firmware/melodee-3.5.5.fwsc"}, "sha256": {"dual": "151d870d15fda9b55ce6c2e70f2ef4af3677db3df0dd908aed3897280ef49391"}, "nightly": null, "rc": null, "releases": [{"version": "3.5.5", "product": "FM-1_93055", "pkg": {"dual": "../../firmware/melodee-3.5.5.fwsc"}, "sha256": {"dual": "151d870d15fda9b55ce6c2e70f2ef4af3677db3df0dd908aed3897280ef49391"}}, {"version": "3.5.3", "product": "FM-1_93053", "pkg": {"dual": "../../firmware/melodee-3.5.3.fwsc"}, "sha256": {"dual": "5ccb6a0d775701fdf710a66c00c4c7be4c323a9bf9ab2229cc30de0b2111a4ba"}}, {"version": "3.5.2", "product": "FM-1_93052", "pkg": {"dual": "../../firmware/melodee-3.5.2.fwsc"}, "sha256": {"dual": "81fd9d0a6799a251081dd2fa7e156759c0b4ef7992e5672348e3ab534ecd1a0e"}}, {"version": "3.5.1", "product": "FM-1_93051", "pkg": {"dual": "../../firmware/melodee-3.5.1.fwsc"}, "sha256": {"dual": "9a06105cfdc7c82803b225628e69031b0bc44593d2b025d599dd9283a35204bb"}}], "boot": {"version": "1.2", "pkg": "../../firmware/m-bootloader-1.2.fwsc", "sha256": "0e89141f52d1f2d62198d4f69147a2c15c8360806e64d48002990a6fdab6d6dd", "license": "MIT", "source": "https://github.com/jvitkauskas/m-bootloader/releases/tag/v1.2", "commit": "22e2559906f9fc4e077f2d6aee20bf332300439e"}};
 (() => {
 // SPDX-License-Identifier: MPL-2.0
 // Copyright (C) 2026 Kerem Kilic (Ellic Studio)
@@ -2236,7 +2236,7 @@ const TEXT = {
     tipBrick: "If it doesn't start at all, see “If the FM-1 won't start” on this page.",
     endPartialH: "SynthMaven is installed, m-bootloader isn't",
     endPartial: "SynthMaven {v} is installed. m-bootloader could not be written and nothing else was changed. You can try again later from this page.",
-    btnEditor: "Open the editor", btnManual: "Read the manual", btnClose: "Close", btnResume: "Resume installation",
+    btnEditor: "Open the editor", btnManual: "Open the illustrated PDF guide", btnClose: "Close", btnResume: "Resume installation",
     btnRetry: "Try again",
     e_notfound: "The FM-1 stopped answering before anything was written.",
     e_model: "The connected device is not an FM-1.",
@@ -2342,7 +2342,7 @@ const TEXT = {
     tipBrick: "まったく起動しない場合は、このページの「FM-1 が起動しないとき」を見てください。",
     endPartialH: "Melodee はインストールされ、m-bootloader はされていません",
     endPartial: "Melodee {v} はインストールされました。m-bootloader は書き込めず、ほかには何も変更されていません。あとでこのページからもう一度試せます。",
-    btnEditor: "エディターを開く", btnManual: "マニュアルを読む", btnClose: "閉じる", btnResume: "インストールを再開",
+    btnEditor: "エディターを開く", btnManual: "図解PDFガイドを開く", btnClose: "閉じる", btnResume: "インストールを再開",
     btnRetry: "もう一度",
     e_notfound: "何も書き込まれる前に FM-1 が応答しなくなりました。",
     e_model: "接続されている機器は FM-1 ではありません。",
@@ -2759,7 +2759,7 @@ function endRun(state, err) {
       tips.push(t("tipEditor"));
       if (plan.boot) tips.push(t("tipBoot"));
     }
-    if (!r.isStock) { link("btnEditor", "../editor/", true); link("btnManual", "../manual/"); }
+    if (!r.isStock) { link("btnEditor", "../editor/", true); link("btnManual", $("guidePdf")?.getAttribute("href") || "../manual/", true); }
     button("btnClose", r.isStock, closeRun);
     setPct(100);
     document.title = t("titleDone");
