@@ -18,7 +18,9 @@
 enum { CH_OFF, CH_DIA3, CH_DIA7, CH_MAJ, CH_MIN, CH_DOM7, CH_MAJ7, CH_MIN7, CH_SUS4, CH_POW, CH_AUTO, CH_MELODY, CH_OPEN5, CH_NEUTRAL, CH_LAST=CH_NEUTRAL };
 enum { VC_CLOSE, VC_OPEN, VC_INV1, VC_INV2, VC_BASS };
 #define CHORD_MAX 4u
-#define MCHORD_N 24u                     /* MIDI notes held as chords at once (more: their root alone) */
+#define MCHORD_N 32u                     /* MIDI notes held as chords at once (more: their root alone); a layered note takes one
+                                          * per layer, so four stacked layers hold 8. At most 32: midi_strum_pending's bits */
+_Static_assert(MCHORD_N <= 32u, "midi_strum_pending");
 
 static const int8_t CHORD_SHAPE[CH_POW - CH_MAJ + 1][CHORD_MAX] = {
     {0, 4, 7, -1}, {0, 3, 7, -1}, {0, 4, 7, 10}, {0, 4, 7, 11}, {0, 3, 7, 10}, {0, 5, 7, -1}, {0, 7, 12, -1},

@@ -499,7 +499,7 @@ async function editorMock() {
     await rq(E.req.set(1,41,24));await rq(E.req.project(1,0));
     await rq(E.req.set(1,41,32));await rq(E.req.project(0,0));
     const r=E.parse[E.CMD.GET](await rq(E.req.get(1,41)));
-    ok(d.label==="BUDGET" && d.min===8 && d.max===32 && r.value===32,"editor: device workload budget survives project loads");
+    ok(d.label==="BUDGET" && d.min===8 && d.max===64 && r.value===32,"editor: device workload budget survives project loads");
     await rq(E.req.set(1,41,16));
   }
   {

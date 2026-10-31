@@ -63,6 +63,9 @@ static int settings_legacy_valid(const persist_t *p)
         p->ext.boot <= 4u && p->ext.drumch <= 17u && p->ext.lights <= LIGHTS_N;
 }
 
+#define SM_BUDGET_HIGH_TAG 0xB6u
+static uint32_t budget_low_points(void) { return settings_budget>32?32u:(uint32_t)settings_budget; }
+
 /* Normalize in place; 1 = read, 0 = invalid. */
 static int settings_import(persist_t *p, int n)
 {
@@ -77,8 +80,11 @@ static int settings_import(persist_t *p, int n)
     sm_tuning_decode(&sm_tuning,p->favorites.factory[6]+4);
     uint32_t work=p->ext.usb_off,points=(work>>8)&255u;
     settings_budget=(int16_t)(((work&0xffff0000u)==WORK_BUDGET_TAG && points>=8u && points<=32u)?points:VOICE_BUDGET_DEFAULT);
+    /* Above 32 lives beside the routing record: older firmware rejects settings whose tagged budget exceeds 32. */
+    if(p->favorites.factory[9][14]==SM_BUDGET_HIGH_TAG && p->favorites.factory[9][15]>32u && p->favorites.factory[9][15]<=64u)
+        settings_budget=p->favorites.factory[9][15];
     uint32_t mode = work <= 3u || (work & 0xFFFF00FCu) == WORK_BUDGET_TAG ? work & 3u : 0u;
-    p->ext.usb_off=mode|(settings_budget!=VOICE_BUDGET_DEFAULT?WORK_BUDGET_TAG|((uint32_t)settings_budget<<8):0u);
+    p->ext.usb_off=mode|(settings_budget!=VOICE_BUDGET_DEFAULT?WORK_BUDGET_TAG|(budget_low_points()<<8):0u);
     if (p->ext.boot > 4u)
         p->ext.boot = 0;
     settings_boot = (uint8_t)p->ext.boot;
@@ -122,7 +128,7 @@ static int settings_import(persist_t *p, int n)
 #ifdef MELODEE_FAVORITES
     memcpy(&favorites, &p->favorites, sizeof favorites);
     memset(favorites.factory[3]+16,0,SM_LAYERS_WIRE);
-    memset(favorites.factory[9]+16,0,SM_ROUTES_WIRE);
+    memset(favorites.factory[9]+14,0,2u+SM_ROUTES_WIRE);
     memset(favorites.factory[6]+4,0,SM_TUNE_WIRE); /* tuning is not a favorite bitset */
     favorites_user_hi = p->ext.spare[0];
     favorites.filter = favorites.filter == 1u;
@@ -175,7 +181,8 @@ static void settings_export(persist_t *p)
 #endif
     p->favorites.factory[15][27]=settings_screen;
     p->favorites.factory[15][28] = settings_autosave ? 0u : AUTOSAVE_OFF_TAG;
-    p->ext.usb_off=(p->ext.usb_off&3u)|(settings_budget!=VOICE_BUDGET_DEFAULT?WORK_BUDGET_TAG|((uint32_t)settings_budget<<8):0u);
+    p->ext.usb_off=(p->ext.usb_off&3u)|(settings_budget!=VOICE_BUDGET_DEFAULT?WORK_BUDGET_TAG|(budget_low_points()<<8):0u);
+    if(settings_budget>32){p->favorites.factory[9][14]=SM_BUDGET_HIGH_TAG;p->favorites.factory[9][15]=(uint8_t)settings_budget;}
     p->ext.boot = settings_boot;
     p->ext.drumch = settings_drumch == 10u ? 0u : !settings_drumch ? 17u : settings_drumch;
     p->ext.lights = settings_lights == LIGHTS_MID ? 0u : settings_lights + 1u;
