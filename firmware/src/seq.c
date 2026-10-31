@@ -1256,8 +1256,27 @@ static void seq_tick(track_t *t, uint32_t n)
 
 /* A range is a strict input filter, including the DRUM override. SEL keeps its stored value 1.
  * Return 0 for channels outside the range or tracks not in use; releases keep their original owner. */
+/* The first DRUM-engine part, the drummer's sound and recording track. */
+static track_t *sm_drum_part(void)
+{
+    for (uint32_t k = 0; k < NPART && k < trk_n(); k++)
+        if (drum_track(&trk[k]))
+            return &trk[k];
+    return 0;
+}
+/* midi_event has turned the input and channel into its target: 0..3 a layer, SM_ROUTE_DRUM the drummer. */
+static uint32_t sm_route_event_rows;
+static int sm_route_on(void) { return sm_routes.enabled && midi_event_source; }
+static track_t *sm_route_drummer(void) { return sm_routes.channel[SM_ROUTE_DRUM] ? sm_drum_part() : 0; }
+
 static track_t *midi_track(uint32_t ch)
 {
+    if (sm_route_on()) {
+        track_t *drummer = sm_route_drummer();
+        if (ch == SM_ROUTE_DRUM)
+            return drummer;
+        return ch < SM_ROUTE_DRUM && ch < trk_n() && &trk[ch] != drummer ? &trk[ch] : 0;
+    }
     uint32_t k, route = (uint32_t)song.g[G_ROUTE];
     uint32_t first = route > 1u && route < 5u ? (route - 1u) * 4u : 0u;
     if (route != 1u && (ch < first || ch - first >= 4u))
@@ -1276,6 +1295,8 @@ static track_t *midi_track(uint32_t ch)
  * retain their channel routing and held-note targets. Note-offs use the original saved owner. */
 static track_t *midi_note_track(uint32_t ch, uint32_t note)
 {
+    if (sm_route_on())
+        return midi_track(ch);
     if (trk[0].p[P_QUANT] == Q_MPC) {
         uint32_t k = mpc_pad(note) / 16u;
         return k < 4u && k < trk_n() ? &trk[k] : 0;

@@ -731,7 +731,7 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         ed_b(0x35);ed_b(1);ed_b(ENGI_PROPHET);ed_b(USER_GENERAL);ed_b(USER_NATIVE_FM);ed_b(USER_NATIVE_CZ);ed_b(USER_NATIVE_P5);ed_b(0);ed_b(1); /* legacy native clients see their addressable prefix */
         ed_b(0x4e); ed_b(1); ed_b(64); ed_b(0); ed_b(0); ed_b(1); /* legacy command 78 addressable prefixes */
         ed_b(0x55);ed_b(1);ed_b(UP_SLOTS&127u);ed_b(UP_SLOTS>>7); /* shared library, command 80 */
-        ed_b(0x53);ed_b(0x4d);ed_b(1);ed_b(3);ed_b(5);ed_b(ED_HYBRID);ed_b(ED_MASTER_TUNING);ed_b(ED_LAYERS);ed_b(ED_SM_PROGRAM);ed_b(ED_SM_MAPPING);ed_b(ED_SM_SETLIST);ed_b(ED_SM_CONTROLLER);ed_b(ED_SM_DRUMS);ed_b(ED_SM_TRANSPORT); /* SynthMaven schema 1, 3.5, native extensions */
+        ed_b(0x53);ed_b(0x4d);ed_b(1);ed_b(3);ed_b(5);ed_b(ED_HYBRID);ed_b(ED_MASTER_TUNING);ed_b(ED_LAYERS);ed_b(ED_SM_PROGRAM);ed_b(ED_SM_MAPPING);ed_b(ED_SM_SETLIST);ed_b(ED_SM_CONTROLLER);ed_b(ED_SM_DRUMS);ed_b(ED_SM_TRANSPORT);ed_b(ED_ROUTES); /* SynthMaven schema 1, 3.5, native extensions */
         break;
     case ED_GET:
     case ED_SET:

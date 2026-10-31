@@ -51,6 +51,8 @@ static midi_channel_t *midi_channel(uint32_t ch)
 static uint32_t midi_targets(uint32_t ch)
 {
     track_t *t = midi_track(ch);
+    if (sm_route_on())
+        return midi_channel(ch)->targets | (sm_route_event_rows & 15u) | (t ? 1u << trk_index(t) : 0u);
     return midi_channel(ch)->targets | (t ? 1u << trk_index(t) : 0u);
 }
 
@@ -176,9 +178,9 @@ static void sm_layer_key_off(uint32_t k)
 {
     for(uint32_t i=0;i<MCHORD_N;i++)if(mchord[i].id && mchord[i].ch==16 && mchord[i].src==k)sm_release_chord(&mchord[i]);
 }
-static int sm_layer_midi_on(uint32_t ch,uint32_t note,uint32_t vel)
+static int sm_layer_midi_on(uint32_t ch,uint32_t note,uint32_t vel,uint32_t mask)
 {
-    uint32_t mask=sm_layer_mask(note,trk_n()),count=0,first=0;
+    uint32_t count=0,first=0;
     for(uint32_t tr=0;tr<4;tr++)count+=(mask>>tr)&1u;
     if(!count||sm_chord_free()<count)return 0;
     midi_channel_t *c=midi_channel(ch);
@@ -203,7 +205,16 @@ static void midi_note_event(uint32_t ch, uint32_t note, uint32_t vel)
             midi_release(ch, note);
         if (!t)
             return;
-        if(sm_layers.enabled && song.g[G_ROUTE]!=5 && trk_index(t)<NPART && trk[0].p[P_QUANT]!=Q_MPC){if(sm_layer_midi_on(ch,note,vel)){
+        uint32_t layered=0,layers=0;
+        if(sm_route_on()){
+            if(ch<SM_ROUTE_DRUM){
+                layers=sm_route_event_rows&sm_layer_mask(note,trk_n());
+                if(!layers)return;
+                if(layers&(layers-1u))layered=1;
+                else t=&trk[__builtin_ctz(layers)];
+            }
+        }else if(sm_layers.enabled && song.g[G_ROUTE]!=5 && trk_index(t)<NPART && trk[0].p[P_QUANT]!=Q_MPC){layered=1;layers=sm_layer_mask(note,trk_n());}
+        if(layered){if(sm_layer_midi_on(ch,note,vel,layers)){
             uint32_t bit=1u<<(note&31u);
             if(midi_event_source==2u)midi_owner_trs[ch][note>>5]|=bit;
             else midi_owner_trs[ch][note>>5]&=~bit;
@@ -391,6 +402,18 @@ static void __attribute__((noinline)) midi_event(uint32_t st, uint32_t ch, uint3
 {
     if(sm_map_receive(st,ch,d1,d2,midi_event_source)){if(st==0x80u||(st==0x90u&&!d2))midi_note_event(ch,d1,0);return;}
     if(midi_event_source==1u&&sm_controller_event(st,ch,&d1,d2,0,midi_event_cable))return;
+    int routed = sm_route_on();
+    if (routed) {
+        uint32_t rows = sm_route_rows(&sm_routes, midi_event_source, ch);
+        track_t *drummer = sm_route_drummer();
+        if (st == 0xB0u && midi_knob_receive(ch, d1, d2)) return;
+        if (!drummer) rows &= 15u;
+        else if (rows & (1u << SM_ROUTE_DRUM)) rows = 1u << SM_ROUTE_DRUM;
+        else rows &= ~(1u << trk_index(drummer));
+        if (!rows) return;
+        sm_route_event_rows = rows;
+        ch = (uint32_t)__builtin_ctz(rows);
+    }
     track_t *t = midi_track(ch);
     track_t *destination = (st == 0x90u && d2) ? midi_note_track(ch, d1) : t;
     if ((st == 0x80u || (st == 0x90u && !d2)) && (mn_get(ch, d1) & 0x7Fu))
@@ -398,7 +421,7 @@ static void __attribute__((noinline)) midi_event(uint32_t st, uint32_t ch, uint3
     if (destination && !midi_track_accept(destination) && st != 0x80u && !(st == 0x90u && !d2)) return;
     /* Panel CCs are consumed once, before modulation, synth controls or MIDI
      * Track forwarding. ROUT admits the channel; the UI edits the selected part. */
-    if (st == 0xB0u && t && midi_knob_receive(ch, d1, d2)) return;
+    if (st == 0xB0u && t && !routed && midi_knob_receive(ch, d1, d2)) return;
     if (st != 0x80u && st != 0x90u) {
         uint32_t targets = midi_targets(ch);
         for (uint32_t tr = 0; tr < trk_n(); tr++)

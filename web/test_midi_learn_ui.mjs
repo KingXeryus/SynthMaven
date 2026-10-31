@@ -4,7 +4,7 @@ const html=readFileSync(new URL('editor.html',import.meta.url),'utf8'),dom=new J
 const el=(tag,attrs={},...children)=>{const n=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==='text')n.textContent=v;else if(k.startsWith('on'))n[k]=v;else n.setAttribute(k,v);}n.append(...children);return n;};
 const maps=Array.from({length:24},()=>Array(12).fill(0)),calls=[],errors=[];
 const dev={mapping:{maps,learn:0,serial:0},info:{pe0:20},dump:{engine:0},pdesc:[{label:'Cutoff',min:0,max:127}],input:{}};
-const ctx={document,window:{},dev,el,$:id=>document.getElementById(id),access:null,controllerRoute:null,pack7:x=>x,say:x=>errors.push(x)};
+const ctx={document,window:{},dev,el,$:id=>document.getElementById(id),access:null,controllerForwards:new Map(),pack7:x=>x,say:x=>errors.push(x)};
 ctx.mappingRequest=async(a,draw=true)=>{calls.push(a);if(a[0]===1)dev.mapping.learn=a[1]?1:0;if(a[0]===2){maps[a[1]]=a.slice(2);dev.mapping.learn=0;}if(draw)ctx.renderMapping();return dev.mapping;};
 vm.createContext(ctx);vm.runInContext(html.slice(html.indexOf('const SM_ACTIONS='),html.indexOf('async function mappingRequest')),ctx);
 vm.runInContext(html.slice(html.indexOf('function renderMapping(){'),html.indexOf('\nsetInterval(async()=>{if(!dev?.info.synthmaven?.mapping')),ctx);

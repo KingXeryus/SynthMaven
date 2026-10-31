@@ -29,5 +29,14 @@ int main(void)
  rule[11]=1;assert(sm_map_conflict(3,rule)==-1);
  rule[11]=0;assert(sm_map_conflict(3,rule)==2);
  sm_map_r=sm_map_w;assert(!sm_config_save());memset(sm_maps,0,sizeof sm_maps);sm_config_load();assert(sm_maps[2][11]==2);
+
+ /* transport, encoded so that older firmware still accepts the record (as all notes off) */
+ {uint8_t play[12]={1,0,0,90,127,0,4,9,0,0,0,0},rec[12]={1,0,0,91,127,0,4,9,0,0,2,0};assert(sm_map_valid(play)&&sm_map_valid(rec));
+  memset(sm_maps,0,sizeof sm_maps);memcpy(sm_maps[0],play,12);memcpy(sm_maps[1],rec,12);sm_map_seen=sm_map_released=0;
+  transport_req=0;song.playing=0;assert(sm_map_receive(0xb0,0,90,127,1));sm_mapping_poll();assert(transport_req==1);
+  transport_req=0;song.playing=1;fm1_ms+=500;assert(sm_map_receive(0xb0,0,90,127,1));sm_mapping_poll();assert(transport_req==2);
+  transport_req=0;song.playing=0;song.rec=0;set_engine_of(&trk[2],ENGI_DRUM);assert(sm_map_receive(0xb0,0,91,127,1));sm_mapping_poll();assert((song.rec>>2)&1u);assert(transport_req==1);
+  fm1_ms+=500;assert(sm_map_receive(0xb0,0,91,127,1));sm_mapping_poll();assert(!((song.rec>>2)&1u));
+  memset(sm_maps,0,sizeof sm_maps);transport_req=0;}
  puts("MIDI maps: bounded deferred actions, duplicate suppression, deliberate taps, learn latch, parameter routing, conflicts, durable config and interrupted saves passed");return 0;
 }

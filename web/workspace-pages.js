@@ -18,7 +18,7 @@
  new MutationObserver(libRefresh).observe($('device-presets'),{attributes:true,attributeFilter:['hidden']});
  const system=$('sysinfo').parentElement;system.id='settings-system';
  const settings=$('p-settings');
- const settingsEntries=()=>[{id:'learn',name:'MIDI Learn',node:$('sm-mapping')},...[...$('setgroups').children].map((node,i)=>({id:'global-'+i,name:node.querySelector('h2')?.textContent.replace(/[\uE000-\uF8FF]/g,'').trim().replace(/^GLOBAL$/i,'Global')||'Global '+(i+1),node})),{id:'display',name:'Display',node:$('device-display')},{id:'recording',name:'Recording',node:$('device-recording')},{id:'system',name:'System',node:system}];
+ const settingsEntries=()=>[{id:'learn',name:'MIDI',node:$('sm-mapping')},...[...$('setgroups').children].map((node,i)=>({id:'global-'+i,name:node.querySelector('h2')?.textContent.replace(/[\uE000-\uF8FF]/g,'').trim().replace(/^GLOBAL$/i,'Global')||'Global '+(i+1),node})),{id:'display',name:'Display',node:$('device-display')},{id:'recording',name:'Recording',node:$('device-recording')},{id:'system',name:'System',node:system}];
  const settingsRefresh=sections(settings,settingsEntries,'Settings');
  new MutationObserver(settingsRefresh).observe($('setgroups'),{childList:true});
  for(const id of ['sm-mapping','device-display','device-recording'])new MutationObserver(settingsRefresh).observe($(id),{attributes:true,attributeFilter:['hidden']});

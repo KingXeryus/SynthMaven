@@ -1354,3 +1354,9 @@ Return codes follow program/config saves. Invalid requests do not write.
 SMC3 configuration retains SMC1/SMC2 reading, and stores the override at bytes
 329/330. Learned assignments are evaluated before native surface decoding.
 Channel music from other virtual cables retains normal pitch bend and notes.
+
+## MIDI routing (118)
+
+`F0 7D <118> op` with op 0 (read) or 1 followed by the 7-bit packed 16-byte record. Reply: `op rc drum_part` (127: no DRUM part) and the packed record: `S M R 1 enabled input[5] channel[5] 0`, indexed by layers 1..4 and the drummer. input: 0 any, 1 USB, 2 TRS. channel: 0 off, 1..16, 17 all. A write releases held notes. The SynthMaven capability trailer lists 118 after 117.
+
+MAPPING records with action 9 use byte 10 to select all notes off (255), transport play/stop (0), record selected part (1) or record drummer (2).

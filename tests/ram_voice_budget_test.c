@@ -26,29 +26,28 @@ static void fresh(void)
 
 int main(void)
 {
-    fresh();assert(voice_budget()==18u);
-    for(unsigned p=0;p<NPART;p++)for(unsigned n=0;n<2u;n++)trk_note_on(&trk[p],48u+4u*n,100);
-    trk_note_on(&trk[3],60,100);
-    assert(voices_busy()==18u && !voice_kills);
+    fresh();assert(voice_budget()==24u);
+    for(unsigned p=0;p<NPART;p++)for(unsigned n=0;n<3u;n++)trk_note_on(&trk[p],48u+4u*n,100);
+    assert(voices_busy()==24u && !voice_kills);
     trk_note_on(&trk[3],67,100);
-    assert(voice_kills && voices_busy()<=18u);
+    assert(voice_kills && voices_busy()<=24u);
     for(unsigned p=0;p<NPART;p++)assert(trk[p].v[lowest_held(&trk[p])].note==48u);
 
     fresh();
     host_preset(&trk[0],ENGI_PROPHET,0);trk[0].p[P_VOICE]=V_POLY;
     for(unsigned n=0;n<3u;n++)trk_note_on(&trk[0],48u+4u*n,100);
     assert(voice_units(&trk[0])==2u && voices_busy()==6u);
-    for(unsigned p=1;p<NPART;p++)for(unsigned n=0;n<2u;n++)trk_note_on(&trk[p],48u+4u*n,100);
-    assert(voices_busy()==18u && !voice_kills_part[0]);
+    for(unsigned p=1;p<NPART;p++)for(unsigned n=0;n<3u;n++)trk_note_on(&trk[p],48u+4u*n,100);
+    assert(voices_busy()==24u && !voice_kills_part[0]);
     audio_worker_online=0;
     assert(voice_budget()==16u && voice_units(&trk[0])==3u);
     trk_note_on(&trk[3],67,100);
     assert(voices_busy()<=16u && voice_kills);
     /* main.c clock_boot: the CPU1 budget follows the clock running (a 320 a soft reset kept); one core keeps 16 */
     audio_worker_online=1;
-    vbudget_cpu1=VBUDGET*320u/360u; assert(voice_budget()==16u);
+    vbudget_cpu1=VBUDGET*320u/360u; assert(voice_budget()==21u);
     audio_worker_online=0; assert(voice_budget()==16u);
     vbudget_cpu1=VBUDGET;
-    printf("Resident voice budget: 18 units (16 at 320 MHz), bounded admission, protected bass, CPU1 fallback to 16: OK\n");
+    printf("Resident voice budget: 24 units (21 at 320 MHz), bounded admission, protected bass, CPU1 fallback to 16: OK\n");
     return 0;
 }

@@ -85,3 +85,13 @@ Automatic identity rules, USB cable separation, MCU/HUI decoding, handshake repl
 - [Launchpad Pro MK3 programmer reference](https://fael-downloads-prod.focusrite.com/customer/prod/s3fs-public/downloads/LPP3_prog_ref_guide_200415.pdf)
 
 The machine-readable family catalogue is `assets/controllers/catalog.json`; `tools/gen_controllers.py` generates the bounded firmware identity rules.
+
+## Routing layers and the drummer
+
+Open Settings → MIDI → **Routing** in the web editor and turn on **Use custom routing**. Each of layers 1–4 and the Drummer gets an input (Any, USB or TRS) and a channel (Off, 1–16 or All channels). Routing replaces SYSTEM → ROUT while it is on, and is saved on the FM-1, so it applies in COMPUTER and USB HOST.
+
+- **Splits and stacks:** give two layers the same input and channel, then set their note ranges. Separate ranges split the keyboard; overlapping ranges stack. Ranges are saved with the program.
+- **Drummer:** plays and records on the first part using the DRUM engine, so that part is not available as a layer. Pads use the General MIDI drum map. A layer may not share an input and channel with the Drummer.
+- **Recording:** MIDI Learn offers Transport Play / Stop, Record (selected part) and Record (drummer). One part records at a time.
+- **Forwarding:** in COMPUTER mode, the web editor's Connection & forwarding tab sends each controller on the computer to a target on that target's channel. It stops when the editor closes. In USB HOST there is no forwarding and one USB controller is served, so give its target All channels or send the assigned channel.
+- **Going back:** older firmware ignores the routing record, and a transport assignment acts as All notes off there.

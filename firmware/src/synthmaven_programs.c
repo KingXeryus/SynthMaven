@@ -359,7 +359,14 @@ static void sm_mapping_poll(void)
             case 6:sm_layers.enabled^=1;settings_save();break;
             case 7:rc=sm_setlist_step(1);break;
             case 8:rc=sm_setlist_step(-1);break;
-            case 9:panic_req|=15u;break;
+            case 9:if(m[10]==255){panic_req|=15u;break;}
+                /* Transport keeps panic's action number with an engine byte older firmware accepts and ignores. */
+                {uint32_t guard=motion_guard();
+                 if(!m[10])ct_transport_apply(song.playing?0u:1u);
+                 else if(m[10]==1u)ct_transport_apply(2u);
+                 else{track_t *drum=sm_drum_part();if(drum){uint32_t on=(song.rec>>trk_index(drum))&1u;rec_set(drum,!on);if(!on&&!song.playing)transport_req=1;}else rc=1;}
+                 motion_unguard(guard);}
+                break;
         }
         if(rc)ui_message(rc==4?"STOP TO LOAD":"MIDI ACTION FAILED");
         sync_reload=1;ui.force=1;

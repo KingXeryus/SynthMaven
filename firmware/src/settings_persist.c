@@ -71,6 +71,8 @@ static int settings_import(persist_t *p, int n)
      * Preserve its low 32 legacy favorite bits and the PER5 size. */
     sm_layers=(sm_layers_t){.high={127,127,127,127}};
     sm_layers_decode(&sm_layers,p->favorites.factory[3]+16);
+    sm_routes=SM_ROUTES_DEFAULT;
+    sm_routes_decode(&sm_routes,p->favorites.factory[9]+16);
     sm_tuning=(sm_tuning_t){.apply=15,.mask=0xfff};
     sm_tuning_decode(&sm_tuning,p->favorites.factory[6]+4);
     uint32_t work=p->ext.usb_off,points=(work>>8)&255u;
@@ -120,6 +122,7 @@ static int settings_import(persist_t *p, int n)
 #ifdef MELODEE_FAVORITES
     memcpy(&favorites, &p->favorites, sizeof favorites);
     memset(favorites.factory[3]+16,0,SM_LAYERS_WIRE);
+    memset(favorites.factory[9]+16,0,SM_ROUTES_WIRE);
     memset(favorites.factory[6]+4,0,SM_TUNE_WIRE); /* tuning is not a favorite bitset */
     favorites_user_hi = p->ext.spare[0];
     favorites.filter = favorites.filter == 1u;
@@ -152,6 +155,7 @@ static void settings_export(persist_t *p)
     p->ext.spare[0] = favorites_user_hi;
 #endif
     sm_layers_encode(p->favorites.factory[3]+16,&sm_layers);
+    {sm_routes_t routes_default=SM_ROUTES_DEFAULT;if(memcmp(&sm_routes,&routes_default,sizeof sm_routes))sm_routes_encode(p->favorites.factory[9]+16,&sm_routes);}
     sm_tuning_encode(p->favorites.factory[6]+4,&sm_tuning);
     memcpy(p->favorites.factory[1] + 28, SETTINGS_OWNER, sizeof SETTINGS_OWNER);
     {

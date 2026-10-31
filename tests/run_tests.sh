@@ -173,6 +173,7 @@ web_tests() {                                     # the editor mock's tables mus
         step "Four melodic lanes and 88-key note selection" node web/test_melodic_sequencer.mjs
         step "Song timeline sections and playback protection" node web/test_song_arranger.mjs
         step "Learn-first MIDI assignment grid" node web/test_midi_learn_ui.mjs
+        step "Layer and drummer MIDI routing screen" node web/test_midi_routing_ui.mjs
         step "HYBRID editor and Vital import" node web/test_hybrid_import.mjs
         step "SynthMaven controller input routing" node web/test_controller_route.mjs
         step "installer UI: release selection, fetch races, cache and write lock" node web/test_installer.mjs
@@ -404,6 +405,7 @@ if core && [ $TABLES = 1 ]; then
     t "SynthMaven eight programs, scenes and atomic storage" synthmaven_program_test -O1 $FW -- "$OUT/synthmaven_program_test"
     t "SynthMaven HYBRID native saves and interrupted-write recovery" synthmaven_hybrid_store_test -O1 $FW -- "$OUT/synthmaven_hybrid_store_test"
     t "SynthMaven four-part layer routing and note ownership" synthmaven_layer_routing_test -O1 $FW -- "$OUT/synthmaven_layer_routing_test"
+    t "SynthMaven MIDI assignments for layers and the drummer" synthmaven_midi_route_test -O1 $FW -- "$OUT/synthmaven_midi_route_test"
     t "SynthMaven controller profiles, MCU and HUI" synthmaven_controller_test -O1 $FW -- "$OUT/synthmaven_controller_test"
     t "SynthMaven MIDI learn and persistent mappings" synthmaven_mapping_test -O1 $FW -- "$OUT/synthmaven_mapping_test"
     t "SynthMaven compact program backup recovery" synthmaven_program_backup_test -O1 $FW -- "$OUT/synthmaven_program_backup_test"
