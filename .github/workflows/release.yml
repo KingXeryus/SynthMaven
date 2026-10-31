@@ -141,6 +141,7 @@ jobs:
       contents: write
       pages: write
       attestations: read
+      actions: write              # start and follow the gh-pages deploy workflow
     concurrency:
       group: ${{ github.ref == 'refs/heads/release/recovery-v1.3.1' && 'melodee-recovery-v1.3.1' || 'melodee-nightly-pages' }}
       cancel-in-progress: false
@@ -285,8 +286,27 @@ jobs:
             git commit -m "release: publish candidate $GITHUB_REF_NAME"
             git push origin HEAD:gh-pages
           fi
-      - name: Request Pages rebuild
+      # Pages deploys from gh-pages through deploy-published-site.yml. A push made with this job's token does
+      # not start other workflows, so start that deploy explicitly and wait until it has published this commit.
+      - name: Deploy the installer site
         if: startsWith(github.ref, 'refs/tags/') && (!contains(github.ref_name, '-') || contains(github.ref_name, '-rc.'))
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh api --method POST "repos/$GITHUB_REPOSITORY/pages/builds"
+        run: |
+          expected=$(git -C .nightly-pages rev-parse HEAD)
+          gh workflow run deploy-published-site.yml --repo "$GITHUB_REPOSITORY" --ref gh-pages
+          for attempt in $(seq 1 60); do
+            sleep 10
+            run=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow deploy-published-site.yml \
+              --branch gh-pages --limit 10 --json headSha,status,conclusion,url \
+              --jq "[.[] | select(.headSha == \"$expected\")][0] // empty")
+            [ -n "$run" ] || continue
+            status=$(echo "$run" | jq -r .status)
+            conclusion=$(echo "$run" | jq -r .conclusion)
+            if [ "$status" = completed ]; then
+              echo "$run"
+              test "$conclusion" = success
+              exit
+            fi
+          done
+          echo "The installer deploy did not finish in 10 minutes"; exit 1
