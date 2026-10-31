@@ -166,7 +166,7 @@
 
 #master-tuning .mt-controls{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
 #master-tuning label{display:grid;gap:6px}#master-tuning input[type=checkbox]{width:24px;height:24px}
-.mt-keyboard{position:relative;height:150px;margin:18px 0;display:flex}
+.mt-keyboard{position:relative;height:150px;margin:18px 0;display:flex;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .mt-keyboard button{position:absolute;bottom:0;border-radius:3px;border:1px solid #555;min-width:0;padding:5px 0;display:flex;flex-direction:column;justify-content:space-between;align-items:center}
 .mt-keyboard .white{height:100%;background:#f2f2f2;color:#17171b;z-index:1}
 .mt-keyboard .black{height:62%;top:0;background:#17171b;color:white;z-index:2}
@@ -2653,7 +2653,7 @@ function makeMockDevice(opt = {}) {
   const GP = [
     D("BPM", F.BPM, 40, 240, 120), D("SWG", F.PCT, 0, 100, 0), E("CLK", ["INT", "USB", "TRS"], 0), D("TUNE", F.INT, -50, 50, 0),
     ...Array.from({length:8},()=>D("",F.INT,0,127,0)),
-    E("MIDI", ["USB", "TRS", "BOTH"], 0), E("DRUM", ["OFF", ...Array.from({ length: 16 }, (_, i) => String(i + 1))], 10), E("ROUT", ["CH1-4", "SEL", "CH5-8", "CH9-12", "CH13-16", "PARTS"], 0), D("CPU", F.INT, 0, 0, 0),
+    E("MIDI", ["USB", "TRS", "BOTH"], 2), E("DRUM", ["OFF", ...Array.from({ length: 16 }, (_, i) => String(i + 1))], 10), E("ROUT", ["CH1-4", "SEL", "CH5-8", "CH9-12", "CH13-16", "PARTS"], 0), D("CPU", F.INT, 0, 0, 0),
     D("SLOT", F.INT, 1, 5, 1), E("BOOT", ["OFF", "A", "B", "C", "D"], 0), E("LOAD", NGO, 0), E("SAVE", NGO, 0),
     E("ENG", ["-", "-", "-", "SID", "-", "-", "-", "-",
       "-", "-", "DRUM", "-", "FM6", "-", "-", "CZ-1", "-", "-", "-", "PROPHET", "-", "MIDI Track", "HYBRID", "ANALOG", "DIGITAL", "VOICE", "STRINGS", "JUNO"], 0), D("A4", F.INT, 400, 480, 440, null, "Hz"),
@@ -4271,10 +4271,14 @@ function renderMasterTuning(){
   const kb=document.createElement('div');kb.className='mt-keyboard';host.append(kb);const whites=[0,2,4,5,7,9,11];
   for(let k=0;k<12;k++){const r=(k+12-tune.root)%12,c=profile.cents[r],b=document.createElement('button'),white=whites.includes(k),wi=whites.filter(x=>x<k).length;b.className=(white?'white':'black')+(!(profile.mask&(1<<r))?' outside':'')+(c?' tuned':'');b.style.width=(white?100/7:8)+'%';b.style.left=(white?whites.indexOf(k)*100/7:wi*100/7-4)+'%';b.setAttribute('aria-pressed',k===key);b.setAttribute('aria-label',notes[k]+', '+c+' cents');
     const cents=document.createElement('span');cents.textContent=k===key?(c>0?'+':'')+c+' ct':'';const name=document.createElement('span');name.textContent=notes[k];b.append(cents,name);
-    b.onclick=()=>{const now=Date.now(),double=d.tuningTap?.key===k&&now-d.tuningTap.time<350;d.tuningKey=k;d.tuningTap=double?null:{key:k,time:now};if(double){const next={...tune,cents:profile.cents.slice(),mask:profile.mask,scale:47,enabled:1};next.cents[r]=c?0:-50;change(t=>Object.assign(t,next));}else renderMasterTuning();};kb.append(b);
+    let hold=0;const release=()=>{clearTimeout(hold);hold=0;};
+    /* A one-second hold, not a double tap: iPadOS treats a double tap as zoom. */
+    b.onpointerdown=()=>{d.tuningHeld=false;release();hold=setTimeout(()=>{hold=0;d.tuningHeld=true;d.tuningKey=k;const next={...tune,cents:profile.cents.slice(),mask:profile.mask,scale:47,enabled:1};next.cents[r]=c?0:-50;change(t=>Object.assign(t,next));},1000);};
+    b.onpointerup=b.onpointerleave=b.onpointercancel=release;b.oncontextmenu=e=>e.preventDefault();
+    b.onclick=()=>{release();if(d.tuningHeld){d.tuningHeld=false;return;}d.tuningKey=k;renderMasterTuning();};kb.append(b);
   }
   const wheel=document.createElement('label');wheel.className='mt-wheel';wheel.textContent=notes[key]+' / FINE TUNE · '+value+' ct';const slider=document.createElement('input');slider.type='range';slider.min=-100;slider.max=100;slider.step=1;slider.value=value;slider.setAttribute('aria-label','Selected key tuning in cents');slider.oninput=()=>{wheel.firstChild.textContent=notes[key]+' / FINE TUNE · '+slider.value+' ct';kb.querySelector('[aria-pressed=true] span').textContent=(+slider.value>0?'+':'')+slider.value+' ct';};slider.onchange=()=>fine(+slider.value);wheel.append(slider);host.append(wheel);
-  const help=document.createElement('p');help.className='dim';help.textContent='Single tap selects a key. Double tap sets −50 ct, or resets a tuned key to 0. Global tuning survives program changes.';host.append(help);
+  const help=document.createElement('p');help.className='dim';help.textContent='Tap selects a key. Hold a key for 1 second to set −50 ct, or to reset a tuned key to 0. Global tuning survives program changes.';host.append(help);
   decorateTuningLayout();
 }
 
