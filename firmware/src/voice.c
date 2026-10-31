@@ -106,6 +106,12 @@ static uint32_t trk_nvoice(const track_t *t)
     return !c ? NPOLY : c < NVOICE ? c : NVOICE;
 }
 
+/* voices POLY may hold: every slot for a pooled engine (the shared budget limits it), else its cap */
+static uint32_t trk_npoly(const track_t *t)
+{
+    return ENGINES[t->engine]->pool ? NVOICE : trk_nvoice(t);
+}
+
 /* the part's voice mode: P_VOICE, POLY for an engine of hits (engine_t.oneshot: DRUM) */
 static uint32_t trk_vmode(const track_t *t)
 {
@@ -270,7 +276,7 @@ static voice_t *voice_reuse(track_t *t, voice_t *v)
 static voice_t *voice_alloc(track_t *t, uint32_t note)
 {
     const engine_t *e = ENGINES[t->engine];
-    uint32_t i, np = trk_nvoice(t), best = np, low = np, nfree = 0;
+    uint32_t i, np = trk_npoly(t), best = np, low = np, nfree = 0;
     int32_t bd = 0x7FFFFFFF;
     if (e->alloc) {                                     /* the engine's own choice (FM6: Dexed's) */
         voice_t *v = &t->v[e->alloc(t, note) % np];

@@ -23,5 +23,14 @@ int main(void){
   /* a budget above 32 survives a save, and the tagged field older firmware reads stays valid */
   setup();settings_budget=64;persist_t saved={0};settings_export(&saved);assert(((saved.ext.usb_off>>8)&255u)==32u);settings_budget=16;assert(settings_import(&saved,sizeof saved)&&settings_budget==64);
   settings_budget=kept;}
+ /* pooled engines: HYBRID holds more than their old cap of 4, while UNISON keeps it */
+ {int16_t kept=settings_budget;
+  setup();settings_budget=64;set_engine_of(&trk[0],ENGI_HYBRID);apply_preset_to(&trk[0],0);trk[0].engine=trk[0].eng_req;trk[0].p[P_VOICE]=V_POLY;sm_layers.enabled=0;
+  assert(trk_npoly(&trk[0])==NVOICE&&trk_nvoice(&trk[0])==4u&&voice_units(&trk[0])>=4u);
+  for(uint32_t n=60;n<72;n++)queued(0x90,n,100,1);for(uint32_t n=60;n<72;n++)assert(gate_note(&trk[0],n));for(uint32_t n=60;n<72;n++)queued(0x80,n,0,1);
+  setup();settings_budget=64;set_engine_of(&trk[0],ENGI_HYBRID);apply_preset_to(&trk[0],0);trk[0].engine=trk[0].eng_req;trk[0].p[P_VOICE]=V_UNISON;sm_layers.enabled=0;
+  queued(0x90,60,100,1);{uint32_t on=0;for(uint32_t i=0;i<NVOICE;i++)on+=trk[0].v[i].active!=0;assert(on==4u);}queued(0x80,60,0,1);trk[0].p[P_VOICE]=V_POLY;
+  assert(ENG_ACID.poly==1u&&!ENG_ACID.pool);
+  settings_budget=kept;}
  puts("Four-part routing: USB layers, split boundaries, mode changes while held, sustain, part panic and physical keys passed");return 0;
 }

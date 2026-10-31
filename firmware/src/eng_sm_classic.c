@@ -298,7 +298,7 @@ static const preset_t SMC_ANALOG_PRESETS[]={
 {"DYN BASS",{0,6,64,0,40,50,30,64},{0,64,80,24},30,1},
 {"WAH LEAD",{0,8,64,0,60,70,20,64},{2,70,110,40},0,1},
 };
-static const engine_t ENG_SMC_ANALOG={.name="ANALOG",.page_title={"OSC", "FLT"},.edit={
+static const engine_t ENG_SMC_ANALOG={.pool=1,.name="ANALOG",.page_title={"OSC", "FLT"},.edit={
         {"WAVE", F_ENUM, 0, 4, 0, smc_N_ANALOG_WAVE, 0},
         {"DTN", F_INT, 0, 127, 10, 0, "ct"},
         {"MIX", F_PCT, 0, 127, 64, 0, 0},
@@ -483,7 +483,7 @@ static const preset_t SMC_DIGITAL_PRESETS[]={
 {"SYN VIBES",{4,4,1,4,40,40,0,0},{0,92,0,74},0,0},
 {"PERC ORGAN",{4,2,1,3,30,20,0,0},{0,64,120,30},0,0},
 };
-static const engine_t ENG_SMC_DIGITAL={.name="DIGITAL",.page_title={"OPS", "MOD"},.edit={
+static const engine_t ENG_SMC_DIGITAL={.pool=1,.name="DIGITAL",.page_title={"OPS", "MOD"},.edit={
         {"ALG", F_ENUM, 0, 7, 0, smc_N_FMALG, 0},
         {"R2", F_ENUM, 0, 14, 1, smc_N_RATIO, 0},
         {"R3", F_ENUM, 0, 14, 1, smc_N_RATIO, 0},
@@ -721,7 +721,7 @@ static const preset_t SMC_FORMANT_PRESETS[]={
 {"AAH LEAD",{0,0,0,0,90,10,70,0},{4,70,115,40},0,1},
 {"UH BASS",{110,0,0,0,110,0,80,0},{0,70,90,25},0,1},
 };
-static const engine_t ENG_SMC_FORMANT={.name="VOICE",.page_title={"VOWL", "TONE"},.edit={
+static const engine_t ENG_SMC_FORMANT={.pool=1,.name="VOICE",.page_title={"VOWL", "TONE"},.edit={
         {"VOWL", F_INT, 0, 127, 0, 0, 0},
         {"VOWL2", F_INT, 0, 127, 64, 0, 0},
         {"TALK", F_TIME, 0, 127, 0, 0, 0},
@@ -834,7 +834,7 @@ static const preset_t SMC_STRINGS_PRESETS[]={
  * voice. Reserve four shared-budget units; four-part chords plus independent
  * drums otherwise overrun the FM-1 audio deadline. Sound parameters are unchanged. */
 static uint32_t smc_strings_units(const track_t *t){(void)t;return 4u;}
-static const engine_t ENG_SMC_STRINGS={.name="STRINGS",.page_title={"REG", "TONE"},.edit={
+static const engine_t ENG_SMC_STRINGS={.pool=1,.name="STRINGS",.page_title={"REG", "TONE"},.edit={
         {"16'", F_PCT, 0, 127, 40, 0, 0},
         {"8'", F_PCT, 0, 127, 127, 0, 0},
         {"4'", F_PCT, 0, 127, 70, 0, 0},
@@ -949,7 +949,7 @@ static const preset_t SMC_JUNO_PRESETS[]={
 {"HOOVER JUNO",{1,80,60,0,1,76,20,3},{0,90,110,50},0,1},
 {"TURING JUNO",{0,0,20,0,2,64,36,1},{0,62,24,40},44,0},
 };
-static const engine_t ENG_SMC_JUNO={.name="JUNO",.page_title={"DCO", "VCF"},.edit={
+static const engine_t ENG_SMC_JUNO={.pool=1,.name="JUNO",.page_title={"DCO", "VCF"},.edit={
         {"WAVE", F_ENUM, 0, 2, JW_SP, smc_N_JWAVE, 0},
         {"PW", F_PCT, 0, 127, 30, 0, 0},
         {"SUB", F_PCT, 0, 127, 40, 0, 0},

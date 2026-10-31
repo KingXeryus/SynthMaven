@@ -118,7 +118,7 @@ static const preset_t VPS_PRESETS[]={{"VPS LEAD",{40, 40, 0, 0, 112, 10, 0, 0},{
 {"VPS BELL",{90, 100, 0, 90, 127, 0, 80, 0},{0, 90, 0, 90},0,0},
 {"WOBBLE VPS",{30, 48, 0, 0, 90, 30, 0, 80},{0, 80, 110, 30},0,1},
 {"VPS CHOIR",{64, 80, 10, 100, 96, 10, 40, 0},{80, 100, 120, 100},0,0}};
-static const engine_t ENG_VPS={.name="VPS",.page_title={"VECTOR", "TONE"},.edit={
+static const engine_t ENG_VPS={.pool=1,.name="VPS",.page_title={"VECTOR", "TONE"},.edit={
         {"D", F_PCT, 0, 127, 50, 0, 0},
         {"V", F_INT, 0, 127, 32, 0, 0},
         {"VENV", F_BIPCT, -64, 63, 0, 0, 0},

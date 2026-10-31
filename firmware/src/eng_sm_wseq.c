@@ -206,7 +206,7 @@ static const preset_t WSEQ_PRESETS[]={{"WAVE STEPS",{0, 40, 20, WL_FWD, 0, 64, 1
 {"DUB STEPS",{13, 56, 30, WL_FWD, 0, 64, 90, 40},{0, 80, 110, 30},10,1},
 {"DORIAN RUN",{14, 24, 0, WL_PING, 0, 64, 108, 10},{0, 80, 110, 30},0,1},
 {"PING PONG",{15, 40, 30, WL_PING, 0, 64, 110, 10},{0, 90, 110, 50},0,0}};
-static const engine_t ENG_WSEQ={.name="WSEQ",.page_title={"SEQUENCE", "TONE"},.edit={
+static const engine_t ENG_WSEQ={.pool=1,.name="WSEQ",.page_title={"SEQUENCE", "TONE"},.edit={
         {"SEQ", F_ENUM, 0, WSEQ_NSEQ - 1, 0, N_WSEQ, 0},
         {"RATE", F_INT, 0, 127, 40, N_WSEQ_RATE, 0},
         {"XFADE", F_PCT, 0, 127, 20, 0, 0},

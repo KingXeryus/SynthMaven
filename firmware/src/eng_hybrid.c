@@ -840,6 +840,7 @@ static uint32_t hybrid_units(const track_t *t)
 
 /* EDIT */
 static const engine_t ENG_HYBRID = {
+    .pool = 1,
     .name = "HYBRID", .page_title = {"FILT", "MACRO"},
     .edit =
     {

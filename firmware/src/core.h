@@ -337,6 +337,8 @@ typedef struct {                 /* an engine (engines.c ENGINES[]; the eng_*.c 
     uint8_t npresets;
     uint8_t knob[4];             /* HOME: the four parameters on KNOB 1..4 */
     uint8_t poly;                /* voice cap for POLY and UNISON (up to NVOICE), 0 = NPOLY */
+    uint8_t pool;                /* 1: per-voice state is all in voice_t or NVOICE-sized, so POLY may use every slot and
+                                  * only the shared budget limits it; UNISON and the voice's cost still follow poly */
     uint8_t sampled;             /* 1 = plays recorded material (a position, not a phase): voice.c keeps
                                   * no phases over a retrigger, spreads none for UNISON, renders at SUS 0 */
     uint8_t keep;                /* bit k: s[k] is kept when a sounding voice is retriggered (filters) */
