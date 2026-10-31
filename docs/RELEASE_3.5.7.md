@@ -1,4 +1,4 @@
-# SynthMaven 3.5.6 — new factory programs and defaults
+# SynthMaven 3.5.7 — new factory programs and defaults
 
 ## Factory programs
 
