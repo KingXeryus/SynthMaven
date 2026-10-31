@@ -8,7 +8,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SynthMaven 3.5.8 user guide</title>
+<title>SynthMaven 3.5.9 user guide</title>
 <style>
   :root { --bg: #fff; --fg: #000; --dim: #666; --line: #ccc; }
   @media (prefers-color-scheme: dark) {
@@ -129,7 +129,7 @@
     <article id="doc">
       <section id="about">
         <h2>About</h2>
-        <p>SynthMaven 3.5.8 is a Melodee-based synthesizer and sequencer for the M-VAVE FM-1. It combines Melodee's panel graphics, sequencer, USB audio and native instrument editing with SynthMaven HYBRID/Vital translations, DX7 sounds, four-part programs, global microtuning, scenes, setlists and MIDI Learn.</p>
+        <p>SynthMaven 3.5.9 is a Melodee-based synthesizer and sequencer for the M-VAVE FM-1. It combines Melodee's panel graphics, sequencer, USB audio and native instrument editing with SynthMaven HYBRID/Vital translations, DX7 sounds, four-part programs, global microtuning, scenes, setlists and MIDI Learn.</p>
         <p>Melodee is by Kerem Kilic (Ellic Studio), based on <a href="https://github.com/hugelton/Felucca">Felucca</a> by Leo Kuroshita / Hügelton Instruments. SynthMaven also retains applicable Clipper/3dSam-derived work and third-party notices. See the release licence archive for the source attributions. Report this build's problems to <a href="https://github.com/KingXeryus/SynthMaven">SynthMaven</a>. This project is not endorsed by M-VAVE or the upstream authors.</p>
       </section>
 
@@ -193,7 +193,7 @@
         <h3>HYBRID editing and Vital import</h3>
         <ol><li>Open Shape → Native / import. Select HYBRID / Vital, then choose Read part to edit the current native patch, or Load Vital to open a .vital JSON file.</li><li>Review the translation report. Custom wavetables, spectral processing, unison, effects and unsupported routes are not reproduced. If no native waveform matches, sending is disabled until you explicitly allow native-wave approximation.</li><li>Expand oscillator, filter, envelope or LFO sections to edit exact values. Under Modulation, select M1–M4 as a source, choose a destination and amount to assign a macro. Multiple routes may share a macro.</li><li>Choose Apply to selected part. Draft controls do not change the device before this step. Return to the original part if you changed the selection while editing.</li><li>Save to the editor library for a single sound, or save a program to preserve all four parts. Macro assignments are native patch data and are saved with the sound/program.</li></ol>
         <p><strong>iPad USB connection:</strong> set COMPUTER role and USB Audio IN+OUT, then choose Connect → USB cable in SM FM1 3.5.6. iPadOS may retain the old name “SoundMaven”; the app recognizes the FM-1 by its USB identity even under this cached name. Input and output are paired from the same MIDI entity. A virtual SoundMaven port is not selected by name alone.</p>
-        <p>This 3.5.8 build is <strong>USB-only</strong>. Bluetooth is a separate experimental adaptation and is not enabled by this release.</p>
+        <p>This 3.5.9 build is <strong>USB-only</strong>. Bluetooth is a separate experimental adaptation and is not enabled by this release.</p>
       </section>
 
       <section id="before">
@@ -369,7 +369,7 @@
         </table>
         <ul>
           <li><strong>NEW</strong> opens the wizard, stopped only. Set key, scale and tempo (<kbd>KNOB 1</kbd> ROOT, <kbd>KNOB 2</kbd> SCALE, <kbd>KNOB 3</kbd> TEMPO), then a role on each of the four knobs: <strong>--</strong> (no track), <strong>KEEP</strong>, <strong>DRUMS</strong>, <strong>BASS</strong>, <strong>CHORDS</strong>, <strong>LEAD</strong> or <strong>PAD</strong>. The song keeps the places that have a role, in order, with empty patterns. With no template, track 1 starts as KEEP and the rest as --, so the song has one track. A saved template starts KEEP on as many tracks as the template has. A role’s first factory sound is used when the template’s sound does not already fit that role.</li>
-          <li><strong>TMPL</strong>: save your current sounds, settings and number of tracks as the template for new projects (empty patterns). In SynthMaven 3.5.8 the factory-program startup loads P1 with four parts; this differs from the original Melodee one-track startup.</li>
+          <li><strong>TMPL</strong>: save your current sounds, settings and number of tracks as the template for new projects (empty patterns). In SynthMaven 3.5.9 the factory-program startup loads P1 with four parts; this differs from the original Melodee one-track startup.</li>
           <li>Holding <kbd>SAVE</kbd>, or <kbd>SAVE</kbd>+<kbd>REC</kbd>, writes the project back to its slot (<code>SAVED B</code>, and so on). If it is playing, the screen says <strong>STOPPING TO SAVE</strong> and the transport stops first. A project with no slot yet opens PROJECT on a free slot (<strong>NEW PROJECT: PICK SLOT</strong>).</li>
           <li><strong>Autosave:</strong> stopped and untouched for five seconds (no key, button, knob or MIDI), a project that already has a slot saves itself when it changed. Hold <kbd>HOME</kbd> and set <strong>AUTOSAVE</strong> to <strong>OFF</strong> to save only by hand. It defaults <strong>ON</strong>, and the choice survives power-off. Manual <kbd>SAVE</kbd> stays available either way.</li>
         </ul>
@@ -764,7 +764,7 @@
         <table>
           <thead><tr><th>Control</th><th>What it does</th></tr></thead>
           <tbody>
-            <tr><td>BPM</td><td>Song speed in beats per minute (40–240). Saved with the project. Set this on SEQ → TEMPO; the 3.5.8 GLO hold toggles layering.</td></tr>
+            <tr><td>BPM</td><td>Song speed in beats per minute (40–240). Saved with the project. Set this on SEQ → TEMPO; the 3.5.9 GLO hold toggles layering.</td></tr>
             <tr><td>SWG</td><td>Song swing: a project-wide lean applied on top of timing. Use this when every track should share the same groove; use PATTERN SWG when only one part should shuffle.</td></tr>
             <tr><td>QNT</td><td>One project-wide grid for the <em>next</em> recorded take on any audio or MIDI track, saved with the project and template. <strong>OFF</strong> (default) keeps the timing you played. A division snaps that take’s note onsets to the swung grid when recording ends; lengths and velocities stay. The piano roll then shows the committed timing. Changing QNT later chooses the next take’s grid — it does not redo a take already recorded. If a manual step is in the way, the take is left alone and the screen says <strong>QNT STEP OCCUPIED</strong>. This is separate from scale QNT on SCL.</td></tr>
           </tbody>

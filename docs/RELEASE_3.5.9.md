@@ -1,4 +1,4 @@
-# SynthMaven 3.5.8 — device name, settings menu and Program 1
+# SynthMaven 3.5.9 — device name, settings menu and Program 1
 
 ## Device name
 

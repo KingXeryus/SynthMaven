@@ -164,10 +164,10 @@ static void controls(void)
     assert(ep0_command == 0x60);
     setup(0x81, 10, 0, 6, 1);
     assert(ep0_command == 0x60);
-    /* The shared function and control interface use the Melodee product name. */
+    /* The shared function and control interface use the SynthMaven FM1 product name. */
     setup(0x80, 6, 0x0302, 0x0409, 255);
-    assert(ep_cnt[0] == 26 && ep0buf[1] == 3 &&
-           !memcmp(ep0buf + 2, "M\0e\0l\0o\0d\0e\0e\0 \0F\0M\0-\0" "1\0", 24));
+    assert(ep_cnt[0] == 30 && ep0buf[1] == 3 &&
+           !memcmp(ep0buf + 2, "S\0y\0n\0t\0h\0M\0a\0v\0e\0n\0 \0F\0M\0" "1\0", 28));
     setup(0x80, 6, 0x0303, 0x0409, 255);
     assert(ep0_command == 0x60);             /* retired split-device names */
     setup(0x80, 6, 0x0304, 0x0409, 255);
@@ -457,7 +457,7 @@ static void layouts(void)
         usb.config = 1;
         assert(get_desc(0x100, &d, &len) && len == sizeof DEV_DESC);
         uint16_t revision = (uint16_t)(d[12] | d[13] << 8);
-        assert(revision >= 0x0330 && revision <= 0x0337); /* retire split-device identities */
+        assert(revision >= 0x0340 && revision <= 0x0347); /* retire split-device identities */
         for (uint32_t previous = 0; previous < tracks * 4u + off; previous++)
             assert(revision != revisions[previous]);
         revisions[tracks * 4u + off] = revision;
@@ -484,7 +484,7 @@ static void layouts(void)
             if (r[1] == 0x0B) {                 /* IAD: its interfaces follow, numbered on */
                 assert(!iad_left && r[2] == next_if);
                 iad_left = r[3];
-                assert(r[7] == (r[2] ? 2 : 0)); /* one Melodee name for both directions */
+                assert(r[7] == (r[2] ? 2 : 0)); /* one product name for both directions */
                 if (r[2] == 2u) {
                     audio_iads++;
                     assert(r[3] == streams + 1u);

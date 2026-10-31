@@ -63,6 +63,7 @@ static int32_t midi_panel_delta[NE];
 static int16_t midi_panel_absolute[NE];
 static uint8_t midi_panel_mask;
 static int32_t midi_edit_value = -1;             /* scoped to page_knob's normal parameter editor */
+static volatile uint32_t fm1_ms;                /* also declared by core.h */
 #define PANEL_K4_MUTE_MS 400u
 static uint32_t panel_k4_mute;                 /* KNOB 4 left the menu: its spin is ignored until it rests this long */
 static int32_t panel_enc(uint32_t role)
