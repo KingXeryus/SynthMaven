@@ -73,7 +73,7 @@ static void acid_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const 
 }
 
 
-static const preset_t ACID_PRESETS[]={{"ACID LINE",{0, 30, 100, 70, 60, 90, 20, 60},{0, 100, 110, 10},0,1},
+static const preset_t ACID_PRESETS[] PRESET_TABLE ={{"ACID LINE",{0, 30, 100, 70, 60, 90, 20, 60},{0, 100, 110, 10},0,1},
 {"SQUELCH",{0, 24, 115, 90, 50, 127, 50, 100},{0, 100, 110, 10},0,1},
 {"SQR ACID",{1, 34, 95, 60, 70, 80, 30, 50},{0, 100, 110, 10},0,1},
 {"DEEP 303",{0, 20, 70, 40, 90, 60, 10, 30},{0, 100, 120, 20},0,1},

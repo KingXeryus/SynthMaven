@@ -534,7 +534,7 @@ static uint32_t sid_cap(const track_t *t) { return sid_c64(t->p) ? 1u : SID_POLY
 #define SIDP(n, mo, wa, st, pw, cu, re, md, dr, a, d, s, r, fe, mi, di, ch, de, rv) \
     {n, {mo, wa, st, pw, cu, re, md, dr}, {a, d, s, r}, fe, mi}
 
-static const preset_t SID_PRESETS[] = {
+static const preset_t SID_PRESETS[] PRESET_TABLE = {
     SIDP("INIT SID",    0, 1, 0, 64, 127,  0, 0,  0,   0, 36, 127, 36,   0, 0,  0,  0, 0,  0),
     SIDP("BREADBOX",    0, 2, 1, 40,  60,  6, 0, 30,   0, 78, 100, 57,  16, 0,  0, 10, 0,  8),
     SIDP("RUBBER BASS", 0, 2, 7, 30,  36, 10, 0, 40,   0, 63,  60, 36,  30, 1,  0,  0, 0,  0),

@@ -327,6 +327,13 @@ typedef struct {
                                  /* (a sound load never touches the steps; the arp is the track's: a preset does
                                   * not set it) */
 } preset_t;
+/* Factory sound tables read only by the foreground: stored compressed with the audio image and expanded to POOL at boot,
+ * which frees flash below the commit-marker sector (tools/fm1pkg_make.py BODY_MAX) for a little of the audio arena. */
+#ifdef FM1_IRQ_TARGET
+#define PRESET_TABLE __attribute__((section(".audio_text.presets")))
+#else
+#define PRESET_TABLE
+#endif
 
 struct track;
 typedef struct {                 /* an engine (engines.c ENGINES[]; the eng_*.c files) */

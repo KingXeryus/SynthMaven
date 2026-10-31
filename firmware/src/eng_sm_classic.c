@@ -264,7 +264,7 @@ static void smc_analog_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, 
 }
 
 
-static const preset_t SMC_ANALOG_PRESETS[]={
+static const preset_t SMC_ANALOG_PRESETS[] PRESET_TABLE ={
 {"808 BOOM",{3,0,0,0,127,0,48,0},{0,112,0,52},0,1},
 {"808 DIRTY",{3,0,0,0,96,12,118,30},{0,108,0,46},0,1},
 {"SUB BASS",{3,0,0,0,127,0,10,0},{0,60,118,24},0,1},
@@ -451,7 +451,7 @@ static void smc_digital_render(track_t *t, voice_t *v, int32_t *out, uint32_t n,
 }
 
 
-static const preset_t SMC_DIGITAL_PRESETS[]={
+static const preset_t SMC_DIGITAL_PRESETS[] PRESET_TABLE ={
 {"RHODES",{4,1,1,14,26,35,0,0},{0,85,35,55},0,0},
 {"DX RHODES",{4,1,1,14,85,45,0,0},{0,82,40,55},0,0},
 {"WURLI",{4,1,2,3,62,35,8,0},{0,75,30,45},0,0},
@@ -707,7 +707,7 @@ static void smc_formant_render(track_t *t, voice_t *v, int32_t *out, uint32_t n,
 }
 
 
-static const preset_t SMC_FORMANT_PRESETS[]={
+static const preset_t SMC_FORMANT_PRESETS[] PRESET_TABLE ={
 {"CHOIR AAH",{0,0,0,0,40,22,60,0},{85,90,115,95},0,0},
 {"SOUL OOH",{110,0,0,0,30,30,55,0},{70,90,115,90},0,0},
 {"TALKBOX",{32,95,60,0,100,4,75,0},{4,70,110,40},0,1},
@@ -812,7 +812,7 @@ static void smc_strings_render(track_t *t, voice_t *v, int32_t *out, uint32_t n,
 }
 
 
-static const preset_t SMC_STRINGS_PRESETS[]={
+static const preset_t SMC_STRINGS_PRESETS[] PRESET_TABLE ={
 {"SOLINA",{40,127,70,100,92,50,0,10},{50,100,120,80},0,0},
 {"VIOLINS",{0,127,100,90,100,60,20,15},{40,100,120,70},0,0},
 {"CELLOS",{127,80,0,80,76,45,30,20},{50,100,120,80},0,0},
@@ -930,7 +930,7 @@ static void smc_juno_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, co
 }
 
 
-static const preset_t SMC_JUNO_PRESETS[]={
+static const preset_t SMC_JUNO_PRESETS[] PRESET_TABLE ={
 {"JUNO 106 PAD",{2,40,40,0,1,88,20,1},{70,100,115,95},10,0},
 {"JUNO BRASS",{0,0,30,0,1,62,30,0},{14,82,100,50},40,0},
 {"JUNO BASS",{1,50,110,0,0,58,40,0},{0,70,70,26},36,1},

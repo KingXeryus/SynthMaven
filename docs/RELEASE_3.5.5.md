@@ -1,4 +1,4 @@
-# SynthMaven 3.5.4 — MIDI routing, pad recording and pooled polyphony
+# SynthMaven 3.5.5 — MIDI routing, pad recording and pooled polyphony
 
 Assign each layer and the drummer to its own MIDI input and channel, record pads, and hold more layered notes.
 

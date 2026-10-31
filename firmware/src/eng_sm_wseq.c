@@ -190,7 +190,7 @@ static void wseq_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const 
 }
 
 
-static const preset_t WSEQ_PRESETS[]={{"WAVE STEPS",{0, 40, 20, WL_FWD, 0, 64, 110, 10},{0, 90, 110, 50},0,0},
+static const preset_t WSEQ_PRESETS[] PRESET_TABLE ={{"WAVE STEPS",{0, 40, 20, WL_FWD, 0, 64, 110, 10},{0, 90, 110, 50},0,0},
 {"RHYTHM SEQ",{1, 40, 10, WL_FWD, 0, 64, 104, 20},{0, 90, 120, 40},0,0},
 {"SWEEP PAD",{2, 110, 127, WL_PING, 0, 64, 100, 10},{80, 100, 120, 100},0,0},
 {"FIFTH STAB",{3, 40, 0, WL_FWD, 0, 64, 112, 10},{0, 80, 100, 40},0,0},

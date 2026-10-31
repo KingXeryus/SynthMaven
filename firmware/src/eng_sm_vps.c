@@ -108,7 +108,7 @@ static void vps_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const v
 }
 
 
-static const preset_t VPS_PRESETS[]={{"VPS LEAD",{40, 40, 0, 0, 112, 10, 0, 0},{0, 80, 110, 40},0,1},
+static const preset_t VPS_PRESETS[] PRESET_TABLE ={{"VPS LEAD",{40, 40, 0, 0, 112, 10, 0, 0},{0, 80, 110, 40},0,1},
 {"FORMANT PAD",{70, 56, 16, 80, 100, 10, 30, 0},{70, 100, 120, 90},0,0},
 {"VPS BASS",{20, 24, 30, 0, 80, 30, 0, 90},{0, 70, 90, 30},10,1},
 {"SYNC SWEEP",{50, 64, 40, 0, 120, 0, 0, 0},{0, 90, 100, 40},0,1},
