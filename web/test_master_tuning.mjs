@@ -16,8 +16,11 @@ const keys=()=>[...dom.window.document.querySelectorAll('.mt-keyboard button')];
 assert.equal(keys().length,12);
 assert.match(keys()[4].className,/tuned/);
 keys()[4].click();assert.equal(d.tuningKey,4);assert.equal(d.masterTuning.scale,1);
-keys()[4].click();await d.tuningQueue;assert.equal(d.masterTuning.scale,47);assert.equal(d.masterTuning.cents[4],0);
-keys()[4].click();keys()[4].click();await d.tuningQueue;assert.equal(d.masterTuning.cents[4],-50);
+const hold=async(k,ms)=>{const b=keys()[k];b.onpointerdown();await new Promise(r=>setTimeout(r,ms));if(b.isConnected){b.onpointerup();}await d.tuningQueue;};
+keys()[4].click();assert.equal(d.masterTuning.scale,1,'a second tap does not change tuning');
+await hold(4,300);assert.equal(d.masterTuning.scale,1,'a short press does not change tuning');
+await hold(4,1050);assert.equal(d.masterTuning.scale,47);assert.equal(d.masterTuning.cents[4],0);
+await hold(4,1050);assert.equal(d.masterTuning.cents[4],-50);keys()[4].click();assert.equal(d.masterTuning.cents[4],-50,'the click ending a hold changes nothing');
 const slider=dom.window.document.querySelector('input[type=range]');
 assert.equal(slider.min,'-100');assert.equal(slider.max,'100');assert.equal(slider.step,'1');
 slider.value='-37';slider.dispatchEvent(new dom.window.Event('change'));await d.tuningQueue;
@@ -26,7 +29,7 @@ const selects=dom.window.document.querySelectorAll('select');assert.equal(select
 selects[2].value='8';selects[2].dispatchEvent(new dom.window.Event('change'));await d.tuningQueue;assert.equal(d.masterTuning.octave,8);
 const checks=dom.window.document.querySelectorAll('input[type=checkbox]');checks[3].checked=false;checks[3].dispatchEvent(new dom.window.Event('change'));await d.tuningQueue;assert.equal(d.masterTuning.apply,13);
 assert.equal(errors.length,0);assert.ok(writes.length>=5);
-console.log('Master tuning editor: selection, double-tap, one-cent wheel, keyboard value, octave controls and per-part bypass passed');
+console.log('Master tuning editor: selection, one-second hold, one-cent wheel, keyboard value, octave controls and per-part bypass passed');
 const storage=new Map();context.localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)};
 vm.runInNewContext('',context); // same persistent context created by runInNewContext above
 const run=code=>vm.runInNewContext(code,context);

@@ -1,17 +1,17 @@
 {
   "names": [
-    "DX7 STAGE",
-    "E. Organ",
-    "RHODES EP",
+    "DX7 E.PIANO",
+    "DX RHODES",
+    "JUNO 106",
+    "E. ORGAN",
     "DISCO LEAD",
-    "VINTAGE LEAD",
-    "LEAD GUITAR",
-    "ARAB STRINGS",
-    "RNB BASS"
+    "PROPHET LEAD",
+    "RETRO SYNTH",
+    "ORCHESTRA"
   ],
-  "source_sha256": "450039bf65de7cf5cce46db62d6a6e657ada365fb6feec71948f7984590af3d3",
+  "source_sha256": "8161645377de40f444cd4ff76e2016a6b7bfcffb338a1e89086be277e2c563cb",
   "record_bytes": 3556,
-  "compact_bytes": 14628,
-  "packed_bytes": 2885,
+  "compact_bytes": 14436,
+  "packed_bytes": 2301,
   "source": "Verified 2026-10-30 USB backup: saved P1 and P3 merged; other slots retain user-curated factory fallbacks"
 }

@@ -15,7 +15,7 @@ static int fixture_tracks(uint32_t quant,const char *assignment)
 {
     if(quant>1u || strlen(assignment)!=NPART)return 0;
     for(uint32_t k=0;k<NPART;k++)if(assignment[k]<'0' || assignment[k]>'5')return 0;
-    ui_power_on();seq_stop();song.rec=song.rec_latch=0;recording_reset();
+    ui_power_on();song.g[G_MIDI]=0; /* the frozen fixture predates the BOTH default */seq_stop();song.rec=song.rec_latch=0;recording_reset();
     song.ntrk=NPART; /* unused tracks would take no notes or mixer CPU */
     for(uint32_t k=0;k<NPART;k++){
         track_t *t=&trk[k];uint32_t category=(uint32_t)(assignment[k]-'0');

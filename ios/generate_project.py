@@ -20,7 +20,7 @@ resourcephase=add('Resources',f'isa = PBXResourcesBuildPhase; buildActionMask = 
 frameworkphase=add('Frameworks','isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0;')
 configs=[];pconfigs=[]
 for config in ['Debug','Release']:
- settings='SWIFT_VERSION = 5.0; IPHONEOS_DEPLOYMENT_TARGET = 16.0; TARGETED_DEVICE_FAMILY = "2"; SDKROOT = iphoneos; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; PRODUCT_BUNDLE_IDENTIFIER = com.synthmaven.fm1editor; PRODUCT_NAME = "$(TARGET_NAME)"; INFOPLIST_FILE = SynthMavenEditor/Info.plist; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 17; ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; MARKETING_VERSION = 3.5.4; ENABLE_USER_SCRIPT_SANDBOXING = YES; SWIFT_OPTIMIZATION_LEVEL = '+ ('"-Onone";' if config=='Debug' else '"-O";')
+ settings='SWIFT_VERSION = 5.0; IPHONEOS_DEPLOYMENT_TARGET = 16.0; TARGETED_DEVICE_FAMILY = "2"; SDKROOT = iphoneos; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; PRODUCT_BUNDLE_IDENTIFIER = com.synthmaven.fm1editor; PRODUCT_NAME = "$(TARGET_NAME)"; INFOPLIST_FILE = SynthMavenEditor/Info.plist; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 18; ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; MARKETING_VERSION = 3.5.6; ENABLE_USER_SCRIPT_SANDBOXING = YES; SWIFT_OPTIMIZATION_LEVEL = '+ ('"-Onone";' if config=='Debug' else '"-O";')
  if config=='Debug': settings+=' SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;'
  configs.append(add('target'+config,f'isa = XCBuildConfiguration; name = {config}; buildSettings = {{{settings}}};'))
  pconfigs.append(add('project'+config,f'isa = XCBuildConfiguration; name = {config}; buildSettings = {{ CLANG_ENABLE_MODULES = YES; }};'))

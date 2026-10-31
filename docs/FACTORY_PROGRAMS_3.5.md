@@ -1,20 +1,20 @@
-# SynthMaven 3.5 factory programs
+# SynthMaven factory programs
 
-The factory bank is captured from the owner’s eight final saved FM-1 programs on 30 October 2026. The final refresh includes the latest P1 edit; P2 is already named **E. Organ** on the device. The earlier generated recipes are superseded.
+The factory bank is built by `tools/make_factory_programs.c` with the firmware's own preset and capture code, then packed by `tools/gen_factory_program_pack.py`. Layering starts off, so each program opens on its Layer 1 lead. Hold GLO to bring in the supporting layers.
 
-| Slot | Name | Lead engine | Supporting engines |
-|---|---|---|---|
-| P1 | DX7 STAGE | FM6 | Analog / Hybrid / FM6 |
-| P2 | E. Organ | FM6 | Juno / Hybrid / FM6 |
-| P3 | RHODES EP | Digital | Juno / Hybrid / FM6 |
-| P4 | DISCO LEAD | Hybrid | Analog / CZ / Prophet |
-| P5 | VINTAGE LEAD | Analog | Hybrid / CZ / Analog |
-| P6 | LEAD GUITAR | FM6 | FM6 / Digital / VPS |
-| P7 | ARAB STRINGS | Strings | Strings / Prophet / Strings |
-| P8 | RNB BASS | CZ | Analog / Digital / Analog |
+| Slot | Name | Layer 1 lead | Layer 2 | Layer 3 | Layer 4 |
+|---|---|---|---|---|---|
+| P1 | DX7 E.PIANO | FM6 E.PIANO 1 | Strings 80S STR | Analog WARM PAD | FM6 DX TINE, up an octave, upper range |
+| P2 | DX RHODES | Digital DX RHODES | Juno POLY KEYS | FM6 TINE EP | Hybrid, Vital Rhodex |
+| P3 | JUNO 106 | Juno JUNO 106 PAD | Juno JUNO STRINGS | Strings SOLINA | Hybrid XD JUNOPAD, down an octave, lower range |
+| P4 | E. ORGAN | FM6 E.ORGAN 1 | FM6 DRAWBARS | Juno JUNO ORGAN | Hybrid V48 ORGAN |
+| P5 | DISCO LEAD | Hybrid V38 BRASS | Strings SOLINA | Juno JUNO BRASS | Analog FUNK BASS, lower range |
+| P6 | PROPHET LEAD | Prophet Unisawyer | Analog PROPH LEAD | Hybrid, Vital Moog | Prophet Soft Brass, down an octave |
+| P7 | RETRO SYNTH | Hybrid XD SYNWAVE | Analog SUPERSAW | Hybrid, Vital 80s Keys | Analog MINI BASS, lower range |
+| P8 | ORCHESTRA | FM6 ORCHESTRA | Strings ENSEMBLE | Hybrid V38 BRASS, upper range | Strings LOW STR, lower range |
 
-`assets/factory/programs-3.5.bin` retains the eight complete 3556-byte saved records. Its SHA-256 and names are recorded in the adjacent JSON manifest. The generated flash representation omits inactive native-engine payloads and losslessly packs active patches and all saved parameters, effects, splits and scenes. Tests compare the loaded state against the original records.
+Layer 1 balance and the supporting levels were set by measuring rendered chords, aiming for supports about 10 to 15 dB under the lead. Every program sends through a slight, slow chorus into a bright reverb. That is an approximation of shimmer: the firmware has no pitch-shifted reverb.
 
-The ensemble string engine uses four shared-budget units per voice, reflecting hardware measurements with layered chords and independent drums. This changes available polyphony under load, not saved patch values. Do not advertise fixed per-layer polyphony or a -14 LUFS guarantee.
+The Vital sources in `assets/factory/vital` are approximate translations made by the editor's importer. Objective checks establish that the programs load, sound and do not clip in host renders. They do not establish how good they sound, which needs listening on an FM-1.
 
-Objective audio and timing checks establish integrity and headroom for the tested performances. They do not establish subjective instrument realism.
+The default voice budget is 64 points. A four-layer program measured a 77% CPU peak on an FM-1 at that budget; the effects chain and voice counts in these programs may differ from that measurement.

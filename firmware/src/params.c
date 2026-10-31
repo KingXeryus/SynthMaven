@@ -279,7 +279,7 @@ static const param_desc_t GP[G_COUNT] = {
     [G_RESERVED9] = PD("", F_INT, 0, 127, 0),
     [G_RESERVED10] = PD("", F_INT, 0, 127, 0),
     [G_RESERVED11] = PD("", F_INT, 0, 127, 0),
-    [G_MIDI] = PE("MIDI", N_MIDI_INPUT, 0),
+    [G_MIDI] = PE("MIDI", N_MIDI_INPUT, 2),
     [G_DRUMCH] = PE("DRUM", N_DRUMCH, 10),
     [G_ROUTE] = PE("ROUT", N_ROUTE, 0),          /* (was "--": stored 0 = CH1-4, as MIDI IN always was) */
     [G_INFO] = PD("CPU", F_INT, 0, 0, 0),

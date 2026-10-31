@@ -7,7 +7,7 @@ int main(void)
  reset();
  for(unsigned i=0;i<HY_NFACTORY;i++){hy_patch_t patch;hy_factory_read(i,&patch);assert(!memcmp(&patch,&HY_FACTORY[i],sizeof patch));}
  for(unsigned slot=0;slot<8;slot++){
-  assert(!sm_program_load(slot));assert(sm_program_current==slot&&sm_layers.enabled);
+  assert(!sm_program_load(slot));assert(sm_program_current==slot&&!sm_layers.enabled&&song.sel==0);
   for(unsigned k=0;k<4;k++)assert(!trk[k].p[P_MUTE]&&trk[k].p[P_LEVEL]>0);
  }
  assert(!sm_program_load(0));assert(trk[0].eng_req==ENGI_FM6);

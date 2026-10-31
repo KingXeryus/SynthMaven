@@ -8,6 +8,7 @@
 static void reset_midi(uint32_t track)
 {
     ui_power_on();
+    song.g[G_MIDI] = 0; /* these cases select each input themselves */
     track_solo = 0;
     mi_r = mi_w = mo_r = mo_w = 0; midi_in_overflow = 0;
     memset(midi_sel_on, 0, sizeof midi_sel_on);

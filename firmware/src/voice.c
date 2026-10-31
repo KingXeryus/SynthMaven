@@ -150,7 +150,7 @@ static uint32_t voice_units(const track_t *t)
     return e->units ? e->units(t) : trk_nvoice(t) > NPOLY ? 1u : 2u;
 }
 
-/* the budget with CPU1: VBUDGET at 360 MHz, scaled with the clock running by main.c clock_boot (28 at a 320 MHz a
+/* the budget with CPU1: VBUDGET at 360 MHz, scaled with the clock running by main.c clock_boot (56 at a 320 MHz a
  * soft reset kept from a 1.3.x session); VBUDGET on the host */
 static uint32_t vbudget_cpu1 = VBUDGET;
 static uint32_t voice_budget(void)

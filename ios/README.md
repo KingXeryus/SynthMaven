@@ -1,4 +1,4 @@
-# SM FM1 — 3.5.4
+# SM FM1 — 3.5.6
 
 This landscape-only iPad app bundles the same editor and protocol handlers as `web/editor.html`.
 It retains the existing SynthMaven CoreMIDI transport, bounded SysEx framing, endpoint
@@ -7,7 +7,7 @@ old SynthMaven 3.0 parameter bindings into the Melodee-based protocol.
 
 Run `python3 ios/generate_project.py`, then `ios/test.sh`. The tests build an unsigned
 iOS Simulator application; they do not install firmware or distribute TestFlight.
-The current target is version 3.5.4, build 17, home-screen name **SM FM1**. Both landscape orientations are supported; iPhone and portrait mode are excluded.
+The current target is version 3.5.6, build 18, home-screen name **SM FM1**. Both landscape orientations are supported; iPhone and portrait mode are excluded.
 
 The bundled editor includes the Routing tab for layers and the drummer. Forwarding from the app remains one controller at a time; the web editor can forward several.
 
