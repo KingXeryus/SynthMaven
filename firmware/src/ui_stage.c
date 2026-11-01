@@ -808,10 +808,10 @@ static void sm_drum_home_draw(void)
         for(uint32_t step=0;step<16;step++)sm_drum_cell(lane,step,playing);
     }
     char text[40],num[12];
-    fmt_int(num,sm_drums.level[sm_drum_lane]);str_cpy(text,"LEVEL ",sizeof text);str_cpy(text+6,num,sizeof text-6);
-    draw_text_box(4,190,86,TY_LB,text,T_TEXT,0);
+    fmt_int(num,sm_drums.level[sm_drum_lane]);str_cpy(text,"LVL ",sizeof text);str_cpy(text+4,num,sizeof text-4);
+    draw_text_box(5,190,72,TY_LB,text,T_TEXT,0);
     fmt_int(num,sm_drums.volume);str_cpy(text,"VOL ",sizeof text);str_cpy(text+4,num,sizeof text-4);
-    draw_text_box(90,190,70,TY_LB,text,T_TEXT,0);
+    draw_text_box(85,190,70,TY_LB,text,T_TEXT,0);
     fmt_int(num,song.g[G_BPM]);str_cpy(text,"BPM ",sizeof text);str_cpy(text+4,num,sizeof text-4);
     draw_text_box(160,190,78,TY_LB,text,T_TEXT,0);
     draw_text_box(4,211,232,TY_LB,"ALG GROOVE 1 STEP 2 HIT",T_MID,1);
