@@ -11,6 +11,7 @@ An FM-1 firmware for oriental live musicians, turning the standard M-VAVE FM-1 i
 - **Installer:** the optional m-bootloader step is gone, and the page now shows the firmware's key numbers. A device that already has m-bootloader keeps it.
 - **New arranger:** in the editors it has its own page after Sequencer and Drums. Rows are the four layers plus Drums, and columns are the sections. On the FM-1, SEQ → SONG has the same five rows. A section can change the drum groove, use your own pattern, or stop the drums.
 - **Save pattern:** save the pattern you're editing to any of a track's 8 patterns, from the editor's sequencer or SEQ → PATTERNS on the FM-1.
+- **Scale list on Master Tune:** turning to a scale opens its full name in a list over the keyboard, which closes by itself when you stop. OCT- puts back the scale you started on.
 - **Tempo while drumming:** while the drums are running, SELECT sets the tempo on both Home screens. Stop the drums to choose a part or lane with SELECT again.
 - **New Home screen:** four cards, one per layer, with the sound, engine, pattern and live steps, and four rotary knobs below showing KNOB 1–4 for the selected layer.  The header shows the program number and name. Each layer's level and pan are on the mixer page.
 

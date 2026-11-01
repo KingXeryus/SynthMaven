@@ -1064,7 +1064,7 @@ static void edit_param(uint32_t slot, int32_t steps)
         int32_t delta=id==5u?steps*10:steps;
         v=midi_edit_value>=0?d->min+(midi_edit_value*(d->max-d->min)+63)/127:clamp(*vp+delta,d->min,d->max);
         if(id==4u)sm_tune_key=(int16_t)v;
-        else if(id==0u){sm_tuning.scale=(uint8_t)v;sm_tuning.enabled=1;}
+        else if(id==0u){if(pop.on!=POP_PICK)sm_tune_pick_from=sm_tuning.scale;sm_tuning.scale=(uint8_t)v;sm_tuning.enabled=1;}   /* (what OCT- puts back) */
         else if(id==1u)sm_tuning.octave=(uint8_t)v;
         else if(id==2u)sm_tuning.root=(uint8_t)v;
         else if(id==3u)sm_tuning.enabled=(uint8_t)v;
@@ -2433,6 +2433,7 @@ static void ui_input(void)
             if (edit_oct & (1u << id))
                 break;
             if (pop.on == POP_PICK || pop.on == POP_PRESET) { /* a picker: either closes it (ui_popup.c) */
+                if (b == B_OCTDN && tune_picking()) { uint32_t f = motion_guard(); sm_tuning.scale = sm_tune_pick_from; motion_unguard(f); }   /* (OCT-: the scale as it was) */
                 pop_close();
                 oct_eat |= (uint8_t)bit;
                 break;
@@ -2598,7 +2599,7 @@ static void ui_input(void)
         }
         else if(ui.home&&ui.home_pg){sm_drum_lane=(uint8_t)((sm_drum_lane+s%8+8)%8);ui.force=1;}
         else if(!ui.home&&cur_page()->scope==SC_SM_MIX){song.sel=(uint8_t)(((int)song.sel+s%4+4)%4);ui.force=1;}
-        else if(!ui.home&&cur_page()->scope==SC_MASTER_TUNE&&cur_page()->id[0]==0){edit_param(0,s);}
+        else if(!ui.home&&cur_page()->scope==SC_MASTER_TUNE&&cur_page()->id[0]==0){edit_param(0,s);pick_touch(0);}
         else if(!ui.home && cur_page()->scope==SC_SM_PROGRAM){
             sm_program_slot=(int16_t)(1+((sm_program_slot-1+s)%8+8)%8);sm_name_focus();ui.force=1;
         } else if(bulk_jog(s)) {

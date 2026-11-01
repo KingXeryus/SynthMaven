@@ -423,6 +423,8 @@ static int pick_numbers(const param_desc_t *d)
     }
     return named <= 1u;
 }
+static uint8_t sm_tune_pick_from;
+static int tune_picking(void) { return pop.on == POP_PICK && cur_page()->scope == SC_MASTER_TUNE && cur_page()->id[pop.col & 3u] == 0u; }
 static void pick_touch(uint32_t c)
 {
     int16_t *vp;
@@ -723,8 +725,9 @@ static void pick_draw(void)
     int32_t first = clamp(now - 2, 0, enum_rows(d) - rows);   /* five names around it, the list's ends kept */
     int fx = fx_names(d);                               /* (the effects: wider, each its family's square, a rule
                                                          * between families) */
-    int32_t pw = fx ? POP_FX_W : POP_PICK_W, tx = fx ? 26 : 10;
-    x = CARD_X(pop.col < 3u ? pop.col : 2u);            /* its column and the next (the last: the two last), whole:
+    int tune = cur_page()->scope == SC_MASTER_TUNE;     /* (the scales: the whole width, their full names) */
+    int32_t pw = tune ? POP_W : fx ? POP_FX_W : POP_PICK_W, tx = fx ? 26 : 10;
+    x = tune ? POP_X : CARD_X(pop.col < 3u ? pop.col : 2u);            /* its column and the next (the last: the two last), whole:
                                                          * a neighbour's value is under it entirely or not at all */
     for (uint32_t band = 0; band < (uint32_t)((uint32_t)h); band += CV_MAX / ((uint32_t)pw)) {
         cv_begin_band((uint32_t)pw,(uint32_t)h,T_BG,band);
@@ -733,8 +736,9 @@ static void pick_draw(void)
         for (i = 0; i < rows; i++) {
             int32_t n = enum_value(d,first + i), y = 6 + i * 28, on = first + i == now, far = first + i - now > 1 || now - first - i > 1;
             uint16_t hc = fx ? fx_fam_col(fx_family(n)) : T_THEME, bg = on ? ux_mix(T_SURF, hc, 22) : T_SURF;
-            char b[16];
-            list_words(b, enum_name(d, n), sizeof b);
+            char b[24];
+            const char *nm = enum_name(d, n);
+            list_words(b, tune && nm[1] == '/' ? nm + 2 : nm, sizeof b);
             if (on)
                 cv_rrect(4, y, pw - 8, 26, 6, bg, T_SURF);
             if (fx) {

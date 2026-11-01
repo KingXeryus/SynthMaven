@@ -22,13 +22,13 @@ def extra(title,image,controls,steps,section='Getting started',opening=''):
 def pages():
  out=[]
  out.append(extra('SynthMaven 4: the oriental groove box','web/manual/home.png',[
- ('What it is','An FM-1 firmware for oriental live musicians, turning the standard M-VAVE FM-1 into an oriental groove box.'),('At a glance','14 sound engines, 610 melodic presets, 4 drum kits, 70 scales (46 of them maqam), 4 simultaneous layers plus the drummer, and 8 factory drum grooves.'),('Microtuning for maqam','46 maqam settings, a selectable root and octave boundary, custom offsets per key (10-cent steps on the panel, 1-cent steps in the editors), per-part bypass and scale-aware chords.'),('Multi-layer key mapping','Four parts per program, stacked or split across the keyboard, each with its own range, level and pan.'),('Groove box','An independent eight-lane drum machine beside all four parts, with factory grooves including Maksoom, Wahda, Baladi and Fox.'),('Sequencer','Up to 64 steps and 8 patterns per track, song arrangement, live recording, step chance, knob automation and a piano roll.'),('Song arranger','Up to 16 sections, each with a pattern for every track, a drum groove and 1-16 repeats, on the FM-1 or in the editors. A jam can become an arrangement.'),('MainStage-style performance','Programs with four scenes, a 32-entry setlist and learned pedal or controller actions, with a Perform screen in the web editor and the SM FM1 iPad app.'),('Multi-keyboard support','A separate MIDI input and channel for each layer and the drummer, over USB, TRS or both.')],['Install SynthMaven and start on Program 1.','Tap SEL to choose a maqam.','Press HOME twice to reach the drums, choose a groove with ALGORITHM and press PLAY.','Play over it, then hold GLO for two seconds to bring in the other layers.'],section='Introduction',opening='This page explains what SynthMaven 4 is for.'))
+ ('What it is','An FM-1 firmware for oriental live musicians, turning the standard M-VAVE FM-1 into an oriental groove box.'),('At a glance','14 sound engines, 610 melodic presets, 4 drum kits, 70 scales (46 of them maqam), 4 simultaneous layers plus the drummer, and 8 factory drum grooves.'),('Microtuning for maqam','46 maqam settings, a selectable root and octave boundary, custom offsets per key (10-cent steps on the panel, 1-cent steps in the editors), per-part bypass and scale-aware chords.'),('Multi-layer key mapping','Four parts per program, stacked or split across the keyboard, each with its own range, level and pan.'),('Groove box','An independent eight-lane drum machine beside all four parts, with factory grooves including Maksoom, Wahda, Baladi and Fox.'),('Sequencer','Up to 64 steps and 8 patterns per track, song arrangement, live recording, step chance, knob automation and a piano roll.'),('Song arranger','Up to 16 sections, each with a pattern for every track, a drum groove and 1-16 repeats, on the FM-1 or in the editors. A jam can become an arrangement.'),('MainStage-style performance','Programs with four scenes, a 32-entry setlist and learned pedal or controller actions, with a Perform screen in the web editor and the SM FM1 iPad app.'),('Multi-keyboard support','A separate MIDI input and channel for each layer and the drummer, over USB, TRS or both.')],['Install SynthMaven and start on Program 1.','Tap SEL to choose a maqam.','Press HOME to reach the drums, choose a groove with ALGORITHM and press PLAY.','Play over it, then hold GLO for two seconds to bring in the other layers.'],section='Introduction',opening='This page explains what SynthMaven 4 is for.'))
  out.append(extra('First 10 minutes','web/manual/home.png',[
  ('1. Choose a maqam','Tap SEL. Turn SELECT to choose a scale, KNOB 3 to choose the root and KNOB 4 to turn master tuning on.'),('2. Start a groove','Press HOME to reach the drums. Turn ALGORITHM to MAKSOOM or another groove, then press PLAY. Turn SELECT to set the tempo.'),('3. Bring in layers','Press HOME to return to the four cards. Hold GLO for two seconds to play all four layers together.'),('4. Choose a sound','Turn SELECT, once the drums are stopped, to choose a layer, then ALGORITHM for its engine and PRESETS for its sound.'),('5. Save your program','Stop playback and press SAVE to open PROGRAM. Turn KNOB 4 right twice within 1.5 seconds to save.')],['Follow these in order the first time.','Back up before you install, because installing resets settings and musical storage.'],section='First 10 minutes',opening='Start here after installing.'))
  out.append(extra('The design: cards, knobs and themes','web/manual/env.png',[
  ('Cards','Every page shows its four knobs as cards along the top, in the same order as KNOB 1-4. Each card has its colour along the top, its label and its value.'),('Colours','KNOB 1-4 and layers 1-4 use the theme\'s four colours in order, on every screen.'),('SYNTHMAVEN','The default: red as the main colour, then white, blue and grey.'),('ORANGE','Orange as the main colour, then white, blue and grey.'),('BABY BLUE','Baby blue as the main colour, then white, red and grey.'),('PINK','Pink as the main colour, then white, blue and grey.'),('Type','All screens use Rubik, with a smaller size on the Home cards so that names fit. The pixel font is gone.')],['Hold HOME to open Settings.','With COLOR selected, turn KNOB 1 to change the theme; it applies straight away.','Turn KNOB 4 to leave.'],section='Introduction',opening='Hold HOME for Settings, then choose COLOR.'))
  out.append(extra('Drum Home and factory grooves','web/manual/drum_home.png',[
- ('ALGORITHM','Choose a groove: BALLAD, HALF PIPE, STRAIGHT 8, ON THE FLOOR, MAKSOOM, WAHDA, BALADI or FOX. It replaces the eight lanes straight away.'),('MY PATTERN','Turn back to MY PATTERN to get your own steps again. Editing a groove makes it your pattern.'),('SELECT','Choose one of the eight lanes: KICK, SNARE, HAT, OPEN, CLAP, TOM, BELL or RIM. While the drums are running, SELECT sets the tempo instead, on both Home screens.'),('PRESETS / KNOB 1','Choose a step.'),('KNOB 2','Turn right to add a hit on the step, left to clear it.'),('KNOB 3 / KNOB 4','Set the lane level / set the tempo.'),('PLAY','Start or stop the independent drums. All four sound layers stay available to the keyboard.'),('Arabic rhythms','On these grooves dum is on KICK and tak is on RIM: MAKSOOM D T . T D . T . / BALADI D D . T D . T . / WAHDA D . . T . . T . / FOX D T D T.'),('Limits','The drum machine has 16 steps at 1/16 and no swing. Drum patterns save with the program.')],['Press HOME until DRUMS shows in the header.','Turn ALGORITHM to the groove you want and press PLAY.','Change the tempo with KNOB 4.','Save the program to keep the drum pattern.'],section='Groove box',opening='Press HOME on the four-part overview.'))
+ ('Editors','Studio > Drums has the same Groove control, plus Save pattern.'),('ALGORITHM','Choose a groove: BALLAD, HALF PIPE, STRAIGHT 8, ON THE FLOOR, MAKSOOM, WAHDA, BALADI or FOX. It replaces the eight lanes straight away.'),('MY PATTERN','Turn back to MY PATTERN to get your own steps again. Editing a groove makes it your pattern.'),('SELECT','Choose one of the eight lanes: KICK, SNARE, HAT, OPEN, CLAP, TOM, BELL or RIM. While the drums are running, SELECT sets the tempo instead, on both Home screens.'),('PRESETS / KNOB 1','Choose a step.'),('KNOB 2','Turn right to add a hit on the step, left to clear it.'),('KNOB 3 / KNOB 4','Set the lane level / set the tempo.'),('PLAY','Start or stop the independent drums. All four sound layers stay available to the keyboard.'),('Arabic rhythms','On these grooves dum is on KICK and tak is on RIM: MAKSOOM D T . T D . T . / BALADI D D . T D . T . / WAHDA D . . T . . T . / FOX D T D T.'),('Limits','The drum machine has 16 steps at 1/16 and no swing. Drum patterns save with the program.')],['Press HOME until DRUMS shows in the header.','Turn ALGORITHM to the groove you want and press PLAY.','Change the tempo with KNOB 4.','Save the program to keep the drum pattern.'],section='Groove box',opening='Press HOME on the four-part overview.'))
  out.append(extra('Settings menu: hold HOME','web/manual/menu.png',[
  ('SELECT','Move through the rows; it wraps from the last row to the first.'),('KNOB 1','Change the selected row.'),('KNOB 4','Leave the menu. KNOB 2 no longer moves the row.'),('MIDI MODE','Where the MIDI-only tracks accept notes: USB, TRS or BOTH. The default is BOTH.'),('USB ROLE','COMPUTER for the editors and the installer; HOST for a keyboard, pad or pedal connected to the FM-1. It returns to COMPUTER at each power-on.'),('KNOB MODE','How knobs respond to a controller: Absolute or Relative.'),('HOLD and LIGHTS','Now in GLO preference pages, not this menu.')],['Hold HOME until Settings opens.','Turn SELECT to the row.','Turn KNOB 1 to change it.','Turn KNOB 4 to leave.'],section='Getting started',opening='Hold HOME.'))
  out.append(extra('Punch effects','web/manual/punch_active.png',[
@@ -43,8 +43,10 @@ def pages():
  ('Where','In the editors: Settings > MIDI > Routing.'),('Layers and drummer','Assign an input (Any, USB or TRS) and a channel (Off, 1-16 or All) to layers 1-4 and the Drummer. Routing is off by default and is saved on the FM-1.'),('Splits and stacks','Layers on the same input and channel split or stack by note range.'),('Drummer','Plays and records on the first part using the DRUM engine; that part is then not available as a layer.'),('MIDI Learn','Adds Transport Play / Stop, Record (selected part) and Record (drummer).')],['Connect in COMPUTER role and open the editor.','Turn routing on.','Choose an input and channel for each layer and the Drummer.','Play each keyboard and check it reaches the right layer.'],section='Web and iPad editor',opening='Settings > MIDI > Routing.'))
  out.append(extra('Playing with several keyboards','assets/manual/editor-perform.png',[
  ('Two keyboards by input','Put one on TRS and one on USB. Route each layer to the input that should play it.'),('Several on one input','Give each keyboard its own channel, and route each layer to one channel.'),('Controllers through a computer','The web editor can forward several controllers on a computer, each to its target\'s channel.'),('Controllers through an iPad','The iPad app forwards one controller at a time.'),('Directly into the FM-1','Set USB ROLE to HOST and use a powered data hub. The FM-1 can\'t power a USB controller itself. HOST and the editors can\'t be used over USB at the same time.')],['Decide which keyboard plays which layers.','Set each keyboard\'s MIDI channel on the keyboard.','Set Routing to match.','Save the program.'],section='Web and iPad editor',opening='Settings > MIDI > Routing.'))
+ out.append(extra('Scale list on Master Tune','web/manual/tune_pick.png',[
+ ('SELECT or KNOB 1','Turn to open the list of full scale names over the keyboard. The tuning changes as you browse.'),('Stop turning','The list closes by itself and the keyboard shows the chosen scale.'),('OCT-','Close the list and put back the scale you started on.'),('Picker Popups off','The knob changes the scale directly, with no list.'),('Where a scale applies','Master Tune covers the layers ticked for it, from the chosen octave upward. Notes below that octave stay in equal temperament. Each layer also has its own scale on SCL, used when Master Tune is off.')],['Tap SEL.','Turn SELECT through the list and listen.','Stop turning to keep the scale.'],section='Web and iPad editor' if False else 'Getting started',opening='Tap SEL.'))
  out.append(extra('Maqam tuning workflow','assets/manual/editor-tuning.png',[
- ('SEL (tap)','Master tuning. SELECT or KNOB 1 chooses the scale, KNOB 2 the lower octave boundary, KNOB 3 the root, KNOB 4 turns it on. Arabic scales show as A/ on the panel.'),('SEL (hold three seconds)','Custom tuning. KNOB 1 chooses the key, KNOB 2 changes its offset in 10-cent steps, KNOB 3 quantizes all, KNOB 4 applies master tuning to the selected part.'),('Editors','Tap a key and use the wheel for 1-cent steps. Hold an untuned key for one second for -50 cents; hold an adjusted key to reset it.'),('Octave boundary','Notes below it stay in equal temperament, which keeps bass and chords usable.'),('Per part','Each part can bypass master tuning, so a piano layer can stay in equal temperament.'),('Programs','Tuning survives program changes unless a program includes its own tuning.')],['Tap SEL and choose a scale and root.','Choose the octave boundary.','Turn on master tuning.','Bypass any part that should stay in equal temperament.'],section='Web and iPad editor',opening='Tap SEL, or open the Tuning tab.'))
+ ('SEL (tap)','Master tuning. SELECT or KNOB 1 chooses the scale: a list of full names opens over the keyboard and closes itself when you stop turning. The tuning changes as you browse, and OCT- puts back the scale you started on. KNOB 2 the lower octave boundary, KNOB 3 the root, KNOB 4 turns it on. Arabic scales show as A/ on the panel.'),('SEL (hold three seconds)','Custom tuning. KNOB 1 chooses the key, KNOB 2 changes its offset in 10-cent steps, KNOB 3 quantizes all, KNOB 4 applies master tuning to the selected part.'),('Editors','Tap a key and use the wheel for 1-cent steps. Hold an untuned key for one second for -50 cents; hold an adjusted key to reset it.'),('Octave boundary','Notes below it stay in equal temperament, which keeps bass and chords usable.'),('Per part','Each part can bypass master tuning, so a piano layer can stay in equal temperament.'),('Programs','Tuning survives program changes unless a program includes its own tuning.')],['Tap SEL and choose a scale and root.','Choose the octave boundary.','Turn on master tuning.','Bypass any part that should stay in equal temperament.'],section='Web and iPad editor',opening='Tap SEL, or open the Tuning tab.'))
  out.append(extra('MainStage-style performance: programs, scenes and setlists','assets/manual/editor-programs.png',[
  ('Program','Four parts with levels, pans, splits and scenes. P1-P8 are stored on the device.'),('Scene','Four per program: snapshots of levels, pans, mutes, effect sends, HYBRID macros and tuning.'),('Setlist','An ordered list of up to 32 references to P1-P8. A program can appear more than once.'),('Pedals and controllers','MIDI Learn assigns up to 16 actions, including Scene or Setlist Next / Previous.'),('Panel','On HOME, hold OCT- or OCT+ for three seconds for the previous or next program.'),('Editors','The Perform screen has program and scene navigation, a mixer and quick controls. Tuning has its own tab.')],['Build a program for each song and save it.','Capture scenes in Programs & scenes, then save the program.','Build the setlist.','Learn a pedal to Scene Next and Setlist Next.'],section='Web and iPad editor',opening='Studio > Programs.'))
  out.append(extra('The SM FM1 iPad app','assets/manual/editor-perform.png',[
@@ -79,41 +81,54 @@ def pages():
  return out
 
 def main():
- ap=argparse.ArgumentParser();ap.add_argument('--version',default='4.0');ap.add_argument('--output',type=Path,default=ROOT/'output/pdf/SynthMaven-4.0-User-Guide.pdf');args=ap.parse_args()
- seen=set();specs=[]
- for p in pages():
-  if p['section'] not in seen:
-   seen.add(p['section']);specs.append(dict(divider=True,title=p['section'],section=p['section']))
-  specs.append(p)
- def dark():
-  c.setFillColor(colors.black);c.rect(0,0,W,H,fill=1,stroke=0)
- indexpages=math.ceil(len(specs)/33);args.output.parent.mkdir(parents=True,exist_ok=True)
- c=canvas.Canvas(str(args.output),pagesize=A4);c.setTitle('SynthMaven '+args.version+' - User Guide');manifest=[]
+ ap=argparse.ArgumentParser();ap.add_argument('--version',default='4.0');ap.add_argument('--output',type=Path,default=ROOT/'output/pdf/SynthMaven-4.0-Illustrated-Guide.pdf');args=ap.parse_args()
+ ORDER=['Introduction','First 10 minutes','Getting started','Groove box','Sequencer','Performance','Web and iPad editor']
+ seen=set();specs=[];all_pages=pages()
+ sections=ORDER+[x for p in all_pages for x in [p['section']] if x not in ORDER and not (x in seen or seen.add(x))]
+ for sec in sections:
+  group=[p for p in all_pages if p['section']==sec]
+  if group:specs.append(dict(divider=True,title=sec,section=sec));specs.extend(group)
+ # Contents: a chapter's range, then its pages; runs of one family (FX 1 / ..., EDIT 1, 2) as a single line with their range
+ def contents():
+  rows=[];i=0
+  while i<len(specs):
+   p=specs[i]
+   if p.get('divider'):
+    e=i+1
+    while e<len(specs) and not specs[e].get('divider'):e+=1
+    rows.append((p['title'],i,e-1,True));i+=1;continue
+   key=re.sub(r'\s+\d+(\s|$)',' ',p['title'].split(' / ')[0]).strip();e=i
+   while e+1<len(specs) and not specs[e+1].get('divider') and re.sub(r'\s+\d+(\s|$)',' ',specs[e+1]['title'].split(' / ')[0]).strip()==key:e+=1
+   rows.append((key if e>i else p['title'],i,e,False));i=e+1
+  return rows
+ toc=contents();TOC_LINES=40;indexpages=math.ceil(len(toc)/TOC_LINES);args.output.parent.mkdir(parents=True,exist_ok=True)
+ c=canvas.Canvas(str(args.output),pagesize=A4);c.setTitle('SynthMaven '+args.version+' - Illustrated Guide');manifest=[]
  def text(txt,x,y,w,size=10,bold=False):
-  st=ParagraphStyle('p',fontName='Helvetica-Bold' if bold else 'Helvetica',fontSize=size,leading=size*1.26,textColor=colors.HexColor('#f2f2f2'))
+  st=ParagraphStyle('p',fontName='Helvetica-Bold' if bold else 'Helvetica',fontSize=size,leading=size*1.26,textColor=colors.HexColor('#111111'))
   p=Paragraph(escape(clean(txt)),st);_,h=p.wrap(w,10000);p.drawOn(c,x,y-h);return y-h
  def footer(n,label):
-  c.setStrokeColor(colors.HexColor('#2a2a30'));c.line(M,32,W-M,32);text('SynthMaven '+args.version+' | '+label,M,24,WIDTH-40,8);text(str(n),W-M-25,24,25,8)
- c.setFillColor(colors.black);c.rect(0,0,W,H,fill=1,stroke=0)
+  c.setStrokeColor(colors.HexColor('#c8c8cc'));c.line(M,32,W-M,32);text('SynthMaven '+args.version+' | '+label,M,24,WIDTH-40,8);text(str(n),W-M-25,24,25,8)
+ c.setFillColor(colors.white);c.rect(0,0,W,H,fill=1,stroke=0)
  c.drawImage(str(ROOT/'web/branding/firmware-icon.png'),W/2-85,H-240,170,170,mask='auto',preserveAspectRatio=True)
- c.setFillColor(colors.white);c.setFont('Helvetica-Bold',32);c.drawCentredString(W/2,H-290,'SYNTHMAVEN');c.setFont('Helvetica',22);c.drawCentredString(W/2,H-330,args.version+' USER GUIDE');c.setFont('Helvetica',14);c.drawCentredString(W/2,H-370,'The oriental groove box for the FM-1');c.setFont('Helvetica',11);c.drawCentredString(W/2,180,'M-VAVE FM-1 | Firmware, web editor and iPad editor');c.drawCentredString(W/2,158,'Screens rendered from firmware; editor examples may use mock data.');c.drawCentredString(W/2,136,'Based on Melodee and the credited SynthMaven / Clipper lineage.');c.showPage()
- TILES=[('14','sound engines','#ff2c34'),('610','melodic presets','#f2f2f2'),('4','drum kits','#408cff'),('70','scales, 46 of them maqam','#969aa4'),('4','layers at once, plus the drummer','#ff2c34'),('8','factory drum grooves','#f2f2f2')]
+ c.setFillColor(colors.black);c.setFont('Helvetica-Bold',32);c.drawCentredString(W/2,H-290,'SYNTHMAVEN');c.setFont('Helvetica',22);c.drawCentredString(W/2,H-330,args.version+' ILLUSTRATED GUIDE');c.setFont('Helvetica',14);c.drawCentredString(W/2,H-370,'The oriental groove box for the FM-1');c.setFont('Helvetica',11);c.drawCentredString(W/2,180,'M-VAVE FM-1 | Firmware, web editor and iPad editor');c.drawCentredString(W/2,158,'Screens rendered from firmware; editor examples may use mock data.');c.drawCentredString(W/2,136,'Based on Melodee and the credited SynthMaven / Clipper lineage.');
+ TILES=[('14','sound engines','#ff2c34'),('610','melodic presets','#111111'),('4','drum kits','#408cff'),('70','scales, 46 of them maqam','#55585f'),('4','layers at once, plus the drummer','#ff2c34'),('8','factory drum grooves','#111111')]
  tw=(WIDTH-12)/3
  for n,(num,label,col) in enumerate(TILES):
   x=M+(n%3)*(tw+6);y=H-480-(n//3)*84
-  c.setFillColor(colors.HexColor('#16161a'));c.rect(x,y,tw,76,fill=1,stroke=0);c.setFillColor(colors.HexColor(col));c.rect(x,y+73,tw,3,fill=1,stroke=0)
-  c.setFont('Helvetica-Bold',24);c.drawString(x+10,y+40,num);c.setFillColor(colors.HexColor('#b4b4bc'));c.setFont('Helvetica',9.5);c.drawString(x+10,y+20,label)
+  c.setFillColor(colors.HexColor('#f0f0f2'));c.rect(x,y,tw,76,fill=1,stroke=0);c.setFillColor(colors.HexColor(col));c.rect(x,y+73,tw,3,fill=1,stroke=0)
+  c.setFont('Helvetica-Bold',24);c.drawString(x+10,y+40,num);c.setFillColor(colors.HexColor('#333333'));c.setFont('Helvetica',9.5);c.drawString(x+10,y+20,label)
+ c.showPage()
  for j in range(indexpages):
-  dark();text('SCREEN INDEX',M,H-40,WIDTH,20,True);y=H-78
-  for i,p in list(enumerate(specs))[j*33:(j+1)*33]:
-   num=2+indexpages+i
-   text(p['title'],M,y,WIDTH-40,9);text(str(num),W-M-30,y,30,9);c.linkRect('',f'p{i}',(M,y-17,W-M,y),relative=0,thickness=0);y-=21
-  footer(j+2,'Screen index');c.showPage()
+  text('CONTENTS',M,H-40,WIDTH,20,True);y=H-72
+  for title,a,b,head in toc[j*TOC_LINES:(j+1)*TOC_LINES]:
+   first,last=2+indexpages+a,2+indexpages+b
+   if head:y-=4
+   text(title,M,y,WIDTH-70,9.5 if head else 9,head);text(str(first) if a==b else f'{first}-{last}',W-M-60,y,60,9.5 if head else 9,head);c.linkRect('',f'p{a}',(M,y-15,W-M,y),relative=0,thickness=0);y-=17
+  footer(j+2,'Contents');c.showPage()
  for i,p in enumerate(specs):
   number=2+indexpages+i;c.bookmarkPage(f'p{i}');c.addOutlineEntry(p['title'],f'p{i}',0)
   if p.get('divider'):
-   c.setFillColor(colors.HexColor('#ff2c34'));c.rect(0,0,W,H,fill=1,stroke=0);c.setFillColor(colors.black);c.setFont('Helvetica-Bold',34);c.drawString(M,120,p['title'][:34]);c.setFont('Helvetica',11);c.drawString(M,94,'SynthMaven '+args.version);c.showPage();continue
-  dark()
+   c.setFillColor(colors.HexColor('#ff2c34'));c.rect(M,H/2+40,60,5,fill=1,stroke=0);c.setFillColor(colors.black);c.setFont('Helvetica-Bold',34);c.drawString(M,H/2,p['title'][:34]);c.setFont('Helvetica',11);c.drawString(M,H/2-24,'SynthMaven '+args.version+' Illustrated Guide');c.showPage();continue
   text(p['section'].upper(),M,H-35,WIDTH,9,True);y=text(p['title'],M,H-54,WIDTH,19,True)-14
   image=ROOT/p['image'];is_editor=p['section']=='Web and iPad editor'
   if not image.exists():raise FileNotFoundError(image)
@@ -141,7 +156,7 @@ def main():
   if height(size)>y-45:raise RuntimeError(f'Page overflow: {p["title"]} ({height(size)} / {y-45})')
   for label,body in blocks:
    a=text(label,M,y,108,size,True);b=text(body,M+120,y,WIDTH-120,size);y=min(a,b)-9
-   c.setStrokeColor(colors.HexColor('#2a2a30'));c.line(M,y+4,W-M,y+4)
+   c.setStrokeColor(colors.HexColor('#c8c8cc'));c.line(M,y+4,W-M,y+4)
   footer(number,p['section']);c.showPage();manifest.append(dict(page=number,title=p['title'],source=p['source'],font_size=size,bottom=y))
  c.save();(args.output.parent/'guide-screen-coverage.json').write_text(json.dumps(manifest,indent=2)+'\n');print(f'{len(specs)} dedicated screen/workflow pages, {1+indexpages+len(specs)} total pages: {args.output}')
 if __name__=='__main__':main()

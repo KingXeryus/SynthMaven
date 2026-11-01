@@ -93,7 +93,7 @@ jobs:
         if [[ "$GITHUB_REF" == refs/tags/* && "$GITHUB_REF_NAME" != *-* ]]; then
           python3 tools/manual_shots.py
           python3 tools/manual_shots.py --require
-          python3 tools/make_synthmaven_guide.py --version "${GITHUB_REF_NAME#v}" --output "build/release-assets/SynthMaven-${GITHUB_REF_NAME#v}-User-Guide.pdf"
+          python3 tools/make_synthmaven_guide.py --version "${GITHUB_REF_NAME#v}" --output "build/release-assets/SynthMaven-${GITHUB_REF_NAME#v}-Illustrated-Guide.pdf"
           tar -czf build/release-assets/manual-screenshots.tar.gz -C web/manual \
             $(find web/manual -name '*.png' | sed 's|^web/manual/||')
         fi
@@ -181,7 +181,7 @@ jobs:
           tar -xzf build/manual-screenshots.tar.gz -C web/manual
           python3 tools/manual_shots.py --require
           mkdir -p output/pdf
-          cp build/release-assets/SynthMaven-*-User-Guide.pdf output/pdf/
+          cp build/release-assets/SynthMaven-*-Illustrated-Guide.pdf output/pdf/
       - name: Validate release provenance and every archive checksum
         run: |
           version=$(python tools/fm1_recover.py --version | awk '{print $NF}')
@@ -202,7 +202,7 @@ jobs:
           gh release upload "$GITHUB_REF_NAME" \
             build/release-assets/fm1-recover-*.zip \
             "build/release-assets/melodee-$version-licenses.zip" \
-            build/release-assets/SynthMaven-*-User-Guide.pdf \
+            build/release-assets/SynthMaven-*-Illustrated-Guide.pdf \
             build/release-assets/BUILD_INFO.json build/release-assets/SHA256SUMS --clobber
           if [[ "$version" != *-* ]]; then
             # A retry of this job may already have removed the temporary asset.

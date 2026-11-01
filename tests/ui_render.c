@@ -473,7 +473,7 @@ enum { S_HOME, S_HOME_IDLE, S_HOME_NOTE, S_HOME_CHORD, S_HOME_INVERSION, S_HOME_
        S_STAGE_DRUM, S_STAGE_CZ, S_STAGE_P5, S_STAGE_QUEUED, S_STAGE_BROWSE, S_STAGE_STOPPED, S_STAGE_FILTER, S_PATGRID, S_PATGRID_STOPPED, S_PATGRID_SHEET, S_PATGRID_COPY, S_PATGRID_REPLACE, S_PATGRID_DELETE, S_PROJECT_NEW, S_NEW_KEY, S_NEW_ROLES,
        S_STAGE_T1, S_STAGE_T1_ARP, S_STAGE_T1_KNOBS, S_STAGE_T1_SYNTH, S_STAGE_T1_SYNTH_ARP, S_STAGE_T2, S_STAGE_T3, S_SHEET_STAGE, S_CONFIRM_TRACK,
        S_VIEW, S_VIEW_LETGO, S_VIEW_NOTE, S_VIEW_EMPTY, S_VIEW_KNOBS, S_VIEW_SLASH, S_MENU_HOME_SEL, S_HOME_SEL_MOD, S_HOME_SEL_CHORD,
-       S_HOME_SEL_LEVEL, S_DRUM_HOME, S_PAT_DIALOG, S_STAGE_T1_REC,
+       S_HOME_SEL_LEVEL, S_DRUM_HOME, S_TUNE_PICK, S_PAT_DIALOG, S_STAGE_T1_REC,
        S_MIXER_T1, S_MIXER_T2, S_MIXER_T3, S_PATGRID_T2, S_SONG_T2, S_GLO_T2, S_NEW_ROLES_T1,
        S_STAGE_LONG, S_STAGE_T3_LONG, S_STAGE_T2_LONG, S_STAGE_T1_LONG,
        S_REF_STAGE_HELD, S_REF_STAGE_RELEASED, S_REF_STAGE_CUTOFF, S_REF_STAGE_DRUM, S_REF_BROWSER, S_REF_PATTERNS, S_REF_SONG,
@@ -504,7 +504,7 @@ static const char *const S_NAME[S_COUNT] = {"home", "home_idle", "home_note", "h
     "stage_drum", "stage_cz", "stage_p5", "stage_queued", "stage_browse", "stage_stopped", "stage_filter", "patterns", "patterns_stopped", "patterns_sheet", "patterns_copy", "patterns_replace", "patterns_delete", "project_new", "new_key", "new_roles",
     "stage_1track", "stage_1track_arp", "stage_1track_knobs", "stage_1track_synth", "stage_1track_synth_arp", "stage_2tracks", "stage_3tracks", "sheet_stage", "confirm_track",
     "view", "view_letgo", "view_note", "view_empty", "view_knobs", "view_slash", "menu_home_select", "home_select_mod", "home_select_chord",
-    "home_select_level", "drum_home", "pattern_key_dialog", "stage_1track_rec",
+    "home_select_level", "drum_home", "tune_pick", "pattern_key_dialog", "stage_1track_rec",
     "mixer_1track", "mixer_2tracks", "mixer_3tracks", "patterns_2tracks", "song_2tracks", "layer_glo_2tracks", "new_roles_1track",
     "stage_long", "stage_3tracks_long", "stage_2tracks_long", "stage_1track_long",
     "ref_stage_held", "ref_stage_released", "ref_stage_cutoff", "ref_stage_drum", "ref_browser", "ref_patterns", "ref_song", "ref_env", "ref_lfo", "ref_edit_osc", "ref_mixer", "ref_notes", "ref_settings", "ref_dialog", "ref_sheet_sound", "ref_sheet_song", "ref_picker_wave", "ref_picker_mode", "ref_sections_p5", "ref_map_p5", "ref_map_fm6", "ref_scl_list", "ref_sheet_project", "ref_sheet_note", "ref_sheet_hit", "ref_motion", "ref_sheet_motion", "ref_mod", "ref_picker_mod", "ref_arp", "ref_pattern", "ref_fmeg", "ref_grid", "ref_scales", "fx_phaser", "fx_width", "fx_formant", "fx_tape", "fx_spit", "fx_room", "fx_chorus", "fx_full", "fx_slot2", "fx_slot3", "fx_rack", "fx_rack_split", "fx_rack_pick", "fx_rack_list", "fx_bus1", "fx_bus2", "fx_bus3", "fx_shared", "fx_shared_split", "fx_shared_sheet", "fx_tone_dark", "fx_tone_thin", "boot_migration", "boot_update", "boot_error", "boot_complete", "boot_wipe_confirm", "boot_wiping", "boot_update_error", "map_drum_kit", "map_drum_hit", "map_drum_category",
@@ -1466,6 +1466,7 @@ static void setup(int s)
     case S_HOME_SEL_MOD: go_home(); HOME_SELECT = HS_MOD; select_turn(home_select(), 64); HOME_SELECT = 0; glo_select_set(0); break;
     case S_HOME_SEL_CHORD:
         song.ntrk = 1; GLO_SELECT |= TRACKS_HIDE; go_home(); HOME_SELECT = HS_CHORD; TSEL->p[P_CHRD] = 5; select_turn(home_select(), 1); HOME_SELECT = 0; break;
+    case S_TUNE_PICK: go_title("MASTER TUNE"); sm_tuning.scale = 12; pop.on = POP_PICK; pop.col = 0; pop.t = fm1_ms; break;
     case S_DRUM_HOME: go_home(); ui.home_pg = 1; while (sm_groove_current() != 5u) sm_groove_turn(1); break;   /* MAKSOOM */
     case S_HOME_SEL_LEVEL: go_home(); ui.home_pg = 1; memset(&view, 0, sizeof view); HOME_SELECT = HS_LEVEL; select_turn(home_select(), -3); HOME_SELECT = 0; break;
     /* SEQ + a white key held: its dialog over Stage (pattern 3 of track 1); one track armed, its row's red border */

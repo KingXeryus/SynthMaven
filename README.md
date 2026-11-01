@@ -6,7 +6,7 @@
 
 Maqam tuning, layered keys, drums and a sequencer, ready for the stage.
 
-**[Install](https://kingxeryus.github.io/SynthMaven/webapp/installer/)** · [Web editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [User guide](https://kingxeryus.github.io/SynthMaven/webapp/manual/) · [Release notes](docs/RELEASE_4.0.md)
+**[Install](https://kingxeryus.github.io/SynthMaven/webapp/installer/)** · [Web editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [Illustrated guide](https://kingxeryus.github.io/SynthMaven/webapp/manual/) · [Release notes](docs/RELEASE_4.0.md)
 
 </td></tr></table>
 

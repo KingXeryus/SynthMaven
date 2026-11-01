@@ -209,7 +209,7 @@ def main(pkg, version, out, nightly=None, installer_only=False, rc=None, manual=
             raise SystemExit("Release candidate version must be X.Y.Z-rc.N")
         rc_files, rc_meta = channel(rc, "release candidate", f"melodee-{rc['version']}", "next")
     html = (HERE / "index_pkg.html").read_text(encoding="utf-8")
-    html = re.sub(r"SynthMaven-[0-9.]+-User-Guide\.pdf", f"SynthMaven-{version}-User-Guide.pdf", html)
+    html = re.sub(r"SynthMaven-[0-9.]+-Illustrated-Guide\.pdf", f"SynthMaven-{version}-Illustrated-Guide.pdf", html)
     lib = installer_libraries()
     v = re.sub(r'[^A-Za-z0-9.-]', '-', version)
     name = f"melodee-{v}.fwsc"
@@ -270,7 +270,7 @@ def main(pkg, version, out, nightly=None, installer_only=False, rc=None, manual=
         publish_manual(man_src, man, version, preserve_nightly=True)
         shutil.copy(HERE / "editor.html", ed / "index.html")
         shutil.copytree(HERE / "branding", ed / "branding", dirs_exist_ok=True)
-        guide = HERE.parent / "output" / "pdf" / f"SynthMaven-{version}-User-Guide.pdf"
+        guide = HERE.parent / "output" / "pdf" / f"SynthMaven-{version}-Illustrated-Guide.pdf"
         if guide.is_file():
             shutil.copy(guide, man / guide.name)
         for f in ("fukiai.ttf", "FUKIAI-LICENSE.txt", "fm1backup.js", "viewport-pages.js", "workspace-pages.js", "sound-visuals.js", "native-workspace.js", "editor-choice-controls.js"):

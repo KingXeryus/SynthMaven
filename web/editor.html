@@ -5042,6 +5042,8 @@ const DRUM_NAMES=['Kick','Snare','Closed hat','Open hat','Clap','Tom','Cowbell',
 let drumLane=0,drumBank=0,drumLaneBank=0;
 async function drumRequest(args){const d=dev;if(!d?.info.synthmaven?.drums)throw Error('Independent drums require the updated 3.5 firmware');const r=parse[CMD.DRUMS](await sessionRequest(d,[CMD.DRUMS,args]));if(r.rc)throw Error(r.rc===4?'Stop drums and sequencer before saving.':'Drum operation was rejected');d.drums=r;return r;}
 async function loadDrums(){const host=$('drum-workspace');if(!dev?.info.synthmaven?.drums){host.replaceChildren(el('p',{},'Independent drums require the updated 3.5 firmware.'));return;}await drumRequest([0]);renderDrums();}
+/* the firmware's factory grooves (synthmaven_drums.c), a step mask for each of the eight lanes */
+const DRUM_GROOVES=[["Ballad",[0x0401,0x1010,0x5555,0,0,0,0,0]],["Half Pipe",[0x0481,0x0100,0x5555,0,0,0,0,0x2020]],["Straight 8",[0x0101,0x1010,0x5555,0,0,0,0,0]],["On the Floor",[0x1111,0,0x1111,0x4444,0x1010,0,0,0]],["Maksoom",[0x0101,0,0,0,0,0,0,0x1044]],["Wahda",[0x0001,0,0,0,0,0,0,0x1040]],["Baladi",[0x0105,0,0,0,0,0,0,0x1040]],["Fox",[0x0101,0,0,0,0,0,0,0x1010]]];
 function renderDrums(){
  const d=dev,s=d?.drums,host=$('drum-workspace');if(!s)return;
  const bankSize=window.innerWidth<500?4:8;drumBank=Math.min(drumBank,16/bankSize-1);
@@ -5051,6 +5053,9 @@ function renderDrums(){
  const stop=el('button',{id:'drum-stop','aria-pressed':String(!s.enabled),onclick:run(()=>drumRequest([2,0]))},'Stop');
  const tempo=el('input',{type:'number',min:d.gdesc[0].min,max:d.gdesc[0].max,step:1,value:d.dump.g[0],'aria-label':'Drum tempo BPM'});tempo.onchange=()=>userSet(1,0,Math.max(d.gdesc[0].min,Math.min(d.gdesc[0].max,Math.round(+tempo.value)||120)),true);
  const volume=el('input',{type:'range',min:0,max:127,step:1,value:s.raw[32],'aria-label':'Drum level'});volume.onchange=write(r=>r[32]=+volume.value);
+ const steps=r=>Array.from({length:8},(_,k)=>r[k*2]|r[k*2+1]<<8),now=steps(s.raw),current=DRUM_GROOVES.findIndex(g=>g[1].every((v,k)=>v===now[k]));
+ const groove=el('select',{'aria-label':'Drum groove'});groove.append(el('option',{value:-1,text:'My pattern'}));DRUM_GROOVES.forEach((g,i)=>groove.append(el('option',{value:i,text:g[0]})));groove.value=String(current);
+ groove.onchange=()=>{const i=+groove.value;if(current<0)d.drumOwn=now;const next=i<0?(d.drumOwn||now):DRUM_GROOVES[i][1];write(r=>next.forEach((v,k)=>{r[k*2]=v&255;r[k*2+1]=v>>8;}))();};
  const grid=el('div',{class:'drum-grid','aria-label':'Eight-lane sixteen-step drum pattern'});
  for(let lane=drumLaneBank*4;lane<drumLaneBank*4+4;lane++){
   grid.append(el('button',{class:'drum-lane','aria-pressed':String(lane===drumLane),onclick:()=>{drumLane=lane;renderDrums();}},DRUM_NAMES[lane]));
@@ -5060,7 +5065,7 @@ function renderDrums(){
  const details=el('div',{class:'drum-detail'});
  for(const [label,offset]of [['Level',16],['Velocity',24]]){const input=el('input',{type:'range',min:0,max:127,step:1,value:s.raw[offset+drumLane],'aria-label':`${DRUM_NAMES[drumLane]} ${label}`}),out=el('output',{},String(input.value));input.oninput=()=>out.textContent=input.value;input.onchange=write(r=>r[offset+drumLane]=+input.value);details.append(el('label',{},`${DRUM_NAMES[drumLane]} · ${label}`,input,out));}
  details.append(el('button',{onclick:run(()=>drumRequest([3,drumLane,s.raw[24+drumLane]]))},'Audition '+DRUM_NAMES[drumLane]));
- host.replaceChildren(el('h2',{},'Drum machine'),el('div',{class:'drum-toolbar'},play,stop,el('button',{id:'drum-step-bank',onclick:()=>{drumBank=(drumBank+1)%(16/bankSize);renderDrums();}},`Steps ${drumBank*bankSize+1}–${(drumBank+1)*bankSize}`),el('button',{onclick:()=>{drumLaneBank=1-drumLaneBank;drumLane=drumLaneBank*4;renderDrums();}},drumLaneBank?'Lanes 5–8':'Lanes 1–4'),el('label',{},'Tempo',tempo),el('label',{},'Drum level',volume),el('button',{onclick:run(()=>drumRequest([4]))},'Save pattern')),el('div',{class:'drum-scroll'},grid),details,el('p',{class:'dim'},'Independent of the four sound layers · 16 steps · shared SynthMaven FM1 tempo. Tap a cell to toggle; select a lane to adjust its level and velocity.'));
+ host.replaceChildren(el('h2',{},'Drum machine'),el('div',{class:'drum-toolbar'},play,stop,el('label',{class:'drum-groove'},'Groove',groove),el('button',{id:'drum-step-bank',onclick:()=>{drumBank=(drumBank+1)%(16/bankSize);renderDrums();}},`Steps ${drumBank*bankSize+1}–${(drumBank+1)*bankSize}`),el('button',{onclick:()=>{drumLaneBank=1-drumLaneBank;drumLane=drumLaneBank*4;renderDrums();}},drumLaneBank?'Lanes 5–8':'Lanes 1–4'),el('label',{},'Tempo',tempo),el('label',{},'Drum level',volume),el('button',{onclick:run(()=>drumRequest([4]))},'Save pattern')),el('div',{class:'drum-scroll'},grid),details,el('p',{class:'dim'},'Independent of the four sound layers · 16 steps · shared SynthMaven FM1 tempo. Tap a cell to toggle; select a lane to adjust its level and velocity.'));
 }
 setInterval(async()=>{if(tab!=='drums'||document.hidden||busy||!dev?.info.synthmaven?.drums||!dev.link.idle)return;try{const s=await drumRequest([0]);for(const cell of $('drum-workspace').querySelectorAll('[data-step]'))cell.dataset.head=String(s.enabled&&+cell.dataset.step===s.step);}catch(e){say(e.message);}},250);
 window.addEventListener('resize',()=>{if(tab==='drums'&&dev?.drums)renderDrums();});

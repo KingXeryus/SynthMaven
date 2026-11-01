@@ -1083,6 +1083,15 @@ static int test_home_view(void)
     ui_power_on();
     go_home(); frame();
     press(B_HOME);
+    {   /* MASTER TUNE: turning to a scale lists the full names over the keyboard; OCT- puts back the scale */
+        uint8_t was = sm_tuning.scale = 2;
+        go_title("MASTER TUNE"); frame();
+        turn(EN_K1, 1); frame();
+        bad += check("MASTER TUNE: the scale's list opens", pop.on == POP_PICK && sm_tuning.scale == was + 1u);
+        press(B_OCTDN); frame();
+        bad += check("  OCT- closes it and puts the scale back", pop.on != POP_PICK && sm_tuning.scale == was);
+        go_home(); frame();
+    }
     {   /* SONG: the drums row under the tracks: KNOB 2 reaches it, KNOB 3 sets the section's groove, a pattern keeps it */
         chain_defaults(&chain_config); chain_config.count = 1; ui.song_row = 0; ui.song_drums = 0; song.sel = 0;
         go_title("SONG"); frame();
