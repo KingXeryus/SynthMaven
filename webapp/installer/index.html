@@ -4,8 +4,8 @@
      Portions Copyright (C) 2026 Charles Vestal
      Portions Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments
      Melodee's web installer: connect, choose, install, with the install itself in a screen of its own that asks the
-     player to stay. After fm1-base's web/installer.html (its m-bootloader option, stock firmware and crash report).
-     The firmware and m-bootloader come from bundled metadata (web/make_site.py); ?demo runs the
+     player to stay. After fm1-base's web/installer.html (its stock firmware and crash report).
+     The firmware comes from bundled metadata (web/make_site.py); ?demo runs the
      same page against a simulated FM-1 (fakefm1.js). Logic: installer.js; transfer: transfer.js. -->
 <html lang="en">
 <head>
@@ -223,6 +223,41 @@
 .site { align-items: center; flex-wrap: wrap; }
 .site .brand { display: inline-flex; align-items: center; gap: 10px; }
 .firmware-logo { width: 48px; height: 48px; object-fit: contain; flex: none; border-radius: 10px; }
+
+.sm-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 14px 0 20px; }
+.sm-tile { background: #16161a; color: #f2f2f2; padding: 10px 10px 12px; border-top: 3px solid var(--c); min-height: 76px; box-sizing: border-box; }
+.sm-tile b { display: block; font-size: 24px; font-weight: 600; color: var(--c); line-height: 1.1; }
+.sm-tile span { display: block; font-size: 12px; color: #b4b4bc; margin-top: 4px; }
+@media (max-width: 420px) { .sm-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* the install card: everything needed to install, in one place */
+.install-card { --dim: #b4aec2; --accent: #ff2c34; color: #f2f2f2; background: #0b0b0e; border: 1px solid var(--accent); border-radius: 14px;
+  padding: 24px; margin: 28px 0; display: flex; flex-direction: column; gap: 14px; }
+.install-card h1 { margin: 0; font-size: 30px; line-height: 1.15; letter-spacing: -.01em; }
+.install-card h1 .v { color: inherit; }
+.install-card .facts { margin: 0; gap: 0; color: var(--dim); }
+.install-card .facts li { background: none; padding: 0; border-radius: 0; font-size: 14px; color: var(--dim); }
+.install-card .facts li + li::before { content: " · "; white-space: pre; }
+.strip { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.strip li { background: #16161a; border-radius: 8px; padding: 12px; min-width: 0; }
+.strip b { display: block; font-size: 16px; font-weight: 600; }
+.strip span { display: block; font-size: 12px; line-height: 1.3; color: var(--dim); margin-top: 4px; }
+.strip li[data-state="active"] { background: var(--accent); color: #000; }
+.strip li[data-state="active"] span { color: #000; }
+.strip li[data-state="done"] { opacity: .6; }
+.install-card .steps { display: flex; flex-direction: column; gap: 14px; }
+.install-card .step { display: block; padding: 0; margin: 0; border: 0; background: none; }
+.install-card .step::before, .install-card .step h2 { display: none; }
+.install-card .step[data-state="todo"] { display: none; }
+.install-card .step p { color: var(--dim); }
+.install-card #find, .install-card #go { width: 100%; min-height: 52px; font-size: 16px; background: var(--accent); border-color: var(--accent); color: #000; border-radius: 8px; }
+.install-card .step[data-state="done"] #find { background: none; color: #f2f2f2; border-color: #2a2a30; min-height: 44px; }
+.install-card select { color: #f2f2f2; background: #16161a; }
+.install-card .sm-tiles { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; margin: 2px 0 0; }
+.install-card .sm-tile { padding: 8px 6px; min-height: 0; }
+.install-card .sm-tile b { font-size: 18px; }
+.install-card .sm-tile span { font-size: 11px; line-height: 1.25; }
+@media (max-width: 420px) { .install-card { padding: 18px; } .install-card h1 { font-size: 26px; } .strip li { padding: 10px; } .strip b { font-size: 14px; } }
 </style>
 </head>
 <body>
@@ -250,41 +285,18 @@
 </header>
 
 <main>
-  <section class="hero">
-    <p class="kicker" data-t="kicker">Firmware for the M-VAVE FM-1</p>
-    <h1><span data-t="title">Install SynthMaven</span> <span class="v" id="hver"></span></h1>
-    <p class="lede" data-t="lede">Synths, sequencing and effects for the FM-1, installed over USB from this page.</p>
+  <section class="install-card" aria-labelledby="install-title">
+    <h1 id="install-title"><span data-t="title">Install SynthMaven</span> <span class="v" id="hver"></span></h1>
     <ul class="facts">
       <li data-t="factBrowser">Chrome or Edge</li>
       <li data-t="factCable">A USB data cable</li>
       <li data-t="factTime">About 3 minutes</li>
     </ul>
-  </section>
-
-  <section class="sm-features" aria-labelledby="sm-adds">
-    <h2 id="sm-adds">What SynthMaven adds</h2>
-    <ul>
-      <li>HYBRID with 64 Vital-derived translations, DX7 sounds and eight factory programs copied from the final saved FM-1 bank (including DX7 Stage and E. Organ): layering, keyboard splits, pan and volume mixing.</li>
-      <li>107 restored classic sound presets plus 42 ACID, VPS and WSEQ presets and an independent eight-lane drum machine alongside all four layers, with a dedicated drum Home screen.</li>
-      <li>Global chromatic microtuning with 46 maqam settings, selectable roots and octave boundaries, custom cents editing and scale-aware harmony.</li>
-      <li>Scenes, setlists and USB pedal switching. Learn a message, assign its action, then save: a 16-action grid offers Relearn and Unlearn, with supported controller profiles and MCU/HUI controls.</li>
-      <li>A shared web/iPad Perform screen with program and scene navigation, quick controls, mixer and tuning keyboard. Hybrid-style mixer, sequencer and drum-grid layouts, touch-sized controls and screen pages instead of scrolling. Play/Stop controls the connected FM-1 over USB.</li>
-      <li>Ten named and numbered GLO pages bring device-wide controls together, including saved color themes, display, USB, recording and performance preferences.</li>
-    </ul>
-    <p><a href="../manual/">User guide</a> · <a id="guidePdf" href="../manual/SynthMaven-3.6-User-Guide.pdf">Download complete illustrated PDF guide</a> · <a href="https://github.com/KingXeryus/SynthMaven/releases">Release notes and recovery downloads</a></p>
-    <p>The downloadable guide includes screen illustrations, control references and step-by-step workflows for firmware settings, sound editing, programs, scenes, tuning, sequencing, MIDI, USB host setup and the existing web/iPad editors.</p>
-    <p><strong>USB-only release.</strong> Direct pedals/controllers require a powered adapter or hub. Every firmware flash resets user settings and musical storage: export a backup first. Older SynthMaven backups require their matching firmware for restoration.</p>
-  </section>
-
-  <div class="banner" id="resumebanner" hidden>
-    <svg class="i"><use href="#i-pause"/></svg>
-    <p><b data-t="resumeBannerH">An installation didn't finish.</b> <span id="resumetext" data-t="resumeBanner">Your FM-1 is waiting in update mode. Connect it and press Find FM-1 to finish.</span></p>
-  </div>
-  <div class="banner" id="pagefail" hidden role="alert">
-    <svg class="i"><use href="#i-alert"/></svg>
-    <p id="pagefailtext"></p>
-  </div>
-
+    <ol class="strip" id="strip">
+      <li data-state="active"><b data-t="stripBack">1 Back up</b><span data-t="stripBackSub">Installing resets your settings</span></li>
+      <li data-state="todo"><b data-t="stripConnect">2 Connect</b><span data-t="stripConnectSub">Find the FM-1</span></li>
+      <li data-state="todo"><b data-t="stripInstall">3 Install</b><span data-t="stripInstallSub">Keep it plugged in</span></li>
+    </ol>
   <ol class="steps">
     <li class="step" id="st-connect" data-state="active">
       <div>
@@ -297,20 +309,6 @@
         </div>
         <p class="msg" id="connmsg" role="alert"></p>
         <button type="button" class="btn" id="find"><span data-t="find">Find FM-1</span></button>
-      </div>
-    </li>
-
-    <li class="step" id="st-options" data-state="todo" hidden>
-      <div>
-        <h2><span data-t="s2h">Recovery bootloader</span> <span class="tag" data-t="optional">Optional</span></h2>
-        <label class="option" for="mboot">
-          <input type="checkbox" id="mboot">
-          <span><b data-t="mboot">Also install m-bootloader</b>
-            <span data-t="mbootwhy">A recovery menu (hold PLAY while switching on) and USB download mode (hold REC) that work even when a firmware won't start. It replaces M-VAVE's bootloader and stays through firmware updates.</span></span>
-        </label>
-        <p class="note caution"><svg class="i"><use href="#i-alert"/></svg><span data-t="mbootrisk">It writes the FM-1's boot area, the one step where a power cut can need hardware recovery. Leave it off if you're unsure: you can add it later from this page.</span></p>
-        <p class="small"><span data-t="mbootby">By Julius Vitkauskas, MIT licence.</span>
-          <a href="https://github.com/jvitkauskas/m-bootloader" target="_blank" rel="noopener">github.com/jvitkauskas/m-bootloader<span class="sr" data-t="newtab"> (opens in a new tab)</span></a></p>
       </div>
     </li>
 
@@ -341,6 +339,47 @@
       </div>
     </li>
   </ol>
+  <div class="sm-tiles">
+    <div class="sm-tile" style="--c:#ff2c34"><b>14</b><span>engines</span></div>
+    <div class="sm-tile" style="--c:#f2f2f2"><b>610</b><span>melodic presets</span></div>
+    <div class="sm-tile" style="--c:#408cff"><b>4</b><span>drum kits</span></div>
+    <div class="sm-tile" style="--c:#969aa4"><b>70</b><span>scales</span></div>
+    <div class="sm-tile" style="--c:#ff2c34"><b>4</b><span>layers</span></div>
+    <div class="sm-tile" style="--c:#f2f2f2"><b>8</b><span>grooves</span></div>
+  </div>
+  </section>
+
+
+  <div class="banner" id="resumebanner" hidden>
+    <svg class="i"><use href="#i-pause"/></svg>
+    <p><b data-t="resumeBannerH">An installation didn't finish.</b> <span id="resumetext" data-t="resumeBanner">Your FM-1 is waiting in update mode. Connect it and press Find FM-1 to finish.</span></p>
+  </div>
+  <div class="banner" id="pagefail" hidden role="alert">
+    <svg class="i"><use href="#i-alert"/></svg>
+    <p id="pagefailtext"></p>
+  </div>
+
+  <section class="sm-features" aria-labelledby="sm-adds">
+    <h2 id="sm-adds">SynthMaven 4: the oriental groove box</h2>
+    <p>An FM-1 firmware for oriental live musicians, turning the standard M-VAVE FM-1 into an oriental groove box.</p>
+    <ul>
+      <li><strong>Microtuning for maqam:</strong> 46 maqam settings, selectable roots and octave boundaries, and custom tuning down to 1 cent in the editors.</li>
+      <li><strong>Multi-layer key mapping:</strong> four parts per program, stacked or split across the keyboard.</li>
+      <li><strong>Groove box and sequencer:</strong> eight-lane drums with Maksoom, Wahda, Baladi and Fox grooves, plus 64-step patterns, song arrangement and live recording.</li>
+      <li><strong>Song arranger:</strong> up to 16 sections, each with a pattern for every track, a drum groove and 1–16 repeats, on the FM-1 or in the editors. You can also turn a jam into an arrangement.</li>
+      <li><strong>MainStage-style performance:</strong> scenes, a 32-entry setlist and pedal switching, with a Perform screen in the web editor and the SM FM1 iPad app.</li>
+      <li><strong>Multi-keyboard support:</strong> a separate MIDI input and channel for each layer and the drummer, over USB, TRS or both.</li>
+      <li>HYBRID with 64 Vital-derived translations, DX7 sounds and eight factory programs copied from the final saved FM-1 bank (including DX7 Stage and E. Organ): layering, keyboard splits, pan and volume mixing.</li>
+      <li>107 restored classic sound presets plus 42 ACID, VPS and WSEQ presets and an independent eight-lane drum machine alongside all four layers, with a dedicated drum Home screen.</li>
+      <li>Global chromatic microtuning with 46 maqam settings, selectable roots and octave boundaries, custom cents editing and scale-aware harmony.</li>
+      <li>Scenes, setlists and USB pedal switching. Learn a message, assign its action, then save: a 16-action grid offers Relearn and Unlearn, with supported controller profiles and MCU/HUI controls.</li>
+      <li>A shared web/iPad Perform screen with program and scene navigation, quick controls and mixer, plus a Tuning tab. Hybrid-style mixer, sequencer and drum-grid layouts, touch-sized controls and screen pages instead of scrolling. Play/Stop controls the connected FM-1 over USB.</li>
+      <li>Ten named and numbered GLO pages bring device-wide controls together, including themes, display, USB, recording and performance preferences.</li>
+    </ul>
+    <p><a href="../manual/">User guide</a> · <a id="guidePdf" href="../manual/SynthMaven-4.0-User-Guide.pdf">Download complete illustrated PDF guide</a> · <a href="https://github.com/KingXeryus/SynthMaven/releases">Release notes and recovery downloads</a></p>
+    <p>The downloadable guide includes screen illustrations, control references and step-by-step workflows for firmware settings, sound editing, programs, scenes, tuning, sequencing, MIDI, USB host setup and the existing web/iPad editors.</p>
+    <p><strong>USB-only release.</strong> Direct pedals/controllers require a powered adapter or hub. Every firmware flash resets user settings and musical storage: export a backup first. Older SynthMaven backups require their matching firmware for restoration.</p>
+  </section>
 <p id="status" role="status" aria-live="polite"></p>
 
   <section class="more">
@@ -2135,7 +2174,7 @@ function fakeAccess(options = {}) {
 return {fakeAccess};
 })();
 
-const meta = {"version": "3.6", "product": "FM-1_936", "pkg": {"dual": "../../firmware/melodee-3.6.fwsc"}, "sha256": {"dual": "7fe6da450bda210704ff8261d32da5d0cfda8770df8d59a2c4600107409f8ab2"}, "nightly": null, "rc": null, "releases": [{"version": "3.6", "product": "FM-1_936", "pkg": {"dual": "../../firmware/melodee-3.6.fwsc"}, "sha256": {"dual": "7fe6da450bda210704ff8261d32da5d0cfda8770df8d59a2c4600107409f8ab2"}}, {"version": "3.5.9", "product": "FM-1_93059", "pkg": {"dual": "../../firmware/melodee-3.5.9.fwsc"}, "sha256": {"dual": "7b191e8b82ba71901d48f97b4f9ce7b5f047c6d6f77b8b60905010f4a46c2981"}}, {"version": "3.5.7", "product": "FM-1_93057", "pkg": {"dual": "../../firmware/melodee-3.5.7.fwsc"}, "sha256": {"dual": "da37b6ff401b6c23e33f67d625c69b27dd946935c381a4db6328bfa21cd512a8"}}, {"version": "3.5.5", "product": "FM-1_93055", "pkg": {"dual": "../../firmware/melodee-3.5.5.fwsc"}, "sha256": {"dual": "151d870d15fda9b55ce6c2e70f2ef4af3677db3df0dd908aed3897280ef49391"}}, {"version": "3.5.3", "product": "FM-1_93053", "pkg": {"dual": "../../firmware/melodee-3.5.3.fwsc"}, "sha256": {"dual": "5ccb6a0d775701fdf710a66c00c4c7be4c323a9bf9ab2229cc30de0b2111a4ba"}}, {"version": "3.5.2", "product": "FM-1_93052", "pkg": {"dual": "../../firmware/melodee-3.5.2.fwsc"}, "sha256": {"dual": "81fd9d0a6799a251081dd2fa7e156759c0b4ef7992e5672348e3ab534ecd1a0e"}}, {"version": "3.5.1", "product": "FM-1_93051", "pkg": {"dual": "../../firmware/melodee-3.5.1.fwsc"}, "sha256": {"dual": "9a06105cfdc7c82803b225628e69031b0bc44593d2b025d599dd9283a35204bb"}}], "boot": {"version": "1.2", "pkg": "../../firmware/m-bootloader-1.2.fwsc", "sha256": "0e89141f52d1f2d62198d4f69147a2c15c8360806e64d48002990a6fdab6d6dd", "license": "MIT", "source": "https://github.com/jvitkauskas/m-bootloader/releases/tag/v1.2", "commit": "22e2559906f9fc4e077f2d6aee20bf332300439e"}};
+const meta = {"version": "4.0", "product": "FM-1_940", "pkg": {"dual": "../../firmware/melodee-4.0.fwsc"}, "sha256": {"dual": "4be5de4f862efa7939621af20d7a3a3761047a70a07c7ff8a4c82d055e3e3f09"}, "nightly": null, "rc": null, "releases": [{"version": "4.0", "product": "FM-1_940", "pkg": {"dual": "../../firmware/melodee-4.0.fwsc"}, "sha256": {"dual": "4be5de4f862efa7939621af20d7a3a3761047a70a07c7ff8a4c82d055e3e3f09"}}, {"version": "3.5.9", "product": "FM-1_93059", "pkg": {"dual": "../../firmware/melodee-3.5.9.fwsc"}, "sha256": {"dual": "7b191e8b82ba71901d48f97b4f9ce7b5f047c6d6f77b8b60905010f4a46c2981"}}, {"version": "3.5.7", "product": "FM-1_93057", "pkg": {"dual": "../../firmware/melodee-3.5.7.fwsc"}, "sha256": {"dual": "da37b6ff401b6c23e33f67d625c69b27dd946935c381a4db6328bfa21cd512a8"}}, {"version": "3.5.5", "product": "FM-1_93055", "pkg": {"dual": "../../firmware/melodee-3.5.5.fwsc"}, "sha256": {"dual": "151d870d15fda9b55ce6c2e70f2ef4af3677db3df0dd908aed3897280ef49391"}}, {"version": "3.5.3", "product": "FM-1_93053", "pkg": {"dual": "../../firmware/melodee-3.5.3.fwsc"}, "sha256": {"dual": "5ccb6a0d775701fdf710a66c00c4c7be4c323a9bf9ab2229cc30de0b2111a4ba"}}, {"version": "3.5.2", "product": "FM-1_93052", "pkg": {"dual": "../../firmware/melodee-3.5.2.fwsc"}, "sha256": {"dual": "81fd9d0a6799a251081dd2fa7e156759c0b4ef7992e5672348e3ab534ecd1a0e"}}, {"version": "3.5.1", "product": "FM-1_93051", "pkg": {"dual": "../../firmware/melodee-3.5.1.fwsc"}, "sha256": {"dual": "9a06105cfdc7c82803b225628e69031b0bc44593d2b025d599dd9283a35204bb"}}]};
 (() => {
 // SPDX-License-Identifier: MPL-2.0
 // Copyright (C) 2026 Kerem Kilic (Ellic Studio)
@@ -2166,6 +2205,7 @@ const TEXT = {
     demo: "Demo: a simulated FM-1. Nothing is written.", demoleave: "Leave the demo",
     kicker: "Firmware for the M-VAVE FM-1", title: "Install SynthMaven",
     lede: "Synths, sequencing and effects for the FM-1, installed over USB from this page.",
+    stripBack: "1 Back up", stripBackSub: "Installing resets your settings", stripConnect: "2 Connect", stripConnectSub: "Find the FM-1", stripInstall: "3 Install", stripInstallSub: "Keep it plugged in",
     factBrowser: "Chrome or Edge", factCable: "A USB data cable", factTime: "About 3 minutes",
     resumeBannerH: "An installation didn't finish.",
     resumeBanner: "Your FM-1 is waiting in update mode. Connect it and press Find FM-1 to finish.",
@@ -2272,6 +2312,7 @@ const TEXT = {
     demo: "デモ：FM-1 をシミュレートしています。何も書き込まれません。", demoleave: "デモを終了",
     kicker: "M-VAVE FM-1 用ファームウェア", title: "SynthMaven をインストール",
     lede: "FM-1 用シンセサイザー、シーケンサー、エフェクト。このページから USB でインストールできます。",
+    stripBack: "1 バックアップ", stripBackSub: "インストールすると設定はリセットされます", stripConnect: "2 接続", stripConnectSub: "FM-1 を探す", stripInstall: "3 インストール", stripInstallSub: "接続したままにしてください",
     factBrowser: "Chrome または Edge", factCable: "USB データケーブル", factTime: "約 3 分",
     resumeBannerH: "前回のインストールが完了していません。",
     resumeBanner: "FM-1 はアップデートモードで待機しています。接続して「FM-1 を探す」を押すと、続きから完了できます。",
@@ -2435,7 +2476,7 @@ async function loadRelease() {
   const epoch = ++buildEpoch, chosen = selection();
   if (DEMO) return demoRelease(chosen);
   st.image = null;st.boot = null;
-  st.meta = {...chosen,boot:meta.boot};render();
+  st.meta = {...chosen};render();
   $("pagefail").hidden = true;
   try {
     const key = [build(),chosen.version,chosen.commit || "",chosen.sha256?.dual || ""].join(":");
@@ -2447,12 +2488,6 @@ async function loadRelease() {
     if (epoch !== buildEpoch) return;
     st.image = images.get(key);
     if (st.dev) st.dev = {id:st.dev.id,...describeDevice(st.dev.id,st.meta.product)};
-    if (meta.boot) {
-      try {
-        const raw = await fetchBytes(meta.boot.pkg);
-        if (await sha256(raw) === meta.boot.sha256 && productOf(raw) === "FM-1_099" && epoch === buildEpoch) st.boot = {image:logicalImage(raw),version:meta.boot.version};
-      } catch (_) { /* as Saadet: a missing or damaged bootloader is never offered */ }
-    }
     if (epoch !== buildEpoch) return;
   } catch(e) { if(epoch === buildEpoch) pageFail(t("loadfail",{m:e.message})); }
   if(epoch === buildEpoch) applyLang();
@@ -2465,9 +2500,8 @@ function demoImage(n, seed) { const b = new Uint8Array(n); for (let i = 0; i < n
 function demoRelease(meta) {
   const version = meta?.version || "1.0";
   const product = meta?.product || "FM-1_9010000";
-  st.meta = { name: "SynthMaven", version, product, boot: { version: meta?.boot?.version || "1.2" } };
+  st.meta = { name: "SynthMaven", version, product };
   st.image = demoImage(0x30000, 1);
-  st.boot = { image: demoImage(0x4800, 2), version: st.meta.boot.version };
   $("demo").hidden = false;
 }
 async function demoAccess() {
@@ -2480,7 +2514,7 @@ async function demoAccess() {
       update: { identity: "FM-1_016", state: "loader" }, interrupt: { identity: "FM-1_016", interruptAt: 0.45 },
       open: { identity: "FM1_OFFICIAL_OPEN" },
     }[DEMO] || { identity: "FM-1_016" };
-    st.demo = fakeAccess({ images: { firmware: st.image, boot: st.boot.image }, after: p, loader:MELODEE_LOADER, ...opts });
+    st.demo = fakeAccess({ images: { firmware: st.image }, after: p, loader:MELODEE_LOADER, ...opts });
   }
   return st.demo.access;
 }
@@ -2527,7 +2561,6 @@ async function connect() {
   render();
 }
 $("find").addEventListener("click", connect);
-$("mboot").addEventListener("change", render);
 
 /* ---- the page's state, drawn ---- */
 function render() {
@@ -2554,7 +2587,6 @@ function render() {
     $("devchip").className = "chip " + chip[1];
   }
   /* step 2: only with m-bootloader's package, never for M-VAVE's firmware */
-  $("st-options").hidden = !st.boot;
   /* step 3 */
   const go = $("go");
   if (!dev || !plan) {
@@ -2573,9 +2605,10 @@ function render() {
     $("plantext").textContent = t(words, { v: ver() });
   }
   $("st-connect").dataset.state = dev ? "done" : "active";
-  $("st-options").dataset.state = dev && plan ? "active" : "todo";
   $("st-install").dataset.state = dev && plan ? "active" : "todo";
-  $("release").disabled = $("mboot").disabled = st.running || finding;
+  const stage = dev && plan ? 2 : finding ? 1 : 0;
+  [...$("strip").children].forEach((e, i) => { e.dataset.state = i < stage ? "done" : i === stage ? "active" : "todo"; });
+  $("release").disabled = st.running || finding;
   buildIds.forEach(k => { $("build-" + k).disabled = st.running || finding; });
   leaving?.lock(st.running || finding);
   /* an unfinished install: kept from an earlier visit, or the FM-1 itself in update mode */
@@ -2587,7 +2620,7 @@ function render() {
 
 function currentPlan() {
   if (!st.dev) return null;
-  return planFor(st.meta.product === "FM-1_900" && st.dev.kind === "this" ? "dev" : st.dev.kind, !!st.boot && $("mboot").checked);
+  return planFor(st.meta.product === "FM-1_900" && st.dev.kind === "this" ? "dev" : st.dev.kind, false);
 }
 
 /* ---- before writing: the rules, and the backup (asked every time) ---- */
