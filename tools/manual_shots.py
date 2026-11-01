@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright (C) 2026 Relyt29 (@relyt29), Signals Intelligence Sound (https://sigintsound.com/)
-"""Copy the manual's NIGHT UI renders into web/manual/.
+"""Copy the manual's SYNTHMAVEN UI renders into web/manual/.
 
-Renders come from tests/ui_render.c -> tests/ui_render.py, under build/ui_new/NIGHT.
+Renders come from tests/ui_render.c -> tests/ui_render.py, under build/ui_new/SYNTHMAVEN.
 The figure names are the <img src> values in web/manual/index.html (web/make_site.py
 manual_figures). A full site publish copies that folder to webapp/manual/.
 
@@ -12,12 +12,12 @@ publishing the site. web/quick-host.sh writes them when the manual is missing fi
 Nightlies publish a separate guide at webapp/manual/nightly/. Nightly and
 release-candidate publishes leave the stable manual in place.
 
-  tools/manual_shots.py            # build/ui_new/NIGHT → web/manual/
+  tools/manual_shots.py            # build/ui_new/SYNTHMAVEN → web/manual/
   tools/manual_shots.py --require  # exit 0 when every figure is already present
   tools/manual_shots.py --sources  # exit 0 when every source render exists
   tools/manual_shots.py --check    # list missing / stale, write nothing
 
-Only NIGHT is used (the manual's palette). Add a screenshot by embedding
+Only SYNTHMAVEN is used (the manual's palette). Add a screenshot by embedding
 <img src="name.png"> in web/manual/index.html.
 """
 import argparse
@@ -30,7 +30,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "web"))
 from make_site import manual_figures  # noqa: E402
 
-SRC = ROOT / "build" / "ui_new" / "NIGHT"
+SRC = ROOT / "build" / "ui_new" / "SYNTHMAVEN"
 MANUAL = ROOT / "web" / "manual"
 
 def figure_source(name):
@@ -43,7 +43,7 @@ def figure_names(manual=None):
 
 
 def sources_present():
-    """exit 0 when every embedded figure's NIGHT render is already on disk"""
+    """exit 0 when every embedded figure's SYNTHMAVEN render is already on disk"""
     names = figure_names()
     if not SRC.is_dir():
         print(f"manual_shots: {SRC.relative_to(ROOT)} is missing", file=sys.stderr)
@@ -71,7 +71,7 @@ def require_present():
 
 
 def sync_dir(check):
-    """copy embedded NIGHT renders into web/manual/; with check, report stale files and write nothing"""
+    """copy embedded SYNTHMAVEN renders into web/manual/; with check, report stale files and write nothing"""
     names = figure_names()
     MANUAL.mkdir(parents=True, exist_ok=True)
     missing, copied, same = [], [], 0
@@ -100,13 +100,13 @@ def sync_dir(check):
 
 
 def main():
-    """copy NIGHT UI renders into the manual, or only check that they are present"""
+    """copy SYNTHMAVEN UI renders into the manual, or only check that they are present"""
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true", help="report only; write nothing")
     ap.add_argument("--require", action="store_true",
                     help="exit 0 when every figure is already in web/manual/; write nothing")
     ap.add_argument("--sources", action="store_true",
-                    help="exit 0 when every embedded render exists under build/ui_new/NIGHT")
+                    help="exit 0 when every embedded render exists under build/ui_new/SYNTHMAVEN")
     a = ap.parse_args()
     if sum((a.require, a.check, a.sources)) > 1:
         sys.exit("pass only one of --require, --sources, or --check")

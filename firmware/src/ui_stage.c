@@ -680,75 +680,120 @@ static void stage_draw(void)
     stage_band();
 }
 
-/* SynthMaven program overview: all four parts remain visible while editing.
- * Rendering is foreground-only and cached; no additional audio work or state. */
+/* SynthMaven program overview: all four parts remain visible while editing. A card per part: its role, sound, engine,
+ * pattern and the page of steps as dots, the selected one outlined; under them KNOB 1..4 of the selected part as
+ * rotaries. Rendering is foreground-only and cached per card and knob; no additional audio work or state. */
+#define SMH_CARD_Y 32
+#define SMH_CARD_H 116
+#define SMH_KNOB_Y 150
+#define SMH_KNOB_H 88
+static const int8_t SMH_ARC[17][2] = {{-13,13},{-16,8},{-18,4},{-18,-2},{-17,-7},{-14,-11},{-10,-15},{-5,-17},{0,-18},{5,-17},{10,-15},{14,-11},{17,-7},{18,-2},{18,4},{16,8},{13,13}};   /* a 270 degree ring, radius 18 */
+static void sm_card_text(int32_t x,int32_t y,const aafont_t *f,const char *s,uint16_t c,uint16_t bg)
+{
+    cv_free_text(x+4,y,f,s,c,bg,50);
+}
+static void sm_program_card(uint32_t k,const char *name,int selected,int active,uint32_t base,uint32_t len,uint32_t head)
+{
+    const track_t *t=&trk[k];
+    uint16_t c=active?T_TRK(k):ux_mix(T_SURF,T_TRK(k),55),bg=ux_mix(T_BG,T_SURF,selected?100:70);
+    int32_t x=(int32_t)k*59;
+    uint32_t src,kk,cat;
+    char role[12],a[24],b[24],pill[3]={'P',(char)('1'+t->pattern%NPAT),0};
+    const char *engine=ENGINES[eng_idx(t->eng_req)]->name;
+    stage_entry(k,&src,&kk);cat=entry_cat(src,kk)%CAT_N;
+    if(cat==CAT_DRUM)str_cpy(role,"DRUMS",sizeof role);
+    else if(cat==CAT_KEYS)str_cpy(role,"CHORDS",sizeof role);
+    else if(cat&&cat!=CAT_OTHER)str_cpy(role,CAT_NAME[cat],sizeof role);
+    else{role[0]='L';role[1]=(char)('1'+k);role[2]=0;}
+    stage_two_lines(name,a,b,50,TY_SM);
+    for(uint32_t band=0;band<SMH_CARD_H;band+=CV_MAX/59u){
+        cv_begin_band(59,SMH_CARD_H,T_BG,band);
+        x=0;
+        cv_rrect(x,0,57,SMH_CARD_H,6,selected?T_TRK(k):bg,T_BG);
+        if(selected)cv_rrect(x+1,1,55,SMH_CARD_H-2,5,bg,T_TRK(k));
+        cv_rect(x+3,selected?1:0,51,3,c);
+        sm_card_text(x,5,TY_SM,role,c,bg);
+        sm_card_text(x,20,TY_SM,a,active?T_TEXT:T_MID,bg);
+        sm_card_text(x,35,TY_SM,b,active?T_TEXT:T_MID,bg);
+        sm_card_text(x,52,TY_SM,engine,T_MID,bg);
+        cv_rrect(x+4,69,24,16,3,c,bg);
+        cv_free_text(x+8,70,TY_SM,pill,T_BG,c,20);
+        for(uint32_t i=0;i<16u;i++){
+            const step_t *st=&seq_steps(t)[base+i];
+            uint16_t dot=base+i<len&&step_on(st)?c:ux_mix(bg,T_TEXT,14);
+            if(i==head)dot=T_TEXT;
+            cv_disc(x+11+(int32_t)(i%4u)*12,93+(int32_t)(i/4u)*6,4,dot,0);
+        }
+        cv_blit_band(2+k*59u,SMH_CARD_Y);
+    }
+}
+static void sm_home_rotary(uint32_t c,const char *label,const char *val,const char *unit,int32_t ratio)
+{
+    uint16_t col=T_TRK(c),off=ux_mix(T_BG,col,28);
+    int32_t lit=ratio<0?-1:(ratio*16+500)/1000;
+    char text[20];
+    str_cpy(text,val,sizeof text);
+    if(unit&&unit[0])str_cpy(text+str_len(text),unit,sizeof text-str_len(text));
+    for(uint32_t band=0;band<SMH_KNOB_H;band+=CV_MAX/59u){
+        cv_begin_band(59,SMH_KNOB_H,T_BG,band);
+        for(int32_t i=0;i<17;i++)
+            cv_disc(29+SMH_ARC[i][0],22+SMH_ARC[i][1],5,i<=lit?col:off,0);
+        if(lit>=0)cv_line_t(29,22,29+SMH_ARC[lit][0]*2/3,22+SMH_ARC[lit][1]*2/3,T_TEXT,2);
+        cv_free_text(st_mid_x(29,TY_SM,label,57),47,TY_SM,label,col,T_BG,57);
+        cv_free_text(st_mid_x(29,TY_LB,text,57),62,TY_LB,text,T_TEXT,T_BG,57);
+        cv_blit_band(1+c*59u,SMH_KNOB_Y);
+    }
+}
 static void sm_program_home_draw(void)
 {
-    static uint32_t drawn;
-    uint32_t sig=ux.gen*977u+ux.pal*31u+song.sel+sm_layers.enabled*17u;
-    char names[4][24];
-    for(uint32_t k=0;k<4;k++){
-        sound_name(&trk[k],names[k]);
-        sig=str_hash(sig,names[k])+trk[k].eng_req*131u+trk[k].p[P_LEVEL]*23u+
-            (uint32_t)(trk[k].p[P_PAN]+64)*37u+trk[k].p[P_MUTE]*101u+
-            sm_layers.low[k]*43u+sm_layers.high[k]*47u;
+    static uint32_t card_drawn[4],knob_drawn[4],shell;
+    const page_t *sp=stage_page();
+    int whole=ui.force||shell!=ux.gen*977u+ux.pal*31u+1u;
+    char name[24];
+    if(whole){shell=ux.gen*977u+ux.pal*31u+1u;lcd_fill(0,30,240,210,T_BG);}
+    for(uint32_t k=0;k<4u;k++){
+        int selected=song.sel==k,active=!trk[k].p[P_MUTE]&&(sm_layers.enabled||selected);
+        uint32_t len=(uint32_t)clamp(trk[k].p[P_SLEN],1,NSTEP),idx=trk[k].seq_idx%NSTEP;
+        uint32_t base=song.playing?idx/16u*16u:0u,head=song.playing?idx%16u:16u,rs;
+        sound_name(&trk[k],name);
+        if(!name[0])str_cpy(name,ENGINES[eng_idx(trk[k].eng_req)]->name,sizeof name);
+        rs=str_hash(selected+active*2u+head*4u+base*97u+len*131u+trk[k].pattern*7919u+trk[k].eng_req*211u,name);
+        for(uint32_t i=0;i<16u;i++)rs=rs*31u+step_on(&seq_steps(&trk[k])[base+i]);
+        if(whole||rs!=card_drawn[k]){card_drawn[k]=rs;sm_program_card(k,name,selected,active,base,len,head);}
     }
-    char feedback[48]="SELECT PART / HOME DRUM";
-    if(stage_knobs_out()){
-        const page_t *sp=stage_page();int16_t *value;const param_desc_t *d=page_desc(sp,ui.hot_col&3u,&value);
-        if(d&&value){char val[16];const char *unit;stage_value(sp,d,*value,val,&unit);
-            str_cpy(feedback,stage_label(ui.hot_col&3u,d),sizeof feedback);uint32_t at=str_len(feedback);
-            str_cpy(feedback+at," ",sizeof feedback-at);at=str_len(feedback);str_cpy(feedback+at,val,sizeof feedback-at);
-        }
+    for(uint32_t c=0;c<4u;c++){
+        int16_t *vp;const char *unit="";char val[12];
+        const param_desc_t *d=page_desc(sp,c,&vp);
+        int on=d&&vp&&d->label&&d->label[0]!='-';
+        const char *label=on?stage_label(c,d):"";
+        int32_t ratio=-1;
+        val[0]=0;
+        if(on){stage_value(sp,d,*vp,val,&unit);ratio=RATIO(d,*vp);}
+        uint32_t ks=str_hash(str_hash(str_hash(c+7u,label),val),unit)+(uint32_t)(ratio+1)*31u;
+        if(whole||ks!=knob_drawn[c]){knob_drawn[c]=ks;sm_home_rotary(c,label,val,unit,ratio);}
     }
-    sig=str_hash(str_hash(sig,sm_program_name),feedback);
-    if(!ui.force&&sig==drawn)return;drawn=sig;
-    lcd_fill(0,30,240,210,T_BG);
-    draw_text_box(6,32,228,TY_LB,sm_program_name[0]?sm_program_name:"UNSAVED PROGRAM",T_TEXT,0);
-    for(uint32_t row=0;row<2;row++)for(uint32_t band=0;band<82;band+=CV_MAX/236u){
-        cv_begin_band(236,82,T_BG,band);
-        for(uint32_t col=0;col<2;col++){
-            uint32_t k=row*2+col;int32_t x=(int32_t)col*120;
-            int selected=song.sel==k,active=!trk[k].p[P_MUTE]&&(sm_layers.enabled||selected);
-            uint16_t edge=selected?T_TEXT:T_TRK(k),bg=ux_mix(T_SURF,T_TRK(k),selected?24:14);
-            char label[20],level[12],pan[12];
-            cv_rrect(x,0,116,82,8,edge,T_BG);cv_rrect(x+1,1,114,80,7,bg,edge);
-            label[0]=(char)('1'+k);label[1]=' ';str_cpy(label+2,active?"ON":"OFF",sizeof label-2);
-            cv_free_text(x+8,5,TY_LB,label,active?T_TEXT:T_DIM,bg,100);
-            char first[24],second[24];str_cpy(first,names[k],sizeof first);second[0]=0;
-            uint32_t cut=(uint32_t)str_len(first);
-            while(cut&&text_w(TY_LB,first)>100){first[--cut]=0;}
-            if(names[k][cut]){str_cpy(second,names[k]+cut,sizeof second);}
-            cv_free_text(x+8,24,TY_LB,first,T_TEXT,bg,100);
-            cv_free_text(x+8,44,TY_LB,second,T_TEXT,bg,100);
-            fmt_int(level,trk[k].p[P_LEVEL]);fmt_int(pan,trk[k].p[P_PAN]);
-            str_cpy(label,"V ",sizeof label);str_cpy(label+2,level,sizeof label-2);
-            cv_free_text(x+8,62,TY_LB,label,T_TEXT,bg,60);
-            str_cpy(label,"P ",sizeof label);str_cpy(label+2,pan,sizeof label-2);
-            cv_free_text(x+70,62,TY_LB,label,T_MID,bg,40);
-        }
-        cv_blit_band(2,52+row*86);
-    }
-    draw_text_box(4,220,232,TY_LB,feedback,T_MID,1);
 }
 
 static void sm_drum_home_draw(void)
 {
     static uint32_t drawn;
-    uint32_t sig=ux.gen*977u+ux.pal*31u+sm_drum_lane+sm_drum_cursor*17u+sm_drums.enabled*101u+song.g[G_BPM]*131u;
+    uint32_t groove=sm_groove_current();
+    uint32_t sig=ux.gen*977u+ux.pal*31u+sm_drum_lane+sm_drum_cursor*17u+sm_drums.enabled*101u+song.g[G_BPM]*131u+groove*7u;
     uint32_t playing=sm_drum_audio.running?(sm_drum_audio.step+15u)%16u:16u;
     sig=sig*31u+playing;
     for(uint32_t k=0;k<8;k++)sig=sig*31u+sm_drums.steps[k]+sm_drums.level[k]*17u+sm_drums.velocity[k];
     if(!ui.force&&sig==drawn)return;drawn=sig;
     lcd_fill(0,30,240,210,T_BG);
-    draw_text_box(5,32,230,TY_LB,sm_drums.enabled?"DRUM MACHINE  /  RUN":"DRUM MACHINE  /  STOP",T_TEXT,0);
-    /* Eight independent lanes; each group of four columns is one beat. */
+    draw_text_box(5,32,180,TY_LB,groove?sm_groove_names[groove-1u]:"MY PATTERN",T_THEME,0);
+    draw_text_box(190,32,45,TY_LB,sm_drums.enabled?"RUN":"STOP",sm_drums.enabled?T_TEXT:T_MID,0);
+    /* Eight independent lanes in the parts' colours; each group of four columns is one beat. */
     for(uint32_t lane=0;lane<8;lane++){
         int y=50+(int)lane*17;
-        draw_text_box(4,y,66,TY_LB,sm_drum_names[lane],lane==sm_drum_lane?T_TEXT:T_MID,0);
+        uint16_t c=T_TRK(lane);
+        draw_text_box(4,y,66,TY_LB,sm_drum_names[lane],lane==sm_drum_lane?T_TEXT:c,0);
         for(uint32_t step=0;step<16;step++){
             int x=73+(int)step*10;
-            uint16_t color=(sm_drums.steps[lane]&(1u<<step))?T_THEME:T_SURF;
+            uint16_t color=(sm_drums.steps[lane]&(1u<<step))?c:step%4u?T_SURF:ux_mix(T_SURF,T_TEXT,14);
             if(step==playing)color=T_TEXT;
             lcd_fill(x,y+2,8,12,color);
             if(lane==sm_drum_lane&&step==sm_drum_cursor){
@@ -761,5 +806,5 @@ static void sm_drum_home_draw(void)
     draw_text_box(5,190,110,TY_LB,text,T_TEXT,0);
     fmt_int(num,song.g[G_BPM]);str_cpy(text,"BPM ",sizeof text);str_cpy(text+4,num,sizeof text-4);
     draw_text_box(125,190,110,TY_LB,text,T_TEXT,0);
-    draw_text_box(4,211,232,TY_LB,"1 STEP 2 HIT 3 VOL 4 BPM",T_MID,1);
+    draw_text_box(4,211,232,TY_LB,"ALG GROOVE 1 STEP 2 HIT",T_MID,1);
 }

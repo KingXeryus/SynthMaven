@@ -106,26 +106,43 @@ typedef struct {
     int16_t level, pan;
     uint8_t valid;
     int32_t lvl, gl, gr;
+    uint16_t comp;
+    uint32_t shift;
 } mix_cache_t;
 static mix_cache_t mix_cache[NPART];
+/* LEVEL with the sound's loudness compensation (engines.c), as a gain the mix's 32-bit products can hold (at most LEVEL's
+ * own top, LEVEL_Q12[127]) and a left shift of the part's samples for what is over it (only quiet sounds get so much) */
+static inline int32_t track_level_q12(const track_t *t, uint32_t *shift)
+{
+    int32_t l=LEVEL_Q12[t->p[P_LEVEL]&127];
+    uint32_t sh=0;
+    uint32_t comp=loud_comp[(uint32_t)(t-trk)];
+    if(comp){
+        l=(int32_t)(((int64_t)l*comp)>>12);
+        while(l>9713){l>>=1;sh++;}
+    }
+    *shift=sh;
+    return l;
+}
 static __attribute__((noinline)) void mix_cache_update(const track_t *t, mix_cache_t *mc)
 {
-    mc->level=t->p[P_LEVEL];mc->pan=t->p[P_PAN];mc->valid=1;
-    mc->lvl=LEVEL_Q12[mc->level & 127];
+    mc->level=t->p[P_LEVEL];mc->pan=t->p[P_PAN];mc->valid=1;mc->comp=loud_comp[(uint32_t)(t-trk)];
+    mc->lvl=track_level_q12(t,&mc->shift);
     mc->gl=4096-(mc->pan>0?mc->pan*64:0);mc->gr=4096+(mc->pan<0?mc->pan*64:0);
 }
 static __attribute__((noinline)) void mix_spread(track_t *t, int32_t *b, uint32_t n)
 {
     uint32_t send=fx_send_on?fx_send_gain(t):0u;
     int32_t *d=spread_buf;
-    int32_t lvl=LEVEL_Q12[t->p[P_LEVEL] & 127],pan=t->p[P_PAN],s=(t->p[P_SPRD]+1)>>1;
+    uint32_t sh;
+    int32_t lvl=track_level_q12(t,&sh),pan=t->p[P_PAN],s=(t->p[P_SPRD]+1)>>1;
     int32_t pa=clamp(pan-s,-64,63),pb=clamp(pan+s,-64,63);
     int32_t gla=4096-(pa>0?pa*64:0),gra=4096+(pa<0?pa*64:0);
     int32_t glb=4096-(pb>0?pb*64:0),grb=4096+(pb<0?pb*64:0);
     int32_t glm=(gla+glb)>>1,grm=(gra+grb)>>1,gld=(gla-glb)>>1,grd=(gra-grb)>>1,pk=t->peak;
     for(uint32_t i=0;i<n;i++){
-        int32_t x=clamp(((clamp(b[i],-884000,884000)>>2)*lvl)>>10,-524287,524287);
-        int32_t y=clamp(((clamp((d[i]<<1)-b[i],-884000,884000)>>2)*lvl)>>10,-524287,524287);
+        int32_t x=clamp(((clamp(b[i]<<sh,-884000,884000)>>2)*lvl)>>10,-524287,524287);
+        int32_t y=clamp(((clamp(((d[i]<<1)-b[i])<<sh,-884000,884000)>>2)*lvl)>>10,-524287,524287);
         int32_t a=x<0?-x:x;
 #if MELODEE_USB_AUDIO
         if(track_capture_on)track_capture[i*NPART+(uint32_t)(t-trk)]=x;
@@ -136,7 +153,7 @@ static __attribute__((noinline)) void mix_spread(track_t *t, int32_t *b, uint32_
     t->peak=pk;
 }
 static void mix_juno(track_t *t,int32_t *b,uint32_t n){
- const int32_t level=LEVEL_Q12[t->p[P_LEVEL]&127],pan=t->p[P_PAN];
+ uint32_t sh;const int32_t level_q=track_level_q12(t,&sh),level=level_q<<sh,pan=t->p[P_PAN];
  const int32_t gl=4096-(pan>0?pan*64:0),gr=4096+(pan<0?pan*64:0);
  const uint32_t send=fx_send_on?fx_send_gain(t):0u;int32_t peak=t->peak;
  for(uint32_t i=0;i<n;i++){
@@ -158,8 +175,9 @@ static __attribute__((noinline,section(".dsp_text"))) void MIX_MONO_GENERAL(trac
 {
     uint32_t send=fx_send_on?fx_send_gain(t):0u;
     int32_t lvl=mc->lvl,gl=mc->gl,gr=mc->gr,pk=t->peak;
+    const uint32_t sh=mc->shift;
     for(uint32_t i=0;i<n;i++){
-        int32_t x=clamp(((clamp(b[i],-884000,884000)>>2)*lvl)>>10,-524287,524287),a=x<0?-x:x;
+        int32_t x=clamp(((clamp(b[i]<<sh,-884000,884000)>>2)*lvl)>>10,-524287,524287),a=x<0?-x:x;
 #if MELODEE_USB_AUDIO
         if(track_capture_on)track_capture[i*NPART+(uint32_t)(t-trk)]=x;
 #endif
@@ -175,8 +193,9 @@ static __attribute__((noinline,section(".dsp_text"))) void MIX_MONO_GENERAL(trac
 static __attribute__((noinline,section(".dsp_text"))) void mix_mono_dry(track_t *t,int32_t *b,uint32_t n,const mix_cache_t *mc)
 {
     int32_t lvl=mc->lvl,pk=t->peak;
+    const uint32_t sh=mc->shift;
     for(uint32_t i=0;i<n;i++){
-        int32_t x=clamp(((clamp(b[i],-884000,884000)>>2)*lvl)>>10,-524287,524287),a=x<0?-x:x;
+        int32_t x=clamp(((clamp(b[i]<<sh,-884000,884000)>>2)*lvl)>>10,-524287,524287),a=x<0?-x:x;
 #if MELODEE_USB_AUDIO
         if(track_capture_on)track_capture[i*NPART+(uint32_t)(t-trk)]=x;
 #endif
@@ -194,8 +213,9 @@ static __attribute__((noinline,section(".dsp_text"))) void mix_mono_samples(trac
      * cannot overflow. Equal channels also share the send's scaling work.
      * Keep each loop separate to avoid register pressure in the general path. */
     int32_t lvl=mc->lvl,pk=t->peak;
+    const uint32_t sh=mc->shift;
     for(uint32_t i=0;i<n;i++){
-        int32_t x=clamp(((clamp(b[i],-884000,884000)>>2)*lvl)>>10,-524287,524287),a=x<0?-x:x;
+        int32_t x=clamp(((clamp(b[i]<<sh,-884000,884000)>>2)*lvl)>>10,-524287,524287),a=x<0?-x:x;
 #if MELODEE_USB_AUDIO
         if(track_capture_on)track_capture[i*NPART+(uint32_t)(t-trk)]=x;
 #endif
@@ -296,7 +316,7 @@ static __attribute__((noinline)) void mix_part(track_t *t,uint32_t n)
         else if(spread_on)mix_spread(t,part_buf,n);
         else{
             mix_cache_t *mc=&mix_cache[(uint32_t)(t-trk)];
-            if(!mc->valid || mc->level!=t->p[P_LEVEL] || mc->pan!=t->p[P_PAN])mix_cache_update(t,mc);
+            if(!mc->valid || mc->comp!=loud_comp[(uint32_t)(t-trk)] || mc->level!=t->p[P_LEVEL] || mc->pan!=t->p[P_PAN])mix_cache_update(t,mc);
             void (*volatile mix)(track_t *,int32_t *,uint32_t,const mix_cache_t *)=mix_mono_samples;
             mix(t,part_buf,n,mc);
         }

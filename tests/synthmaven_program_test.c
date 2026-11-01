@@ -7,7 +7,7 @@ int main(void)
  reset();
  for(unsigned i=0;i<HY_NFACTORY;i++){hy_patch_t patch;hy_factory_read(i,&patch);assert(!memcmp(&patch,&HY_FACTORY[i],sizeof patch));}
  for(unsigned slot=0;slot<8;slot++){
-  assert(!sm_program_load(slot));assert(sm_program_current==slot&&!sm_layers.enabled&&song.sel==0);
+  assert(!sm_program_load(slot));assert(sm_program_current==slot&&sm_layers.enabled==(slot==1||slot==7)&&song.sel==0);
   for(unsigned k=0;k<4;k++)assert(!trk[k].p[P_MUTE]&&trk[k].p[P_LEVEL]>0);
  }
  assert(!sm_program_load(0));assert(trk[0].eng_req==ENGI_FM6);
@@ -25,6 +25,9 @@ int main(void)
    if(t[0]==ENGI_PROPHET)assert(!memcmp(&p5_patch[k],record+2220+k*138,138));
   }
   assert(!memcmp(sm_program_meta,record+3056,500));
+  assert(sm_layers.enabled==(slot==1||slot==7));       /* DX RHODES and ORCHESTRA load layered */
+  if(slot==6)assert(trk[0].eng_req==ENGI_HYBRID&&trk[0].preset==38);   /* RETRO SYNTH: XD STRINGS */
+  if(slot==7)assert(trk[0].eng_req==ENGI_FM6&&trk[0].preset==29);      /* ORCHESTRA: FM6 STRINGS 2 */
   for(unsigned i=0;i<12;i++)assert(song.g[G_MFXTYPE+i]==record[3028+i]);
   assert(song.g[G_FXRETURN]==record[3040]&&song.g[G_FXMODE]==record[3041]);
  }

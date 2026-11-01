@@ -9,9 +9,9 @@
     "RETRO SYNTH",
     "ORCHESTRA"
   ],
-  "source_sha256": "8161645377de40f444cd4ff76e2016a6b7bfcffb338a1e89086be277e2c563cb",
+  "source_sha256": "fdc7dd68f45e2f7d091975916493830cfdd4fa3222c35c0c3bd6d4d44fb2b892",
   "record_bytes": 3556,
   "compact_bytes": 14436,
-  "packed_bytes": 2301,
+  "packed_bytes": 2303,
   "source": "Verified 2026-10-30 USB backup: saved P1 and P3 merged; other slots retain user-curated factory fallbacks"
 }

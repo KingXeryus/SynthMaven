@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 HELP=json.loads((ROOT/'assets/guide/control-help.json').read_text())
 FAMILY={1:'ENV',2:'LFO',3:'SEL',4:'EDIT',5:'GLO',6:'SAVE',7:'ARP',8:'SEQ',9:'EDIT hold',10:'FX'}
-PREF_RANGES={0:'NIGHT, DAY, CONTRAST, SUNSET, OCEAN, NEON, CANDY, LO-FI, GRAY',1:'RUBIK / PIXEL',2:'OFF / LOW / MID / HIGH / FULL',3:'NEVER / 5 / 15 / 30 / 60 MIN',4:'IN+OUT / IN / OUT / OFF',5:'STEREO / 4 TRACKS',6:'COMPUTER / HOST',7:'OFF / ON',8:'OFF / ON',9:'OFF / ON',10:'300 / 400 / 500 / 600 ms (FX hold only)',11:'OFF / REC / ON',12:'LOW / MID / HIGH',13:'OFF / 1 BAR / 2 BARS',14:'OFF / ON',15:'HOLD / ADD',16:'Turn right to open',17:'Turn right to open',255:'Unused'}
+PREF_RANGES={0:'SYNTHMAVEN (red), ORANGE, BABY BLUE, PINK',1:'',2:'OFF / LOW / MID / HIGH / FULL',3:'NEVER / 5 / 15 / 30 / 60 MIN',4:'IN+OUT / IN / OUT / OFF',5:'STEREO / 4 TRACKS',6:'COMPUTER / HOST',7:'OFF / ON',8:'OFF / ON',9:'OFF / ON',10:'300 / 400 / 500 / 600 ms (FX hold only)',11:'OFF / REC / ON',12:'LOW / MID / HIGH',13:'OFF / 1 BAR / 2 BARS',14:'OFF / ON',15:'HOLD / ADD',16:'Turn right to open',17:'Turn right to open',255:'Unused'}
 SPECIAL={
 'PRESETS':[('LIST','Choose ALL, favorites, recent sounds or a category.'),('SOUND','Browse and load the highlighted sound into the focused part.'),('FAV','Turn right to mark a favorite; left to remove it.'),('ENGINE','Choose the engine whose presets are listed.')],
 'USER':[('SLOT','Choose one of 384 user sound slots.'),('LOAD','Turn right to select Load; confirm using OCT+.'),('ERASE','Turn right to select Erase; confirm only after backing up this sound.'),('SAVE','Turn right to select Save. Stop playback and confirm using OCT+.')],
@@ -67,7 +67,7 @@ def describe(p,c):
  return HELP[l]
 
 def range_text(c):
- if 'pref' in c:return PREF_RANGES[c['pref']]
+ if 'pref' in c:return PREF_RANGES.get(c['pref'],'')
  choices=list(dict.fromkeys(x for x in c.get('choices',[]) if x))
  if choices and len(choices)<=16:return ' / '.join(choices)
  if choices:return f'{len(choices)} named choices; browse the on-screen list.'

@@ -695,7 +695,7 @@ static void project_capture(project_t *p)
     p->phys = PROJ_PHYS;
     p->chain = chain_config;
     for (uint32_t r = 0; r < p->chain.count && cap_map(0) != 0u && cap_map(0) < NTRK; r++)
-        p->chain.row[r].slot = chain_patterns[r][cap_map(0)];   /* (track 1 removed: a row's slot, the new 1's there) */
+        chain_row_set_pattern(&p->chain.row[r], chain_patterns[r][cap_map(0)]);   /* (track 1 removed: a row's slot, the new 1's there) */
     for (i = 0; i < PROJ_TRK; i++) {
         uint32_t src = cap_map(i), own = src < NPART ? src : i;   /* the patches: a part's own, else the place's */
         if (src < NTRK) {

@@ -159,6 +159,7 @@ static uint32_t sm_glo_page(void)
     uint32_t n=0;for(uint32_t i=0;i<ui.page;i++)if(PAGES[i].fam==FAM_GLO&&page_visible(i))n++;
     return n;
 }
+static uint8_t sm_program_current;                      /* (synthmaven_programs.c) */
 static const char *const SM_GLO_NAME[]={"TUNE/CLOCK","SYSTEM","VOICE COST","LAYERING","CPU GUARD","DISPLAY","USB/SAVE","CONTROLS","RECORDING","DEVICE"};
 static const char *const SM_GLO_HELP[]={"PITCH / CPU / CLOCK","MIDI ROUTING / CPU","P5 / CZ-1 / FM6 / SID","LAYER OR SELECT PART","COST / BUDGET / GUARD"};
 static void head_chip_text(char *b)
@@ -174,9 +175,12 @@ static void head_chip_text(char *b)
         b[10] = (char)('1' + ui.ptc_dst % NPAT);
     } else if (ui.home&&ui.home_pg) {str_cpy(b,"DRUMS",16);
     } else if (ui.home) {                               /* Stage: the engine (a kit: its name, "909 KIT") */
-        if (browse_pending()) { uint32_t kk, s = browse_shown(&kk); e = src_engine(s, kk); }
-        if (ENGINES[eng_idx(e)] == &ENG_DRUM && !browse_pending()) sound_name(TSEL, b);
-        else str_cpy(b, ENGINES[eng_idx(e)]->name, 16);
+        if (browse_pending()) { uint32_t kk, s = browse_shown(&kk); e = src_engine(s, kk); str_cpy(b, ENGINES[eng_idx(e)]->name, 16); }
+        else if (!sm_program_name[0]) str_cpy(b, "UNSAVED", 16);    /* the program: a player on stage needs its name */
+        else {
+            b[0] = 'P'; b[1] = (char)('1' + sm_program_current % 8u); b[2] = ' ';
+            str_cpy(b + 3, sm_program_name, 13);
+        }
     } else if(pg->fam==FAM_GLO){str_cpy(b,SM_GLO_NAME[sm_glo_page()],16);
     } else if (sec_map_on()) {                          /* the map: the engine */
         str_cpy(b, ENGINES[e]->name, 16);
@@ -460,8 +464,8 @@ static void draw_column(uint32_t c, const char *label0, const char *val0, const 
     char key[48], label[12], val[16], unit[8];
     int hot = c == ui.hot_col && ui.hot_t, named = fmt_named, strip, snap;
     uint8_t sig;
-    uint16_t lc = vc == T_DIM ? T_DIM : card_tc[c & 3u] ? card_tc[c & 3u] : T_KNOB(c), cbg = T_BG;   /* (knob c's colour) */
-    int32_t x, uw, room = COL_W;                        /* (the 3 px between cells keep values apart) */
+    uint16_t lc = vc == T_DIM ? T_DIM : card_tc[c & 3u] ? card_tc[c & 3u] : T_KNOB(c), cbg = T_SURF;   /* (knob c's colour, its card) */
+    int32_t x, uw, room = COL_W - 4;                    /* (inside the card) */
     const aafont_t *vf = TY_TX, *lf = TY_LB;
     uint32_t n, kn;
     int32_t kid;
@@ -508,6 +512,8 @@ static void draw_column(uint32_t c, const char *label0, const char *val0, const 
     if (strip) {                                        /* rolling: the value strip only */
         cv_begin(COL_W, ROLL_H, cbg);
         cv_oy = -ROLL_Y;
+        if (hot)                                        /* (the card's outline crosses the strip) */
+            cv_frame(0, 2, COL_W, COL_H - 2, lc);
     } else {
         char ov[16];                                    /* the value drawn before (in the cache key) */
         col_old_value(c, ov);
@@ -518,8 +524,12 @@ static void draw_column(uint32_t c, const char *label0, const char *val0, const 
             ui.roll[c].from[0] = 0;
         str_cpy(ui.col[c], key, sizeof ui.col[c]);
         cv_begin(COL_W, COL_H, T_BG);
-        if (hot)                                        /* (and a bar under it) */
-            cv_rrect(COL_W / 2 - 14, COL_H - 4, 28, 3, 1, lc, T_BG);
+        cv_rrect(0, 0, COL_W, COL_H, 5, cbg, T_BG);     /* the card, its colour along the top */
+        cv_rect(3, 0, COL_W - 6, 2, lc);
+        if (hot) {                                      /* (and a bar under it) */
+            cv_frame(0, 2, COL_W, COL_H - 2, lc);
+            cv_rrect(COL_W / 2 - 14, COL_H - 4, 28, 3, 1, lc, cbg);
+        }
     }
     if (label[0] || val[0]) {
         /* the label: capitals in the track's colour, centred, rows 3..21; the value under it (the text face, rolling),
@@ -1220,6 +1230,7 @@ static void ui_draw(void)                               /* (gfx.c: the fills wai
 }
 static void ui_draw_frame(void)
 {
+    loudness_comp_service();
     if (boot_work.state) {
         scrn.idle = fm1_ms;                          /* maintenance/errors never sleep or get covered */
         if (ui.force) { boot_work_draw(); ui.force = 0; }

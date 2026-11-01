@@ -494,7 +494,7 @@ static void sg_foot(void)                               /* the sections and bars
 {
     char b[32];
     uint32_t n = chain_config.count, r = chain.running ? chain.row : sg.sel;
-    uint32_t sig = n * 7u + sg.bars * 131u + sg.play * 1031u + r * 40503u + (uint32_t)(sg.px + 1) * 613u + ux.gen * 977u +
+    uint32_t sig = n * 7u + sg.bars * 131u + sg.play * 1031u + r * 40503u + (uint32_t)(sg.px + 1) * 613u + (r < n ? chain_config.row[r].slot * 257u : 0u) + ux.gen * 977u +
                    ux.pal * 31u + (r < n ? chain_config.row[r].repeat * 7919u : 0u) + sg.first * 17u + sg.ncols;
     if (!ui.force && sig == sgv.foot)
         return;
@@ -510,6 +510,10 @@ static void sg_foot(void)                               /* the sections and bars
         str_cpy(b + str_len(b), n > 1u ? " sections \xb7 " : " section \xb7 ", 14);
         fmt_int(b + str_len(b), (int32_t)sg.bars);
         str_cpy(b + str_len(b), sg.bars > 1u ? " bars" : " bar", 6);
+        if (r < n && chain_row_groove(&chain_config.row[r])) {   /* the section's drum groove, in place of the totals */
+            uint32_t g = chain_row_groove(&chain_config.row[r]);
+            cv_text_on(8, ty_y(17, TY_LB), TY_LB, g == CHAIN_DRUMS_OFF ? "DRUMS OFF" : sm_groove_names[g - 1u], T_THEME, T_BG);
+        } else
         cv_text_on(8, ty_y(17, TY_LB), TY_LB, b, T_MID, T_BG);
         if (r < n) {
             b[0] = row_letter((const uint8_t (*)[NTRK])chain_patterns, r);

@@ -38,10 +38,11 @@ typedef struct { const char *label; } kc_t;
  * ty_pixel). A role's two faces share its line height and baseline, so a layout holds in both; widths differ (a
  * layout fits the wider) */
 static uint32_t ty_pixel(void);
-#define TY_LB (ty_pixel() ? &AP_LB : &AF_LB)  /* labels, units, chips, tags: 16 px, pixel 2 x */
-#define TY_TX (ty_pixel() ? &AP_TX : &AF_TX)  /* names, rows, the header, text: 20 px, pixel 2 x */
-#define TY_VL (ty_pixel() ? &AP_VL : &AF_VL)  /* values: 28 px, pixel 3 x */
-#define TY_HR (ty_pixel() ? &AP_HR : &AF_HR)  /* the hero (the chord, a sound's name alone): 48 px, pixel 5 x */
+#define TY_SM (&AF_SM)                        /* the cards' names and small labels: 12 px */
+#define TY_LB (&AF_LB)                        /* labels, units, chips, tags: 16 px */
+#define TY_TX (&AF_TX)                        /* names, rows, the header, text: 20 px */
+#define TY_VL (&AF_VL)                        /* values: 28 px */
+#define TY_HR (&AF_HR)                        /* the hero (the chord, a sound's name alone): 48 px */
 
 /* host tests hook in here (layout lint, draw cost); nothing in the firmware */
 #ifndef GFX_HOOK_TEXT
@@ -1010,7 +1011,7 @@ static int32_t kern(const aafont_t *f, uint32_t a, uint32_t b)       /* 1/16 px 
     return (f->km[(l - 1u) * f->nkr + r - 1u] * (int32_t)f->ks + 128) >> 8;   /* (rounded) */
 }
 
-static int32_t gadv(const aafont_t *f, const aag_t *g) { return f->px ? g->adv * f->px : g->adv; }   /* 1/16 px */
+static int32_t gadv(const aafont_t *f, const aag_t *g) { (void)f; return g->adv; }   /* 1/16 px */
 static uint32_t fold(const aafont_t *f, uint32_t c)
 {
     return c >= 'a' && c <= 'z' && f->last < 'a' && glyph_at(f, c) < 0 ? c - 32u : c;
@@ -1072,7 +1073,7 @@ static int32_t cv_text_flags(int32_t x, int32_t y, const aafont_t *f, const char
         if (prev)
             pen += kern(f, prev, c);
         g = &f->g[glyph(f, c)];
-        if (f->px) {                                 /* a pixel face: whole pixels, at the rounded pen */
+        if (0) {                                     /* (a pixel face: retired) a pixel face: whole pixels, at the rounded pen */
             pos = (pen + 8) & ~15;
             if (g->bw) {
                 int32_t gx = x + (pos >> 4) + g->bx * f->px, gy = y + f->asc - 9 * f->px + g->by * f->px;

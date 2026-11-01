@@ -422,8 +422,15 @@ async function editorMock() {
   for (let e = 0; e < info.nengines; e++) names.push(E.parse[E.CMD.NAMES](await rq(E.req.names(e))).names);
   const cut = E.parse[E.CMD.NAMES]([15, 4, 65, 0, 66, 0, 67]);   /* 0.11: CZ-1's names overran the 600-byte reply */
   ok(cut.names.join() === "A,B,PRESET 3,PRESET 4" && !cut.titles.length, "editor: a NAMES reply cut short keeps its whole names");
+  {  /* each song section's drum groove: BANK_SONG op 4 */
+    await rq(E.req.bankSong(1, [{ banks: [0, 0, 0, 0], repeat: 1 }, { banks: [1, 1, 1, 1], repeat: 2 }]));
+    const set = [...await rq([E.CMD.BANK_SONG, [4, 2, 5, 9]])], got = [...await rq([E.CMD.BANK_SONG, [4]])];
+    ok(set[1] === 0 && got.slice(2).join() === "2,5,9", "editor: a song section's drum groove round trips");
+    ok([...await rq([E.CMD.BANK_SONG, [4, 2, 5, 10]])][1] === 1, "editor: a bad drum groove is refused");
+    await rq(E.req.bankSong(1, []));
+  }
   let prefs = await E.readDevicePreferences(rq, info, names);
-  ok(info.uiCaps === 57 && prefs.palettes.length === 8 && prefs.palettes[0] === "MONO" && prefs.palettes.includes("HI-CON"),
+  ok(info.uiCaps === 57 && prefs.palettes.length === 4 && prefs.palettes[0] === "SYNTHMAVEN" && prefs.palettes.includes("PINK"),
      "editor: preference capabilities (palette, favorites) and palette names");
   for(const [id,key,value] of [[4,"click",2],[5,"clickLevel",0],[6,"countin",2],[7,"preview",1],[8,"chordAdd",1]]) {
     const changed=E.parse[E.CMD.UI_SET](await rq(E.req.uiSet(id,value)));

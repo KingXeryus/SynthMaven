@@ -1067,8 +1067,20 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         break;
     }
     case ED_BANK_SONG: {
-        if (!na || a[0] > 3u) return;
+        if (!na || a[0] > 4u) return;
         uint32_t rc = 0;
+        if (a[0] == 4u) {                               /* each section's drum groove: a[1] sections, then one byte each */
+            if (na != 1u && (na < 2u || a[1] != chain_config.count || na != 2u + a[1])) rc = 1;
+            else if (na > 1u && chain_busy()) rc = 2;
+            else if (na > 1u) {
+                for (uint32_t row = 0; row < a[1]; row++) if (a[2u + row] > CHAIN_DRUMS_OFF) rc = 1;
+                if (!rc) for (uint32_t row = 0; row < a[1]; row++) chain_row_set_groove(&chain_config.row[row], a[2u + row]);
+                ui.force = 1;
+            }
+            ed_b(4u); ed_b(rc); ed_b(chain_config.count);
+            for (uint32_t row = 0; row < chain_config.count; row++) ed_b(chain_row_groove(&chain_config.row[row]));
+            break;
+        }
         if (a[0] == 1u) {
             if (na < 2u || a[1] > CHAIN_ROWS || na != 2u + a[1] * 5u) rc = 1;
             else if (chain_busy()) rc = 2;
@@ -1082,7 +1094,7 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
                     chain_config.count = a[1];
                     for (uint32_t row = 0; row < a[1]; row++) {
                         memcpy(chain_patterns[row], a + 2u + row * 5u, ED_TRK);
-                        chain_config.row[row] = (chain_row_t){chain_patterns[row][0], a[6u + row * 5u]};
+                        chain_config.row[row] = (chain_row_t){chain_patterns[row][0], a[6u + row * 5u]};   /* (grooves: a following op 4) */
                     }
                     ui.song_row = 0; ui.force = 1;
                 }
@@ -1114,7 +1126,7 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
                 else if (chain_busy()) rc = 2;
                 else {
                     chain_config = c;
-                    for (uint32_t row = 0; row < c.count; row++) memset(chain_patterns[row], c.row[row].slot, NTRK);
+                    for (uint32_t row = 0; row < c.count; row++) memset(chain_patterns[row], chain_row_pattern(&c.row[row]), NTRK);
                     ui.song_row = 0; ui.force = 1;
                 }
             }
@@ -1123,7 +1135,7 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         ed_b(op); ed_b(rc); ed_b(chain_config.count);
         ed_b(chain.running); ed_b(chain.row); ed_b(chain.remaining);
         for (i = 0; i < chain_config.count; i++) {
-            ed_b(chain_config.row[i].slot); ed_b(chain_config.row[i].repeat);
+            ed_b(chain_row_pattern(&chain_config.row[i])); ed_b(chain_config.row[i].repeat);
         }
         break;
     }

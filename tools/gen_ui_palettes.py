@@ -6,7 +6,7 @@
 
   gen_ui_palettes.py OUT.h [--report]
 
-Melodee's palettes: NIGHT (the default: warm ink), DAY (light) and CONTRAST (black and white). A palette is BG
+The themes: SYNTHMAVEN (the default, main colour red), ORANGE, BABY BLUE and PINK, all on black. A palette is BG
 (background), SURF (surface: cards, dialogs, menu rows), TEXT, ACCENT (the one active thing: hot knob, cursor,
 playhead) and four track colours: the selected track's is THEME (values, curves, gauges, selection), so the screen
 takes the colour of the track ALGORITHM picks (src/gfx.c palette_track). The firmware derives the rest with fixed
@@ -30,23 +30,14 @@ import sys
 from pathlib import Path
 
 # name, bg, surf, text, accent, (track 1, 2, 3, 4) (8-bit RGB; stored as RGB565)
+# The themes: black, one main colour; KNOB 1..4 and parts 1..4 are the main colour, then white, a contrast and grey.
+RED, ORANGE, BABY_BLUE, PINK = (255, 44, 52), (255, 140, 26), (137, 207, 240), (255, 151, 199)
+WHITE, BLUE, GREY = (242, 242, 242), (64, 140, 255), (150, 154, 164)
 PALETTES = [
-    ("NIGHT", (0, 0, 0), (22, 22, 26), (242, 242, 242), (255, 44, 52),
-     ((255, 44, 52), (255, 151, 199), (158, 211, 240), (170, 174, 184))),
-    ("DAY",      (246, 242, 234), (231, 224, 212), (30, 26, 38),    (20, 16, 28),
-     ((160, 42, 22), (116, 68, 0), (0, 92, 72), (78, 56, 184))),
-    ("CONTRAST", (0, 0, 0),       (34, 34, 34),    (255, 255, 255), (255, 255, 255),
-     ((255, 128, 96), (255, 214, 0), (0, 236, 188), (176, 160, 255))),
-    ("SUNSET",   (34, 16, 34),    (54, 28, 52),    (255, 236, 240), (255, 255, 255),
-     ((255, 96, 160), (255, 150, 64), (255, 214, 92), (186, 132, 255))),
-    ("OCEAN",    (12, 22, 40),    (24, 40, 64),    (232, 244, 255), (255, 255, 255),
-     ((255, 128, 150), (255, 206, 104), (64, 214, 230), (140, 156, 255))),
-    ("NEON",     (10, 8, 20),     (28, 24, 46),    (244, 242, 255), (255, 255, 255),
-     ((255, 72, 200), (0, 228, 255), (170, 255, 64), (255, 230, 0))),
-    ("CANDY",    (255, 241, 246), (247, 224, 236), (44, 24, 48),    (30, 14, 34),
-     ((150, 20, 102), (32, 64, 178), (0, 88, 90), (138, 54, 0))),
-    ("LO-FI",    (32, 28, 26),    (48, 42, 38),    (236, 226, 208), (250, 244, 232),
-     ((218, 140, 128), (214, 182, 104), (146, 184, 142), (142, 164, 206))),
+    ("SYNTHMAVEN", (0, 0, 0), (22, 22, 26), WHITE, RED, (RED, WHITE, BLUE, GREY)),
+    ("ORANGE", (0, 0, 0), (22, 22, 26), WHITE, ORANGE, (ORANGE, WHITE, BLUE, GREY)),
+    ("BABY BLUE", (0, 0, 0), (22, 22, 26), WHITE, BABY_BLUE, (BABY_BLUE, WHITE, RED, GREY)),
+    ("PINK", (0, 0, 0), (22, 22, 26), WHITE, PINK, (PINK, WHITE, BLUE, GREY)),
 ]
 TEST_GRAY = ("GRAY", (14, 14, 14), (36, 36, 36), (204, 204, 204), (255, 255, 255),
              ((232, 232, 232), (220, 220, 220), (208, 208, 208), (244, 244, 244)))
@@ -55,7 +46,7 @@ REC_DARK, REC_LIGHT = (255, 72, 72), (190, 24, 40)
 QR_LIGHT, QR_DARK, CRASH_BG, CRASH_INK = (255, 255, 255), (0, 0, 0), (160, 0, 0), (255, 255, 255)
 PCT = {"MID": 70, "DIM": 42, "LINE": 18, "SEL": 90, "TINT": 12, "KEY": 78}
 RAISE_PCT = 12                     # SURF -> TEXT
-LINE_PCT = {"NIGHT": 18}           # a palette's own LINE (else PCT["LINE"]): NIGHT's dividers as faint as the design's
+LINE_PCT = {name: 18 for name in ("SYNTHMAVEN", "ORANGE", "BABY BLUE", "PINK")}           # a palette's own LINE (else PCT["LINE"]): NIGHT's dividers as faint as the design's
 
 
 # the knobs' colours (src/gfx.c T_KNOB): each track colour turned round the hue circle in OKLCH (degrees, and a lightness
@@ -104,8 +95,10 @@ def shade(rgb, dh, dl):
 def shades(p):
     """[track][knob] colours of palette p"""
     name, bg, _, _, _, trk = p
-    if name in ("GRAY", "NIGHT"):
+    if name == "GRAY":
         return [[c] * 4 for c in trk]
+    if name != "GRAY":                                 # every page's KNOB 1..4: the theme's four colours
+        return [list(trk) for _ in trk]
     away = -1.0 if sum(bg) > 3 * 128 else 1.0          # (a light background: darker)
     return [[shade(c, dh, away * dl) for dh, dl in SHADES] for c in trk]
 
@@ -195,7 +188,7 @@ def main():
     ap.add_argument("--report", action="store_true")
     a = ap.parse_args()
     fails = []
-    assert PALETTES[0][0] == "NIGHT" and len(PALETTES) <= 31
+    assert PALETTES[0][0] == "SYNTHMAVEN" and len(PALETTES) <= 31
     rows = [derive(p, t) for p in PALETTES + [TEST_GRAY] for t in range(4)]
     for name, d in rows:
         if name.startswith("GRAY"):

@@ -33,7 +33,7 @@ static int chain_valid(const chain_config_t *c)
     if (c->count > CHAIN_ROWS)
         return 0;
     for (i = 0; i < c->count; i++)
-        if (c->row[i].slot >= NPAT || !c->row[i].repeat || c->row[i].repeat > 16u)
+        if (chain_row_pattern(&c->row[i]) >= NPAT || chain_row_groove(&c->row[i]) > CHAIN_DRUMS_OFF || !c->row[i].repeat || c->row[i].repeat > 16u)
             return 0;
     return 1;
 }
@@ -42,10 +42,14 @@ static const step_t *seq_steps(const track_t *t)
     return t->step;
 }
 static void motion_restore(track_t *t);
+static void sm_chain_drums_begin(void);          /* synthmaven_drums.c: the arrangement's grooves */
+static void sm_chain_drums_section(uint32_t groove);
+static void sm_chain_drums_end(void);
 static void chain_apply(void)
 {
     uint32_t i;
-    chain.slot = chain.config.row[chain.row].slot;
+    chain.slot = (uint8_t)chain_row_pattern(&chain.config.row[chain.row]);
+    sm_chain_drums_section(chain_row_groove(&chain.config.row[chain.row]));
     for (i = 0; i < NTRK; i++) {
         track_t *t = &trk[i];
         seq_release(t);
@@ -72,6 +76,7 @@ static void chain_start(void)
     chain.carry = 0;
     chain.running = 1;
     chain.armed = 0;
+    sm_chain_drums_begin();
     chain_apply();
 }
 static void chain_stop(void)
@@ -86,6 +91,7 @@ static void chain_stop(void)
     }
     song.rec = chain.rec;
     chain.running = 0;
+    sm_chain_drums_end();
 }
 static void chain_tick(uint32_t n)
 {

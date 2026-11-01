@@ -4,7 +4,7 @@
 """Generate README SVGs from the real host UI renders, without mock screen art.
 
 Usage: python tools/gen_readme_media.py build/ui_new
-The host renderer and tests/ui_render.py must have produced NIGHT/*.png first.
+The host renderer and tests/ui_render.py must have produced SYNTHMAVEN/*.png first.
 """
 import argparse
 import base64
@@ -34,7 +34,7 @@ def svg(width, height, title, content):
 
 
 def generate(renders):
-    shots = Path(renders) / "NIGHT"
+    shots = Path(renders) / "SYNTHMAVEN"
     media = ROOT / "docs/media"
     hero = [text(28, 48, "MELODEE", 30, "#fff"), text(28, 80, "Synthesizer · sequencer · effects", 17, "#a8b2c0")]
     for i, (name, label) in enumerate((("ref_stage_held", "HOME / selected track"), ("ref_song", "SONG / arrangement"),

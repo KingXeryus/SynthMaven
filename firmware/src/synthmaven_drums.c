@@ -16,6 +16,37 @@ static sm_drum_config_t sm_drums = {
     {0x1111,0x1010,0x5555,0,0,0,0,0},
     {100,90,70,70,80,80,70,80}, {110,100,85,90,100,100,95,100}, 90,0
 };
+/* Factory grooves: a 16-step bar of the lanes above, bit n = step n. Dum is KICK and tak RIM on the Arabic rhythms.
+ * Index 0 of the browser is the player's own pattern, kept while grooves are browsed. */
+#define SM_GROOVES 8u
+static const char *const sm_groove_names[SM_GROOVES] = {"BALLAD","HALF PIPE","STRAIGHT 8","ON THE FLOOR","MAKSOOM","WAHDA","BALADI","FOX"};
+/* Not const: in RAM, because the arrangement switches grooves from the audio ISR (song_chain.c) */
+static uint16_t sm_groove_steps[SM_GROOVES][SM_DRUM_LANES] = {
+    {0x0401,0x1010,0x5555,0,0,0,0,0},
+    {0x0481,0x0100,0x5555,0,0,0,0,0x2020},
+    {0x0101,0x1010,0x5555,0,0,0,0,0},
+    {0x1111,0,0x1111,0x4444,0x1010,0,0,0},
+    {0x0101,0,0,0,0,0,0,0x1044},
+    {0x0001,0,0,0,0,0,0,0x1040},
+    {0x0105,0,0,0,0,0,0,0x1040},
+    {0x0101,0,0,0,0,0,0,0x1010},
+};
+static uint16_t sm_drum_own[SM_DRUM_LANES];
+static uint8_t sm_drum_groove;                  /* 0: the player's pattern, n: factory groove n */
+/* the groove on the lanes: an edit, a program or the editor replacing the steps makes them the player's pattern */
+static uint32_t sm_groove_current(void)
+{
+    if(sm_drum_groove && memcmp(sm_drums.steps,sm_groove_steps[sm_drum_groove-1u],sizeof sm_drums.steps))
+        sm_drum_groove=0;
+    return sm_drum_groove;
+}
+static void sm_groove_turn(int32_t dir)
+{
+    uint32_t next=(sm_groove_current()+(dir>0?1u:SM_GROOVES))%(SM_GROOVES+1u);
+    if(!sm_drum_groove)memcpy(sm_drum_own,sm_drums.steps,sizeof sm_drum_own);
+    memcpy(sm_drums.steps,next?sm_groove_steps[next-1u]:sm_drum_own,sizeof sm_drums.steps);
+    sm_drum_groove=(uint8_t)next;
+}
 static struct {
     dr8_t lane[SM_DRUM_LANES];
     uint32_t remaining;
@@ -26,6 +57,28 @@ static dr_scratch_t sm_drum_scratch;
 static const int16_t sm_drum_params[P_COUNT] = {
     [P_E1]=64,[P_E2]=64,[P_E3]=64,[P_E4]=64
 };
+/* The arrangement's drum grooves (song_chain.c, in the ISR): a section may change the groove or stop the drums, from its
+ * first step; STOP puts back what was there before the song. */
+static struct { uint16_t steps[SM_DRUM_LANES]; uint8_t enabled; } sm_drum_song;
+static void sm_chain_drums_begin(void)
+{
+    for(uint32_t k=0;k<SM_DRUM_LANES;k++)sm_drum_song.steps[k]=sm_drums.steps[k];
+    sm_drum_song.enabled=sm_drums.enabled;
+    sm_drum_audio.step=0;sm_drum_audio.remaining=0;
+}
+static void sm_chain_drums_section(uint32_t groove)
+{
+    if(groove==CHAIN_DRUMS_OFF){sm_drums.enabled=0;return;}
+    if(!groove||groove>SM_GROOVES)return;
+    for(uint32_t k=0;k<SM_DRUM_LANES;k++)sm_drums.steps[k]=sm_groove_steps[groove-1u][k];
+    sm_drums.enabled=1;
+    sm_drum_audio.step=0;sm_drum_audio.remaining=0;
+}
+static void sm_chain_drums_end(void)
+{
+    for(uint32_t k=0;k<SM_DRUM_LANES;k++)sm_drums.steps[k]=sm_drum_song.steps[k];
+    sm_drums.enabled=sm_drum_song.enabled;
+}
 static void sm_drum_hit(uint32_t lane,uint32_t velocity)
 {
     if(lane>=SM_DRUM_LANES || !velocity)return;

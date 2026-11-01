@@ -153,17 +153,11 @@ class NightlySite(unittest.TestCase):
         self.assertEqual((self.site / "firmware/melodee-1.3.2.fwsc").read_bytes(), self.dual.read_bytes())
         self.assertEqual((self.site / "firmware/melodee-nightly.fwsc").read_bytes(), self.normal.read_bytes())
 
-    def test_pinned_bootloader_is_published_with_its_notice(self):
+    def test_the_installer_offers_no_bootloader(self):
         import mboot
         files = mboot.checked_files()
-        self.assertEqual((self.site / "firmware/m-bootloader-1.2.fwsc").read_bytes(), files["fm1-uboot.fwsc"])
-        self.assertEqual((self.site / "firmware/m-bootloader-LICENSE.txt").read_bytes(), files["LICENSE"])
-        installer = self.site / "webapp/installer/index.html"
-        before = installer.read_bytes()
-        with patch.object(mboot, "checked_files", side_effect=ValueError("checksum mismatch")):
-            with self.assertRaisesRegex(ValueError, "checksum mismatch"):
-                self.build_site(self.dual, "1.3.2", self.site, installer_only=True)
-        self.assertEqual(installer.read_bytes(), before)
+        self.assertFalse(list((self.site / "firmware").glob("m-bootloader*")))
+        self.assertNotIn(b'id="mboot"', (self.site / "webapp/installer/index.html").read_bytes())
         with tempfile.TemporaryDirectory() as root:
             directory = Path(root)
             for name, data in files.items():

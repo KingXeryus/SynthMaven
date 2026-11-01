@@ -14,7 +14,7 @@ int main(void){int first=1;printf("[");
   if(fx){if(e!=ENGI_FM6 || fx==6)continue;for(unsigned n=0;n<3;n++){TSEL->p[P_FXTYPE+n*FX_PARAMS]=fx;song.g[G_MFXTYPE+n*FX_PARAMS]=fx;}}
   if(!page_visible(i))continue;
   const page_t *p=&PAGES[i];char file[80];snprintf(file,sizeof file,"ref_%u_%u_%u",e,i,fx);
-  draw(-1);write_ppm("build/guide","NIGHT",file);
+  draw(-1);write_ppm("build/guide","SYNTHMAVEN",file);
   if(!first)putchar(',');first=0;printf("{\"engine\":");js(ENGINES[e]->name);printf(",\"engine_id\":%u,\"page_id\":%u,\"scope\":%u,\"title\":",e,i,p->scope);js(p->title);
   printf(",\"effect\":");js(fx?N_FX[fx]:"");printf(",\"family\":%u,\"env\":%d,\"lfo\":%d,\"image\":",p->fam,native_page(i,FAM_ENV),native_page(i,FAM_LFO));js(file);printf(",\"controls\":[");
   for(unsigned k=0;k<4;k++){if(k)putchar(',');int16_t *v;const param_desc_t *d=page_desc(p,k,&v);

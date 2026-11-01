@@ -49,7 +49,7 @@ PHASES = 2                             # horizontal phases per glyph (aa_raster.
 LEVELS = [4]                           # alpha steps kept of the 16 (--levels)
 KERN_PX = 28                           # the shared kerning's size (VL's: exact there, within 1/16 px at 16 / 20 px)
 # faces stored Huffman-coded (--huff): all four (the pixel faces are 1 bit and need no code)
-HUFF = [("LB", "TX", "VL", "HR")]
+HUFF = [("SM", "LB", "TX", "VL", "HR")]
 # HR (the hero, 48 px) draws a value or a name: every letter, the digits and the signs names and values use (the
 # factory names' ' ( ) too); the space as its range and the rest as extras. A string with another character is drawn
 # in VL (gfx.c text_has)
@@ -60,7 +60,8 @@ PIXEL = Path(__file__).resolve().parents[1] / "assets" / "fonts" / "melodee_pixe
 def preset(name):
     if name == "rubik":
         v = str(FONTS.parent / "assets" / "fonts" / "Rubik[wght].ttf")       # SIL OFL 1.1, Google Fonts
-        return [("LB", v + "@500", 16, (32, 126), EXTRAS, 0.0, PHASES),             # the large type's roles
+        return [("SM", v + "@500", 12, (32, 126), EXTRAS, 0.0, 1),             # cards: names too long for the labels' size
+                ("LB", v + "@500", 16, (32, 126), EXTRAS, 0.0, PHASES),             # the large type's roles
                 ("TX", v + "@500", 20, (32, 126), EXTRAS, 0.0, PHASES),
                 ("VL", v + "@500", 28, (32, 126), EXTRAS, 0.0, 1),
                 ("HR", v + "@500", 48, (32, 32), [ord(c) for c in HR_CHARS[1:]], 0.0, 1),

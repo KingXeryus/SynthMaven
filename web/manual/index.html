@@ -3,12 +3,12 @@
      Copyright (C) 2026 Kerem Kilic (Ellic Studio)
      Copyright (C) 2026 Relyt29 (@relyt29), Signals Intelligence Sound (https://sigintsound.com/) -->
 <!-- Melodee user manual. English only. Screenshots are generated beside this file
-     (NIGHT UI renders, tools/manual_shots.py) and are not committed. -->
+     (SYNTHMAVEN UI renders, tools/manual_shots.py) and are not committed. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SynthMaven 3.6 user guide</title>
+<title>SynthMaven 4.0 user guide</title>
 <style>
   :root { --bg: #fff; --fg: #000; --dim: #666; --line: #ccc; }
   @media (prefers-color-scheme: dark) {
@@ -68,6 +68,12 @@
     .layout { grid-template-columns: 210px minmax(0, 1fr); }
     .toc { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow: auto; display: flex; flex-direction: column; }
   }
+
+.sm-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 14px 0 20px; }
+.sm-tile { background: #16161a; color: #f2f2f2; padding: 10px 10px 12px; border-top: 3px solid var(--c); min-height: 76px; box-sizing: border-box; }
+.sm-tile b { display: block; font-size: 24px; font-weight: 600; color: var(--c); line-height: 1.1; }
+.sm-tile span { display: block; font-size: 12px; color: #b4b4bc; margin-top: 4px; }
+@media (max-width: 420px) { .sm-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 </style>
 </head>
 <body>
@@ -129,7 +135,28 @@
     <article id="doc">
       <section id="about">
         <h2>About</h2>
-        <p>SynthMaven 3.6 is a Melodee-based synthesizer and sequencer for the M-VAVE FM-1. It combines Melodee's panel graphics, sequencer, USB audio and native instrument editing with SynthMaven HYBRID/Vital translations, DX7 sounds, four-part programs, global microtuning, scenes, setlists and MIDI Learn.</p>
+        <p><strong>SynthMaven 4.0 is an FM-1 firmware for oriental live musicians, turning the standard M-VAVE FM-1 into an oriental groove box.</strong></p>
+        <div class="sm-tiles">
+          <div class="sm-tile" style="--c:#ff2c34"><b>14</b><span>sound engines</span></div>
+          <div class="sm-tile" style="--c:#f2f2f2"><b>610</b><span>melodic presets</span></div>
+          <div class="sm-tile" style="--c:#408cff"><b>4</b><span>drum kits</span></div>
+          <div class="sm-tile" style="--c:#969aa4"><b>70</b><span>scales, 46 of them maqam</span></div>
+          <div class="sm-tile" style="--c:#ff2c34"><b>4</b><span>simultaneous layers, plus the drummer</span></div>
+          <div class="sm-tile" style="--c:#f2f2f2"><b>8</b><span>factory drum grooves</span></div>
+        </div>
+        <p>These features make that possible:</p>
+        <ul>
+          <li><strong>Microtuning for maqam:</strong> 46 maqam settings, a selectable root and octave boundary, custom offsets per key (10-cent steps on the panel, 1-cent steps in the editors), per-part bypass and scale-aware chords.</li>
+          <li><strong>Multi-layer key mapping:</strong> four parts per program, stacked or split across the keyboard, each with its own range, level and pan.</li>
+          <li><strong>Groove box:</strong> an independent eight-lane drum machine beside all four parts, with factory grooves including Maksoom, Wahda, Baladi and Fox.</li>
+          <li><strong>Sequencer:</strong> up to 64 steps and 8 patterns per track, song arrangement, live recording, step chance, knob automation and a piano roll.</li>
+          <li><strong>Song arranger:</strong> up to 16 sections, each with a pattern for every track, a drum groove and 1–16 repeats, on the FM-1 or in the editors. You can also turn a jam into an arrangement.</li>
+          <li><strong>MainStage-style performance:</strong> programs with four scenes, a 32-entry setlist and learned pedal or controller actions, with a Perform screen in the web editor and the SM FM1 iPad app.</li>
+          <li><strong>Multi-keyboard support:</strong> a separate MIDI input and channel for each layer and the drummer, over USB, TRS or both. The web editor can forward several controllers at once; the iPad app forwards one at a time.</li>
+        </ul>
+        <h3>First 10 minutes</h3>
+        <ol><li>Tap <kbd>SEL</kbd>. Turn SELECT to choose a scale, KNOB 3 for the root and KNOB 4 to turn master tuning on.</li><li>Press <kbd>HOME</kbd> to reach the drums. Turn ALGORITHM to a groove such as MAKSOOM and press <kbd>PLAY</kbd>. Turn SELECT to set the tempo.</li><li>Press <kbd>HOME</kbd> to return to the four cards. Hold <kbd>GLO</kbd> for two seconds to play all four layers.</li><li>With the drums stopped, turn SELECT to choose a layer, ALGORITHM for its engine and PRESETS for its sound.</li><li>Stop playback and press <kbd>SAVE</kbd>. Turn KNOB 4 right twice within 1.5 seconds to save the program.</li></ol>
+        <p>SynthMaven is based on Melodee, combining its panel graphics, sequencer, USB audio and native instrument editing with HYBRID/Vital translations and DX7 sounds.</p>
         <p>Melodee is by Kerem Kilic (Ellic Studio), based on <a href="https://github.com/hugelton/Felucca">Felucca</a> by Leo Kuroshita / Hügelton Instruments. SynthMaven also retains applicable Clipper/3dSam-derived work and third-party notices. See the release licence archive for the source attributions. Report this build's problems to <a href="https://github.com/KingXeryus/SynthMaven">SynthMaven</a>. This project is not endorsed by M-VAVE or the upstream authors.</p>
       </section>
 
@@ -140,8 +167,9 @@
         <ol><li>Press HOME. Turn ALGORITHM to change the selected part's engine.</li><li>Turn PRESETS to browse that engine's sounds, wrapping at the end of its bank.</li><li>Turn SELECT to choose one of the four parts. With layering off, play the selected part. With layering on, notes reach every unmuted part whose split range includes the note.</li><li>Turn KNOB 1–4 for the displayed sound controls. MASTER controls both physical output and USB recording level.</li></ol>
         <p>The four parts share the processor, memory and voice resources. An engine's maximum voice count is not a separate guaranteed allocation for every part. Mono backing parts replace their previous note when you play a chord; complex patches and effects can reduce available polyphony.</p>
         <h3>Four-layer Home and independent drum Home</h3>
-        <p>HOME switches between the four-layer program overview and the independent drum machine. Layer colors are L1 red, L2 pink, L3 light blue and L4 gray, with translucent card backgrounds and a white selection outline. Sequencer tracks use the same order. Layer numbers remain visible so color is not the only identifier.</p>
-        <p>On drum Home, SELECT or ALGORITHM chooses one of eight lanes. PRESETS or KNOB 1 selects a step. Turn KNOB 2 right to enable that step, or left to clear it. KNOB 3 sets the selected lane level; KNOB 4 changes tempo. PLAY starts or stops the independent drums. All four sound layers remain available to the keyboard. Stop playback before saving or loading programs.</p>
+        <figure class="shot"><img src="drum_home.png" alt="Drum Home with the Maksoom groove" width="240" height="240"><figcaption>Drum Home with the MAKSOOM groove.</figcaption></figure>
+        <p>HOME switches between the four-layer program overview and the independent drum machine. Layer colors are black with one main colour. In the default SynthMaven theme, L1 is red, L2 white, L3 blue and L4 gray. The header shows the program number and name. Each layer has a card with its sound, engine, pattern and steps; the selected card is outlined. Four rotary knobs under the cards show KNOB 1–4 for the selected layer. Choose a theme with COLOR in Settings (hold HOME): SynthMaven, Orange, Baby Blue or Pink. Sequencer tracks use the same order. Layer numbers remain visible so color is not the only identifier.</p>
+        <p>On drum Home, ALGORITHM chooses a factory groove: BALLAD, HALF PIPE, STRAIGHT 8, ON THE FLOOR, MAKSOOM, WAHDA, BALADI or FOX. Turn back to MY PATTERN to get your own steps again; editing a groove makes it your pattern. SELECT chooses one of eight lanes. While the drums are running, SELECT sets the tempo instead, on both Home screens. PRESETS or KNOB 1 selects a step. Turn KNOB 2 right to enable that step, or left to clear it. KNOB 3 sets the selected lane level; KNOB 4 changes tempo. PLAY starts or stops the independent drums. All four sound layers remain available to the keyboard. Stop playback before saving or loading programs.</p>
         <h3>Shared touch editor and playback</h3>
         <ol><li>Connect the FM-1 by USB in COMPUTER mode. In SM FM1 on iOS, choose USB cable in the connection wizard. A page marked Mock device is a demonstration and cannot play the FM-1.</li><li>Open Studio → Sequencer, choose a sound part and enter a pattern. Select a numbered step to edit its notes, velocity, timing, accent, slide and chance. Play sends a start request to the connected FM-1; Stop releases sequencer playback. An empty pattern makes no sound. Check MASTER and the part's mute/level if a populated pattern is silent.</li><li>Open Studio → Drums for the independent eight-lane pattern. Play and Stop here control drums independently of the melodic sequencer. Tap a step to toggle it; choose a lane to adjust level or velocity. Audition plays that lane on the FM-1. Lanes 1–4 / 5–8 and step banks keep the pads touch-sized.</li><li>Perform → Layers contains the four-strip mixer: select the part, turn its pan knob, move its level fader or mute it. Expand Layering &amp; keyboard splits for inclusive lower and upper note limits.</li><li>The editor uses screen pages instead of scrolling. Use Previous page / Next page to reach additional controls. Play and Stop remain available in the bottom navigation for Sequencer and Drums. Paging, hiding panels and color changes never alter a sound.</li></ol>
         <p>The iOS home-screen name is <strong>SM FM1</strong>. The app icon and FM-1 startup image use the Hybrid artwork; the editor itself has no logo. The web and iOS interfaces share the same controls and USB protocol. Bluetooth is not included.</p>
@@ -153,7 +181,8 @@
         <h3>Save or load a named program</h3>
         <figure class="shot"><img src="sm_program.png" width="240" height="240" alt="Program save and load controls"><figcaption>Eight named program slots.</figcaption></figure>
         <ol><li>Press SAVE to open PROGRAM.</li><li>Turn SELECT or KNOB 1 to choose P1–P8; the panel shows the slot name.</li><li>Use KNOB 2 or PRESETS to change the highlighted name character; ALGORITHM moves the character position. Turn KNOB 3 right twice within 1.5 seconds to LOAD. Turn KNOB 4 right twice within 1.5 seconds to SAVE the four-part program under the edited name. The first turn only arms the action; turning left cancels it.</li><li>The editor provides the optional tuning override when saving. Device saves follow global tuning by default.</li></ol>
-        <p>A fresh installation starts on P1 with layering off, so you hear the Layer 1 lead. Hold GLO to bring in the supporting layers.</p>
+        <p>Factory sounds and programs are automatically matched in loudness, so changing sounds shouldn't jump in volume. There is no control for this; LEVEL works as usual. A few short or very quiet sounds stay lower, and sounds you save as USER sounds aren't compensated.</p>
+        <p>A fresh installation starts on P1 with layering off, so you hear the Layer 1 lead. Hold GLO to bring in the supporting layers. DX RHODES and ORCHESTRA load with layering on.</p>
         <h3>Global chromatic microtuning</h3>
         <div class="shots"><figure class="shot"><img src="sm_master_tune.png" width="240" height="240" alt="Master tuning scale root and octave"><figcaption>Tap SEL for master tuning.</figcaption></figure><figure class="shot"><img src="sm_custom_tune.png" width="240" height="240" alt="Custom tuning keyboard and cents"><figcaption>Hold SEL for three seconds for custom tuning.</figcaption></figure></div>
         <p>Tap SEL (SCL in this guide's upstream labels). SELECT or KNOB 1 chooses the scale; KNOB 2 chooses the lower octave boundary C0–C8; KNOB 3 chooses the root; KNOB 4 enables master tuning. For C3, notes below C3 remain in equal temperament. Scale names are grouped as <strong>Western/</strong> and <strong>Arabic/</strong>. The 14 Western scales from SynthMaven Oriental include major and minor modes, pentatonics, blues, whole tone and diminished; they use equal-tempered notes with scale-aware quantization. The 46 maqam settings apply offsets to their original chromatic keys rather than renumbering the keyboard into scale degrees.</p>
@@ -168,7 +197,7 @@
         <p>On HOME, hold OCT− for three seconds to load the previous program, or OCT+ for three seconds to load the next. Each hold switches once; release before repeating. Short taps change octave. Holding both retains the existing octave-reset/update gesture. In menus and dialogs, OCT−/OCT+ retain their back/confirm functions.</p>
 <h2>USB editor and MIDI Learn</h2>
 <p>On the FM-1 display, category prefixes are abbreviated W/ and A/ to preserve space for scale names. The editors retain Western/ and Arabic/.
-</p><p>The web editor and SM FM1 iPad app share the same dark, touch-friendly workspace. The iPad app supports landscape orientation. Perform provides quick sound, layer and tuning controls; Shape edits sound engines; Studio contains the sequencer, independent drums and Programs. Transport controls are at the bottom. Section tabs and page buttons keep controls accessible without scrolling.</p>
+</p><p>The web editor and SM FM1 iPad app share the same dark, touch-friendly workspace. The iPad app supports landscape orientation. Perform provides quick sound and layer controls; Tuning has the scales and tuning keyboard; Shape edits sound engines; Studio contains the sequencer, independent drums and Programs. Transport controls are at the bottom. Section tabs and page buttons keep controls accessible without scrolling.</p>
 <p>Programs contains program save/load, scenes and setlists. The layer mixer and keyboard splits live in Perform → Layers. Library separates Device sounds, My library and User slots. Settings separates MIDI, global controls, Display, Recording and System. Changing a view never changes sound settings.</p>
 <figure><img src="editor-midi-learn.png" alt="MIDI Learn workspace in the shared editor"><figcaption>Learn first, assign the captured message, then save. Preview shown in mock mode.</figcaption></figure>
         <p>Computers and iPads see the device as <strong>SynthMaven FM1</strong>, as both its MIDI port and its USB audio interface. If a Mac still shows the old name after updating, unplug the device, delete its grey entry in Audio MIDI Setup → MIDI Studio, and plug it back in.</p>
@@ -193,7 +222,7 @@
         <h3>HYBRID editing and Vital import</h3>
         <ol><li>Open Shape → Native / import. Select HYBRID / Vital, then choose Read part to edit the current native patch, or Load Vital to open a .vital JSON file.</li><li>Review the translation report. Custom wavetables, spectral processing, unison, effects and unsupported routes are not reproduced. If no native waveform matches, sending is disabled until you explicitly allow native-wave approximation.</li><li>Expand oscillator, filter, envelope or LFO sections to edit exact values. Under Modulation, select M1–M4 as a source, choose a destination and amount to assign a macro. Multiple routes may share a macro.</li><li>Choose Apply to selected part. Draft controls do not change the device before this step. Return to the original part if you changed the selection while editing.</li><li>Save to the editor library for a single sound, or save a program to preserve all four parts. Macro assignments are native patch data and are saved with the sound/program.</li></ol>
         <p><strong>iPad USB connection:</strong> set COMPUTER role and USB Audio IN+OUT, then choose Connect → USB cable in SM FM1 3.5.6. iPadOS may retain the old name “SoundMaven”; the app recognizes the FM-1 by its USB identity even under this cached name. Input and output are paired from the same MIDI entity. A virtual SoundMaven port is not selected by name alone.</p>
-        <p>This 3.6 build is <strong>USB-only</strong>. Bluetooth is a separate experimental adaptation and is not enabled by this release.</p>
+        <p>This 4.0 build is <strong>USB-only</strong>. Bluetooth is a separate experimental adaptation and is not enabled by this release.</p>
       </section>
 
       <section id="before">
@@ -286,7 +315,7 @@
 
       <section id="tracks">
         <h2>Tracks</h2><h4>Step by step</h4><ol><li>Hold EDIT for two seconds, then release it: LAYER MIX remains visible.</li><li>Set part 1–4 volume with knobs 1–4. Turn SELECT to the part to pan, then PRESETS to position it left or right.</li><li>Turn ALGORITHM to set the selected part’s lower split point. For an exact upper limit use Perform → Layers in the editor. Play notes on both sides of the boundary to check the split.</li><li>Save the four-part program using SAVE → PROGRAM. A sound preset alone is not a backup of the complete mix.</li></ol>
-        <p>One to four tracks, one instrument and sound each. A factory program starts with four. <kbd>SELECT</kbd> on HOME selects among the four program parts; the screen and its knobs take that track’s color. In the SynthMaven theme the four tracks are red, pink, light blue and gray. Knob 1 is the track color; the other three knobs are shades of it.</p>
+        <p>One to four tracks, one instrument and sound each. A factory program starts with four. <kbd>SELECT</kbd> on HOME selects among the four program parts; the screen and its knobs take that track’s color. In the default theme the four tracks are red, white, blue and gray, and KNOB 1–4 use the same four colors in that order.</p>
         <ul>
           <li>The eight factory programs already contain four parts. On HOME, hold OCT− or OCT+ for three seconds to move between programs. Use Perform → Layers in the editor to mix or mute their parts.</li>
           <li><strong>Remove track</strong> removes the selected track after a question, and only while stopped (<strong>STOP FIRST</strong> otherwise). The tracks after it move down, taking their sounds, patterns, song sections, motion and recordings with them. The last remaining track cannot be removed.</li>
@@ -369,7 +398,7 @@
         </table>
         <ul>
           <li><strong>NEW</strong> opens the wizard, stopped only. Set key, scale and tempo (<kbd>KNOB 1</kbd> ROOT, <kbd>KNOB 2</kbd> SCALE, <kbd>KNOB 3</kbd> TEMPO), then a role on each of the four knobs: <strong>--</strong> (no track), <strong>KEEP</strong>, <strong>DRUMS</strong>, <strong>BASS</strong>, <strong>CHORDS</strong>, <strong>LEAD</strong> or <strong>PAD</strong>. The song keeps the places that have a role, in order, with empty patterns. With no template, track 1 starts as KEEP and the rest as --, so the song has one track. A saved template starts KEEP on as many tracks as the template has. A role’s first factory sound is used when the template’s sound does not already fit that role.</li>
-          <li><strong>TMPL</strong>: save your current sounds, settings and number of tracks as the template for new projects (empty patterns). In SynthMaven 3.6 the factory-program startup loads P1 with four parts; this differs from the original Melodee one-track startup.</li>
+          <li><strong>TMPL</strong>: save your current sounds, settings and number of tracks as the template for new projects (empty patterns). In SynthMaven 4.0 the factory-program startup loads P1 with four parts; this differs from the original Melodee one-track startup.</li>
           <li>Holding <kbd>SAVE</kbd>, or <kbd>SAVE</kbd>+<kbd>REC</kbd>, writes the project back to its slot (<code>SAVED B</code>, and so on). If it is playing, the screen says <strong>STOPPING TO SAVE</strong> and the transport stops first. A project with no slot yet opens PROJECT on a free slot (<strong>NEW PROJECT: PICK SLOT</strong>).</li>
           <li><strong>Autosave:</strong> stopped and untouched for five seconds (no key, button, knob or MIDI), a project that already has a slot saves itself when it changed. Hold <kbd>HOME</kbd> and set <strong>AUTOSAVE</strong> to <strong>OFF</strong> to save only by hand. It defaults <strong>ON</strong>, and the choice survives power-off. Manual <kbd>SAVE</kbd> stays available either way.</li>
         </ul>
@@ -670,6 +699,7 @@
         <p>MIX at zero, or OFF, fades that slot dry. If a time effect cannot get its buffer, the picture says <strong>MEMORY FULL</strong>; turn the slot off and on to try again. Hold <kbd>OCT+</kbd> for the sound sheet. Tap <kbd>OCT−</kbd> to return from a slot to its rack, from SHARED to FX, and from FX to Stage.</p>
         <p>SLOOP REVERB replaces Echoverb at effect ID 8, with SIZE, DAMP and TONE. The native-rate stereo tank uses 19,396 bytes per slot, down from Echoverb’s 60,340 bytes; bypass releases it. Existing ID 8 settings select the replacement reverb. Old audio Echo slots load OFF. ROOM and CHORUS retain their 2 KiB buffers. NOTE TAIL and NOTE ECHO remain note inserts. SLOOP audio processors run in the shared rack; the existing PHASER and CHORUS remain distinct choices.</p>
         <h3>Master punch effects</h3>
+        <figure class="shot"><img src="punch_active.png" alt="Punch effect playing" width="240" height="240"><figcaption>A punch effect in use.</figcaption></figure>
         <p>Hold <kbd>FX</kbd> and press a key to apply one of SLOOP’s 27 audio effects to the whole stereo master, including shared returns and USB stereo capture. Release the effect key for dry audio. Double-tap FX to lock the layer and tap again to close. KNOB 1 browses the key reference. Keys held before FX keep playing; effect keys produce no notes or MIDI.</p>
         <p>The effects include loops, reverse, tape stop, half speed, filter sweeps, phone, crush, alias, gate, echo, wobble, band kills, rewind, octave up, flanger, auto-pan, freeze, mono and fade. FREEZE uses SLOOP Reverb to hold 186 ms of captured master audio. The optional punch history uses 32 KiB while the layer is in use (372 ms of mono history; replay spans up to 348 ms); hold FX briefly before reverse/rewind. If memory is unavailable the header shows FX MEMORY; close FX, reduce effect memory use and reopen to retry.</p>
         <h3>Shared return</h3>
@@ -764,7 +794,7 @@
         <table>
           <thead><tr><th>Control</th><th>What it does</th></tr></thead>
           <tbody>
-            <tr><td>BPM</td><td>Song speed in beats per minute (40–240). Saved with the project. Set this on SEQ → TEMPO; the 3.6 GLO hold toggles layering.</td></tr>
+            <tr><td>BPM</td><td>Song speed in beats per minute (40–240). Saved with the project. Set this on SEQ → TEMPO; the 4.0 GLO hold toggles layering.</td></tr>
             <tr><td>SWG</td><td>Song swing: a project-wide lean applied on top of timing. Use this when every track should share the same groove; use PATTERN SWG when only one part should shuffle.</td></tr>
             <tr><td>QNT</td><td>One project-wide grid for the <em>next</em> recorded take on any audio or MIDI track, saved with the project and template. <strong>OFF</strong> (default) keeps the timing you played. A division snaps that take’s note onsets to the swung grid when recording ends; lengths and velocities stay. The piano roll then shows the committed timing. Changing QNT later chooses the next take’s grid — it does not redo a take already recorded. If a manual step is in the way, the take is left alone and the screen says <strong>QNT STEP OCCUPIED</strong>. This is separate from scale QNT on SCL.</td></tr>
           </tbody>
@@ -813,7 +843,7 @@
 
         <section id="songs">
           <h3>Songs</h3><h4>Step by step</h4><ol><li>Open SEQ → SONG or Studio → Projects in the editor. Add a row to begin the arrangement.</li><li>Choose the patterns and repeat count for each row. Add subsequent rows in playback order.</li><li>Play from start to audition the arrangement, then stop and save the project. A setlist of programs is separate from this pattern arrangement.</li></ol>
-          <p>On <strong>SEQ → SONG</strong>, the knobs select section, track, that track’s pattern, and how many times the section repeats (up to 16 rows, repeats 1–16).</p>
+          <p>On <strong>SEQ → SONG</strong>, the knobs select section, track, that track’s pattern, and how many times the section repeats (up to 16 rows, repeats 1–16). PRESETS sets the section’s drum groove: no change, one of the factory grooves, or drums off. A groove starts from the section’s first step, and your own drum pattern comes back when the song stops.</p>
           <div class="shots">
             <figure class="shot"><img src="song.png" alt="Song arrangement" width="240" height="240"><figcaption>SONG: sections of patterns.</figcaption></figure>
             <figure class="shot"><img src="ref_sheet_song.png" alt="Song action sheet" width="240" height="240"><figcaption>Song sheet.</figcaption></figure>
@@ -878,8 +908,7 @@
         <table>
           <thead><tr><th>Item</th><th>What it does</th></tr></thead>
           <tbody>
-            <tr><td>COLOR</td><td><strong>NIGHT</strong> (default), <strong>DAY</strong>, <strong>CONTRAST</strong>, <strong>SUNSET</strong>, <strong>OCEAN</strong>, <strong>NEON</strong>, <strong>CANDY</strong> or <strong>LO-FI</strong>. Knob 1 uses the selected track’s color; the other three knobs are shades of it. Remembered.</td></tr>
-            <tr><td>FONT</td><td><strong>RUBIK</strong> (default) or <strong>PIXEL</strong> (Melodee Pixel, a block face). Pages keep the same layout in either. Remembered.</td></tr>
+            <tr><td>COLOR</td><td>The theme: <strong>SYNTHMAVEN</strong> (default), <strong>ORANGE</strong>, <strong>BABY BLUE</strong> or <strong>PINK</strong>. Changes the look, not the sound.</td></tr>
             <tr><td>MIDI MODE</td><td>Which MIDI input plays the parts: USB, TRS or <strong>BOTH</strong> (default). The same setting as MIDI MODE on GLO → SYSTEM, where the narrow knob column shortens it to MODE.</td></tr>
             <tr><td>USB ROLE</td><td><strong>COMPUTER</strong> (default) or <strong>HOST</strong> for a USB MIDI controller. Returns to COMPUTER at the next power-on.</td></tr>
             <tr><td>HOLD, LIGHTS</td><td>Moved out of this list: find them in GLO's preference pages. HOLD is performance-hold timing (0.3–0.6 s); LIGHTS is idle indicator brightness.</td></tr>

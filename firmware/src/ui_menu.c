@@ -13,7 +13,7 @@
  * PRESETS scrolls from ABOUT through all credits. ui.menu: 1 list, 2 information. */
 /* ------------------------------------------------------------ menu --- */
 #define MENU_HEAD H_HEAD                 /* the menu's own title strip */
-enum { MI_COLOR, MI_FONT, MI_MIDI_IN,
+enum { MI_COLOR, MI_MIDI_IN,
 #if MELODEE_USB_HOST
        MI_USB_HOST,
 #endif
@@ -23,8 +23,8 @@ enum { MI_COLOR, MI_FONT, MI_MIDI_IN,
        MI_MIDI_KNOBS, MI_KNOB_MODE,
        MI_CLICK, MI_CLICK_LEVEL, MI_COUNTIN, MI_PREVIEW, MI_ADD, MI_AUTOSAVE, MI_PICKER, MI_ACCEL, MI_HOME_SEL, MI_GLO_SEL, MI_TRACKS, MI_SCREEN, MI_PANEL, MI_ABOUT, MI_DESIGNER, MI_BACK,
        MI_COUNT,
-       MI_HOLD = MI_COUNT, MI_LIGHTS, MI_NAMED };      /* past the list: edited from GLO's preferences only (sm_pref_menu) */
-static const char *const MI_NAME[MI_NAMED] = {"COLOR", "FONT", "MIDI MODE",
+       MI_HOLD = MI_COUNT, MI_LIGHTS, MI_FONT, MI_NAMED };      /* past the list: edited from GLO's preferences only (sm_pref_menu) */
+static const char *const MI_NAME[MI_NAMED] = {"COLOR", "MIDI MODE",
 #if MELODEE_USB_HOST
                                               "USB ROLE",
 #endif
@@ -33,7 +33,7 @@ static const char *const MI_NAME[MI_NAMED] = {"COLOR", "FONT", "MIDI MODE",
 #endif
                                               "MIDI KNOBS", "KNOB MODE",
                                               "AUDIO CLICK", "CLICK LEVEL", "COUNT-IN", "NOTE PREVIEW", "CHORD ENTRY",
-                                              "AUTOSAVE", "PICKER POPUPS", "KNOB ACCEL", "HOME SELECT", "GLO SELECT", "UNUSED TRACKS", "SCREEN OFF", "CALIBRATION", "ABOUT", "SOUND DESIGNER", "BACK", "HOLD", "LIGHTS"};
+                                              "AUTOSAVE", "PICKER POPUPS", "KNOB ACCEL", "HOME SELECT", "GLO SELECT", "UNUSED TRACKS", "SCREEN OFF", "CALIBRATION", "ABOUT", "SOUND DESIGNER", "BACK", "HOLD", "LIGHTS", "FONT"};
 #if MELODEE_USB_AUDIO
 /* USB AUDIO's four settings, as ua_off_want (UA_OFF_OUT | UA_OFF_IN) */
 static const char *const MI_USB_NAME[4] = {"IN+OUT", "IN", "OUT", "OFF"};
@@ -296,7 +296,6 @@ static void draw_menu(void)
                 if (i == MI_KNOB_MODE) value = MI_MIDI_MODE_NAME[settings_midi_knob_mode % MK_MODES];
                 if (i == MI_MIDI_IN) value = N_MIDI_INPUT[song.g[G_MIDI] % 3];
                 if (i == MI_PICKER) value = PREF_BITS & PREF_PICK_OFF ? "OFF" : "ON";
-                if (i == MI_FONT) value = TY_PIXEL ? "PIXEL" : "RUBIK";
                 if (i == MI_AUTOSAVE) value = settings_autosave ? "ON" : "OFF";
                 if (i == MI_HOME_SEL) value = "PARTS";
                 if (i == MI_GLO_SEL) value = HS_NAME[glo_select()];
@@ -309,14 +308,9 @@ static void draw_menu(void)
 #if MELODEE_USB_HOST
                 if (i == MI_USB_HOST) value = uh.want ? "HOST" : "COMPUTER";
 #endif
-                if (i == MI_COLOR) {                        /* the palette's four track colours as swatches */
-                    uint32_t k;
-                    int32_t x;
-                    uint16_t bg = sel ? ux_mix(T_BG, T_KNOB(i), 18) : T_BG;
+                if (i == MI_COLOR) {                        /* the theme's name */
                     menu_words(v, UI_PALETTES[settings.palette % NPALETTES].name, sizeof v);
-                    x = row_draw(y, w, v, T_TEXT, sel, 0, i) - 10 - 16 * 4;
-                    for (k = 0; k < 4u; k++)
-                        cv_rrect(x + 16 * (int32_t)k + 2, y + MENU_RH / 2 - 5, 10, 10, 3, T_TRK(k), bg);
+                    row_draw(y, w, v, T_TEXT, sel, 0, i);
                 } else {
                     v[0] = 0;
                     if (value)
@@ -416,12 +410,6 @@ static void menu_change(int32_t s,uint32_t ok)
     }
     if ((s || ok) && ui.menu == 1 && ui.menu_sel == MI_AUTOSAVE) {
         settings_autosave = (uint8_t)(s > 0 ? 1u : s < 0 ? 0u : !settings_autosave);
-        ui.force = 1; ok = 0;
-    }
-    if ((s || ok) && ui.menu == 1 && ui.menu_sel == MI_FONT) {   /* KNOB 1 right PIXEL, left RUBIK; OCT+ toggles */
-        uint32_t px = s > 0 ? 1u : s < 0 ? 0u : !TY_PIXEL;
-        PREF_BITS = (uint8_t)(px ? PREF_BITS | PREF_PIXEL : PREF_BITS & ~PREF_PIXEL);
-        palette_set(settings.palette);                 /* (ux.gen: every part's signature, the rolls redraw) */
         ui.force = 1; ok = 0;
     }
     if ((s || ok) && ui.menu == 1 && ui.menu_sel == MI_PICKER) {
@@ -524,13 +512,13 @@ static uint32_t sm_pref_menu(uint32_t id)
         MI_AUTOSAVE,MI_PICKER,MI_ACCEL,MI_HOLD,MI_CLICK,MI_CLICK_LEVEL,MI_COUNTIN,MI_PREVIEW,MI_ADD,MI_PANEL,MI_ABOUT};
     return id<sizeof map?map[id]:MI_BACK;
 }
-static const char *sm_pref_label(uint32_t id){return id<18?MI_NAME[sm_pref_menu(id)]:"";}
+static const char *sm_pref_label(uint32_t id){return id!=1u&&id<18?MI_NAME[sm_pref_menu(id)]:"";}
 static const char *sm_pref_value(uint32_t id,char *b)
 {
     static const char *const screen[]={"NEVER","5 MIN","15 MIN","30 MIN","60 MIN"},*const click[]={"OFF","REC","ON"},*const level[]={"LOW","MID","HIGH"},*const count[]={"OFF","1 BAR","2 BARS"};
     switch(id){
     case 0:return UI_PALETTES[settings.palette%NPALETTES].name;
-    case 1:return TY_PIXEL?"PIXEL":"RUBIK";
+    case 1:return "RUBIK";
     case 2:return LIGHTS_NAME[settings_lights%LIGHTS_N];
     case 3:return screen[scr_get()];
 #if MELODEE_USB_AUDIO

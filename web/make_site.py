@@ -29,7 +29,6 @@ installer-only update does not read or replace the published manual.
 """
 import json
 import hashlib
-import mboot
 import html as html_escape
 import re
 import shutil
@@ -218,8 +217,7 @@ def main(pkg, version, out, nightly=None, installer_only=False, rc=None, manual=
                     "pkg": {"dual": "../../firmware/" + name},
                     "sha256": {"dual": hashlib.sha256(raw).hexdigest()}}
     releases = release_history(out, release_meta)
-    boot_files = mboot.checked_files()
-    meta = json.dumps({**release_meta, "nightly": nightly_meta, "rc": rc_meta, "releases": releases, "boot": mboot.metadata()})
+    meta = json.dumps({**release_meta, "nightly": nightly_meta, "rc": rc_meta, "releases": releases})
     for mark in ("/*LIB*/", "/*META*/{}", "/*INSTALLER_STYLE*/", "/*INSTALLER*/"):
         if html.count(mark) != 1:
             raise SystemExit(f"index_pkg.html must contain {mark} once; update make_site.py")
@@ -233,9 +231,6 @@ def main(pkg, version, out, nightly=None, installer_only=False, rc=None, manual=
     for d in (inst, ed, fw):
         d.mkdir(parents=True, exist_ok=True)
     shutil.copy(HERE / "branding/firmware-icon.png", inst / "firmware-icon.png")
-    (fw / "m-bootloader-1.2.fwsc").write_bytes(boot_files["fm1-uboot.fwsc"])
-    (fw / "m-bootloader-1.2.boot").write_bytes(boot_files["fm1-uboot.boot"])
-    (fw / "m-bootloader-LICENSE.txt").write_bytes(boot_files["LICENSE"])
     keep = {name, "melodee-nightly.fwsc"}
     keep.update(file[3] for file in rc_files.values())
     keep.update(Path(path).name for release in releases for path in release["pkg"].values())

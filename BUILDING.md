@@ -289,7 +289,7 @@ Or, to install your own build from the web installer, make a local copy of the s
 - `webapp/manual/` — the stable manual from `web/manual/` (HTML and screenshots), published with a full release
 - `firmware/` — the dual-core `.fwsc` package, LICENSE texts
 
-The manual’s screenshots are generated into `web/manual/` (NIGHT palette only) and
+The manual’s screenshots are generated into `web/manual/` (SYNTHMAVEN palette only) and
 are not committed. `build/` is gitignored, and so are those PNGs.
 
 ```
@@ -301,8 +301,8 @@ MELODEE_RAM_AUDIO=1 ./build.sh --release 1.3.3
 tests/run_tests.sh
 #    SOUND=0 tests/run_tests.sh   # skip the long sound tests if you only need UI/screenshots
 
-# 2) Copy the NIGHT frames named in web/manual/index.html into the manual.
-python3 tools/manual_shots.py            # build/ui_new/NIGHT → web/manual/
+# 2) Copy the SYNTHMAVEN frames named in web/manual/index.html into the manual.
+python3 tools/manual_shots.py            # build/ui_new/SYNTHMAVEN → web/manual/
 # python3 tools/manual_shots.py --require  # succeed when every figure is already present
 # python3 tools/manual_shots.py --sources  # succeed when every source render exists
 # python3 tools/manual_shots.py --check    # report missing/stale without writing
@@ -318,7 +318,7 @@ cd /tmp/melodee-site && python3 -m http.server 8000
 
 `web/quick-host.sh` can be run from any directory. `VERSION` defaults to the firmware
 version in `tools/fm1_recover.py`. It runs step 2 only when the manual is missing figures.
-If any frame named in the manual is missing from `build/ui_new/NIGHT/`, it renders those
+If any frame named in the manual is missing from `build/ui_new/SYNTHMAVEN/`, it renders those
 screens (`UI=renders tests/run_tests.sh`) and then copies them. It replaces `SITE_DIR` only
 when that path is already a Melodee site (or does not exist yet).
 A stable release does the same after the host tests, before the site is published.

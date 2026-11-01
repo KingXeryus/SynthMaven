@@ -33,6 +33,7 @@ const TEXT = {
     demo: "Demo: a simulated FM-1. Nothing is written.", demoleave: "Leave the demo",
     kicker: "Firmware for the M-VAVE FM-1", title: "Install SynthMaven",
     lede: "Synths, sequencing and effects for the FM-1, installed over USB from this page.",
+    stripBack: "1 Back up", stripBackSub: "Installing resets your settings", stripConnect: "2 Connect", stripConnectSub: "Find the FM-1", stripInstall: "3 Install", stripInstallSub: "Keep it plugged in",
     factBrowser: "Chrome or Edge", factCable: "A USB data cable", factTime: "About 3 minutes",
     resumeBannerH: "An installation didn't finish.",
     resumeBanner: "Your FM-1 is waiting in update mode. Connect it and press Find FM-1 to finish.",
@@ -139,6 +140,7 @@ const TEXT = {
     demo: "デモ：FM-1 をシミュレートしています。何も書き込まれません。", demoleave: "デモを終了",
     kicker: "M-VAVE FM-1 用ファームウェア", title: "SynthMaven をインストール",
     lede: "FM-1 用シンセサイザー、シーケンサー、エフェクト。このページから USB でインストールできます。",
+    stripBack: "1 バックアップ", stripBackSub: "インストールすると設定はリセットされます", stripConnect: "2 接続", stripConnectSub: "FM-1 を探す", stripInstall: "3 インストール", stripInstallSub: "接続したままにしてください",
     factBrowser: "Chrome または Edge", factCable: "USB データケーブル", factTime: "約 3 分",
     resumeBannerH: "前回のインストールが完了していません。",
     resumeBanner: "FM-1 はアップデートモードで待機しています。接続して「FM-1 を探す」を押すと、続きから完了できます。",
@@ -302,7 +304,7 @@ async function loadRelease() {
   const epoch = ++buildEpoch, chosen = selection();
   if (DEMO) return demoRelease(chosen);
   st.image = null;st.boot = null;
-  st.meta = {...chosen,boot:meta.boot};render();
+  st.meta = {...chosen};render();
   $("pagefail").hidden = true;
   try {
     const key = [build(),chosen.version,chosen.commit || "",chosen.sha256?.dual || ""].join(":");
@@ -314,12 +316,6 @@ async function loadRelease() {
     if (epoch !== buildEpoch) return;
     st.image = images.get(key);
     if (st.dev) st.dev = {id:st.dev.id,...describeDevice(st.dev.id,st.meta.product)};
-    if (meta.boot) {
-      try {
-        const raw = await fetchBytes(meta.boot.pkg);
-        if (await sha256(raw) === meta.boot.sha256 && productOf(raw) === "FM-1_099" && epoch === buildEpoch) st.boot = {image:logicalImage(raw),version:meta.boot.version};
-      } catch (_) { /* as Saadet: a missing or damaged bootloader is never offered */ }
-    }
     if (epoch !== buildEpoch) return;
   } catch(e) { if(epoch === buildEpoch) pageFail(t("loadfail",{m:e.message})); }
   if(epoch === buildEpoch) applyLang();
@@ -332,9 +328,8 @@ function demoImage(n, seed) { const b = new Uint8Array(n); for (let i = 0; i < n
 function demoRelease(meta) {
   const version = meta?.version || "1.0";
   const product = meta?.product || "FM-1_9010000";
-  st.meta = { name: "SynthMaven", version, product, boot: { version: meta?.boot?.version || "1.2" } };
+  st.meta = { name: "SynthMaven", version, product };
   st.image = demoImage(0x30000, 1);
-  st.boot = { image: demoImage(0x4800, 2), version: st.meta.boot.version };
   $("demo").hidden = false;
 }
 async function demoAccess() {
@@ -347,7 +342,7 @@ async function demoAccess() {
       update: { identity: "FM-1_016", state: "loader" }, interrupt: { identity: "FM-1_016", interruptAt: 0.45 },
       open: { identity: "FM1_OFFICIAL_OPEN" },
     }[DEMO] || { identity: "FM-1_016" };
-    st.demo = fakeAccess({ images: { firmware: st.image, boot: st.boot.image }, after: p, loader:MELODEE_LOADER, ...opts });
+    st.demo = fakeAccess({ images: { firmware: st.image }, after: p, loader:MELODEE_LOADER, ...opts });
   }
   return st.demo.access;
 }
@@ -394,7 +389,6 @@ async function connect() {
   render();
 }
 $("find").addEventListener("click", connect);
-$("mboot").addEventListener("change", render);
 
 /* ---- the page's state, drawn ---- */
 function render() {
@@ -421,7 +415,6 @@ function render() {
     $("devchip").className = "chip " + chip[1];
   }
   /* step 2: only with m-bootloader's package, never for M-VAVE's firmware */
-  $("st-options").hidden = !st.boot;
   /* step 3 */
   const go = $("go");
   if (!dev || !plan) {
@@ -440,9 +433,10 @@ function render() {
     $("plantext").textContent = t(words, { v: ver() });
   }
   $("st-connect").dataset.state = dev ? "done" : "active";
-  $("st-options").dataset.state = dev && plan ? "active" : "todo";
   $("st-install").dataset.state = dev && plan ? "active" : "todo";
-  $("release").disabled = $("mboot").disabled = st.running || finding;
+  const stage = dev && plan ? 2 : finding ? 1 : 0;
+  [...$("strip").children].forEach((e, i) => { e.dataset.state = i < stage ? "done" : i === stage ? "active" : "todo"; });
+  $("release").disabled = st.running || finding;
   buildIds.forEach(k => { $("build-" + k).disabled = st.running || finding; });
   leaving?.lock(st.running || finding);
   /* an unfinished install: kept from an earlier visit, or the FM-1 itself in update mode */
@@ -454,7 +448,7 @@ function render() {
 
 function currentPlan() {
   if (!st.dev) return null;
-  return planFor(st.meta.product === "FM-1_900" && st.dev.kind === "this" ? "dev" : st.dev.kind, !!st.boot && $("mboot").checked);
+  return planFor(st.meta.product === "FM-1_900" && st.dev.kind === "this" ? "dev" : st.dev.kind, false);
 }
 
 /* ---- before writing: the rules, and the backup (asked every time) ---- */

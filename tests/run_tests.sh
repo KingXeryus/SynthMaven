@@ -233,8 +233,8 @@ if [ "$UI" = renders ]; then
         cat "$LOG/$n.fail"
         exit 1
     fi
-    if [ ! -f build/ui_new/NIGHT/home.png ]; then
-        echo "UI renders produced no NIGHT screenshots" >&2
+    if [ ! -f build/ui_new/SYNTHMAVEN/home.png ]; then
+        echo "UI renders produced no SYNTHMAVEN screenshots" >&2
         exit 1
     fi
     echo "UI RENDERS PASSED in $(($(date +%s) - start)) s"
@@ -412,6 +412,7 @@ if core && [ $TABLES = 1 ]; then
     t "SynthMaven compact program backup recovery" synthmaven_program_backup_test -O1 $FW -- "$OUT/synthmaven_program_backup_test"
     t "SynthMaven delayed button shortcuts" synthmaven_shortcuts_test -O1 $FW -- "$OUT/synthmaven_shortcuts_test"
     t "Independent drum USB control" synthmaven_drum_editor_test -O1 $FW -- "$OUT/synthmaven_drum_editor_test"
+    t "Loudness compensation: factory sounds and programs at the DX7 program's loudness" loudness_measure -O1 $FW -Itests -- "$OUT/loudness_measure" check
     t "Independent drum machine: timing, bounds and four-part isolation" synthmaven_drums_test -O1 $FW -- "$OUT/synthmaven_drums_test"
     t "SynthMaven program controls" synthmaven_program_ui_test -O1 $FW -- "$OUT/synthmaven_program_ui_test"
     t "SynthMaven scale-safe neutral harmony" synthmaven_chords_test -O1 $FW -- "$OUT/synthmaven_chords_test"

@@ -17,7 +17,7 @@
  * operator boxes overlapping or touching, no route, loop, bus or label inside a box or touching one it does not
  * connect, no two nets (one gap's routes that share an operator, the output, the loop, the label) sharing or
  * touching a pixel, everything inside the panel.
- * Every screen and the page/value sweep again in Melodee Pixel (Settings > FONT PIXEL, NIGHT): PIXEL_<screen>.ppm.
+ * Every screen and the page/value sweep again in Melodee Pixel (Settings > FONT PIXEL, SYNTHMAVEN): PIXEL_<screen>.ppm.
  * Output: OUTDIR/ppm/<PALETTE>_<screen>.ppm for MONO GREEN PAPER, OUTDIR/report.txt (findings, ellipsised free
  * text, the draw cost), OUTDIR/text_audit.tsv (MONO, per screen: texts, icons and keycaps with their ink-box px, the
  * ellipsised ones, the texts closer than 2 px to their cell's edge, the words).
@@ -473,7 +473,7 @@ enum { S_HOME, S_HOME_IDLE, S_HOME_NOTE, S_HOME_CHORD, S_HOME_INVERSION, S_HOME_
        S_STAGE_DRUM, S_STAGE_CZ, S_STAGE_P5, S_STAGE_QUEUED, S_STAGE_BROWSE, S_STAGE_STOPPED, S_STAGE_FILTER, S_PATGRID, S_PATGRID_STOPPED, S_PATGRID_SHEET, S_PATGRID_COPY, S_PATGRID_REPLACE, S_PATGRID_DELETE, S_PROJECT_NEW, S_NEW_KEY, S_NEW_ROLES,
        S_STAGE_T1, S_STAGE_T1_ARP, S_STAGE_T1_KNOBS, S_STAGE_T1_SYNTH, S_STAGE_T1_SYNTH_ARP, S_STAGE_T2, S_STAGE_T3, S_SHEET_STAGE, S_CONFIRM_TRACK,
        S_VIEW, S_VIEW_LETGO, S_VIEW_NOTE, S_VIEW_EMPTY, S_VIEW_KNOBS, S_VIEW_SLASH, S_MENU_HOME_SEL, S_HOME_SEL_MOD, S_HOME_SEL_CHORD,
-       S_HOME_SEL_LEVEL, S_PAT_DIALOG, S_STAGE_T1_REC,
+       S_HOME_SEL_LEVEL, S_DRUM_HOME, S_PAT_DIALOG, S_STAGE_T1_REC,
        S_MIXER_T1, S_MIXER_T2, S_MIXER_T3, S_PATGRID_T2, S_SONG_T2, S_GLO_T2, S_NEW_ROLES_T1,
        S_STAGE_LONG, S_STAGE_T3_LONG, S_STAGE_T2_LONG, S_STAGE_T1_LONG,
        S_REF_STAGE_HELD, S_REF_STAGE_RELEASED, S_REF_STAGE_CUTOFF, S_REF_STAGE_DRUM, S_REF_BROWSER, S_REF_PATTERNS, S_REF_SONG,
@@ -504,7 +504,7 @@ static const char *const S_NAME[S_COUNT] = {"home", "home_idle", "home_note", "h
     "stage_drum", "stage_cz", "stage_p5", "stage_queued", "stage_browse", "stage_stopped", "stage_filter", "patterns", "patterns_stopped", "patterns_sheet", "patterns_copy", "patterns_replace", "patterns_delete", "project_new", "new_key", "new_roles",
     "stage_1track", "stage_1track_arp", "stage_1track_knobs", "stage_1track_synth", "stage_1track_synth_arp", "stage_2tracks", "stage_3tracks", "sheet_stage", "confirm_track",
     "view", "view_letgo", "view_note", "view_empty", "view_knobs", "view_slash", "menu_home_select", "home_select_mod", "home_select_chord",
-    "home_select_level", "pattern_key_dialog", "stage_1track_rec",
+    "home_select_level", "drum_home", "pattern_key_dialog", "stage_1track_rec",
     "mixer_1track", "mixer_2tracks", "mixer_3tracks", "patterns_2tracks", "song_2tracks", "layer_glo_2tracks", "new_roles_1track",
     "stage_long", "stage_3tracks_long", "stage_2tracks_long", "stage_1track_long",
     "ref_stage_held", "ref_stage_released", "ref_stage_cutoff", "ref_stage_drum", "ref_browser", "ref_patterns", "ref_song", "ref_env", "ref_lfo", "ref_edit_osc", "ref_mixer", "ref_notes", "ref_settings", "ref_dialog", "ref_sheet_sound", "ref_sheet_song", "ref_picker_wave", "ref_picker_mode", "ref_sections_p5", "ref_map_p5", "ref_map_fm6", "ref_scl_list", "ref_sheet_project", "ref_sheet_note", "ref_sheet_hit", "ref_motion", "ref_sheet_motion", "ref_mod", "ref_picker_mod", "ref_arp", "ref_pattern", "ref_fmeg", "ref_grid", "ref_scales", "fx_phaser", "fx_width", "fx_formant", "fx_tape", "fx_spit", "fx_room", "fx_chorus", "fx_full", "fx_slot2", "fx_slot3", "fx_rack", "fx_rack_split", "fx_rack_pick", "fx_rack_list", "fx_bus1", "fx_bus2", "fx_bus3", "fx_shared", "fx_shared_split", "fx_shared_sheet", "fx_tone_dark", "fx_tone_thin", "boot_migration", "boot_update", "boot_error", "boot_complete", "boot_wipe_confirm", "boot_wiping", "boot_update_error", "map_drum_kit", "map_drum_hit", "map_drum_category",
@@ -1466,6 +1466,7 @@ static void setup(int s)
     case S_HOME_SEL_MOD: go_home(); HOME_SELECT = HS_MOD; select_turn(home_select(), 64); HOME_SELECT = 0; glo_select_set(0); break;
     case S_HOME_SEL_CHORD:
         song.ntrk = 1; GLO_SELECT |= TRACKS_HIDE; go_home(); HOME_SELECT = HS_CHORD; TSEL->p[P_CHRD] = 5; select_turn(home_select(), 1); HOME_SELECT = 0; break;
+    case S_DRUM_HOME: go_home(); ui.home_pg = 1; while (sm_groove_current() != 5u) sm_groove_turn(1); break;   /* MAKSOOM */
     case S_HOME_SEL_LEVEL: go_home(); ui.home_pg = 1; memset(&view, 0, sizeof view); HOME_SELECT = HS_LEVEL; select_turn(home_select(), -3); HOME_SELECT = 0; break;
     /* SEQ + a white key held: its dialog over Stage (pattern 3 of track 1); one track armed, its row's red border */
     case S_PAT_DIALOG: song.playing = 0; go_home(); ui.pat_dlg = 2; ui.confirm = CF_PAT_KEY; ui.confirm_trk = 0; break;
@@ -1657,7 +1658,7 @@ static void sweep_mpc_octaves(const char *out)
             uint32_t seen = 0;
             for (uint32_t i = 0; i < nscr; i++) seen |= !strcmp(scr[i].s, want) && scr[i].y0 >= 0 && scr[i].y1 <= H_HEAD;
             if (oct[k] && !seen) { fprintf(rep, "MISSING %s: selected bank octave\n", name); nfind++; }
-            if (!p && k == 1u) write_ppm(out, face ? "PIXEL" : "NIGHT", "mpc_octave");
+            if (!p && k == 1u) write_ppm(out, face ? "PIXEL" : "SYNTHMAVEN", "mpc_octave");
         }
         TSEL->p[P_QUANT] = Q_OFF;
         nscr = npend = 0; ui_draw(); memcpy(screen, host_screen, sizeof screen);
@@ -1692,7 +1693,7 @@ static void sweep_waiting_headers(const char *out)
         for (uint32_t i = 0; i < nscr; i++)
             seen |= !strcmp(scr[i].s, "WAIT LOOP") && scr[i].y0 >= 0 && scr[i].y1 <= H_HEAD;
         if (!seen || toast_shown) { fprintf(rep, "MISSING %s: waiting in header without a toast\n", name); nfind++; }
-        if (!s && !p) write_ppm(out, face ? "PIXEL" : "NIGHT", "wait_loop");
+        if (!s && !p) write_ppm(out, face ? "PIXEL" : "SYNTHMAVEN", "wait_loop");
         for (uint32_t end = 0; end < 3u; end++) {
             song.rec = song.rec_wait = 1u << song.sel;
             ui_draw();
@@ -1961,7 +1962,7 @@ static void roll_frames(const char *dir)
             }
             for (k = 0; k < 8u; k++) ui_draw();
         }
-        if (dir && (!strcmp(UI_PALETTES[p].name, "NIGHT") || !strcmp(UI_PALETTES[p].name, "GRAY"))) {
+        if (dir && (!strcmp(UI_PALETTES[p].name, "SYNTHMAVEN") || !strcmp(UI_PALETTES[p].name, "GRAY"))) {
             roll_film_save(dir, UI_PALETTES[p].name, "bpm_roll", bimg, biw, bih);
             roll_film_save(dir, UI_PALETTES[p].name, "card_roll", cimg, ciw, cih);
         }
@@ -2172,7 +2173,7 @@ static void fx_redesign_sweep(const char *out)
             cur_name = name;draw(-1);lint();if (p == UI_GRAY_INDEX) mono_check();
             if (p == 0 && mode == 1) {
                 snprintf(file, sizeof file, "punch_key_%02u", fx);
-                write_ppm(out, render_pixel ? "PIXEL" : "NIGHT", file);
+                write_ppm(out, render_pixel ? "PIXEL" : "SYNTHMAVEN", file);
             }
         }
         for (uint32_t i = 1; i < NELEM(FX_ORDER); i++) {
@@ -2181,7 +2182,7 @@ static void fx_redesign_sweep(const char *out)
             cur_name = name;draw(-1);lint();if (p == UI_GRAY_INDEX) mono_check();
             if (p == 0) {
                 snprintf(file, sizeof file, "fx_browser_%02u", i);
-                write_ppm(out, render_pixel ? "PIXEL" : "NIGHT", file);
+                write_ppm(out, render_pixel ? "PIXEL" : "SYNTHMAVEN", file);
             }
         }
         for (uint32_t type = FX_REVERB; type < FX_COUNT; type++) {
@@ -2203,11 +2204,11 @@ static void designer_sweep(const char *out)
 {
     char name[96],file[64];
     for(uint32_t palid=0;palid<UI_PAL_ENTRIES;palid++)for(uint32_t eng=0;eng<NENG_SHOWN;eng++){
-        int night=str_eq(UI_PALETTES[palid].name,"NIGHT");
+        int night=str_eq(UI_PALETTES[palid].name,"SYNTHMAVEN");
         state();sound_init_of(TSEL,eng_vis(eng));pal(palid);designer_open();
         snprintf(name,sizeof name,"%s/designer %s START",UI_PALETTES[palid].name,ENGINES[TSEL->eng_req]->name);cur_name=name;
         nscr=npend=0;ui.force=1;ui_draw();lint();if(palid==UI_GRAY_INDEX)mono_check();
-        if(TSEL->eng_req==ENGI_PROPHET && night)write_ppm(out,"NIGHT","designer_start");
+        if(TSEL->eng_req==ENGI_PROPHET && night)write_ppm(out,"SYNTHMAVEN","designer_start");
         ds.expert=1;designer_begin();
         for(uint32_t i=0;i<ds.n;i++){
             ds.at=(uint8_t)i;designer_page();
@@ -2219,7 +2220,7 @@ static void designer_sweep(const char *out)
                     nscr=npend=0;ui.force=1;ui_draw();lint();if(palid==UI_GRAY_INDEX)mono_check();
                 }
                 ds.row=0;ui.force=1;ui_draw();
-                if(night){snprintf(file,sizeof file,"designer_features_%u",TSEL->eng_req);write_ppm(out,"NIGHT",file);}
+                if(night){snprintf(file,sizeof file,"designer_features_%u",TSEL->eng_req);write_ppm(out,"SYNTHMAVEN",file);}
                 continue;
             }
             snprintf(name,sizeof name,"%s/designer %s %s OP%u",UI_PALETTES[palid].name,ENGINES[TSEL->eng_req]->name,cur_page()->title,fm6_opsel+1);cur_name=name;
@@ -2227,7 +2228,7 @@ static void designer_sweep(const char *out)
             if(night && ((TSEL->eng_req==ENGI_PROPHET && str_eq(cur_page()->title,"P5 POLYMOD")) ||
                 (TSEL->eng_req==ENGI_FM6 && str_eq(cur_page()->title,"FREQ") && fm6_opsel==0) ||
                 (TSEL->eng_req==ENGI_CZ && str_eq(cur_page()->title,"CZ1 WAVE")))){
-                snprintf(file,sizeof file,"designer_%u",TSEL->eng_req);write_ppm(out,"NIGHT",file);
+                snprintf(file,sizeof file,"designer_%u",TSEL->eng_req);write_ppm(out,"SYNTHMAVEN",file);
             }
         }
         designer_compare();                             /* the original, its chip */
@@ -2237,11 +2238,11 @@ static void designer_sweep(const char *out)
         designer_finish();                              /* its sheet, the question */
         snprintf(name,sizeof name,"%s/designer %s sheet",UI_PALETTES[palid].name,ENGINES[TSEL->eng_req]->name);cur_name=name;
         nscr=npend=0;ui.force=1;ui_draw();lint();if(palid==UI_GRAY_INDEX)mono_check();
-        if(TSEL->eng_req==ENGI_PROPHET && night)write_ppm(out,"NIGHT","designer_sheet");
+        if(TSEL->eng_req==ENGI_PROPHET && night)write_ppm(out,"SYNTHMAVEN","designer_sheet");
         pop_close();confirm_open(CF_DISCARD_DESIGN,song.sel);
         snprintf(name,sizeof name,"%s/designer %s discard",UI_PALETTES[palid].name,ENGINES[TSEL->eng_req]->name);cur_name=name;
         nscr=npend=0;ui.force=1;ui_draw();lint();if(palid==UI_GRAY_INDEX)mono_check();
-        if(TSEL->eng_req==ENGI_PROPHET && night)write_ppm(out,"NIGHT","designer_discard");
+        if(TSEL->eng_req==ENGI_PROPHET && night)write_ppm(out,"SYNTHMAVEN","designer_discard");
         ui.confirm=0;designer_close(1);
     }
     cur_name=0;
@@ -2270,18 +2271,18 @@ static void library_note_sweep(const char *out)
         }
         snprintf(title,sizeof title,"%s/%s",UI_PALETTES[p].name,names[scene]);cur_name=title;draw(-1);lint();
         if(p==UI_GRAY_INDEX)mono_check();
-        if(p==0u)write_ppm(out,"NIGHT",names[scene]);
+        if(p==0u)write_ppm(out,"SYNTHMAVEN",names[scene]);
     }
 }
 #ifndef UI_RENDER_SHOW
-#define UI_RENDER_SHOW 3u
+#define UI_RENDER_SHOW 1u
 #endif
 int main(int argc, char **argv)
 {
     const char *out = argc > 1 ? argv[1] : "build/ui_new";
     char path[600];
     uint32_t p, s;
-    static const char *const SHOW[] = {"NIGHT", "DAY", "CONTRAST", "SUNSET", "OCEAN", "NEON", "CANDY", "LO-FI", "GRAY"};
+    static const char *const SHOW[] = {"SYNTHMAVEN", "ORANGE", "BABY BLUE", "PINK", "GRAY"};
     snprintf(path, sizeof path, "%s/report.txt", out);
     rep = fopen(path, "w");
     if (!rep) { fprintf(stderr, "cannot write %s\n", path); return 1; }
@@ -2321,11 +2322,11 @@ int main(int argc, char **argv)
             draw((int)s);
             lint();
             if (p == UI_GRAY_INDEX) { audit_scene(S_NAME[s]); aud = 0; mono_check(); }
-            for (k = 0; k < UI_RENDER_SHOW; k++)    /* (the suite: NIGHT DAY CONTRAST; -DUI_RENDER_SHOW=8 all) */
+            for (k = 0; k < UI_RENDER_SHOW; k++)    /* (the one design) */
                 if (!strcmp(UI_PALETTES[p].name, SHOW[k])) write_ppm(out, SHOW[k], S_NAME[s]);
         }
     fx_redesign_sweep(out);
-    render_pixel = 1;                               /* every screen again in Melodee Pixel (NIGHT) */
+    render_pixel = 1;                               /* every screen again in Melodee Pixel (SYNTHMAVEN) */
     for (s = 0; s < S_COUNT; s++) {
         char name[64];
         if (s == S_OP_ENV || (s >= S_ALG1 && s <= S_OP_LEVEL))

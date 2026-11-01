@@ -264,7 +264,6 @@
   "CHRD": "Chord generation mode. OFF plays single notes; DIA3/DIA7 use scale degrees; fixed shapes and AUTO/AUTO2 provide other harmonies. Microtonal compatibility restricts available choices.",
   "CLICK LEVEL": "Metronome loudness: LOW, MID or HIGH.",
   "CLK": "Clock source: INT uses the FM-1 tempo; USB or TRS follows incoming MIDI clock on that connection.",
-  "COLOR": "Choose a saved display palette. Changes the appearance of the device, not synthesis or the editor palette.",
   "COUNT-IN": "Recording count-in: OFF, 1 BAR or 2 BARS.",
   "CRS": "Coarse frequency of the selected FM operator. Ratio mode follows note pitch; fixed mode uses an absolute frequency range.",
   "CUTOFF": "Filter cutoff. Lower settings remove more high-frequency content; resonance emphasizes the cutoff region.",
@@ -281,7 +280,6 @@
   "FILTER": "Enable the modulation source on filter cutoff.",
   "FINE B": "Fine detuning of oscillator B relative to oscillator A.",
   "FOCUS": "Spectral focus/character of the selected processor; adjust by ear alongside its mix.",
-  "FONT": "Choose RUBIK or PIXEL for the device text.",
   "FREQ A": "Oscillator A pitch. In a modulation-routing page this is an on/off destination switch instead.",
   "FREQ B": "Oscillator B pitch. In a modulation-routing page this is an on/off destination switch instead.",
   "FX": "Select the shared audio effect in the highlighted rack row.",
@@ -385,5 +383,7 @@
   "VOL1": "Volume of part 1. This is independent of which part SELECT currently focuses.",
   "VOL2": "Volume of part 2. This is independent of which part SELECT currently focuses.",
   "VOL3": "Volume of part 3. This is independent of which part SELECT currently focuses.",
-  "VOL4": "Volume of part 4. This is independent of which part SELECT currently focuses."
+  "VOL4": "Volume of part 4. This is independent of which part SELECT currently focuses.",
+  "MIDI MODE": "Where MIDI-only tracks accept notes: USB, TRS or BOTH.",
+  "COLOR": "Choose the theme: SYNTHMAVEN, ORANGE, BABY BLUE or PINK. Changes the appearance of the device, not the sound."
 }

@@ -454,7 +454,13 @@ typedef struct { uint8_t place, param; int16_t value; } motion_event_t;
 typedef struct { uint8_t count, on, rsv[2]; motion_event_t event[MOTION_MAX]; } motion_store_t;
 _Static_assert(sizeof(motion_store_t) == 260u, "motion disk layout");
 #define CHAIN_ROWS 16u
-typedef struct { uint8_t slot, repeat; } chain_row_t;
+typedef struct { uint8_t slot, repeat; } chain_row_t;   /* slot: bits 0..3 track 1's pattern, bits 4..7 the drummer's groove in
+                                                         * this section: 0 no change, 1..8 the factory grooves, CHAIN_DRUMS_OFF */
+#define CHAIN_DRUMS_OFF 9u
+static inline uint32_t chain_row_pattern(const chain_row_t *r) { return r->slot & 15u; }
+static inline uint32_t chain_row_groove(const chain_row_t *r) { return r->slot >> 4; }
+static inline void chain_row_set_pattern(chain_row_t *r, uint32_t pattern) { r->slot = (uint8_t)((r->slot & 0xF0u) | (pattern & 15u)); }
+static inline void chain_row_set_groove(chain_row_t *r, uint32_t groove) { r->slot = (uint8_t)((r->slot & 15u) | (groove << 4)); }
 typedef struct {
     uint8_t count, rsv[3];
     chain_row_t row[CHAIN_ROWS];
@@ -545,6 +551,7 @@ typedef struct {
     int32_t batt_raw;            /* smoothed ADC ch3 (battery divider), 0 = not read yet */
 } song_t;
 
+static uint16_t loud_comp[NPART];   /* programmatic loudness compensation, Q12, 0 = none (engines.c loudness_comp_service) */
 static track_t trk[NTRK];        /* the instrument: four parts, then the MIDI-only tracks */
 static voice_t part_voice[NPART][NVOICE];
 static voice_t midi_voice[NVOICE];   /* shared by the MIDI-only tracks: never started (their notes go out as MIDI) */

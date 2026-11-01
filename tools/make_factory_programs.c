@@ -1,27 +1,30 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* Builds assets/factory/programs-3.5.bin with the firmware's own preset and capture code:
  * cc -O1 -w -Ibuild/gen -Ifirmware/src -Itests tools/make_factory_programs.c -lm, run from the repo root.
- * Then python3 tools/gen_factory_program_pack.py. Layer 1 is the lead; layering starts off.
+ * Then python3 tools/gen_factory_program_pack.py. Layer 1 is the lead; layering starts off unless the program says otherwise.
  * Vital sources (assets/factory/vital) are approximate translations made by the editor's importer. */
 #define PERSISTENCE_TEST_NO_MAIN
 #include "persistence_test.c"
 #include <assert.h>
 typedef struct { uint8_t engine, preset, level; int8_t pan, trans; uint8_t send, low, high; const char *vital; } part_def_t;
-typedef struct { const char *name; uint8_t chorus; part_def_t part[4]; } program_def_t;
+typedef struct { const char *name; uint8_t chorus; part_def_t part[4]; uint8_t layered; } program_def_t;
 enum { E_FM6 = ENGI_FM6, E_HY = ENGI_HYBRID, E_P5 = ENGI_PROPHET, E_AN = 23, E_DG = 24, E_STR = 26, E_JU = 27 };
 static const program_def_t PROGRAMS[8] = {
  {"DX7 E.PIANO", 1, {{E_FM6,35,110,0,0,30,0,127},{E_STR,14,80,-20,0,40,0,127},{E_AN,13,76,20,0,40,0,127},{E_FM6,8,83,0,12,30,48,127}}},
- {"DX RHODES", 1, {{E_DG,1,110,0,0,28,0,127},{E_JU,4,77,-18,0,35,0,127},{E_FM6,0,69,18,0,30,0,127},{E_HY,23,80,0,0,35,0,127,"RHODEX"}}},
+ {"DX RHODES", 1, {{E_DG,1,110,0,0,28,0,127},{E_JU,4,77,-18,0,35,0,127},{E_FM6,0,69,18,0,30,0,127},{E_HY,23,80,0,0,35,0,127,"RHODEX"}}, 1},
  {"JUNO 106", 1, {{E_JU,0,108,0,0,22,0,127},{E_JU,3,73,-22,0,30,0,127},{E_STR,0,74,22,0,35,0,127},{E_HY,37,75,0,-12,25,0,72}}},
  {"E. ORGAN", 1, {{E_FM6,41,108,0,0,22,0,127},{E_FM6,14,87,-18,0,25,0,127},{E_JU,13,71,18,0,25,0,127},{E_HY,88,115,0,0,25,0,127}}},
  {"DISCO LEAD", 1, {{E_HY,78,106,0,0,26,0,127},{E_STR,0,79,-22,0,35,0,127},{E_JU,1,74,22,0,28,0,127},{E_AN,8,93,0,-12,0,0,59}}},
  {"PROPHET LEAD", 1, {{E_P5,82,108,0,0,26,0,127},{E_AN,27,73,-16,0,28,0,127},{E_HY,23,77,16,0,28,0,127,"MOOG"},{E_P5,102,61,0,-12,32,0,127}}},
- {"RETRO SYNTH", 1, {{E_HY,39,106,0,0,26,0,127},{E_AN,12,63,-20,0,30,0,127},{E_HY,23,127,20,0,30,0,127,"KEYS80"},{E_AN,22,87,0,-12,0,0,52}}},
- {"ORCHESTRA", 1, {{E_FM6,31,106,0,0,34,0,127},{E_STR,3,78,-20,0,42,0,127},{E_HY,78,84,20,0,36,48,127},{E_STR,13,75,0,-12,40,0,59}}},
+ {"RETRO SYNTH", 1, {{E_HY,38,106,0,0,26,0,127},{E_AN,12,63,-20,0,30,0,127},{E_HY,23,127,20,0,30,0,127,"KEYS80"},{E_AN,22,87,0,-12,0,0,52}}},
+ {"ORCHESTRA", 1, {{E_FM6,29,106,0,0,34,0,127},{E_STR,3,78,-20,0,42,0,127},{E_HY,78,84,20,0,36,48,127},{E_STR,13,75,0,-12,40,0,59}}, 1},
 };
+/* LEVEL steps (about 0.5 dB) on all of a program's parts, keeping its balance: the program at the DX7 program's loudness
+ * (tests/loudness_measure.c programs) */
+static const int8_t PROGRAM_LOUDNESS[8] = {-2, -4, -5, 0, 5, 6, -4, 0};
 static void build(const program_def_t *d, FILE *out)
 {
-    sm_layers = (sm_layers_t){.enabled = 0};
+    sm_layers = (sm_layers_t){.enabled = d->layered};
     for (unsigned k = 0; k < 4; k++) {
         const part_def_t *q = &d->part[k]; track_t *t = &trk[k];
         set_engine_of(t, q->engine); apply_preset_to(t, q->preset); t->engine = t->eng_req;
@@ -30,7 +33,7 @@ static void build(const program_def_t *d, FILE *out)
             FILE *f = fopen(path, "rb"); assert(f && sizeof patch == 128 && fread(&patch, 1, 128, f) == 128); fclose(f);
             hy_set_patch(k, &patch);
         }
-        t->p[P_LEVEL] = q->level; t->p[P_PAN] = q->pan; t->p[P_TRANS] = q->trans; t->p[P_FXSEND] = q->send;
+        t->p[P_LEVEL] = clamp(q->level + PROGRAM_LOUDNESS[d - PROGRAMS], 0, 127); t->p[P_PAN] = q->pan; t->p[P_TRANS] = q->trans; t->p[P_FXSEND] = q->send;
         t->p[P_MUTE] = 0; if (q->engine != E_P5) t->p[P_VOICE] = t->p[P_VOICE];
         sm_layers.low[k] = q->low; sm_layers.high[k] = q->high; track_fx_normalize(t->p);
     }

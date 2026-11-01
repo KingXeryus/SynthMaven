@@ -947,6 +947,7 @@ static void pv_draw(void)
         if(pg->scope==SC_SM_PREF){
             if(ui.force)for(uint32_t row=0;row<4;row++){
                 uint32_t id=pg->id[row];char b[24],label[32];
+                if(!sm_pref_label(id)[0]){lcd_fill(0,32+row*42,240,42,T_BG);continue;}
                 const char *value=sm_pref_value(id,b);label[0]=(char)('1'+row);label[1]=' ';str_cpy(label+2,sm_pref_label(id),30);
                 for(uint32_t band=0;band<42;band+=CV_MAX/240u){
                     cv_begin_band(240,42,T_BG,band);

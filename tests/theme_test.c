@@ -46,10 +46,8 @@ int main(int argc, char **argv)
     static const uint8_t pd[] = {0x08, 0xf0};
     const aafont_t probe = {1, 1, 'A', 'A', 0, 0, pg, pd, 0, 0, 0};
     double worst = 100;
-    assert(NPALETTES == 8u && !strcmp(UI_PALETTES[0].name, "NIGHT") && !strcmp(UI_PALETTES[1].name, "DAY") &&
-           !strcmp(UI_PALETTES[2].name, "CONTRAST") && !strcmp(UI_PALETTES[3].name, "SUNSET") &&
-           !strcmp(UI_PALETTES[4].name, "OCEAN") && !strcmp(UI_PALETTES[5].name, "NEON") &&
-           !strcmp(UI_PALETTES[6].name, "CANDY") && !strcmp(UI_PALETTES[7].name, "LO-FI") &&
+    assert(NPALETTES == 4u && !strcmp(UI_PALETTES[0].name, "SYNTHMAVEN") && !strcmp(UI_PALETTES[1].name, "ORANGE") &&
+           !strcmp(UI_PALETTES[2].name, "BABY BLUE") && !strcmp(UI_PALETTES[3].name, "PINK") &&
            !strcmp(UI_PALETTES[UI_GRAY_INDEX].name, "GRAY"));
     for (unsigned pt = 0; pt < UI_PAL_ENTRIES * 4u; pt++) {
         unsigned p = pt / 4u, t = pt % 4u;
@@ -68,7 +66,7 @@ int main(int argc, char **argv)
             {T_INK, T_KEY, 4.5}, {T_KEY, T_BG, 3.0}, {T_KEY, T_SURF, 2.5}, {T_INK, T_DIM, 1.8}, {T_INK, T_ACCENT, 4.5},
             {T_KNOB(0), T_BG, 4.5}, {T_KNOB(1), T_BG, 4.5}, {T_KNOB(2), T_BG, 4.5}, {T_KNOB(3), T_BG, 4.5},
             {T_KNOB(0), T_SURF, 4.5}, {T_KNOB(1), T_SURF, 4.5}, {T_KNOB(2), T_SURF, 4.5}, {T_KNOB(3), T_SURF, 4.5}};
-        assert(T_KNOB(0) == T_THEME);                          /* (knob 1's colour: the track's own) */
+        assert(T_KNOB(0) == (p == UI_GRAY_INDEX ? T_THEME : T_TRK(0)));                          /* (knob 1's colour: the track's own) */
         double min = 100;
         for (unsigned i = 0; i < sizeof c / sizeof c[0]; i++) {
             double r = contrast(c[i].fg, c[i].bg);
@@ -79,7 +77,7 @@ int main(int argc, char **argv)
         if (min < worst) worst = min;
         printf("%-8s T%u text %.1f:1, labels %.1f:1, track %.1f:1, selection %.1f:1\n", UI_PALETTES[p].name, t + 1,
                contrast(T_TEXT, T_BG), contrast(T_MID, T_BG), contrast(T_THEME, T_BG), contrast(T_INK, T_SEL));
-        assert((p == 1u || p == 6u) == ux.light);              /* DAY and CANDY are the light ones */
+        assert(!ux.light);                                     /* every theme is dark */
         assert(T_REC == (p == UI_GRAY_INDEX ? T_ACCENT : ux.light ? UI_REC_LIGHT : UI_REC_DARK));
         /* the blend: transparent, solid and an edge between the two, on two backgrounds */
         for (unsigned b = 0; b < 2; b++) {
@@ -98,7 +96,7 @@ int main(int argc, char **argv)
             unsigned k;
             snprintf(w, sizeof w, "%s", UI_PALETTES[p].name);
             for (k = 1; w[k]; k++) if (w[k] >= 'A' && w[k] <= 'Z') w[k] = (char)(w[k] + 32);
-            assert(text_w(&AF_TX, w) <= 120);
+            assert(text_w(&AF_TX, w) <= 130);
         }
         for(uint32_t top=0;top<124u;top+=CV_MAX/240u){
         cv_begin_band(240,124,T_BG,top);
@@ -128,6 +126,7 @@ int main(int argc, char **argv)
         }
     }
     /* the ramp cache follows the palette (a stale ramp would blend toward the old background) */
+    palette_track(0);                                          /* (track 1: the main colour, the one that differs between themes) */
     palette_set(0);
     cv_begin(3, 1, T_BG); cv_text(0, 0, &probe, "A", T_THEME);
     uint16_t night = swap16(cv_px[1]);

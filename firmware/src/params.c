@@ -728,7 +728,7 @@ static const page_t PAGES[] = {
     {"WEIGHTS", FAM_GLO, SC_GLOBAL, GR_NONE, {G_WP5, G_WCZ, G_WFM6, G_WSID}},        /* budget points per voice */
     {"LAYERING",FAM_GLO,SC_SM_LAYER,GR_NONE,{0,255,255,255}},
     {"WEIGHTS 2", FAM_GLO, SC_GLOBAL, GR_NONE, {G_WDRUM, G_BUDGET, 0xFF, G_SAFETY}},  /* SAFETY: overload voice cuts */
-    {"DISPLAY",FAM_GLO,SC_SM_PREF,GR_NONE,{0,1,2,3}},
+    {"DISPLAY",FAM_GLO,SC_SM_PREF,GR_NONE,{0,2,3,18}},
     {"USB / SAVE",FAM_GLO,SC_SM_PREF,GR_NONE,{4,5,6,7}},
     {"CONTROLS",FAM_GLO,SC_SM_PREF,GR_NONE,{8,9,10,255}},
     {"RECORDING",FAM_GLO,SC_SM_PREF,GR_NONE,{11,12,13,14}},

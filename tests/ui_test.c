@@ -1083,6 +1083,22 @@ static int test_home_view(void)
     ui_power_on();
     go_home(); frame();
     press(B_HOME);
+    {   /* SONG: PRESETS sets the section's drum groove, and a pattern change keeps it */
+        chain_defaults(&chain_config); chain_config.count = 1; ui.song_row = 0;
+        go_title("SONG"); frame();
+        turn(EN_PRESET, 1); turn(EN_PRESET, 1);
+        bad += check("SONG: PRESETS sets the section's drum groove", chain_row_groove(&chain_config.row[0]) == 2u);
+        chain_row_set_pattern(&chain_config.row[0], 3);
+        bad += check("  a pattern change keeps it", chain_row_groove(&chain_config.row[0]) == 2u && chain_valid(&chain_config));
+        chain_defaults(&chain_config); go_home(); frame();
+    }
+    {   /* the drummer running: SELECT is the tempo on both HOME screens, stopped it is the part / lane */
+        uint8_t sel = song.sel, lane = sm_drum_lane; int16_t bpm = song.g[G_BPM];
+        sm_drums.enabled = 1; turn(EN_SELECT, 1);
+        bad += check("drummer running: SELECT sets the tempo", song.g[G_BPM] == bpm + 1 && song.sel == sel && sm_drum_lane == lane);
+        turn(EN_SELECT, -1); sm_drums.enabled = 0;
+        bad += check("  and back down", song.g[G_BPM] == bpm);
+    }
     bad += check("HOME on program overview: independent drum page", ui.home && ui.home_pg == 1u);
     press(B_HOME);
     bad += check("  HOME again: Stage", ui.home && ui.home_pg == 0u);
@@ -1708,14 +1724,14 @@ static int test_display_preferences(void)
         int16_t midi = song.g[G_MIDI];
         hold(B_HOME);
         bad += check("HOME menu: MIDI MODE and USB ROLE take the places of HOLD and LIGHTS",
-                     !strcmp(MI_NAME[2], "MIDI MODE")
+                     !strcmp(MI_NAME[1], "MIDI MODE")
 #if MELODEE_USB_HOST
-                     && !strcmp(MI_NAME[3], "USB ROLE")
+                     && !strcmp(MI_NAME[2], "USB ROLE")
 #endif
                      );
         for (row = 0; row < MI_COUNT; row++) named &= strcmp(MI_NAME[row], "HOLD") && strcmp(MI_NAME[row], "LIGHTS");
         bad += check("  HOLD and LIGHTS stay out of the list", named);
-        turn(EN_SELECT, 1); turn(EN_SELECT, 1);
+        turn(EN_SELECT, 1);
         bad += check("  SELECT moves the row", ui.menu_sel == MI_MIDI_IN);
         turn(EN_K2, 1);
         bad += check("  KNOB 2 no longer moves it", ui.menu_sel == MI_MIDI_IN);
@@ -1745,14 +1761,14 @@ static int test_display_preferences(void)
     memcpy(before, host_screen, sizeof before);
     settings.palette = 0; palette_set(0);
     press(B_OCTUP);
-    bad += check("COLOR OCT+ previews the next palette (DAY, light) without closing the menu",
-                 settings.palette == 1 && T_BG == UI_PALETTES[1].bg && ux.light && ui.menu == 1 && !song.octave &&
+    bad += check("COLOR OCT+ previews the next theme without closing the menu",
+                 settings.palette == 1 && ui.menu == 1 && !song.octave &&
                  memcmp(before, host_screen, sizeof before) && !memcmp(sounds, trk, sizeof sounds));
     turn(EN_K1, 1);
     {
         int steps_ok = settings.palette == 2;
         for (uint32_t k = 3; k < NPALETTES; k++) { turn(EN_K1, 1); steps_ok &= settings.palette == k; }
-        bad += check("COLOR KNOB 1 steps on through SUNSET .. LO-FI, then wraps to NIGHT",
+        bad += check("COLOR KNOB 1 steps on through the themes, then wraps to SYNTHMAVEN",
                      steps_ok && (turn(EN_K1, 1), settings.palette == UI_DEFAULT_INDEX));
     }
     press(B_OCTDN);
@@ -1906,7 +1922,7 @@ static int32_t roll_ink_row(const uint16_t *s, int32_t x0, int32_t x1, int32_t y
     int32_t x, y, n = 0, sum = 0;
     for (y = y0; y < y1; y++)
         for (x = x0; x < x1; x++)
-            if (s[y * 240 + x] != swap16(T_BG) && s[y * 240 + x] != swap16(T_LIFT)) {
+            if (s[y * 240 + x] != swap16(T_BG) && s[y * 240 + x] != swap16(T_LIFT) && s[y * 240 + x] != swap16(T_SURF)) {
                 n++;                                      /* (a ring's ground, plain or lifted while its knob turns) */
                 sum += y * 16;
             }
@@ -2075,7 +2091,7 @@ static int test_roll(void)
         ok &= ui.roll[3].from[0] != 0;
         if (k == 0) go_title("SYSTEM");
         else if (k == 1) turn(EN_ALGO, 1);
-        else if (k == 2) { settings.palette = 1; palette_set(1); }          /* (no ui.force) */
+        else if (k == 2) { settings.palette = UI_GRAY_INDEX; palette_set(UI_GRAY_INDEX); }          /* (no ui.force) */
         else if (k == 3) set_engine_of(TSEL, eng_step(TSEL->eng_req, 1));   /* (no ui.force) */
         else ui.force = 1;
         frame();
@@ -4397,7 +4413,7 @@ static int test_bughunt_ui2(void)
         for (k = 0; k < 4u; k++) {
             int32_t Y, ly;
             ui_power_on();
-            settings.palette = 1; palette_set(1);
+            settings.palette = 0; palette_set(0);
             go_page(GR_TRK); frame(); frame();
             Y = st_row_y(song.sel);
             ly = pv_mix_y(st_row_h()) + TY_TX->cap + 8;

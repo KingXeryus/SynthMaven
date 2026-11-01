@@ -31,9 +31,9 @@ try{
  $('release').value='1.3.2';change('release');await tick();assert.equal(w.controller.st.image[1],10);
  await finish(rc,2,30);assert.equal(w.controller.st.image[1],10);
  w.controller.st.running=true;w.controller.render();
- for(const id of ['release','build-rc-dual','mboot','go','find'])assert($(id).disabled,id);
+ for(const id of ['release','build-rc-dual','go','find'])assert($(id).disabled,id);
  change('release');assert.equal(pending.length,0);
- assert.match(template,/id="mboot"/);assert.doesNotMatch(template,/build-(?:rc-|nightly-)?single/);
+ assert.doesNotMatch(template,/id="mboot"|id="st-options"/);assert.doesNotMatch(template,/build-(?:rc-|nightly-)?single/);
  // Saadet's actual styles and three-step interaction, including current firmware -> boot-only.
  assert.deepEqual(planFor('this',true),{firmware:false,resume:false,boot:true});
  assert.deepEqual(planFor('loader',true),{firmware:true,resume:true,boot:true});

@@ -184,6 +184,24 @@ static const preset_t *eng_preset(const engine_t *e, uint32_t k)
     return &made[turn];
 }
 
+#include "loudness_comp.h"
+/* Programmatic loudness compensation: every factory sound is matched to the DX7 program's loudness (measured by
+ * tests/loudness_measure.c, tools/gen_loudness_comp.py). Applied automatically, beneath LEVEL, with no control of its
+ * own. A user sound is the player's, so none. Foreground only: the table is in the expanded image, so the audio path
+ * reads only the track's own value, picked up within a frame of a load. */
+static void loudness_comp_service(void)
+{
+    for (uint32_t k = 0; k < NPART; k++) {
+        track_t *t = &trk[k];
+        uint32_t e = eng_idx(t->eng_req), at = SM_LOUD_OFF[e] + t->preset, idx = SM_LOUD_UNITY;
+        if (!t->user && !t->user_native && t->preset < ENGINES[e]->npresets && at / 2u < sizeof SM_LOUD)
+            idx = (SM_LOUD[at / 2u] >> (at & 1u ? 4u : 0u)) & 15u;
+        uint16_t q = SM_LOUD_Q12[idx];
+        if (loud_comp[k] != q)
+            loud_comp[k] = q;
+    }
+}
+
 /* the order the engines are shown in (PRESETS browsing and its ENG knob, the editor's list):
  * engine indices, never a retired one. The indices stay as they are (the
  * stores and the protocol hold them); only this table orders them */

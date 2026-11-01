@@ -13,6 +13,6 @@ for p in raw:
     key=(p['title'],p['effect'] if p['title'] not in ['FX','SHARED'] else '',str(p['controls']),str(p['list']),p['engine'] if p['title'].startswith('EDIT') else '')
     if key not in seen:seen[key]=p
 out=ROOT/'assets/guide';(out/'screens').mkdir(parents=True,exist_ok=True)
-for p in seen.values():Image.open(work/'ppm'/('NIGHT_'+p['image']+'.ppm')).save(out/'screens'/(p['image']+'.png'))
+for p in seen.values():Image.open(work/'ppm'/('DEFAULT_'+p['image']+'.ppm')).save(out/'screens'/(p['image']+'.png'))
 (out/'screen-inventory.json').write_text(json.dumps(list(seen.values()),indent=2)+'\n')
 print(len(seen),'distinct screen/control layouts captured')

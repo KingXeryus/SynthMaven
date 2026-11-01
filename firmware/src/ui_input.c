@@ -1042,7 +1042,7 @@ static void edit_param(uint32_t slot, int32_t steps)
         }
         if (slot == 2u)
             chain_patterns[ui.song_row][song.sel] = (uint8_t)clamp((int32_t)chain_patterns[ui.song_row][song.sel] + steps, 0, NPAT - 1u);
-        chain_config.row[ui.song_row].slot = chain_patterns[ui.song_row][0];
+        chain_row_set_pattern(&chain_config.row[ui.song_row], chain_patterns[ui.song_row][0]);
         if (slot == 3u)
             chain_config.row[ui.song_row].repeat = (uint8_t)clamp((int32_t)chain_config.row[ui.song_row].repeat + steps, 1, 16);
         return;
@@ -2548,6 +2548,13 @@ static void ui_input(void)
     } else if(s&&!ui.home&&cur_page()->scope==SC_SM_PROGRAM){sm_name_edit(s);
     } else if(s&&!ui.home&&cur_page()->scope==SC_SM_MIX){
         TSEL->p[P_PAN]=(int16_t)clamp(TSEL->p[P_PAN]+s,-64,63);ui.force=1;
+    } else if (s && !ui.home && cur_page()->graph == GR_SONG) {   /* the section's drum groove */
+        if (chain_busy()) ui_message("STOP TO EDIT");
+        else if (ui.song_row < chain_config.count) {
+            chain_row_t *r = &chain_config.row[ui.song_row];
+            chain_row_set_groove(r, (uint32_t)clamp((int32_t)chain_row_groove(r) + (s > 0 ? 1 : -1), 0, CHAIN_DRUMS_OFF));
+            ui.force = 1;
+        }
     } else if (s && ui.home) {
         sm_home_preset(s);
     } else if (s && !ui.home && cur_page()->graph == GR_SCALE_PICKER) {
@@ -2578,13 +2585,18 @@ static void ui_input(void)
         step_edit_combo();
         if(!ui.home&&cur_page()->scope==SC_SM_PROGRAM){sm_name_focus();sm_name_position=(int16_t)(1+(sm_name_position-1+s%12+12)%12);sm_io_arm=0;ui.force=1;}
         else if(!ui.home&&cur_page()->scope==SC_SM_MIX){sm_layers.low[song.sel%4]=(uint8_t)clamp(sm_layers.low[song.sel%4]+s,33,93);if(sm_layers.high[song.sel%4]<sm_layers.low[song.sel%4])sm_layers.high[song.sel%4]=127;settings_save();ui.force=1;}
-        else if (ui.home&&ui.home_pg){sm_drum_lane=(uint8_t)((sm_drum_lane+s%8+8)%8);ui.force=1;}
+        else if (ui.home&&ui.home_pg){uint32_t guard=motion_guard();sm_groove_turn(s);motion_unguard(guard);ui.force=1;}
         else if (ui.home) sm_home_engine(s);
         else track_select((uint32_t)clamp((int32_t)song.sel + (s > 0 ? 1 : -1), 0, (int32_t)trk_n() - 1));
     }
     if (!glo_select_layer && (s = panel_enc(EN_SELECT)) != 0) { /* SELECT: pages; with SEQ / a step key / ENV / SCL: below */
         step_edit_combo();
-        if(ui.home&&ui.home_pg){sm_drum_lane=(uint8_t)((sm_drum_lane+s%8+8)%8);ui.force=1;}
+        if(ui.home&&sm_drums.enabled){                  /* the drummer running: the tempo, on both HOME screens */
+            uint32_t guard=motion_guard();
+            song.g[G_BPM]=(int16_t)clamp(song.g[G_BPM]+s,GP[G_BPM].min,GP[G_BPM].max);
+            motion_unguard(guard);ui.force=1;
+        }
+        else if(ui.home&&ui.home_pg){sm_drum_lane=(uint8_t)((sm_drum_lane+s%8+8)%8);ui.force=1;}
         else if(!ui.home&&cur_page()->scope==SC_SM_MIX){song.sel=(uint8_t)(((int)song.sel+s%4+4)%4);ui.force=1;}
         else if(!ui.home&&cur_page()->scope==SC_MASTER_TUNE&&cur_page()->id[0]==0){edit_param(0,s);}
         else if(!ui.home && cur_page()->scope==SC_SM_PROGRAM){
