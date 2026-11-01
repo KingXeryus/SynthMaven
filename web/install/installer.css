@@ -147,7 +147,7 @@
   .pct { font-size: clamp(76px, 22vw, 136px); font-weight: 250; line-height: 1; letter-spacing: -.04em; margin: 0 0 18px; }
   .pct .pc { font-size: .38em; color: var(--faint); letter-spacing: 0; margin-left: .06em; }
   .bar { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; }
-  .bar i { display: block; height: 100%; width: 0; background: var(--ink); border-radius: 99px; transition: width .4s ease; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--accent, #ff2c34); border-radius: 99px; transition: width .4s ease; }
   .bar.indet i { width: 30% !important; animation: indet 1.4s ease-in-out infinite; }
   @keyframes indet { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
   .runstep { margin: 16px 0 0; font-size: 18px; font-weight: 560; min-height: 1.55em; }
