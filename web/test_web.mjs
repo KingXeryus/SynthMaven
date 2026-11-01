@@ -426,7 +426,7 @@ async function editorMock() {
     await rq(E.req.bankSong(1, [{ banks: [0, 0, 0, 0], repeat: 1 }, { banks: [1, 1, 1, 1], repeat: 2 }]));
     const set = [...await rq([E.CMD.BANK_SONG, [4, 2, 5, 9]])], got = [...await rq([E.CMD.BANK_SONG, [4]])];
     ok(set[1] === 0 && got.slice(2).join() === "2,5,9", "editor: a song section's drum groove round trips");
-    ok([...await rq([E.CMD.BANK_SONG, [4, 2, 5, 10]])][1] === 1, "editor: a bad drum groove is refused");
+    ok([...await rq([E.CMD.BANK_SONG, [4, 2, 5, 11]])][1] === 1, "editor: a bad drum groove is refused");
     await rq(E.req.bankSong(1, []));
   }
   let prefs = await E.readDevicePreferences(rq, info, names);
@@ -1458,7 +1458,7 @@ function editorTabs() {
   const tabs = [...html.matchAll(/<button role="tab" data-tab="(\w+)"/g)].map((x) => x[1]);
   const panels = [...html.matchAll(/<section class="panel" id="p-(\w+)" data-tab="(\w+)"/g)].map((x) => [x[1], x[2]]);
   const TABS = JSON.parse((/const TABS = (\[[^\]]*\]);/.exec(html) || [])[1] || "[]");
-  ok(tabs.length === 14 && js(tabs) === js(TABS) && js(panels.map((x) => x[1]).sort()) === js([...TABS].sort()) && panels.every(([a, b]) => a === b),
+  ok(tabs.length === 15 && js(tabs) === js(TABS) && js(panels.map((x) => x[1]).sort()) === js([...TABS].sort()) && panels.every(([a, b]) => a === b),
     `editor: ${tabs.length} tabs, one panel each (${tabs.join(" ")})`);
   ok(/localStorage\.setItem\(TAB_KEY/.test(html) && /try \{ localStorage/.test(html) && /history\.replaceState\([^)]*"#" \+ name\)/.test(html)
     && /addEventListener\("hashchange"/.test(html), "editor: last tab in localStorage (try/catch) and in the URL hash");

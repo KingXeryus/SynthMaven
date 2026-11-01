@@ -184,6 +184,7 @@ static struct {
     uint8_t confirm;             /* the OCT- / OCT+ dialog: CF_*, 0 = none */
     uint16_t confirm_trk;         /* the track it clears, the slot it overwrites */
     uint16_t uslot;               /* SAVE > USER: the selected user preset slot */
+    uint8_t song_drums;          /* SONG: the drums row is picked, not song.sel's */
     uint8_t song_row;            /* SONG: row selected, count selects the next empty row */
     uint8_t uboot;               /* main.c: seconds left before UPDATE MODE (OCT- + OCT+ held), 0 = none */
     uint8_t proj_new;            /* SAVE > PROJECT: KNOB 1 past TMPL, NEW (a new song: ui_new.c); SLOT unchanged */

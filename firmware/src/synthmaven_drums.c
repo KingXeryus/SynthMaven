@@ -19,6 +19,8 @@ static sm_drum_config_t sm_drums = {
 /* Factory grooves: a 16-step bar of the lanes above, bit n = step n. Dum is KICK and tak RIM on the Arabic rhythms.
  * Index 0 of the browser is the player's own pattern, kept while grooves are browsed. */
 #define SM_GROOVES 8u
+/* the arranger's drums row, one word in a section's column */
+static const char *const sm_groove_short[CHAIN_DRUMS_MINE] = {"BALL","HALF","ST 8","FLOOR","MAKS","WAHD","BALD","FOX","OFF","MINE"};
 static const char *const sm_groove_names[SM_GROOVES] = {"BALLAD","HALF PIPE","STRAIGHT 8","ON THE FLOOR","MAKSOOM","WAHDA","BALADI","FOX"};
 /* Not const: in RAM, because the arrangement switches grooves from the audio ISR (song_chain.c) */
 static uint16_t sm_groove_steps[SM_GROOVES][SM_DRUM_LANES] = {
@@ -69,8 +71,8 @@ static void sm_chain_drums_begin(void)
 static void sm_chain_drums_section(uint32_t groove)
 {
     if(groove==CHAIN_DRUMS_OFF){sm_drums.enabled=0;return;}
-    if(!groove||groove>SM_GROOVES)return;
-    for(uint32_t k=0;k<SM_DRUM_LANES;k++)sm_drums.steps[k]=sm_groove_steps[groove-1u][k];
+    if(!groove||groove>CHAIN_DRUMS_MINE)return;
+    for(uint32_t k=0;k<SM_DRUM_LANES;k++)sm_drums.steps[k]=groove==CHAIN_DRUMS_MINE?sm_drum_song.steps[k]:sm_groove_steps[groove-1u][k];
     sm_drums.enabled=1;
     sm_drum_audio.step=0;sm_drum_audio.remaining=0;
 }

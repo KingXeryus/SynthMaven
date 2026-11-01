@@ -170,7 +170,7 @@ static void head_chip_text(char *b)
     } else if (new_on()) {                                     /* NEW SONG */
         str_cpy(b, "NEW SONG", 16);
     } else if (ptc_on()) {                              /* PATTERNS' Copy to: "copy 3 to 5" */
-        str_cpy(b, "copy 1 to 1", 16);
+        str_cpy(b, "save 1 to 1", 16);
         b[5] = (char)('1' + ui.ptc_src % NPAT);
         b[10] = (char)('1' + ui.ptc_dst % NPAT);
     } else if (ui.home&&ui.home_pg) {str_cpy(b,"DRUMS",16);

@@ -33,7 +33,7 @@ static int chain_valid(const chain_config_t *c)
     if (c->count > CHAIN_ROWS)
         return 0;
     for (i = 0; i < c->count; i++)
-        if (chain_row_pattern(&c->row[i]) >= NPAT || chain_row_groove(&c->row[i]) > CHAIN_DRUMS_OFF || !c->row[i].repeat || c->row[i].repeat > 16u)
+        if (chain_row_pattern(&c->row[i]) >= NPAT || chain_row_groove(&c->row[i]) > CHAIN_DRUMS_MINE || !c->row[i].repeat || c->row[i].repeat > 16u)
             return 0;
     return 1;
 }

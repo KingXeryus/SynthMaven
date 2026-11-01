@@ -488,9 +488,9 @@ body[data-screen=tracks] #trackbar{display:none}.strip input.fader{height:110px}
 #songrows .song-section>input{max-height:44px}
 
 body[data-screen=sequencer] #trackbar{display:none}
-#p-sequencer{position:relative}#seq-workflow{padding-right:210px;min-height:44px;margin-bottom:8px}
-#patternbar{position:absolute;right:0;top:0;width:200px;display:flex;align-items:center;gap:5px;margin:0}
-#patternbar .cycle-choice{width:150px}#patternstate{display:none}
+#p-sequencer{position:relative}#seq-workflow{padding-right:560px;min-height:44px;margin-bottom:8px}
+#patternbar{position:absolute;right:0;top:0;width:550px;display:flex;align-items:center;gap:5px;margin:0}
+#patternbar .cycle-choice{width:140px}#patternstate{display:none}
 #stepgrid .sequence-lane button{height:44px;min-height:44px;box-sizing:border-box}
 #steptables td::before{min-height:16px}#steps{padding:8px}#steps>.bar{margin:0 0 5px}#steps>h2{display:none}
 #stepgrid .sequence-pages button{width:44px;min-width:44px}
@@ -499,7 +499,19 @@ body[data-screen=sequencer] #trackbar{display:none}
 #songchain{padding:8px}#songchain>p{margin:5px 0}#songrows .song-section{margin:3px 0;padding:5px;gap:3px}#songpages{margin:4px 0 0}
 #songrows .song-section>label{grid-column:1/-1;display:flex;align-items:center;gap:6px;font-size:12px}#songrows .song-section>label input{min-width:0;width:100%!important;box-sizing:border-box}
 #songpages{margin:0 0 0 auto}#songchain>.bar{margin:5px 0}#songchain .song-section>button:first-of-type{font-size:18px}
-#songrows .song-groove{grid-column:1/-1;display:grid;gap:2px;font-size:12px;color:var(--dim)}#songrows .song-groove select{width:100%;min-height:44px}
+#songrows.song-grid{display:grid;grid-template-columns:96px repeat(var(--song-sections,0),minmax(150px,1fr)) 96px;gap:4px;overflow-x:auto;padding-bottom:6px;align-items:stretch}
+.song-grid .song-corner,.song-grid .song-label{position:sticky;left:0;z-index:1;background:var(--surface,#16161a);display:flex;align-items:center;gap:4px;padding:0 8px;font-size:13px;font-weight:500;border-left:3px solid transparent}
+.song-grid .song-corner{color:var(--dim);font-weight:400}.song-grid .song-label.song-track-1{border-left-color:rgb(var(--part-1))}.song-grid .song-label.song-track-2{border-left-color:rgb(var(--part-2))}.song-grid .song-label.song-track-3{border-left-color:rgb(var(--part-3))}.song-grid .song-label.song-track-4{border-left-color:rgb(var(--part-4))}.song-grid .song-label.song-drums{border-left-color:var(--dim)}
+.song-grid .song-head{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px;border-radius:8px}.song-tools{display:flex;gap:4px}.song-tools button{min-width:40px;min-height:36px;padding:2px 6px}
+.song-grid .song-add{grid-row:1 / span 7;grid-column:-2 / -1;min-height:44px;white-space:normal}
+.song-grid .song-cell{min-height:48px;min-width:0;width:auto!important;border-radius:8px}.song-grid .song-drums.song-cell{border-bottom:3px solid var(--dim);background:rgba(138,138,146,.12)}.song-grid .song-repeats .cycle-choice,.song-grid .song-repeats select{width:100%}
+.song-grid .song-track:not(.song-label) select{pointer-events:auto}.song-grid .song-active{outline:2px solid var(--accent);outline-offset:-2px}
+#p-arranger #songchain>.bar{margin:6px 0}
+#patternbar #patternsave-to{min-width:0}#patternsave{white-space:nowrap}
+#songrows.song-grid .song-track,#songrows.song-grid .song-cell{grid-column:auto!important;width:auto!important;margin:0}
+#songrows.song-grid .song-track{min-height:40px}.song-grid .song-cell{min-height:40px}.song-grid .song-cell .cycle-choice{grid-template-columns:36px minmax(0,1fr) 36px}
+.song-grid .song-cell .cycle-choice button{min-width:36px;min-height:38px;padding:0}.song-grid .song-cell .cycle-choice output{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#p-arranger #songchain>p{margin:4px 0;font-size:12px}#patternbar .cycle-choice{grid-template-columns:40px minmax(0,1fr) 40px}
 </style>
 </head>
 <body>
@@ -532,7 +544,8 @@ body[data-screen=sequencer] #trackbar{display:none}
       <button role="tab" data-tab="effects">Effects</button><button role="tab" data-tab="motionfx">Motion</button><button role="tab" data-tab="native">Native / import</button>
       <button role="tab" data-tab="fm6" data-t="tabFm6" data-ic="ui_knob"></button>
       <button role="tab" data-tab="sequencer" data-t="tabSeq" data-ic="symbol_grid"></button>
-      <button role="tab" data-tab="drums">Drums</button>
+      <button role="tab" data-tab="drums" data-t="tabDrums" data-ic="symbol_drum"></button>
+      <button role="tab" data-tab="arranger" data-t="tabArranger" data-ic="symbol_pad"></button>
       <button role="tab" data-tab="tracks" data-t="tabTracks" data-ic="ui_slider_vertical"></button>
       <button role="tab" data-tab="library" data-t="library" data-ic="symbol_books"></button>
       <button role="tab" data-tab="projects" data-t="projects" data-ic="symbol_folder"></button>
@@ -628,7 +641,7 @@ body[data-screen=sequencer] #trackbar{display:none}
   <section class="panel" id="p-sequencer" data-tab="sequencer" data-dev hidden>
     <div id="seq-transport" class="drum-toolbar"><button id="seq-play">Play</button><button id="seq-stop">Stop</button><span id="seq-status" aria-live="polite"></span></div>
     <nav id="seq-workflow" class="touch-tabs" aria-label="Sequencer section"><button type="button" data-seq-view="steps" aria-pressed="true">Steps</button><button type="button" data-seq-view="settings" aria-pressed="false">Pattern &amp; tempo</button><button type="button" data-seq-view="motion" aria-pressed="false">Motion</button></nav><div class="groups" id="seqgroups" data-seq-section="settings"></div>
-    <p id="patternbar" class="bar" hidden><label for="patternpick">Pattern</label><select id="patternpick"></select><span id="patternstate" class="dim"></span></p>
+    <p id="patternbar" class="bar" hidden><label for="patternpick">Pattern</label><select id="patternpick"></select><label for="patternsave-to" class="dim">Save to</label><select id="patternsave-to"></select><button id="patternsave" type="button">Save pattern</button><span id="patternstate" class="dim"></span></p>
     <div id="steps" data-seq-section="steps">
       <h2 data-t="steps" data-ic="note_eight"></h2>
       <p class="bar"><button id="reloadsteps" data-t="reload" data-ic="control_arrow_loop"></button>
@@ -646,6 +659,15 @@ body[data-screen=sequencer] #trackbar{display:none}
   </section>
 
   <section class="panel" id="p-drums" data-tab="drums" data-dev hidden><div id="drum-workspace"></div></section>
+
+  <section class="panel" id="p-arranger" data-tab="arranger" data-dev hidden>
+    <div class="group" id="songchain" hidden>
+      <h2>Arranger</h2>
+      <p class="dim">Each row is a track and each column is a section of the song. Choose the saved pattern each track plays, and the drum groove. Save a project to keep the arrangement.</p>
+      <div class="bar"><button id="songplay"></button><span id="songstatus" aria-live="polite"></span></div>
+      <div id="songrows" class="song-grid"></div>
+    </div>
+  </section>
 
   <section class="panel" id="p-tracks" data-tab="tracks" data-dev hidden>
     <div id="sm-programs" hidden></div><div id="sm-setlist" hidden></div>
@@ -721,13 +743,6 @@ body[data-screen=sequencer] #trackbar{display:none}
       <p class="bar"><button id="backup-export" data-t="backupExport"></button>
         <button id="backup-import" data-t="backupImport"></button><input id="backup-file" type="file" accept=".json,application/json" hidden></p>
       <p class="dim" id="backup-help"></p>
-    </div>
-    <div class="group" id="songchain" hidden style="margin-top:16px">
-      <h2>Four-track song arranger</h2>
-      <p class="dim">Build up to 16 sections. Choose a pattern for each track, a drum groove and 1–16 repeats. Save a project to keep the arrangement.</p>
-      <div class="bar"><button id="songplay"></button><button id="songadd" data-t="songAdd"></button>
-        <button id="songremove" data-t="songRemove"></button><span id="songstatus" aria-live="polite"></span><nav id="songpages" class="bar" aria-label="Song section pages"></nav></div>
-      <div class="song-section song-heading"><span>#</span><span>Track 1</span><span>Track 2</span><span>Track 3</span><span>Track 4</span><span>Repeats</span><span></span><span></span><span></span></div><div id="songrows"></div>
     </div>
   </section>
 
@@ -3310,7 +3325,7 @@ function makeMockDevice(opt = {}) {
       }
       case CMD.BANK_SONG: {
         if(!a.length||a[0]>4)return null;let rc=0;st.bankSongRows??=[];
-        if(a[0]===4){if(a.length>1){if(a[1]!==st.bankSongRows.length||a.length!==2+a[1]||a.slice(2).some(g=>g>9))rc=1;else if(st.chainPlaying)rc=2;else st.bankSongRows.forEach((r,i)=>{r.groove=a[2+i];});}
+        if(a[0]===4){if(a.length>1){if(a[1]!==st.bankSongRows.length||a.length!==2+a[1]||a.slice(2).some(g=>g>10))rc=1;else if(st.chainPlaying)rc=2;else st.bankSongRows.forEach((r,i)=>{r.groove=a[2+i];});}
           [4,rc,st.bankSongRows.length,...st.bankSongRows.map(r=>r.groove||0)].forEach(b);break;}
         if(a[0]===1){const rows=Array.from({length:a[1]||0},(_,i)=>({banks:a.slice(2+5*i,6+5*i),repeat:a[6+5*i]}));
           if(a.length!==2+5*a[1]||a[1]>16||rows.some(r=>r.banks.some(k=>k>7)||r.repeat<1||r.repeat>16))rc=1;else if(st.chainPlaying)rc=2;else st.bankSongRows=rows;
@@ -3600,7 +3615,7 @@ const GLYPH = {
   symbol_folder: 0xEAB8, symbol_folder_open: 0xEAB9, port_disk: 0xEAB3, symbol_trash: 0xEAC1,
   control_arrow_loop: 0xEAD6, note_eight: 0xEAEF, symbol_waves: 0xEAE6, function_env_adsr_exp: 0xEA12,
   ui_knob: 0xEA70, symbol_keyboard: 0xEABC, symbol_effector: 0xEAB7, symbol_echo: 0xEAB5, symbol_spring: 0xEAD1,
-  symbol_tuning: 0xEAA7, control_arrow_up_down: 0xEACF, symbol_grid: 0xEABA, symbol_cog: 0xEA46,
+  symbol_tuning: 0xEAA7, control_arrow_up_down: 0xEACF, symbol_grid: 0xEABA, symbol_drum: 0xEA66, symbol_pad: 0xEB03, symbol_cog: 0xEA46,
   function_filter_lpf_peak: 0xEAA0, ui_slider_vertical: 0xEA73, symbol_books: 0xEADC, control_rec_f: 0xEA09, control_stop_f: 0xEA0F,
   symbol_pan: 0xEA53, control_speaker_mute: 0xEAEB,
   waveform_sine: 0xEA85, waveform_triangle_ac: 0xEA89, waveform_sawtooth_ac: 0xEA81, waveform_square: 0xEA87,
@@ -3651,6 +3666,7 @@ const TEXT = {
     deviceAll: "すべてのプリセット",
     deviceFavorites: "お気に入りのみ",
     deviceEmpty: "お気に入りはまだありません。「すべてのプリセット」から追加してください。",
+    tabDrums: "ドラム", tabArranger: "アレンジャー",
     deviceTheme: "テーマ",
     deviceFont: "フォント",
     deviceMonitor: "MIDI モニター",
@@ -3745,6 +3761,7 @@ const TEXT = {
     deviceAll: "All presets",
     deviceFavorites: "Favorites only",
     deviceEmpty: "No favorites yet. Choose All presets to add some.",
+    tabDrums: "Drums", tabArranger: "Arranger",
     deviceTheme: "Theme",
     deviceFont: "Font",
     deviceMonitor: "MIDI monitor",
@@ -3842,7 +3859,7 @@ $("lang").addEventListener("click", () => { lang = lang === "ja" ? "en" : "ja"; 
 
 /* ---------------------------------------------------------------- tabs --- */
 /* one panel at a time; the last one is remembered (localStorage) and in the URL hash (#sound ...) */
-const TABS = ["perform", "tuning", "chords", "sound", "effects", "motionfx", "native", "fm6", "sequencer", "drums", "tracks", "library", "projects", "settings"];
+const TABS = ["perform", "tuning", "chords", "sound", "effects", "motionfx", "native", "fm6", "sequencer", "drums", "arranger", "tracks", "library", "projects", "settings"];
 const TAB_KEY = "felucca-editor-tab";
 const TRACK_TABS = new Set(["sound", "effects", "motionfx", "native", "chords", "sequencer", "tracks"]);
 let tab = (() => {
@@ -4676,6 +4693,8 @@ function renderPattern() {
   const p = dev.pattern, pick = $("patternpick");
   if (pick.options.length !== p.count) { pick.replaceChildren(); for (let b = 0; b < p.count; b++) pick.append(el("option", { value: b, text: String(b + 1) })); }
   pick.value = String(p.queued < p.count ? p.queued : p.active);
+  const to = $("patternsave-to");
+  if (to.options.length !== p.count) { to.replaceChildren(); for (let b = 0; b < p.count; b++) to.append(el("option", { value: b, text: `P${b + 1}` })); to.value = String((p.active + 1) % p.count); }
   $("patternstate").textContent = p.queued < p.count ? `Playing ${p.active + 1} · ${p.queued + 1} queued` : "";
 }
 $("patternpick").addEventListener("change", () => op(async () => {
@@ -4684,8 +4703,21 @@ $("patternpick").addEventListener("change", () => op(async () => {
   dev.pattern = r; renderPattern();
   if (r.queued === 127) await afterSoundChange();
 }));
-let songPage = 0;
-const SONG_GROOVES=["No change","Ballad","Half Pipe","Straight 8","On the Floor","Maksoom","Wahda","Baladi","Fox","Drums off"];
+/* save the pattern being edited as one of the eight the arranger can load: it replaces what is there, so a second tap */
+let patternSaveArmed = 0;
+$("patternsave").addEventListener("click", () => {
+  const b = $("patternsave"), dest = +$("patternsave-to").value, p = dev?.pattern;
+  if (!p) return;
+  if (dest === p.active) { say(`This is pattern ${dest + 1}`); return; }
+  if (Date.now() > patternSaveArmed) { patternSaveArmed = Date.now() + 4000; b.textContent = `Replace ${dest + 1}?`; setTimeout(() => { b.textContent = "Save pattern"; }, 4000); return; }
+  patternSaveArmed = 0; b.textContent = "Save pattern";
+  op(async () => {
+    const r = parse[CMD.PATTERN](await rq(req.pattern(dev.sel || 0, 2, p.active, dest)));
+    if (r.rc) throw new Error("Stop playback before saving a pattern");
+    dev.pattern = r; renderPattern(); say(`Saved as pattern ${dest + 1}. Save a project to keep it.`);
+  });
+});
+const SONG_GROOVES=[[0,"No change"],[10,"My pattern"],[1,"Ballad"],[2,"Half Pipe"],[3,"Straight 8"],[4,"On the Floor"],[5,"Maksoom"],[6,"Wahda"],[7,"Baladi"],[8,"Fox"],[9,"Drums off"]];
 /* each section's drum groove: op 4 of BANK_SONG, send the rows' or read the device's */
 async function songGrooves(d,send,request=rq){
  if(!d.info.patterns||!d.song)return;
@@ -4695,54 +4727,39 @@ async function songGrooves(d,send,request=rq){
 }
 function renderSong() {
   const box = $("songchain");
-  box.hidden = !dev || !dev.info?.chainRows || !dev.song;
+  box.hidden = !dev || !dev.info?.chainRows || !dev.info.patterns || !dev.song;
   if (box.hidden) return;
-  const s = dev.song;
+  const s = dev.song, grid = $("songrows"), locked = !!s.playing;
   $("songplay").textContent = t(s.playing ? "songStop" : "songPlay");
-  $("songadd").disabled = !!s.playing || s.rows.length >= 16;
-  $("songremove").disabled = !!s.playing || !s.rows.length;
   $("songstatus").textContent = s.playing ? `${t("songPlaying")} ${s.row + 1}/${s.count} · ${s.remaining} ${t("songReps")}` : s.count ? "" : t("songEmpty");
-  const rows = $("songrows");
-  if (rows.contains(document.activeElement) && document.activeElement.tagName === "INPUT") return;
-  rows.replaceChildren();
-  const pageSize = 4, pages = Math.max(1, Math.ceil(s.rows.length / pageSize));
-  songPage = Math.min(songPage, pages - 1);
-  const nav = $("songpages");
-  nav.replaceChildren(el("button", {text:"‹", disabled:songPage===0, "aria-label":"Previous song sections", onclick:()=>{songPage--;renderSong();}}), el("span", {text:`Sections ${s.rows.length ? songPage*pageSize+1 : 0}–${Math.min(s.rows.length,(songPage+1)*pageSize)} / ${s.rows.length}`}), el("button", {text:"›", disabled:songPage===pages-1, "aria-label":"Next song sections", onclick:()=>{songPage++;renderSong();}}));
-  s.rows.forEach((r, i) => {
-    if (i < songPage*pageSize || i >= (songPage+1)*pageSize) return;
-    const line = el("div", { class: "song-section" + (s.playing && s.row===i ? " song-active" : "") });
-    line.append(el("span", { text: String(i + 1) }));
-    const picks = [];
-    if (dev.info.patterns) for (let track = 0; track < 4; track++) {
-      const sel = el("select", { disabled: !!s.playing, "aria-label": `Row ${i + 1}, track ${track + 1} pattern` });
-      for (let bank = 0; bank < 8; bank++) sel.append(el("option", { value: bank, text: `T${track + 1} P${bank + 1}` }));
-      sel.value = String(r.banks[track]);
-      sel.addEventListener("change", () => { const next = s.rows.map(x => ({ ...x, banks: [...x.banks] })); next[i].banks[track] = +sel.value; op(() => changeSong(1, next)); });
-      const cell=el("div", {class:`song-track song-track-${track+1}`});
-      cell.append(sel);
-      picks.push(cell);
-    } else {
-      const sel = el("select", { disabled: !!s.playing, "aria-label": `${t("slot")} ${i + 1}` });
-      for (let k = 0; k < 4; k++) sel.append(el("option", { value: k, text: `${t("slot")} ${k + 1}${dev.slotUsed[k] ? "" : ` (${t("empty")})`}` }));
-      sel.value = String(r.slot);
-      sel.addEventListener("change", () => { const next = s.rows.map(x => ({ ...x })); next[i].slot = +sel.value; op(() => changeSong(1, next)); });
-      picks.push(sel);
-    }
-    const reps = el("input", { type: "number", min: 1, max: 16, value: r.repeat, disabled: !!s.playing, style: "width:64px", "aria-label": `${t("songReps")} ${i + 1}` });
-    reps.addEventListener("change", () => { const v = +reps.value; if (!Number.isInteger(v) || v < 1 || v > 16) { reps.value = r.repeat; return; } const next = s.rows.map((x) => ({ ...x })); next[i].repeat = v; op(() => changeSong(1, next)); });
-    const groove = el("select", { disabled: !!s.playing, "aria-label": `Section ${i + 1} drum groove` });
-    SONG_GROOVES.forEach((name, g) => groove.append(el("option", { value: g, text: name })));
-    groove.value = String(r.groove || 0);
-    groove.addEventListener("change", () => { const next = s.rows.map(x => ({ ...x, ...(x.banks ? { banks: [...x.banks] } : {}) })); next[i].groove = +groove.value; op(() => changeSong(1, next)); });
-    line.append(...picks, ...(dev.info.patterns ? [el("label", { class: "song-groove" }, "Drum groove", groove)] : []), el("label", {}, "Repeats", reps));
-    const edit = (kind) => { const next=s.rows.map(x=>({...x,...(x.banks?{banks:[...x.banks]}:{})})); if(kind==='copy')next.splice(i+1,0,{...next[i],...(next[i].banks?{banks:[...next[i].banks]}:{})}); else if(kind==='delete')next.splice(i,1); else [next[i],next[i-1]]=[next[i-1],next[i]];op(()=>changeSong(1,next)); };
-    line.append(el("button",{text:"‹","aria-label":`Move section ${i+1} up`,disabled:!!s.playing||i===0,onclick:()=>edit('up')}),el("button",{text:"Copy","aria-label":`Duplicate section ${i+1}`,disabled:!!s.playing||s.rows.length>=16,onclick:()=>edit('copy')}),el("button",{text:"×","aria-label":`Delete section ${i+1}`,disabled:!!s.playing,onclick:()=>edit('delete')}));
-    const column=i-songPage*pageSize+1;
-    line.style.gridColumn=String(column);
-    line.firstElementChild.textContent=`Section ${i+1}`;
-    rows.append(line);
-  });
+  const copy = () => s.rows.map(x => ({ ...x, banks: [...x.banks] }));
+  const change = (edit) => { const next = copy(); edit(next); op(() => changeSong(1, next)); };
+  const choice = (label, options, value, pick) => {
+    const sel = el("select", { disabled: locked, "aria-label": label });
+    options.forEach(([v, name]) => sel.append(el("option", { value: v, text: name })));
+    sel.value = String(value);
+    sel.addEventListener("change", () => pick(+sel.value));
+    return sel;
+  };
+  const cell = (cls, i, ...kids) => el("div", { class: cls + (s.playing && s.row === i ? " song-active" : "") }, ...kids);
+  grid.style.setProperty("--song-sections", String(s.rows.length));
+  const out = [el("div", { class: "song-corner" }, "Track")];
+  s.rows.forEach((r, i) => out.push(cell("song-head", i, el("strong", {}, `Section ${i + 1}`), el("span", { class: "song-tools" },
+    el("button", { text: "‹", "aria-label": `Move section ${i + 1} left`, disabled: locked || i === 0, onclick: () => change(n => { [n[i], n[i - 1]] = [n[i - 1], n[i]]; }) }),
+    el("button", { text: "Copy", "aria-label": `Duplicate section ${i + 1}`, disabled: locked || s.rows.length >= 16, onclick: () => change(n => { n.splice(i + 1, 0, { ...n[i], banks: [...n[i].banks] }); }) }),
+    el("button", { text: "×", "aria-label": `Delete section ${i + 1}`, disabled: locked, onclick: () => change(n => { n.splice(i, 1); }) })))));
+  out.push(el("button", { class: "song-add", "aria-label": "Add section", disabled: locked || s.rows.length >= 16, onclick: () => change(n => { const last = n.at(-1); n.push({ banks: [...(last?.banks || [0, 0, 0, 0])], repeat: 1, groove: 0 }); }) }, "+ Add section"));
+  for (let track = 0; track < 4; track++) {
+    out.push(el("div", { class: `song-label song-track-${track + 1}` }, `Layer ${track + 1}`));
+    s.rows.forEach((r, i) => out.push(cell(`song-cell song-track song-track-${track + 1}`, i, choice(`Section ${i + 1}, layer ${track + 1} pattern`,
+      Array.from({ length: 8 }, (_, b) => [b, `Pattern ${b + 1}`]), r.banks[track], v => change(n => { n[i].banks[track] = v; })))));
+  }
+  out.push(el("div", { class: "song-label song-drums" }, icon("symbol_drum"), "Drums"));
+  s.rows.forEach((r, i) => out.push(cell("song-cell song-track song-drums", i, choice(`Section ${i + 1} drum groove`, SONG_GROOVES, r.groove || 0, v => change(n => { n[i].groove = v; })))));
+  out.push(el("div", { class: "song-label" }, "Repeats"));
+  s.rows.forEach((r, i) => out.push(cell("song-cell song-repeats", i, choice(`Section ${i + 1} repeats`,
+    Array.from({ length: 16 }, (_, k) => [k + 1, `× ${k + 1}`]), r.repeat, v => change(n => { n[i].repeat = v; })))));
+  grid.replaceChildren(...out);
 }
 async function changeSong(action, rows = []) {
   const r = songParse(dev, await rq(songRequest(dev, action, rows)));
@@ -4753,8 +4770,6 @@ async function changeSong(action, rows = []) {
   if (action === 1) sayK("songSaved");
 }
 $("songplay").addEventListener("click", () => op(() => changeSong(dev.song?.playing ? 3 : 2)));
-$("songadd").addEventListener("click", () => op(() => changeSong(1, [...dev.song.rows, dev.info.patterns ? { banks: [...(dev.song.rows.at(-1)?.banks || [0,0,0,0])], repeat: 1 } : { slot: dev.song.rows.at(-1)?.slot || 0, repeat: 1 }])));
-$("songremove").addEventListener("click", () => op(() => changeSong(1, dev.song.rows.slice(0, -1))));
 setInterval(async () => {
   if (!dev?.info?.chainRows || busy || document.hidden || !dev.link.idle || tab !== "projects") return;
   const releaseBusy = beginBusy();
@@ -5238,7 +5253,7 @@ function renderSetlist(){
 
 /* WORKFLOW-UI-BEGIN */
 let shapeTask='tone';
-function workflowTabs(name){return ['sound','effects','motionfx','native','fm6'].includes(name)?['sound','effects','motionfx','native','fm6']:['tuning','chords'].includes(name)?['tuning','chords']:['sequencer','drums','tracks','projects'].includes(name)?['sequencer','drums','tracks','projects']:[name];}
+function workflowTabs(name){return ['sound','effects','motionfx','native','fm6'].includes(name)?['sound','effects','motionfx','native','fm6']:['tuning','chords'].includes(name)?['tuning','chords']:['sequencer','drums','arranger','tracks','projects'].includes(name)?['sequencer','drums','arranger','tracks','projects']:[name];}
 function syncWorkflow(){const group=workflowTabs(tab)[0];for(const b of $('workflow').querySelectorAll('button'))b.setAttribute('aria-pressed',b.dataset.workflow===group);}
 $('workflow').onclick=e=>{const b=e.target.closest('button[data-workflow]');if(b)showTab(b.dataset.workflow);};
 function renderShapeNavigation(){

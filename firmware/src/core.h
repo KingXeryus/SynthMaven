@@ -455,8 +455,9 @@ typedef struct { uint8_t count, on, rsv[2]; motion_event_t event[MOTION_MAX]; } 
 _Static_assert(sizeof(motion_store_t) == 260u, "motion disk layout");
 #define CHAIN_ROWS 16u
 typedef struct { uint8_t slot, repeat; } chain_row_t;   /* slot: bits 0..3 track 1's pattern, bits 4..7 the drummer's groove in
-                                                         * this section: 0 no change, 1..8 the factory grooves, CHAIN_DRUMS_OFF */
+                                                         * this section: 0 no change, 1..8 the factory grooves, CHAIN_DRUMS_OFF, CHAIN_DRUMS_MINE */
 #define CHAIN_DRUMS_OFF 9u
+#define CHAIN_DRUMS_MINE 10u              /* the player's own drum pattern, as it was when the song started */
 static inline uint32_t chain_row_pattern(const chain_row_t *r) { return r->slot & 15u; }
 static inline uint32_t chain_row_groove(const chain_row_t *r) { return r->slot >> 4; }
 static inline void chain_row_set_pattern(chain_row_t *r, uint32_t pattern) { r->slot = (uint8_t)((r->slot & 0xF0u) | (pattern & 15u)); }

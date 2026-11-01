@@ -5,7 +5,7 @@ const el=(tag,attrs={},...children)=>{const n=document.createElement(tag);for(co
 const selected=[];const ctx={document,Event:dom.window.Event,el,$:id=>document.getElementById(id),tab:'perform',showTab:n=>selected.push(n)};
 const src=html.slice(html.indexOf('/* WORKFLOW-UI-BEGIN */'),html.indexOf('/* WORKFLOW-UI-END */'));
 vm.runInNewContext(src+'\nglobalThis.test={workflowTabs,syncWorkflow,renderShapeNavigation,rotaryControl,rotaryExact};',ctx);
-assert.deepEqual(Array.from(ctx.test.workflowTabs('fm6')),['sound','effects','motionfx','native','fm6']);assert.deepEqual(Array.from(ctx.test.workflowTabs('tracks')),['sequencer','drums','tracks','projects']);
+assert.deepEqual(Array.from(ctx.test.workflowTabs('fm6')),['sound','effects','motionfx','native','fm6']);assert.deepEqual(Array.from(ctx.test.workflowTabs('tracks')),['sequencer','drums','arranger','tracks','projects']);
 assert.deepEqual(Array.from(ctx.test.workflowTabs('chords')),['tuning','chords']);
 ctx.test.syncWorkflow();assert.equal(document.querySelector('[data-workflow=perform]').getAttribute('aria-pressed'),'true');document.querySelector('[data-workflow=tuning]').click();assert.equal(selected.at(-1),'tuning');
 for(const label of ['EDIT HYBRID','ENV','LFO','FX SEND','SCL','MOD'])document.getElementById('groups').append(el('div',{},el('h2',{text:label})));

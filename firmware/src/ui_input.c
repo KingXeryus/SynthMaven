@@ -1024,7 +1024,9 @@ static void edit_param(uint32_t slot, int32_t steps)
                 chain_config.count < CHAIN_ROWS ? chain_config.count : CHAIN_ROWS - 1u);
             return;
         }
-        if (slot == 1u) {
+        if (slot == 1u) {                               /* the tracks, then the drums row under them */
+            if (ui.song_drums) { if (steps < 0) ui.song_drums = 0; ui.force = 1; return; }
+            if (steps > 0 && song.sel + 1u >= trk_n()) { ui.song_drums = 1; ui.force = 1; return; }
             track_select((uint32_t)clamp((int32_t)song.sel + (steps > 0 ? 1 : -1), 0, (int32_t)trk_n() - 1));
             return;
         }
@@ -1039,6 +1041,11 @@ static void edit_param(uint32_t slot, int32_t steps)
             r->repeat = 1;
             chain_config.count = ui.song_row + 1u;
             if (slot == 2u) return;
+        }
+        if (slot == 2u && ui.song_drums) {               /* the section's groove */
+            chain_row_t *g = &chain_config.row[ui.song_row];
+            chain_row_set_groove(g, (uint32_t)clamp((int32_t)chain_row_groove(g) + (steps > 0 ? 1 : -1), 0, CHAIN_DRUMS_MINE));
+            return;
         }
         if (slot == 2u)
             chain_patterns[ui.song_row][song.sel] = (uint8_t)clamp((int32_t)chain_patterns[ui.song_row][song.sel] + steps, 0, NPAT - 1u);
@@ -2548,13 +2555,6 @@ static void ui_input(void)
     } else if(s&&!ui.home&&cur_page()->scope==SC_SM_PROGRAM){sm_name_edit(s);
     } else if(s&&!ui.home&&cur_page()->scope==SC_SM_MIX){
         TSEL->p[P_PAN]=(int16_t)clamp(TSEL->p[P_PAN]+s,-64,63);ui.force=1;
-    } else if (s && !ui.home && cur_page()->graph == GR_SONG) {   /* the section's drum groove */
-        if (chain_busy()) ui_message("STOP TO EDIT");
-        else if (ui.song_row < chain_config.count) {
-            chain_row_t *r = &chain_config.row[ui.song_row];
-            chain_row_set_groove(r, (uint32_t)clamp((int32_t)chain_row_groove(r) + (s > 0 ? 1 : -1), 0, CHAIN_DRUMS_OFF));
-            ui.force = 1;
-        }
     } else if (s && ui.home) {
         sm_home_preset(s);
     } else if (s && !ui.home && cur_page()->graph == GR_SCALE_PICKER) {

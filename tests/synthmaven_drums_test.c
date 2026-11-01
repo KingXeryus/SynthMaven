@@ -54,13 +54,15 @@ int main(void)
         assert(chain_row_pattern(&r) == 3 && chain_row_groove(&r) == 5);
         chain_defaults(&c); c.count = 1; c.row[0] = r; assert(chain_valid(&c));
         chain_row_set_groove(&c.row[0], CHAIN_DRUMS_OFF); assert(chain_valid(&c));
-        chain_row_set_groove(&c.row[0], 10); assert(!chain_valid(&c));
+        chain_row_set_groove(&c.row[0], CHAIN_DRUMS_MINE); assert(chain_valid(&c));
+        chain_row_set_groove(&c.row[0], 11); assert(!chain_valid(&c));
         uint16_t before[SM_DRUM_LANES]; uint8_t on = sm_drums.enabled = 0;
         sm_drums.steps[6] = 0x0F0F; memcpy(before, sm_drums.steps, sizeof before);
         sm_chain_drums_begin();
         sm_chain_drums_section(0); assert(!sm_drums.enabled && !memcmp(sm_drums.steps, before, sizeof before));
         sm_chain_drums_section(5); assert(sm_drums.enabled && sm_drums.steps[7] == 0x1044);
         sm_chain_drums_section(7); assert(sm_drums.enabled && sm_drums.steps[0] == 0x0105);
+        sm_chain_drums_section(CHAIN_DRUMS_MINE); assert(sm_drums.enabled && !memcmp(sm_drums.steps, before, sizeof before));
         sm_chain_drums_section(CHAIN_DRUMS_OFF); assert(!sm_drums.enabled);
         sm_chain_drums_end(); assert(sm_drums.enabled == on && !memcmp(sm_drums.steps, before, sizeof before));
     }

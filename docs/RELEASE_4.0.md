@@ -9,7 +9,8 @@ An FM-1 firmware for oriental live musicians, turning the standard M-VAVE FM-1 i
 - **Factory programs:** RETRO SYNTH now leads with XD STRINGS and ORCHESTRA with FM6 STRINGS 2. DX RHODES and ORCHESTRA load with layering on.
 - **Loudness compensation:** factory sounds and programs are now matched to the DX7 program's loudness, automatically and with no control of their own. Your LEVEL settings work as before. 487 of 614 sounds land within 1 dB and 563 within 3 dB; a few short or very quiet sounds stay lower because their boost is limited. Sounds saved as USER sounds aren't compensated.
 - **Installer:** the optional m-bootloader step is gone, and the page now shows the firmware's key numbers. A device that already has m-bootloader keeps it.
-- **Grooves in the arranger:** each song section can change the drum groove or stop the drums. Set it with PRESETS on SEQ → SONG, or in the editors' Song arranger. Your own drum pattern comes back when the song stops.
+- **New arranger:** in the editors it has its own page after Sequencer and Drums. Rows are the four layers plus Drums, and columns are the sections. On the FM-1, SEQ → SONG has the same five rows. A section can change the drum groove, use your own pattern, or stop the drums.
+- **Save pattern:** save the pattern you're editing to any of a track's 8 patterns, from the editor's sequencer or SEQ → PATTERNS on the FM-1.
 - **Tempo while drumming:** while the drums are running, SELECT sets the tempo on both Home screens. Stop the drums to choose a part or lane with SELECT again.
 - **New Home screen:** four cards, one per layer, with the sound, engine, pattern and live steps, and four rotary knobs below showing KNOB 1–4 for the selected layer.  The header shows the program number and name. Each layer's level and pan are on the mixer page.
 

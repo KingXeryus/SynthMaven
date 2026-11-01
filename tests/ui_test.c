@@ -1083,14 +1083,18 @@ static int test_home_view(void)
     ui_power_on();
     go_home(); frame();
     press(B_HOME);
-    {   /* SONG: PRESETS sets the section's drum groove, and a pattern change keeps it */
-        chain_defaults(&chain_config); chain_config.count = 1; ui.song_row = 0;
+    {   /* SONG: the drums row under the tracks: KNOB 2 reaches it, KNOB 3 sets the section's groove, a pattern keeps it */
+        chain_defaults(&chain_config); chain_config.count = 1; ui.song_row = 0; ui.song_drums = 0; song.sel = 0;
         go_title("SONG"); frame();
-        turn(EN_PRESET, 1); turn(EN_PRESET, 1);
-        bad += check("SONG: PRESETS sets the section's drum groove", chain_row_groove(&chain_config.row[0]) == 2u);
+        song.sel = (uint8_t)(trk_n() - 1u); turn(EN_K2, 1);
+        bad += check("SONG: KNOB 2 reaches the drums row", ui.song_drums == 1u);
+        turn(EN_K3, 1); turn(EN_K3, 1);
+        bad += check("  KNOB 3 sets the section's drum groove", chain_row_groove(&chain_config.row[0]) == 2u);
         chain_row_set_pattern(&chain_config.row[0], 3);
         bad += check("  a pattern change keeps it", chain_row_groove(&chain_config.row[0]) == 2u && chain_valid(&chain_config));
-        chain_defaults(&chain_config); go_home(); frame();
+        turn(EN_K2, -1);
+        bad += check("  KNOB 2 back to the tracks", ui.song_drums == 0u);
+        chain_defaults(&chain_config); track_select(0); go_home(); frame();
     }
     {   /* the drummer running: SELECT is the tempo on both HOME screens, stopped it is the part / lane */
         uint8_t sel = song.sel, lane = sm_drum_lane; int16_t bpm = song.g[G_BPM];
@@ -2281,7 +2285,7 @@ static int test_init_scales_patterns(void)
                  pop.rows == SHEET_PATTERNS);
     for (first = 1; first < NPAT && !pattern_empty(song.sel, first); first++)
         ;
-    sheet_do("Copy to\x85");
+    sheet_do("Save to\x85");
     bad += check("..Copy to: the pattern, the first empty place", ptc_on() && ui.ptc_src == t->pattern &&
                  ui.ptc_dst == first && first < NPAT);
     turn(EN_K3, 1);
@@ -2295,7 +2299,7 @@ static int test_init_scales_patterns(void)
         ok &= !memcmp(&pattern_at(song.sel, first)->step[i], &t->step[i], sizeof t->step[i]);
     bad += check("..OCT+ copies it there, Copy to ends", ok && !ptc_on() && msg_is("PATTERN COPIED") &&
                  !pattern_empty(song.sel, first));
-    sheet_do("Copy to\x85");
+    sheet_do("Save to\x85");
     b = ui.ptc_dst;
     turn(EN_K1, -10);
     ok = b != first && ui.ptc_dst == first;
@@ -2303,7 +2307,7 @@ static int test_init_scales_patterns(void)
     bad += check("..over a pattern in use: the question first", ok && ui.confirm == CF_PASTE_PAT && ptc_on());
     press(B_OCTUP);
     bad += check("..yes: copied", !ui.confirm && !ptc_on() && msg_is("PATTERN COPIED"));
-    sheet_do("Copy to\x85");
+    sheet_do("Save to\x85");
     press(B_OCTDN);
     bad += check("..OCT- leaves Copy to, PATTERNS stays", !ptc_on() && !ui.home && str_eq(cur_page()->title, "PATTERNS"));
     sheet_do("Delete pattern");
@@ -2317,7 +2321,7 @@ static int test_init_scales_patterns(void)
     bad += check("..EDIT + OCT- undoes it, EDIT + OCT+ redoes it", ok && seq_is_empty(t));
     sheet_do("Delete pattern");
     ok = !ui.confirm && msg_is("NOTHING TO DELETE");
-    sheet_do("Copy to\x85");
+    sheet_do("Save to\x85");
     bad += check("..an empty pattern: nothing to delete, nothing to copy", ok && !ptc_on() && msg_is("NOTHING TO COPY"));
     return bad;
 }

@@ -1073,7 +1073,7 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
             if (na != 1u && (na < 2u || a[1] != chain_config.count || na != 2u + a[1])) rc = 1;
             else if (na > 1u && chain_busy()) rc = 2;
             else if (na > 1u) {
-                for (uint32_t row = 0; row < a[1]; row++) if (a[2u + row] > CHAIN_DRUMS_OFF) rc = 1;
+                for (uint32_t row = 0; row < a[1]; row++) if (a[2u + row] > CHAIN_DRUMS_MINE) rc = 1;
                 if (!rc) for (uint32_t row = 0; row < a[1]; row++) chain_row_set_groove(&chain_config.row[row], a[2u + row]);
                 ui.force = 1;
             }
