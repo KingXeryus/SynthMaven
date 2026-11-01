@@ -15,7 +15,7 @@ static uint32_t sm_layer_mask(uint32_t note,uint32_t parts)
  * voices than the CPU can finish before overload shedding cuts them, and the audio misses its deadline. Each key
  * starts a voice per layer, so at most this many keys start per dispatch; a big chord rolls over a few milliseconds. */
 #define SM_LAYER_BUDGET 16u
-#define SM_LAYER_KEYS_PER_BLOCK 2u
+#define SM_LAYER_KEYS_PER_BLOCK 1u
 #define SM_LAYERS_WIRE 16u
 static int sm_layers_valid(const sm_layers_t *s){if(s->enabled>1)return 0;for(uint32_t i=0;i<4;i++)if(s->low[i]>s->high[i]||s->high[i]>127)return 0;return 1;}
 static void sm_layers_encode(uint8_t *b,const sm_layers_t *s){for(uint32_t i=0;i<16;i++)b[i]=0;b[0]='S';b[1]='M';b[2]='L';b[3]=1;b[4]=s->enabled;for(uint32_t i=0;i<4;i++){b[5+i]=s->low[i];b[9+i]=s->high[i];}}
