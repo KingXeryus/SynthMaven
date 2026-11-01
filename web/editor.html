@@ -4765,16 +4765,18 @@ async function changeSong(action, rows = []) {
   const r = songParse(dev, await rq(songRequest(dev, action, rows)));
   if (r.rc) throw new Error(r.rc >= 3 ? `${t("slot")} ${r.rc - 2}: ${t("empty")}` : t(r.rc === 2 ? "songBusy" : "songInvalid"));
   dev.song = r;
+  if (action === 1) r.rows.forEach((x, i) => { x.groove = rows[i]?.groove || 0; });
+  renderSong();
   await songGrooves(dev,action===1?rows:null);
   renderSong();
   if (action === 1) sayK("songSaved");
 }
 $("songplay").addEventListener("click", () => op(() => changeSong(dev.song?.playing ? 3 : 2)));
 setInterval(async () => {
-  if (!dev?.info?.chainRows || busy || document.hidden || !dev.link.idle || tab !== "projects") return;
+  if (!dev?.info?.chainRows || busy || document.hidden || !dev.link.idle || tab !== "arranger") return;
   const releaseBusy = beginBusy();
   const d = dev;
-  try { const r = songParse(dev, await rq(songRequest(dev))); if (d === dev) { d.song = r; await songGrooves(d,null); renderSong(); } }
+  try { const was = JSON.stringify(d.song), r = songParse(dev, await rq(songRequest(dev))); if (d === dev) { d.song = r; await songGrooves(d,null); if (JSON.stringify(r) !== was) renderSong(); } }
   catch (err) { report(err); } finally { releaseBusy(); }
 }, 1000);
 

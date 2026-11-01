@@ -399,6 +399,8 @@ static int bank_protocol(void)
     bad += check("PATTERN rejects out-of-range bank IDs", request(ED_PATTERN,a,3)==12 && host_wire[7] && trk[2].pattern==7);
     uint8_t row[] = {1,1,0,2,4,7,3};
     bad += check("bank SONG independently assigns four track banks", request(ED_BANK_SONG,row,sizeof row)==17 && !host_wire[6] && chain_patterns[0][3]==7 && chain_config.row[0].repeat==3);
+    uint8_t grooves[] = {4,1,5};
+    bad += check("bank SONG sets a section's drum groove", request(ED_BANK_SONG,grooves,sizeof grooves)==10 && host_wire[5]==4 && !host_wire[6] && host_wire[7]==1 && host_wire[8]==5);
     row[4]=8;
     bad += check("malformed bank SONG leaves the arrangement unchanged", request(ED_BANK_SONG,row,sizeof row)==17 && host_wire[6]==1 && chain_patterns[0][2]==4);
     a[0]=0; uint32_t writes=host_writes;

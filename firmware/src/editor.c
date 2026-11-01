@@ -342,7 +342,7 @@ static int ed_args_ok(uint32_t cmd, const uint8_t *a, uint32_t n)
         return (n == 1u || (n == 2u && a[1] == 2u) || (n == 3u && a[1] == 1u && a[2] <= 1u) ||
                 (n == 6u && a[1] == 3u) || ((n == 4u || n == 6u) && a[1] == 4u)) && a[0] < NPART;
     case ED_BANK_SONG: case ED_SONG:
-        return n && (a[0] == 1u || n == 1u);
+        return n && (a[0] == 1u || n == 1u || (cmd == ED_BANK_SONG && a[0] == 4u));
     default:
         return 1;                                  /* variable payloads validate in their handler */
     }
