@@ -814,5 +814,5 @@ static void sm_drum_home_draw(void)
     draw_text_box(88,190,65,TY_LB,text,T_TEXT,0);
     fmt_int(num,song.g[G_BPM]);str_cpy(text,"BPM ",sizeof text);str_cpy(text+4,num,sizeof text-4);
     draw_text_box(158,190,77,TY_LB,text,T_TEXT,0);
-    draw_text_box(4,211,232,TY_LB,sm_drums.enabled?"ALG GROOVE KNOB 4 VOLUME":"ALG GROOVE 1 STEP 2 HIT",T_MID,1);
+    draw_text_box(4,211,232,TY_LB,"ALG GROOVE 1 STEP 2 HIT",T_MID,1);
 }
