@@ -4765,16 +4765,18 @@ async function changeSong(action, rows = []) {
   const r = songParse(dev, await rq(songRequest(dev, action, rows)));
   if (r.rc) throw new Error(r.rc >= 3 ? `${t("slot")} ${r.rc - 2}: ${t("empty")}` : t(r.rc === 2 ? "songBusy" : "songInvalid"));
   dev.song = r;
+  if (action === 1) r.rows.forEach((x, i) => { x.groove = rows[i]?.groove || 0; });
+  renderSong();
   await songGrooves(dev,action===1?rows:null);
   renderSong();
   if (action === 1) sayK("songSaved");
 }
 $("songplay").addEventListener("click", () => op(() => changeSong(dev.song?.playing ? 3 : 2)));
 setInterval(async () => {
-  if (!dev?.info?.chainRows || busy || document.hidden || !dev.link.idle || tab !== "projects") return;
+  if (!dev?.info?.chainRows || busy || document.hidden || !dev.link.idle || tab !== "arranger") return;
   const releaseBusy = beginBusy();
   const d = dev;
-  try { const r = songParse(dev, await rq(songRequest(dev))); if (d === dev) { d.song = r; await songGrooves(d,null); renderSong(); } }
+  try { const was = JSON.stringify(d.song), r = songParse(dev, await rq(songRequest(dev))); if (d === dev) { d.song = r; await songGrooves(d,null); if (JSON.stringify(r) !== was) renderSong(); } }
   catch (err) { report(err); } finally { releaseBusy(); }
 }, 1000);
 
@@ -5043,7 +5045,7 @@ let drumLane=0,drumBank=0,drumLaneBank=0;
 async function drumRequest(args){const d=dev;if(!d?.info.synthmaven?.drums)throw Error('Independent drums require the updated 3.5 firmware');const r=parse[CMD.DRUMS](await sessionRequest(d,[CMD.DRUMS,args]));if(r.rc)throw Error(r.rc===4?'Stop drums and sequencer before saving.':'Drum operation was rejected');d.drums=r;return r;}
 async function loadDrums(){const host=$('drum-workspace');if(!dev?.info.synthmaven?.drums){host.replaceChildren(el('p',{},'Independent drums require the updated 3.5 firmware.'));return;}await drumRequest([0]);renderDrums();}
 /* the firmware's factory grooves (synthmaven_drums.c), a step mask for each of the eight lanes */
-const DRUM_GROOVES=[["Ballad",[0x0401,0x1010,0x5555,0,0,0,0,0]],["Half Pipe",[0x0481,0x0100,0x5555,0,0,0,0,0x2020]],["Straight 8",[0x0101,0x1010,0x5555,0,0,0,0,0]],["On the Floor",[0x1111,0,0x1111,0x4444,0x1010,0,0,0]],["Maksoom",[0x0101,0,0,0,0,0,0,0x1044]],["Wahda",[0x0001,0,0,0,0,0,0,0x1040]],["Baladi",[0x0105,0,0,0,0,0,0,0x1040]],["Fox",[0x0101,0,0,0,0,0,0,0x1010]]];
+const DRUM_GROOVES=[["Ballad",[0x0401,0x1010,0x5555,0,0,0,0,0]],["Half Pipe",[0x0481,0x0100,0x5555,0,0,0,0,0x2020]],["Straight 8",[0x0101,0x1010,0x5555,0,0,0,0,0]],["On the Floor",[0x1111,0,0x1111,0x4444,0x1010,0,0,0]],["Maksoom",[0x0101,0x1044,0x1044,0,0,0x0101,0,0x1044]],["Wahda",[0x0001,0x1040,0x1040,0,0,0x0001,0,0x1040]],["Baladi",[0x0105,0x1040,0x1040,0,0,0x0105,0,0x1040]],["Fox",[0x0101,0x1010,0x1010,0,0,0x0101,0,0x1010]]];
 function renderDrums(){
  const d=dev,s=d?.drums,host=$('drum-workspace');if(!s)return;
  const bankSize=window.innerWidth<500?4:8;drumBank=Math.min(drumBank,16/bankSize-1);
