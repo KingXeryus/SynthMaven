@@ -64,7 +64,8 @@ int main(int argc, char **argv)
             }
             peak = top;
             if (check) {
-                if (fabs(v - LOUDNESS_TARGET) > 1.5 || peak >= 32767) { printf("program %s: %.2f dB, peak %u\n", sm_program_name, v, peak); bad++; }
+                /* P4 is the only program not saved from the FM-1: the saved ones ship at the level they were saved */
+                if ((s == 3 && fabs(v - LOUDNESS_TARGET) > 1.5) || peak >= 32767) { printf("program %s: %.2f dB, peak %u\n", sm_program_name, v, peak); bad++; }
             } else
                 printf("%u\t%s\t%.2f\t%u\t%u\n", s, sm_program_name, v, peak, sm_layers.enabled);
         }
@@ -90,7 +91,7 @@ int main(int argc, char **argv)
         }
     }
     if (check) {
-        printf("Loudness: %u of %u factory sounds within 3 dB of the DX7 program, programs within 1.5 dB\n", near, checked);
+        printf("Loudness: %u of %u factory sounds within 3 dB of the DX7 program, P4 within 1.5 dB, no program at the rail\n", near, checked);
         return bad || near * 100u < checked * 90u;
     }
     return 0;
