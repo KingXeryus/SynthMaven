@@ -1113,6 +1113,13 @@ static int test_home_view(void)
         bad += check("  and back down", song.g[G_BPM] == bpm);
     }
     bad += check("HOME on program overview: independent drum page", ui.home && ui.home_pg == 1u);
+    frame();sm_drum_audio.running=1;sm_drum_audio.step=3;frame();
+    {
+        uint64_t sent=host_sent;uint16_t lane_name=host_screen[58u*240u+10u];
+        sm_drum_audio.step=4;frame();
+        bad += check("drum page: the playhead repaints its two columns, not the page", host_sent-sent<=3000u && host_screen[58u*240u+10u]==lane_name);
+    }
+    sm_drum_audio.running=0;frame();
     press(B_HOME);
     bad += check("  HOME again: Stage", ui.home && ui.home_pg == 0u);
     press(B_HOME);

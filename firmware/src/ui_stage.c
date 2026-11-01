@@ -774,32 +774,37 @@ static void sm_program_home_draw(void)
     }
 }
 
+/* One lane's step with the rows above and below it, which hold the cursor: painted over, never cleared first */
+static void sm_drum_cell(uint32_t lane,uint32_t step,uint32_t playing)
+{
+    int x=73+(int)step*10,y=50+(int)lane*17;
+    uint16_t c=T_TRK(lane),edge=lane==sm_drum_lane&&step==sm_drum_cursor?T_TEXT:T_BG;
+    uint16_t color=(sm_drums.steps[lane]&(1u<<step))?c:step%4u?T_SURF:ux_mix(T_SURF,T_TEXT,14);
+    lcd_fill(x,y,8,1,edge);lcd_fill(x,y+2,8,12,step==playing?T_TEXT:color);lcd_fill(x,y+15,8,1,edge);
+}
 static void sm_drum_home_draw(void)
 {
-    static uint32_t drawn;
+    static uint32_t drawn,shown;
     uint32_t groove=sm_groove_current();
     uint32_t sig=ux.gen*977u+ux.pal*31u+sm_drum_lane+sm_drum_cursor*17u+sm_drums.enabled*101u+song.g[G_BPM]*131u+groove*7u;
     uint32_t playing=sm_drum_audio.running?(sm_drum_audio.step+15u)%16u:16u;
-    sig=sig*31u+playing;
     for(uint32_t k=0;k<8;k++)sig=sig*31u+sm_drums.steps[k]+sm_drums.level[k]*17u+sm_drums.velocity[k];
-    if(!ui.force&&sig==drawn)return;drawn=sig;
-    lcd_fill(0,30,240,210,T_BG);
+    if(!ui.force&&sig==drawn){                          /* only the playhead moved: the two columns it left and reached */
+        if(playing==shown)return;
+        for(uint32_t lane=0;lane<8;lane++){
+            if(shown<16u)sm_drum_cell(lane,shown,playing);
+            if(playing<16u)sm_drum_cell(lane,playing,playing);
+        }
+        shown=playing;return;
+    }
+    if(ui.force)lcd_fill(0,30,240,210,T_BG);
+    drawn=sig;shown=playing;
     draw_text_box(5,32,180,TY_LB,groove?sm_groove_names[groove-1u]:"MY PATTERN",T_THEME,0);
     draw_text_box(190,32,45,TY_LB,sm_drums.enabled?"RUN":"STOP",sm_drums.enabled?T_TEXT:T_MID,0);
     /* Eight independent lanes in the parts' colours; each group of four columns is one beat. */
     for(uint32_t lane=0;lane<8;lane++){
-        int y=50+(int)lane*17;
-        uint16_t c=T_TRK(lane);
-        draw_text_box(4,y,66,TY_LB,sm_drum_names[lane],lane==sm_drum_lane?T_TEXT:c,0);
-        for(uint32_t step=0;step<16;step++){
-            int x=73+(int)step*10;
-            uint16_t color=(sm_drums.steps[lane]&(1u<<step))?c:step%4u?T_SURF:ux_mix(T_SURF,T_TEXT,14);
-            if(step==playing)color=T_TEXT;
-            lcd_fill(x,y+2,8,12,color);
-            if(lane==sm_drum_lane&&step==sm_drum_cursor){
-                lcd_fill(x,y,8,1,T_TEXT);lcd_fill(x,y+15,8,1,T_TEXT);
-            }
-        }
+        draw_text_box(4,50+lane*17u,66,TY_LB,sm_drum_names[lane],lane==sm_drum_lane?T_TEXT:T_TRK(lane),0);
+        for(uint32_t step=0;step<16;step++)sm_drum_cell(lane,step,playing);
     }
     char text[40],num[12];
     fmt_int(num,sm_drums.level[sm_drum_lane]);str_cpy(text,"LEVEL ",sizeof text);str_cpy(text+6,num,sizeof text-6);
