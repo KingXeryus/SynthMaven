@@ -2621,6 +2621,11 @@ static void ui_input(void)
             continue;
         step_edit_combo();
         if(k<2u && bulk_jog(s))continue;
+        if(k==3u&&ui.home&&sm_drums.enabled){            /* the drummer running: its volume, on both HOME screens */
+            uint32_t guard=motion_guard();
+            sm_drums.volume=(uint8_t)(midi_panel_mask&(1u<<EN_K4)&&midi_panel_absolute[EN_K4]>=0?midi_panel_absolute[EN_K4]:clamp(sm_drums.volume+s,0,127));
+            motion_unguard(guard);ui.force=1;continue;
+        }
         if (k == 0u && cur_page()->graph == GR_ROLL && step_gesture(s))   /* KNOB 1 too, as SELECT (ENV / SCL / a key
                                                                          * held) */
             continue;

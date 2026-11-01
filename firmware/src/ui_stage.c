@@ -769,6 +769,7 @@ static void sm_program_home_draw(void)
         int32_t ratio=-1;
         val[0]=0;
         if(on){stage_value(sp,d,*vp,val,&unit);ratio=RATIO(d,*vp);}
+        if(c==3u&&sm_drums.enabled){label="DRUMS";unit="";fmt_int(val,sm_drums.volume);ratio=sm_drums.volume*1000/127;}
         uint32_t ks=str_hash(str_hash(str_hash(c+7u,label),val),unit)+(uint32_t)(ratio+1)*31u;
         if(whole||ks!=knob_drawn[c]){knob_drawn[c]=ks;sm_home_rotary(c,label,val,unit,ratio);}
     }
@@ -786,7 +787,7 @@ static void sm_drum_home_draw(void)
 {
     static uint32_t drawn,shown;
     uint32_t groove=sm_groove_current();
-    uint32_t sig=ux.gen*977u+ux.pal*31u+sm_drum_lane+sm_drum_cursor*17u+sm_drums.enabled*101u+song.g[G_BPM]*131u+groove*7u;
+    uint32_t sig=ux.gen*977u+ux.pal*31u+sm_drum_lane+sm_drum_cursor*17u+sm_drums.enabled*101u+song.g[G_BPM]*131u+groove*7u+sm_drums.volume*1009u;
     uint32_t playing=sm_drum_audio.running?(sm_drum_audio.step+15u)%16u:16u;
     for(uint32_t k=0;k<8;k++)sig=sig*31u+sm_drums.steps[k]+sm_drums.level[k]*17u+sm_drums.velocity[k];
     if(!ui.force&&sig==drawn){                          /* only the playhead moved: the two columns it left and reached */
@@ -808,8 +809,10 @@ static void sm_drum_home_draw(void)
     }
     char text[40],num[12];
     fmt_int(num,sm_drums.level[sm_drum_lane]);str_cpy(text,"LEVEL ",sizeof text);str_cpy(text+6,num,sizeof text-6);
-    draw_text_box(5,190,110,TY_LB,text,T_TEXT,0);
+    draw_text_box(5,190,78,TY_LB,text,T_TEXT,0);
+    fmt_int(num,sm_drums.volume);str_cpy(text,"VOL ",sizeof text);str_cpy(text+4,num,sizeof text-4);
+    draw_text_box(88,190,65,TY_LB,text,T_TEXT,0);
     fmt_int(num,song.g[G_BPM]);str_cpy(text,"BPM ",sizeof text);str_cpy(text+4,num,sizeof text-4);
-    draw_text_box(125,190,110,TY_LB,text,T_TEXT,0);
-    draw_text_box(4,211,232,TY_LB,"ALG GROOVE 1 STEP 2 HIT",T_MID,1);
+    draw_text_box(158,190,77,TY_LB,text,T_TEXT,0);
+    draw_text_box(4,211,232,TY_LB,sm_drums.enabled?"ALG GROOVE KNOB 4 VOLUME":"ALG GROOVE 1 STEP 2 HIT",T_MID,1);
 }

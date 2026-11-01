@@ -36,5 +36,10 @@ int main(void){
   fm1_in.buttons&=~bit;frame();assert(*octave_control()==octave);sm_program_current=0;
  }
  press(B_OCTUP);assert(*octave_control()==octave+1);press(B_OCTDN);assert(*octave_control()==octave);
+ /* KNOB 4: the drummer's volume while it runs, on both HOME screens; stopped, as before */
+ ui.menu=0;ui.home=1;sm_drums.enabled=1;
+ for(uint32_t pg=0;pg<2;pg++){int16_t bpm=song.g[G_BPM];ui.home_pg=(uint8_t)pg;sm_drums.volume=90;turn(EN_K4,1);assert(sm_drums.volume==91&&song.g[G_BPM]==bpm);frame();}
+ sm_drums.volume=126;turn(EN_K4,1);turn(EN_K4,1);assert(sm_drums.volume==127);
+ sm_drums.enabled=0;ui.home_pg=1;sm_drums.volume=90;{int16_t bpm=song.g[G_BPM];turn(EN_K4,1);assert(sm_drums.volume==90&&song.g[G_BPM]==bpm+1);}
  puts("Program UI: SAVE opens programs, SELECT cycles eight slots, legacy named save/load and four independent mixer knobs passed");return 0;
 }

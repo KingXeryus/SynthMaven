@@ -1,8 +1,8 @@
 # SynthMaven factory programs
 
-P1, P2 and P3 are the programs saved on the project's FM-1, read over USB on 2026-11-01 (`assets/factory/device-programs-2026-11-01.bin`, spliced in by `tools/apply_device_programs.py`), so the table's P1-P3 rows are their starting points, not their exact contents. P3 is now layered too. P4-P8 were never saved on that FM-1 and are unchanged.
+P1-P3 and P5-P8 are the programs saved on the project's FM-1, read over USB on 2026-11-01 (`assets/factory/device-programs-2026-11-01.bin`, spliced in by `tools/apply_device_programs.py`), so the table's rows for them are their starting points, not their exact contents. P2, P3, P7 and P8 load layered. P4 was never saved on that FM-1 and is unchanged.
 
-The factory bank is built by `tools/make_factory_programs.c` with the firmware's own preset and capture code, then packed by `tools/gen_factory_program_pack.py`. Layering starts off except on DX RHODES and ORCHESTRA, so each other program opens on its Layer 1 lead. Hold GLO to bring in the supporting layers.
+The factory bank is built by `tools/make_factory_programs.c` with the firmware's own preset and capture code, then packed by `tools/gen_factory_program_pack.py`. Layering starts off on P1, P4, P5 and P6, so each opens on its Layer 1 lead. Hold GLO to bring in the supporting layers.
 
 | Slot | Name | Layer 1 lead | Layer 2 | Layer 3 | Layer 4 |
 |---|---|---|---|---|---|
@@ -19,6 +19,6 @@ Layer 1 balance and the supporting levels were set by measuring rendered chords,
 
 The Vital sources in `assets/factory/vital` are approximate translations made by the editor's importer. Objective checks establish that the programs load, sound and do not clip in host renders. They do not establish how good they sound, which needs listening on an FM-1.
 
-Every factory sound and program is level-matched to P1 by programmatic loudness compensation: `tests/loudness_measure.c` measures each one (a K-style weighting, the loudest 400 ms of a held note at velocity 100), `tools/gen_loudness_comp.py` writes `firmware/src/loudness_comp.h`, and `PROGRAM_LOUDNESS` in `tools/make_factory_programs.c` tunes the programs. After adding or changing factory sounds, rerun the measure and generate steps until they settle. `tests/run_tests.sh` fails if a program drifts more than 1 dB, under 90 % of sounds are within 3 dB, or a sound reaches the rail.
+Every factory sound and program is level-matched to P1 by programmatic loudness compensation: `tests/loudness_measure.c` measures each one (a K-style weighting, the loudest 400 ms of a held note at velocity 100), `tools/gen_loudness_comp.py` writes `firmware/src/loudness_comp.h`, and `PROGRAM_LOUDNESS` in `tools/make_factory_programs.c` tunes the programs. After adding or changing factory sounds, rerun the measure and generate steps until they settle. `tests/run_tests.sh` fails if a program drifts more than 1.5 dB, under 90 % of sounds are within 3 dB, or a sound reaches the rail.
 
 While layering is on the voice budget is capped at 16 points and a chord starts one key per audio block. On an FM-1 with all four layers a chord at the former 64 points peaked at up to 257% of the audio deadline; measure with `tools/synthmaven_layer_load.py`.
