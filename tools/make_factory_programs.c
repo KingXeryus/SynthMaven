@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* Builds assets/factory/programs-3.5.bin with the firmware's own preset and capture code:
  * cc -O1 -w -Ibuild/gen -Ifirmware/src -Itests tools/make_factory_programs.c -lm, run from the repo root.
- * Then python3 tools/gen_factory_program_pack.py. Layer 1 is the lead; layering starts off unless the program says otherwise.
+ * Then python3 tools/apply_device_programs.py and python3 tools/gen_factory_program_pack.py. Layer 1 is the lead; layering starts off unless the program says otherwise.
  * Vital sources (assets/factory/vital) are approximate translations made by the editor's importer. */
 #define PERSISTENCE_TEST_NO_MAIN
 #include "persistence_test.c"

@@ -1,5 +1,7 @@
 # SynthMaven factory programs
 
+P1, P2 and P3 are the programs saved on the project's FM-1, read over USB on 2026-11-01 (`assets/factory/device-programs-2026-11-01.bin`, spliced in by `tools/apply_device_programs.py`), so the table's P1-P3 rows are their starting points, not their exact contents. P3 is now layered too. P4-P8 were never saved on that FM-1 and are unchanged.
+
 The factory bank is built by `tools/make_factory_programs.c` with the firmware's own preset and capture code, then packed by `tools/gen_factory_program_pack.py`. Layering starts off except on DX RHODES and ORCHESTRA, so each other program opens on its Layer 1 lead. Hold GLO to bring in the supporting layers.
 
 | Slot | Name | Layer 1 lead | Layer 2 | Layer 3 | Layer 4 |
@@ -19,4 +21,4 @@ The Vital sources in `assets/factory/vital` are approximate translations made by
 
 Every factory sound and program is level-matched to P1 by programmatic loudness compensation: `tests/loudness_measure.c` measures each one (a K-style weighting, the loudest 400 ms of a held note at velocity 100), `tools/gen_loudness_comp.py` writes `firmware/src/loudness_comp.h`, and `PROGRAM_LOUDNESS` in `tools/make_factory_programs.c` tunes the programs. After adding or changing factory sounds, rerun the measure and generate steps until they settle. `tests/run_tests.sh` fails if a program drifts more than 1 dB, under 90 % of sounds are within 3 dB, or a sound reaches the rail.
 
-The default voice budget is 64 points. A four-layer program measured a 77% CPU peak on an FM-1 at that budget; the effects chain and voice counts in these programs may differ from that measurement.
+While layering is on the voice budget is capped at 16 points and a chord starts two keys per audio block. On an FM-1 with all four layers a chord at the former 64 points peaked at up to 257% of the audio deadline; measure with `tools/synthmaven_layer_load.py`.

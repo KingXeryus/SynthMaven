@@ -434,6 +434,25 @@ static int drum_retrigger_accounting(void)
     settings_budget=previous_budget;return bad;
 }
 
+static int layered_chord_pacing_test(void)
+{
+    int bad=0;midi_test_reset();sm_layers.enabled=1;
+    for(uint32_t i=0;i<4;i++){set_engine_of(&trk[i],HOST_SYNTH);trk[i].engine=trk[i].eng_req;}
+    for(uint32_t i=0;i<5;i++)midi_enqueue(9u|0x90u<<8|(60+i)<<16|100u<<24,1);
+    uint32_t want[3]={2,4,5};
+    for(uint32_t block=0;block<3;block++){
+        events_block(CTL);uint32_t on=0;for(uint32_t i=0;i<5;i++)on+=mn_get(0,60+i)!=0;
+        bad+=check("a layered chord starts two keys per block, in order",on==want[block]&&mn_get(0,60));
+    }
+    for(uint32_t i=0;i<5;i++)queued(0x80,60+i,0,1);
+    sm_layers.enabled=0;
+    for(uint32_t i=0;i<5;i++)midi_enqueue(9u|0x90u<<8|(60+i)<<16|100u<<24,1);
+    events_block(CTL);uint32_t on=0;for(uint32_t i=0;i<5;i++)on+=mn_get(0,60+i)!=0;
+    bad+=check("an unlayered chord still starts together",on==5);
+    for(uint32_t i=0;i<5;i++)queued(0x80,60+i,0,1);
+    return bad;
+}
+
 static int independent_parts_test(void)
 {
     int bad=0;midi_test_reset();song.g[G_ROUTE]=5;sm_layers.enabled=1;
@@ -455,7 +474,7 @@ static int independent_parts_test(void)
 #ifndef MIDI_CONTROL_NO_MAIN
 int main(void)
 {
-    int bad = independent_parts_test() + controls_test() + sustain_test() + ownership_test() + clock_test(1) + clock_test(2) + clock_arp_and_boundaries() +
+    int bad = layered_chord_pacing_test()+independent_parts_test() + controls_test() + sustain_test() + ownership_test() + clock_test(1) + clock_test(2) + clock_arp_and_boundaries() +
               arp_ext_stop_test() + arp_idle_live_test() + usb_burst_test() + routing_range_test() + drum_channel_test() + drum_retrigger_accounting();
     printf("%s\n", bad ? "MIDI CONTROL/CLOCK TEST FAILED" : "MIDI control/clock integration tests passed"); return bad != 0;
 }

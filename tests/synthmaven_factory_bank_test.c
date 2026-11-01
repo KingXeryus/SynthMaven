@@ -22,7 +22,7 @@ int main(void)
 {
     reset(); settings_budget = 64;
     for (uint32_t s = 0; s < 8; s++) {
-        double lead_peak, lead_rms, all_peak, all_rms; char name[13]; assert(!sm_program_load(s)); assert(sm_layers.enabled == (s == 1 || s == 7) && song.sel == 0);
+        double lead_peak, lead_rms, all_peak, all_rms; char name[13]; assert(!sm_program_load(s)); assert(sm_layers.enabled == (s == 1 || s == 2 || s == 7) && song.sel == (s == 1 ? 2 : s == 2 ? 1 : 0));
         memcpy(name, sm_program_name, 13);
         measure(1u, &lead_peak, &lead_rms); assert(!sm_program_load(s)); measure(15u, &all_peak, &all_rms);
         for (uint32_t k = 1; k < 4; k++) { double a, b; assert(!sm_program_load(s)); sm_layers.enabled = 1; measure(1u << k, &a, &b); printf("   L%u eng %u rms %.3f peak %.3f\n", k + 1, trk[k].eng_req, b, a); assert(b > lead_rms * 0.08); }

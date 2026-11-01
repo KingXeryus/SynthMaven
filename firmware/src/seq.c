@@ -1452,7 +1452,7 @@ static void events_block(uint32_t n)
     audition_tick(n);
     keyboard_block();
     midi_insert_tick(n, beat_samples());
-    uint32_t midi_dispatch_left=64u;
+    uint32_t midi_dispatch_left=64u,layer_keys=0;
     while (mi_r != mi_w && midi_dispatch_left) {       /* bounded USB-MIDI/TRS burst, order retained */
         uint32_t at = mi_r % MQ, pkt = midi_in_q[at], status = (pkt >> 8) & 0xFFu;
         uint32_t st = status & 0xF0u, ch = status & 0x0Fu;
@@ -1464,6 +1464,8 @@ static void events_block(uint32_t n)
         if (stale_usb) { mi_r++; midi_dispatch_left--; continue; }
         if (midi_render_timed && (int32_t)(time - midi_render_time) > 0)
             break;
+        if (st == 0x90u && d2 && sm_layers.enabled && layer_keys++ >= SM_LAYER_KEYS_PER_BLOCK)
+            break;                                     /* the next block takes it, order retained */
         mi_r++;midi_dispatch_left--;
         if (status >= 0xF8u) {
             if (selected_clock == source) {

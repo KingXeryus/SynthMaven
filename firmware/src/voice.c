@@ -163,6 +163,7 @@ static uint32_t voice_budget(void)
     /* CPU1 retirement removes the extra headroom. New notes then use the
      * original budget; overload shedding still handles already-active work. */
     uint32_t selected=(uint32_t)settings_budget;
+    if(sm_layers.enabled&&selected>SM_LAYER_BUDGET)selected=SM_LAYER_BUDGET;
     return audio_worker_online?selected*vbudget_cpu1/VBUDGET:selected<16u?selected:16u;
 #else
     return (uint32_t)settings_budget<16u?(uint32_t)settings_budget:16u;
