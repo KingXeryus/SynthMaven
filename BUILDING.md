@@ -302,6 +302,7 @@ tests/run_tests.sh
 #    SOUND=0 tests/run_tests.sh   # skip the long sound tests if you only need UI/screenshots
 
 # 2) Copy the SYNTHMAVEN frames named in web/manual/index.html into the manual.
+#    That page is generated with the PDF: tools/make_synthmaven_guide.py --web
 python3 tools/manual_shots.py            # build/ui_new/SYNTHMAVEN → web/manual/
 # python3 tools/manual_shots.py --require  # succeed when every figure is already present
 # python3 tools/manual_shots.py --sources  # succeed when every source render exists

@@ -34,7 +34,9 @@ SRC = ROOT / "build" / "ui_new" / "SYNTHMAVEN"
 MANUAL = ROOT / "web" / "manual"
 
 def figure_source(name):
-    return ROOT / "assets" / "manual" / name if name.startswith("editor-") else SRC / name
+    if name.startswith("editor-"):
+        return ROOT / "assets" / "manual" / name
+    return ROOT / "assets" / "guide" / "screens" / name if name.startswith("ref_") else SRC / name
 
 
 def figure_names(manual=None):

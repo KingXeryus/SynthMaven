@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Fixed-page illustrated screen reference. Each screen is exactly one PDF page."""
-import argparse,json,math,re
+"""Fixed-page illustrated screen reference. Each screen is exactly one PDF page.
+The web guide (web/manual/index.html) is generated from the same pages: --web writes it, --check-web fails if it is stale."""
+import argparse,base64,json,math,re,sys
 from pathlib import Path
 from html import escape
 from bs4 import BeautifulSoup
@@ -50,7 +51,7 @@ def pages():
  out.append(extra('MainStage-style performance: programs, scenes and setlists','assets/manual/editor-programs.png',[
  ('Program','Four parts with levels, pans, splits and scenes. P1-P8 are stored on the device.'),('Scene','Four per program: snapshots of levels, pans, mutes, effect sends, HYBRID macros and tuning.'),('Setlist','An ordered list of up to 32 references to P1-P8. A program can appear more than once.'),('Pedals and controllers','MIDI Learn assigns up to 16 actions, including Scene or Setlist Next / Previous.'),('Panel','On HOME, hold OCT- or OCT+ for three seconds for the previous or next program.'),('Editors','The Perform screen has program and scene navigation, a mixer and quick controls. Tuning has its own tab.')],['Build a program for each song and save it.','Capture scenes in Programs & scenes, then save the program.','Build the setlist.','Learn a pedal to Scene Next and Setlist Next.'],section='Web and iPad editor',opening='Studio > Programs.'))
  out.append(extra('The SM FM1 iPad app','assets/manual/editor-perform.png',[
- ('What it is','A landscape-only iPad app with the same editor and workspace as the web editor.'),('Connect','Set USB ROLE to COMPUTER and USB Audio to IN+OUT, then choose Connect > USB cable.'),('Workspaces','Perform for quick sound and layer controls; Tuning for scales and the tuning keyboard; Shape for engines; Studio for the sequencer, drums and programs.'),('Mock device','A page marked Mock device is a demonstration and can\'t play the FM-1.'),('Version','The current TestFlight app is 4.0 (20), matching this firmware.')],['Connect the FM-1 with a data cable.','Open SM FM1 and run the connection wizard.','Choose a part in Perform.'],section='Web and iPad editor',opening='Open SM FM1 on the iPad.'))
+ ('What it is','A landscape-only iPad app with the same editor and workspace as the web editor.'),('Connect','Set USB ROLE to COMPUTER and USB Audio to IN+OUT, then choose Connect > USB cable.'),('Workspaces','Perform for quick sound and layer controls; Tuning for scales and the tuning keyboard; Shape for engines; Studio for the sequencer, drums and programs.'),('Mock device','A page marked Mock device is a demonstration and can\'t play the FM-1.'),('Version','The current TestFlight app is 4.0 (21), matching this firmware.')],['Connect the FM-1 with a data cable.','Open SM FM1 and run the connection wizard.','Choose a part in Perform.'],section='Web and iPad editor',opening='Open SM FM1 on the iPad.'))
  out.append(extra('Start here: controls and storage','web/manual/controls.png',[
  ('Sound preset','One instrument sound. Factory sounds are read-only starting points; USER slots store individual edited sounds.'),('Program','Four parts with levels, pan, splits and scenes. P1-P8 are separate from the 384 USER sound slots.'),('Project','A-D stores the wider working setup, patterns and arrangement. Save a project after arranging a song.'),('Editor library','A named collection on your browser or iPad; it is not automatically a device save.'),('Master level','The physical MASTER knob controls listening level. Start low and raise gradually. Four layers share one processing budget; they do not each have a separate eight-voice allocation.')],['Connect power and let HOME appear. Choose a program, then play at a comfortable level.','Select one part before editing its engine or sound. Save the complete program after mixing.','Export a full backup before updating: a firmware flash restores factory settings and programs.']))
  out.append(extra('Install, back up and recover','web/manual/usb_save.png',[
@@ -68,20 +69,96 @@ def pages():
  out.append(extra('Layering notification','web/manual/sm_layer_notice.png',[
  ('Layered ON','Incoming notes can play all four parts within their split ranges. Levels, pan and mute determine the audible balance.'),('Layered OFF','Play the selected sound rather than the complete four-part stack.'),('GLO','Hold for two seconds to toggle. The notification temporarily replaces the current screen; this is not a separate latched mixer.'),('EDIT','Hold for two seconds for the four-volume mixer. KNOBS 1-4 then adjust the corresponding part levels.')],['Hold GLO until the message appears.','Release and play to compare the two modes.','Save the program when the layer balance is ready.'],section='GLO',opening='Hold GLO for two seconds.'))
  out.extend(records())
- soup=BeautifulSoup((ROOT/'web/manual/index.html').read_text(),'html.parser')
+ soup=BeautifulSoup((ROOT/'assets/guide/editor-walkthrough.html').read_text(),'html.parser')
  sec=soup.find(id='editor-walkthrough')
  for heading in sec.find_all('h3'):
   title=heading.get_text(' ',strip=True);fig=heading.find_next_sibling('figure');ol=fig.find_next_sibling('ol')
   steps=[li.get_text(' ',strip=True) for li in ol.find_all('li',recursive=False)]
   out.append(extra('Editor / '+title,'web/manual/'+fig.img['src'],[('Controls and workflow',x) for x in steps],['Connect the real FM-1 in COMPUTER USB role. Mock mode changes demonstration data only.','Choose the part and screen before editing. Touch arrows cycle choices; card tabs reveal the remaining controls.','Save the sound/program/project as appropriate; a browser library copy is separate.'],section='Web and iPad editor',opening='Open the matching editor page shown below.'))
  out.append(extra('Editor / Four-layer melodic sequencer','assets/manual/editor-melodic-sequencer.png',[
- ('Four lanes','Each visible lane belongs to the matching program layer. Tap a step to select its layer and edit that step. The selected lane and step have an outline.'),('Steps','Eight steps are visible at a time. Previous/next step arrows expose the remaining steps without changing the pattern.'),('Notes A0-C8','Choose from all 88 piano notes in each of four note selectors. Use the dash for an empty chord slot. Notes are selectable, not free text.'),('Length / Accent / Slide','NOTE triggers the selected pitches, TIE connects steps, REST leaves silence. Accent and slide retain the firmware behavior.'),('Velocity / Chance','Velocity sets note strength, from 0 to 127. Chance sets probability from 0 to 100 percent.'),('Pattern / Play / Save','Choose one of eight patterns for the selected layer. Play runs on the connected FM-1. Save the project to retain patterns and arrangement.')],['Select a layer and a pattern. Tap a step and choose one or more notes.','Set note length, velocity, chance, accent and slide as needed; repeat for other layers.','Open Projects > Song arranger, arrange the patterns, then save the project. Use Drums for independent drum patterns.'],section='Web and iPad editor',opening='Studio > Sequencer > Steps.'))
+ ('Four lanes','Each visible lane belongs to the matching program layer. Tap a step to select its layer and edit that step. The selected lane and step have an outline.'),('Steps','Eight steps are visible at a time. Previous/next step arrows expose the remaining steps without changing the pattern.'),('Notes A0-C8','Choose from all 88 piano notes in each of four note selectors. Use the dash for an empty chord slot. Notes are selectable, not free text.'),('Length / Accent / Slide','NOTE triggers the selected pitches, TIE connects steps, REST leaves silence. Accent and slide retain the firmware behavior.'),('Velocity / Chance','Velocity sets note strength, from 0 to 127. Chance sets probability from 0 to 100 percent.'),('Pattern / Play / Save','Choose one of eight patterns for the selected layer. Play runs on the connected FM-1. Save the project to retain patterns and arrangement.')],['Select a layer and a pattern. Tap a step and choose one or more notes.','Set note length, velocity, chance, accent and slide as needed; repeat for other layers.','Open Studio > Arranger, arrange the patterns, then save the project. Use Drums for independent drum patterns.'],section='Web and iPad editor',opening='Studio > Sequencer > Steps.'))
  out.append(extra('Editor / Arranger','assets/manual/editor-arranger.png',[
- ('Grid','Rows are the four layers plus Drums, and columns are the sections. Choose a saved pattern for each layer and a groove for Drums in each section, plus its repeats. Use Add section to extend the song.'),('Track 1-4 patterns','Each section selects one of eight patterns independently for each track. Side arrows cycle the pattern number; track colors identify the four parts.'),('Repeats','Play this section 1-16 times before moving to the next. A song contains up to 16 ordered sections.'),('Add / Copy / Move earlier / Delete','Add a section, duplicate a section, move it earlier or remove it. Structural edits are disabled while the song is playing.'),('Section pages','Previous/next arrows show four sections at a time. They change only the view, never the order or sound.'),('Play from start / Stop','Play the arrangement on the connected FM-1. The current section and remaining repeats are reported by the device.'),('Projects & backup','Save the current project in A-D to retain the arrangement, then export a backup. Patterns must already contain melodic notes to produce sound; independent drums are edited on the Drums page.')],['Create patterns in Studio > Sequencer for each of the four tracks.','Open Studio > Projects > Song arranger; add sections and choose four patterns and repeats for each.','Play from start, stop to edit, then use Projects & backup to save.'],section='Web and iPad editor',opening='Studio > Projects > Song arranger.'))
+ ('Grid','Rows are the four layers plus Drums, and columns are the sections. Choose a saved pattern for each layer and a groove for Drums in each section, plus its repeats. Use Add section to extend the song.'),('Track 1-4 patterns','Each section selects one of eight patterns independently for each track. Side arrows cycle the pattern number; track colors identify the four parts.'),('Repeats','Play this section 1-16 times before moving to the next. A song contains up to 16 ordered sections.'),('Add / Copy / Move left / Delete','Add a section, duplicate a section, move it left or remove it. Structural edits are disabled while the song is playing.'),('Play from start / Stop','Play the arrangement on the connected FM-1. The current section and remaining repeats are reported by the device.'),('Projects & backup','Save the current project in A-D to retain the arrangement, then export a backup. Patterns must already contain melodic notes to produce sound; independent drums are edited on the Drums page.')],['Create patterns in Studio > Sequencer for each of the four tracks.','Open Studio > Arranger; add sections and choose four patterns, a groove and repeats for each.','Play from start, stop to edit, then use Projects & backup to save.'],section='Web and iPad editor',opening='Studio > Arranger.'))
  return out
 
+TILES=[('14','sound engines','#ff2c34','#ff2c34'),('610','melodic presets','#111111','#f2f2f2'),('4','drum kits','#408cff','#408cff'),('70','scales, 46 of them maqam','#55585f','#969aa4'),('4','layers at once, plus the drummer','#ff2c34','#ff2c34'),('8','factory drum grooves','#111111','#f2f2f2')]
+def page_blocks(p):
+ blocks=[('Open',p['open'])] if p['section']=='Web and iPad editor' and p.get('open') else []
+ blocks+=p['controls']+p.get('rows',[])
+ if p.get('buttons'):blocks.append(('BUTTONS AND NAVIGATION',p['buttons']))
+ if p.get('save'):blocks.append(('KEEP YOUR CHANGES',p['save']))
+ return blocks
+WEB_CSS='''
+:root{color-scheme:dark;--bg:#000;--page:#141417;--fg:#f2f2f2;--dim:#9a9aa3;--line:#2e2e34;--accent:#ff2c34}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
+a{color:inherit}
+.site{position:sticky;top:0;z-index:2;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 16px;padding:10px 16px;background:#000;border-bottom:1px solid var(--line)}
+.brand{font-weight:600}
+.links{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px}
+.links a{color:var(--dim);text-decoration:none}
+.links a:hover,.links a[aria-current=page]{color:var(--fg)}
+main{max-width:860px;margin:0 auto;padding:16px}
+.page{position:relative;background:var(--page);border-radius:6px;padding:32px 40px 52px;margin:0 0 16px;scroll-margin-top:60px}
+.num{position:absolute;left:40px;right:40px;bottom:16px;display:flex;justify-content:space-between;gap:12px;padding-top:6px;border-top:1px solid var(--line);color:var(--dim);font-size:12px}
+.cover{text-align:center;padding-top:56px}
+.cover-icon{width:170px;height:170px;margin:0 auto 24px;border-radius:24px;background:center/contain no-repeat}
+h1{margin:0;font-size:36px;line-height:1.15;letter-spacing:.01em}
+.cover p{margin:8px 0}
+.edition{font-size:24px}
+.tagline{font-size:16px;color:var(--dim)}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:32px 0;text-align:left}
+.tile{background:#1e1e23;border-top:3px solid var(--c);padding:12px}
+.tile b{display:block;font-size:26px;line-height:1.2;color:var(--c)}
+.tile span{font-size:13px;color:#c4c4cc}
+.small{font-size:13px;color:var(--dim)}
+h2{margin:0 0 12px;font-size:24px;line-height:1.2}
+.toc{display:flex;justify-content:space-between;gap:16px;padding:3px 0;text-decoration:none;font-size:14px}
+.toc:hover{color:var(--accent)}
+.toc.head{margin-top:12px;font-weight:700;font-size:15px}
+.toc span:last-child{flex:none;font-variant-numeric:tabular-nums}
+.divider{display:flex;flex-direction:column;justify-content:center;min-height:320px}
+.divider i{display:block;width:60px;height:5px;margin:0 0 20px;background:var(--accent)}
+.divider h2{font-size:34px;margin:0 0 6px}
+.kicker{margin:0 0 4px;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--dim)}
+.top{display:flex;gap:16px;align-items:flex-start;margin:0 0 16px}
+.top img{display:block;width:240px;max-width:45%;height:auto;flex:none;border:1px solid var(--line);border-radius:6px}
+.top .pixel{image-rendering:pixelated}
+.top.wide{display:block}
+.top.wide img{width:100%;max-width:100%}
+.opening b{display:block;font-size:12px;letter-spacing:.04em;color:var(--dim)}
+.row{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:15px}
+.row>b{overflow-wrap:anywhere}
+.row ol{margin:0;padding-left:1.3em}
+footer{max-width:860px;margin:0 auto;padding:8px 16px 32px}
+@media(max-width:560px){.site{position:static}.page{padding:20px 16px 48px}.num{left:16px;right:16px}.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.row{grid-template-columns:minmax(0,1fr);gap:2px}.top{display:block}.top img{max-width:100%;margin-bottom:12px}h1{font-size:30px}.divider h2{font-size:28px}}
+'''
+def web_page(specs,toc,indexpages):
+ e=escape;icon=base64.b64encode((ROOT/'web/branding/firmware-icon.png').read_bytes()).decode()
+ ver='<span data-firmware-version>development source</span>'
+ def num(n,label):return f'<div class="num"><span>SynthMaven {ver} | {e(label)}</span><span>{n}</span></div>'
+ out=['<!doctype html>\n<!-- SPDX-License-Identifier: GPL-3.0-only\n     Copyright (C) 2026 Kerem Kilic (Ellic Studio)\n     Copyright (C) 2026 Relyt29 (@relyt29), Signals Intelligence Sound (https://sigintsound.com/) -->\n<!-- Generated by tools/make_synthmaven_guide.py --web from the same pages as the PDF: edit that, not this file.\n     Screenshots are generated beside this file (tools/manual_shots.py) and are not committed. -->\n<html lang="en" data-theme="dark">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>SynthMaven illustrated guide</title>\n<style>'+WEB_CSS+'</style>\n</head>\n<body>\n<nav class="site"><span class="brand">SynthMaven</span><div class="links"><a href="../editor/">Patch Editor</a><a href="../installer/">Installer</a><a href="./" aria-current="page">Manual</a><a href="SynthMaven-4.0-Illustrated-Guide.pdf">Download printable PDF</a></div></nav>\n<main>\n']
+ tiles=''.join(f'<div class="tile" style="--c:{dark}"><b>{e(n)}</b><span>{e(label)}</span></div>' for n,label,_,dark in TILES)
+ out.append(f'<section class="page cover"><div class="cover-icon" style="background-image:url(data:image/png;base64,{icon})"></div><h1>SynthMaven illustrated guide</h1><p class="edition">{ver}</p><p class="tagline">The oriental groove box for the FM-1</p><div class="tiles">{tiles}</div><p class="small">M-VAVE FM-1 | Firmware, web editor and iPad editor<br>Screens rendered from firmware; editor examples may use mock data.<br>Based on Melodee and the credited SynthMaven / Clipper lineage.</p></section>\n')
+ rows=''
+ for title,a,b,head in toc:
+  first,last=2+indexpages+a,2+indexpages+b
+  rows+=f'<a class="toc{" head" if head else ""}" href="#p{a}"><span>{e(title)}</span><span>{first if a==b else f"{first}-{last}"}</span></a>\n'
+ out.append(f'<section class="page" id="contents"><h2>Contents</h2>\n{rows}{num(2 if indexpages==1 else f"2-{1+indexpages}","Contents")}</section>\n')
+ for i,p in enumerate(specs):
+  n=2+indexpages+i
+  if p.get('divider'):
+   out.append(f'<section class="page divider" id="p{i}"><i></i><h2>{e(p["title"])}</h2><p class="small">SynthMaven {ver} Illustrated Guide</p>{num(n,p["section"])}</section>\n');continue
+  name=Path(p['image']).name;editor=p['section']=='Web and iPad editor';shot=name.startswith('editor-')
+  opening='' if editor or not p.get('open') else f'<div class="opening"><b>OPEN THIS SCREEN</b>{e(p.get("open",""))}</div>'
+  body=''.join(f'<div class="row"><b>{e(str(a))}</b><div>{e(str(b))}</div></div>' for a,b in page_blocks(p))
+  steps=''.join(f'<li>{e(str(x))}</li>' for x in p['steps'])
+  out.append(f'<section class="page" id="p{i}"><p class="kicker">{e(p["section"].upper())}</p><h2>{e(p["title"])}</h2><div class="top{" wide" if editor else ""}"><img{"" if shot else " class=pixel"} loading="lazy" src="{e(name)}" alt="{e(p["title"])}">{opening}</div>{body}<div class="row"><b>STEP BY STEP</b><ol>{steps}</ol></div>{num(n,p["section"])}</section>\n')
+ out.append('</main>\n'+(ROOT/'assets/guide/web-footer.html').read_text()+'</body>\n</html>\n')
+ return ''.join(out)
 def main():
- ap=argparse.ArgumentParser();ap.add_argument('--version',default='4.0');ap.add_argument('--output',type=Path,default=ROOT/'output/pdf/SynthMaven-4.0-Illustrated-Guide.pdf');args=ap.parse_args()
+ ap=argparse.ArgumentParser();ap.add_argument('--version',default='4.0');ap.add_argument('--output',type=Path,default=ROOT/'output/pdf/SynthMaven-4.0-Illustrated-Guide.pdf');ap.add_argument('--web',action='store_true');ap.add_argument('--check-web',action='store_true');args=ap.parse_args()
  ORDER=['Introduction','First 10 minutes','Getting started','Groove box','Sequencer','Performance','Web and iPad editor']
  seen=set();specs=[];all_pages=pages()
  sections=ORDER+[x for p in all_pages for x in [p['section']] if x not in ORDER and not (x in seen or seen.add(x))]
@@ -101,7 +178,13 @@ def main():
    while e+1<len(specs) and not specs[e+1].get('divider') and re.sub(r'\s+\d+(\s|$)',' ',specs[e+1]['title'].split(' / ')[0]).strip()==key:e+=1
    rows.append((key if e>i else p['title'],i,e,False));i=e+1
   return rows
- toc=contents();TOC_LINES=40;indexpages=math.ceil(len(toc)/TOC_LINES);args.output.parent.mkdir(parents=True,exist_ok=True)
+ toc=contents();TOC_LINES=40;indexpages=math.ceil(len(toc)/TOC_LINES)
+ web=ROOT/'web/manual/index.html'
+ if args.web:web.write_text(web_page(specs,toc,indexpages));print(f'{len(specs)} pages: {web}');return
+ if args.check_web:
+  if web.read_text()!=web_page(specs,toc,indexpages):sys.exit(f'{web} is stale: run tools/make_synthmaven_guide.py --web')
+  return
+ args.output.parent.mkdir(parents=True,exist_ok=True)
  c=canvas.Canvas(str(args.output),pagesize=A4);c.setTitle('SynthMaven '+args.version+' - Illustrated Guide');manifest=[]
  def text(txt,x,y,w,size=10,bold=False):
   st=ParagraphStyle('p',fontName='Helvetica-Bold' if bold else 'Helvetica',fontSize=size,leading=size*1.26,textColor=colors.HexColor('#111111'))
@@ -111,9 +194,8 @@ def main():
  c.setFillColor(colors.white);c.rect(0,0,W,H,fill=1,stroke=0)
  c.drawImage(str(ROOT/'web/branding/firmware-icon.png'),W/2-85,H-240,170,170,mask='auto',preserveAspectRatio=True)
  c.setFillColor(colors.black);c.setFont('Helvetica-Bold',32);c.drawCentredString(W/2,H-290,'SYNTHMAVEN');c.setFont('Helvetica',22);c.drawCentredString(W/2,H-330,args.version+' ILLUSTRATED GUIDE');c.setFont('Helvetica',14);c.drawCentredString(W/2,H-370,'The oriental groove box for the FM-1');c.setFont('Helvetica',11);c.drawCentredString(W/2,180,'M-VAVE FM-1 | Firmware, web editor and iPad editor');c.drawCentredString(W/2,158,'Screens rendered from firmware; editor examples may use mock data.');c.drawCentredString(W/2,136,'Based on Melodee and the credited SynthMaven / Clipper lineage.');
- TILES=[('14','sound engines','#ff2c34'),('610','melodic presets','#111111'),('4','drum kits','#408cff'),('70','scales, 46 of them maqam','#55585f'),('4','layers at once, plus the drummer','#ff2c34'),('8','factory drum grooves','#111111')]
  tw=(WIDTH-12)/3
- for n,(num,label,col) in enumerate(TILES):
+ for n,(num,label,col,_) in enumerate(TILES):
   x=M+(n%3)*(tw+6);y=H-480-(n//3)*84
   c.setFillColor(colors.HexColor('#f0f0f2'));c.rect(x,y,tw,76,fill=1,stroke=0);c.setFillColor(colors.HexColor(col));c.rect(x,y+73,tw,3,fill=1,stroke=0)
   c.setFont('Helvetica-Bold',24);c.drawString(x+10,y+40,num);c.setFillColor(colors.HexColor('#333333'));c.setFont('Helvetica',9.5);c.drawString(x+10,y+20,label)
@@ -136,11 +218,7 @@ def main():
   c.drawImage(str(image),M,y-h,w,h,mask='auto');
   if not is_editor:text('OPEN THIS SCREEN\n'+p.get('open',''),M+w+16,y,WIDTH-w-16,10)
   y-=h+12
-  blocks=[]
-  if is_editor and p.get('open'):blocks.append(('Open',p['open']))
-  blocks+=p['controls']+p.get('rows',[])
-  if p.get('buttons'):blocks.append(('BUTTONS AND NAVIGATION',p['buttons']))
-  if p.get('save'):blocks.append(('KEEP YOUR CHANGES',p['save']))
+  blocks=page_blocks(p)
   blocks.append(('STEP BY STEP',' '.join(f'{k+1}. {v}' for k,v in enumerate(p['steps']))))
   # Measure the full page before drawing; never split a screen across PDF pages.
   size=10

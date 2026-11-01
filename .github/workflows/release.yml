@@ -93,6 +93,7 @@ jobs:
         if [[ "$GITHUB_REF" == refs/tags/* && "$GITHUB_REF_NAME" != *-* ]]; then
           python3 tools/manual_shots.py
           python3 tools/manual_shots.py --require
+          python3 tools/make_synthmaven_guide.py --check-web
           python3 tools/make_synthmaven_guide.py --version "${GITHUB_REF_NAME#v}" --output "build/release-assets/SynthMaven-${GITHUB_REF_NAME#v}-Illustrated-Guide.pdf"
           tar -czf build/release-assets/manual-screenshots.tar.gz -C web/manual \
             $(find web/manual -name '*.png' | sed 's|^web/manual/||')

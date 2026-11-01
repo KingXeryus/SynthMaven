@@ -188,10 +188,12 @@ def publish_manual(src, dest, version=None, preserve_nightly=False):
         text = page.read_text(encoding="utf-8").replace(
             '<span data-firmware-version>development source</span>',
             '<span data-firmware-version>' + html_escape.escape(version) + '</span>')
+        text = re.sub(r"SynthMaven-[0-9.]+-Illustrated-Guide\.pdf", f"SynthMaven-{version}-Illustrated-Guide.pdf", text)
         # A nightly guide lives one level below the stable guide.
         if dest.name == "nightly":
             text = text.replace('href="../editor/"', 'href="../../editor/"').replace(
-                'href="../installer/"', 'href="../../installer/"')
+                'href="../installer/"', 'href="../../installer/"').replace(
+                'href="SynthMaven-', 'href="../SynthMaven-')
         page.write_text(text, encoding="utf-8")
 
 
