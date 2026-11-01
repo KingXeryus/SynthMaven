@@ -20,7 +20,7 @@ enum { MI_COLOR, MI_MIDI_IN,
 #if MELODEE_USB_AUDIO
        MI_USB, MI_USB_INPUT,
 #endif
-       MI_MIDI_KNOBS, MI_KNOB_MODE,
+       MI_MIDI_KNOBS,
        MI_CLICK, MI_CLICK_LEVEL, MI_COUNTIN, MI_PREVIEW, MI_ADD, MI_AUTOSAVE, MI_PICKER, MI_ACCEL, MI_HOME_SEL, MI_GLO_SEL, MI_TRACKS, MI_SCREEN, MI_PANEL, MI_ABOUT, MI_DESIGNER, MI_BACK,
        MI_COUNT,
        MI_HOLD = MI_COUNT, MI_LIGHTS, MI_FONT, MI_NAMED };      /* past the list: edited from GLO's preferences only (sm_pref_menu) */
@@ -31,15 +31,14 @@ static const char *const MI_NAME[MI_NAMED] = {"COLOR", "MIDI MODE",
 #if MELODEE_USB_AUDIO
                                               "USB AUDIO", "USB INPUT",
 #endif
-                                              "MIDI KNOBS", "KNOB MODE",
+                                              "MIDI KNOBS",
                                               "AUDIO CLICK", "CLICK LEVEL", "COUNT-IN", "NOTE PREVIEW", "CHORD ENTRY",
                                               "AUTOSAVE", "PICKER POPUPS", "KNOB ACCEL", "HOME SELECT", "GLO SELECT", "UNUSED TRACKS", "SCREEN OFF", "CALIBRATION", "ABOUT", "SOUND DESIGNER", "BACK", "HOLD", "LIGHTS", "FONT"};
 #if MELODEE_USB_AUDIO
 /* USB AUDIO's four settings, as ua_off_want (UA_OFF_OUT | UA_OFF_IN) */
 static const char *const MI_USB_NAME[4] = {"IN+OUT", "IN", "OUT", "OFF"};
 #endif
-static const char *const MI_MIDI_KNOB_NAME[MK_PROFILES] = {"OFF", "GENERAL", "MINILAB"};
-static const char *const MI_MIDI_MODE_NAME[MK_MODES] = {"ABSOLUTE", "REL 1", "REL 2", "REL 3"};
+static const char *const MI_MIDI_KNOB_NAME[MK_MODES] = {"OFF", "ABSOLUTE", "RELATIVE"};
 
 /* https://keremimo.github.io/melodee, QR version 3, correction M (segno; checked with a decoder).
  * One row per word, leftmost module in bit 0; the constant matrix needs no encoder or RAM. */
@@ -241,7 +240,7 @@ static void draw_menu(void)
 {
     uint32_t i, pass, sig = ui.menu * 7u + ui.menu_sel * 131u + settings.palette * 1009u + settings.lowcut * 7919u +
                             settings_hold * 3511u + settings_lights * 6151u + settings_autosave * 15485863u +
-                            settings_midi_knobs * 997u + settings_midi_knob_mode * 10007u + (uint32_t)song.g[G_MIDI] * 49999u +
+                            settings_midi_knobs * 997u + (uint32_t)song.g[G_MIDI] * 49999u +
 #if MELODEE_USB_AUDIO
                             ua_off_want * 92821u + ua_tracks_want * 324161u +
 #endif
@@ -292,8 +291,7 @@ static void draw_menu(void)
                       i==MI_COUNTIN?(const char *const[]){"OFF","1 BAR","2 BARS"}[settings_countin%3u]:
                       i==MI_PREVIEW?(settings_preview?"ON":"OFF"):(settings_chord_add?"ADD":"HOLD");
                 if (i == MI_ACCEL) value = PREF_BITS & PREF_ACCEL_OFF ? "OFF" : "ON";
-                if (i == MI_MIDI_KNOBS) value = MI_MIDI_KNOB_NAME[settings_midi_knobs % MK_PROFILES];
-                if (i == MI_KNOB_MODE) value = MI_MIDI_MODE_NAME[settings_midi_knob_mode % MK_MODES];
+                if (i == MI_MIDI_KNOBS) value = MI_MIDI_KNOB_NAME[settings_midi_knobs % MK_MODES];
                 if (i == MI_MIDI_IN) value = N_MIDI_INPUT[song.g[G_MIDI] % 3];
                 if (i == MI_PICKER) value = PREF_BITS & PREF_PICK_OFF ? "OFF" : "ON";
                 if (i == MI_AUTOSAVE) value = settings_autosave ? "ON" : "OFF";
@@ -347,9 +345,9 @@ static void menu_close(void)
 
 static void menu_change(int32_t s,uint32_t ok)
 {
-    if ((s || ok) && ui.menu == 1 && (ui.menu_sel == MI_MIDI_KNOBS || ui.menu_sel == MI_KNOB_MODE)) {
-        volatile uint8_t *p = ui.menu_sel == MI_MIDI_KNOBS ? &settings_midi_knobs : &settings_midi_knob_mode;
-        uint32_t n = ui.menu_sel == MI_MIDI_KNOBS ? MK_PROFILES : MK_MODES, v = *p % n;
+    if ((s || ok) && ui.menu == 1 && ui.menu_sel == MI_MIDI_KNOBS) {
+        volatile uint8_t *p = &settings_midi_knobs;
+        uint32_t n = MK_MODES, v = *p % n;
         *p = (uint8_t)(s > 0 ? (v + 1u < n ? v + 1u : v) : s < 0 ? (v ? v - 1u : 0u) : (v + 1u) % n);
         ui.force = 1; ok = 0;
         /* No old mapping's pending turns may edit rows under the new mapping. */

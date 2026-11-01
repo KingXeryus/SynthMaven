@@ -109,9 +109,9 @@ static int settings_import(persist_t *p, int n)
     settings_autosave = p->favorites.factory[15][28] != AUTOSAVE_OFF_TAG;
     {
         const uint8_t *m = p->favorites.factory[1] + MIDI_KNOB_PREF_BYTE;
-        int valid = m[0] == 'M' && m[1] == 'K' && m[2] < MK_PROFILES && m[3] < MK_MODES;
-        settings_midi_knobs = valid ? m[2] : MK_OFF;
-        settings_midi_knob_mode = valid ? m[3] : MK_ABSOLUTE;
+        /* m[2] on (older firmware: its GENERAL or MINILAB profile), m[3] relative (its REL 1..3) */
+        int valid = m[0] == 'M' && m[1] == 'K' && m[2] < 3u && m[3] < 4u;
+        settings_midi_knobs = !valid || !m[2] ? MK_OFF : m[3] ? MK_RELATIVE : MK_ABSOLUTE;
     }
     settings.magic = SETTINGS_MAGIC;
     settings.palette = palette_from_stored(p->palette);
@@ -167,8 +167,8 @@ static void settings_export(persist_t *p)
     {
         uint8_t *m = p->favorites.factory[1] + MIDI_KNOB_PREF_BYTE;
         memset(m, 0, 4);
-        if (settings_midi_knobs || settings_midi_knob_mode) {
-            m[0] = 'M'; m[1] = 'K'; m[2] = settings_midi_knobs; m[3] = settings_midi_knob_mode;
+        if (settings_midi_knobs) {
+            m[0] = 'M'; m[1] = 'K'; m[2] = 1; m[3] = settings_midi_knobs == MK_RELATIVE;
         }
     }
     {

@@ -209,7 +209,7 @@ static void ui_power_on(void)
     track_solo = 0;
     memset(&lys, 0, sizeof lys);
     settings_hold = HOLD_DEF;
-    settings_midi_knobs = MK_OFF; settings_midi_knob_mode = MK_ABSOLUTE;
+    settings_midi_knobs = MK_OFF;
     midi_knob_r = midi_knob_w = midi_knob_overflow = 0;
     memset(midi_knob_seen, 0, sizeof midi_knob_seen);
     midi_knob_ui_config = ~0u;

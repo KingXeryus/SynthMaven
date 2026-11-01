@@ -61,17 +61,25 @@ int main(void)
     }
     {   /* Tagged knob preferences survive saves without touching adjacent favorites. */
         persist_t q = {0}; q.magic = PERSIST_MAGIC; q.panel = PANEL_DEFAULT;
-        assert(settings_import(&q, sizeof q) && settings_midi_knobs == MK_OFF && settings_midi_knob_mode == MK_ABSOLUTE);
-        for (uint32_t profile = 0; profile < MK_PROFILES; profile++)
-            for (uint32_t mode = 0; mode < MK_MODES; mode++) {
-                settings_midi_knobs = profile; settings_midi_knob_mode = mode;
-                settings_export(&q);
-                settings_midi_knobs = settings_midi_knob_mode = 255;
-                assert(settings_import(&q, sizeof q) && settings_midi_knobs == profile && settings_midi_knob_mode == mode);
-                assert(sizeof q == 604u && settings_owned(&q));
+        assert(settings_import(&q, sizeof q) && settings_midi_knobs == MK_OFF);
+        for (uint32_t mode = 0; mode < MK_MODES; mode++) {
+            settings_midi_knobs = mode;
+            settings_export(&q);
+            settings_midi_knobs = 255;
+            assert(settings_import(&q, sizeof q) && settings_midi_knobs == mode);
+            assert(sizeof q == 604u && settings_owned(&q));
+        }
+        /* Older firmware's profile (OFF, GENERAL, MINILAB) and encoder mode (ABSOLUTE, REL 1..3) carry over. */
+        uint8_t *old = q.favorites.factory[1] + MIDI_KNOB_PREF_BYTE;
+        old[0] = 'M'; old[1] = 'K';
+        for (uint32_t profile = 0; profile < 3u; profile++)
+            for (uint32_t mode = 0; mode < 4u; mode++) {
+                old[2] = profile; old[3] = mode;
+                assert(settings_import(&q, sizeof q) &&
+                       settings_midi_knobs == (!profile ? MK_OFF : mode ? MK_RELATIVE : MK_ABSOLUTE));
             }
-        q.favorites.factory[1][MIDI_KNOB_PREF_BYTE + 2] = 255;
-        assert(settings_import(&q, sizeof q) && settings_midi_knobs == MK_OFF && settings_midi_knob_mode == MK_ABSOLUTE);
+        old[2] = 255;
+        assert(settings_import(&q, sizeof q) && settings_midi_knobs == MK_OFF);
         settings_export(&q);
     }
     {   /* Retired fidelity bytes remain reserved in PER5 and are cleared on save. */
