@@ -16,7 +16,7 @@ static sm_drum_config_t sm_drums = {
     {0x1111,0x1010,0x5555,0,0,0,0,0},
     {100,90,70,70,80,80,70,80}, {110,100,85,90,100,100,95,100}, 90,0
 };
-/* Factory grooves: a 16-step bar of the lanes above, bit n = step n. Dum is KICK and tak RIM on the Arabic rhythms.
+/* Factory grooves: a 16-step bar of the lanes above, bit n = step n. On the Arabic rhythms dum is KICK and TOM, tak is RIM, SNARE and HAT.
  * Index 0 of the browser is the player's own pattern, kept while grooves are browsed. */
 #define SM_GROOVES 8u
 /* the arranger's drums row, one word in a section's column */
@@ -28,10 +28,10 @@ static uint16_t sm_groove_steps[SM_GROOVES][SM_DRUM_LANES] = {
     {0x0481,0x0100,0x5555,0,0,0,0,0x2020},
     {0x0101,0x1010,0x5555,0,0,0,0,0},
     {0x1111,0,0x1111,0x4444,0x1010,0,0,0},
-    {0x0101,0,0,0,0,0,0,0x1044},
-    {0x0001,0,0,0,0,0,0,0x1040},
-    {0x0105,0,0,0,0,0,0,0x1040},
-    {0x0101,0,0,0,0,0,0,0x1010},
+    {0x0101,0x1044,0x1044,0,0,0x0101,0,0x1044},
+    {0x0001,0x1040,0x1040,0,0,0x0001,0,0x1040},
+    {0x0105,0x1040,0x1040,0,0,0x0105,0,0x1040},
+    {0x0101,0x1010,0x1010,0,0,0x0101,0,0x1010},
 };
 static uint16_t sm_drum_own[SM_DRUM_LANES];
 static uint8_t sm_drum_groove;                  /* 0: the player's pattern, n: factory groove n */

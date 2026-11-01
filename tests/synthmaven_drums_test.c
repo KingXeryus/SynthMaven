@@ -39,6 +39,7 @@ int main(void)
             sm_groove_turn(1);
             assert(sm_groove_current()==i+1u&&sm_drums.steps[0]==sm_groove_steps[i][0]);
             assert(sm_groove_steps[i][0]&1u);          /* every groove opens on its kick */
+            if(i>=4u)assert(sm_groove_steps[i][5]==sm_groove_steps[i][0]&&sm_groove_steps[i][1]==sm_groove_steps[i][7]&&sm_groove_steps[i][2]==sm_groove_steps[i][7]);   /* Arabic: dum KICK+TOM, tak RIM+SNARE+HAT */
         }
         sm_groove_turn(1);
         assert(!sm_groove_current()&&!memcmp(sm_drums.steps,own,sizeof own));
