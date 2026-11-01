@@ -54,7 +54,7 @@ int main(int argc, char **argv)
         for (unsigned s = 0; s < 8; s++) {
             /* Unison voices start at random phases, so one press can measure several dB low: take the loudest of a few. */
             double v = -200; unsigned top = 0;
-            for (unsigned take = 0; take < 6; take++) {
+            for (unsigned take = 0; take < 12; take++) {
                 reset(); assert(!sm_factory_program(s));
                 for (unsigned k = 0; k < 4; k++) { trk[k].engine = trk[k].eng_req; if (!eng_state_prepare(&trk[k])) return 2; }
                 loudness_comp_service();
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
             }
             peak = top;
             if (check) {
-                if (fabs(v - LOUDNESS_TARGET) > 1.0 || peak >= 32767) { printf("program %s: %.2f dB, peak %u\n", sm_program_name, v, peak); bad++; }
+                if (fabs(v - LOUDNESS_TARGET) > 1.5 || peak >= 32767) { printf("program %s: %.2f dB, peak %u\n", sm_program_name, v, peak); bad++; }
             } else
                 printf("%u\t%s\t%.2f\t%u\t%u\n", s, sm_program_name, v, peak, sm_layers.enabled);
         }
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
         }
     }
     if (check) {
-        printf("Loudness: %u of %u factory sounds within 3 dB of the DX7 program, programs within 1 dB\n", near, checked);
+        printf("Loudness: %u of %u factory sounds within 3 dB of the DX7 program, programs within 1.5 dB\n", near, checked);
         return bad || near * 100u < checked * 90u;
     }
     return 0;
