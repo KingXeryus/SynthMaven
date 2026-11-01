@@ -465,7 +465,7 @@ static void draw_column(uint32_t c, const char *label0, const char *val0, const 
     int hot = c == ui.hot_col && ui.hot_t, named = fmt_named, strip, snap;
     uint8_t sig;
     uint16_t lc = vc == T_DIM ? T_DIM : card_tc[c & 3u] ? card_tc[c & 3u] : T_KNOB(c), cbg = T_SURF;   /* (knob c's colour, its card) */
-    int32_t x, uw, room = COL_W - 4;                    /* (inside the card) */
+    int32_t x, uw, room = COL_W;                        /* (the card's full width, as before the cards) */
     const aafont_t *vf = TY_TX, *lf = TY_LB;
     uint32_t n, kn;
     int32_t kid;

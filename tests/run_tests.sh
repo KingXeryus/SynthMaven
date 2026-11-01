@@ -211,7 +211,7 @@ ui_renders() {
     build ui_render ui_render -O1 -w -DMELODEE_USB_AUDIO=1 -DMELODEE_USB_HOST=1 -Ibuild/gen -Ifirmware/src -Itests || return
     mkdir -p build/ui_new/ppm build/ui_slot
     step "UI renders: layout lint (every screen and palette, every page, engine and column value), MONO gray, draw cost" \
-        "$OUT/ui_render" build/ui_new build/ui_slot
+        sh -c '"$0" build/ui_new build/ui_slot; rc=$?; [ $rc = 0 ] || grep -a "^LINT" build/ui_new/report.txt | grep -av "self-test" | head -20; exit $rc' "$OUT/ui_render"
     build ui_render_whole ui_render -O1 -w -DMELODEE_USB_AUDIO=1 -DMELODEE_USB_HOST=1 -DMELODEE_CANVAS_ROWS=124 \
         -Ibuild/gen -Ifirmware/src -Itests || return
     # Fresh reference images avoid stale names from earlier versions; ui_new
