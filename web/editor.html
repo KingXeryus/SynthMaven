@@ -9,7 +9,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SynthMaven FM1 Editor · 4.1.2</title>
+<title>SynthMaven FM1 Editor · 4.1.3</title>
 <style>
   /* Fukiai: Hügelton Instruments' icon font (MIT, FUKIAI-LICENSE.txt). Icons are text in .ic spans;
      they stay hidden until the face has loaded (html.fk), so a missing font never shows boxes. */
@@ -328,6 +328,9 @@ body[data-screen=tracks] #trackbar{display:none}.strip input.fader{height:110px}
 #sm-setlist{margin-top:14px;padding:12px 16px;background:#17191f;border:1px solid #45454d;border-radius:14px}#sm-setlist h3{margin:0 0 8px}#sm-setlist>.bar{display:flex;margin:0}#sm-setlist input{flex:1;min-width:0;font-size:16px}#sm-setlist>p{font-size:12px;margin:8px 0 0}
 @media(max-width:700px){.program-cards{grid-template-columns:1fr}}
 
+/* a list's search and filters on one line, so its results start on the same screen */
+.list-filters{display:grid!important;grid-template-columns:minmax(150px,1.3fr) repeat(auto-fit,minmax(150px,1fr));gap:6px;align-items:center}
+.list-filters input[type=search]{min-height:44px;width:100%;box-sizing:border-box}
 .workspace-inactive{display:none!important}#p-library #libsec{display:contents}#p-library #libpane,#library-bank-section,#p-settings .group,#sm-mapping,#p-library #device-presets{background:#17191f;border:1px solid #45454d;border-radius:14px;padding:14px;margin:8px 0;box-sizing:border-box}
 #p-settings #setgroups{display:contents}#p-settings>.touch-tabs{gap:6px}#p-settings>.touch-tabs button{padding:8px 12px;min-width:90px}#p-settings .row{min-height:48px;gap:12px}#p-settings select,#p-library select{font-size:16px;min-height:44px;max-width:100%}#p-library .bar{gap:8px;flex-wrap:wrap;margin:8px 0}#p-library input[type=search]{flex:1;min-width:150px}#p-library .list td{height:44px;padding:4px 10px;font-size:15px}#p-library .list tr.sel{background:#35161d;outline:1px solid var(--accent)}#p-library .list{border:1px solid #45454d;border-radius:10px}#p-library .group>p.dim{margin:6px 0;font-size:12px}.list-pages{display:flex;gap:16px;align-items:center;justify-content:center;margin:8px 0}.list-pages button{min-width:100px;min-height:44px}.list-pages span{font-size:13px;color:#c7cbd3}#p-library h2,#p-settings h2{margin:0 0 10px}
 
@@ -525,7 +528,7 @@ body[data-screen=sequencer] #trackbar{display:none}
       <a href="../manual/">Manual</a>
     </div>
   </nav>
-  <h1>FM1 Editor <small>4.1.2</small></h1>
+  <h1>FM1 Editor <small>4.1.3</small></h1>
   <!-- always visible: connection, version, sync mode, the tabs and (Sound / Sequencer / Tracks) the track selector -->
   <header class="top">
     <div class="bar">
@@ -683,8 +686,8 @@ body[data-screen=sequencer] #trackbar{display:none}
     <div class="group" id="device-presets" hidden>
       <h2 data-t="devicePresets"></h2>
       <p class="dim" data-t="deviceFavHelp"></p>
-      <label><span data-t="deviceList"></span> <select id="device-filter"></select></label>
-      <div class="bar"><input type="search" id="devq" spellcheck="false" placeholder="Search sound or engine" aria-label="Search device sounds">
+      <div class="bar list-filters"><input type="search" id="devq" spellcheck="false" placeholder="Search sound or engine" aria-label="Search device sounds">
+        <select id="device-filter"></select>
         <select id="deveng" aria-label="Engine"></select>
         <select id="devkind" aria-label="Sound source"><option value="">All sounds</option><option value="f">Factory</option><option value="u">User slots</option></select>
         <span class="dim" id="devcount"></span></div>
@@ -693,7 +696,7 @@ body[data-screen=sequencer] #trackbar{display:none}
     <div class="libcols" id="libsec">
       <div id="libpane">
         <h2 data-t="library" data-ic="symbol_books"></h2>
-        <div class="bar">
+        <div class="bar list-filters">
           <input type="search" id="libq" spellcheck="false">
           <select id="libeng"></select>
           <select id="libtag"></select>
