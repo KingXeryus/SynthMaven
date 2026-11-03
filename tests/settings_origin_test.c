@@ -61,6 +61,12 @@ static int test_foreign(void)
     persist_boot();
     bad += check("foreign PER5 extension resets settings and enables stereo USB", defaults() && settings_owned(&persist_saved));
     bad += check("cleanup flushes warning and writes only one settings sector", erases == before + 1 && !boot_trace_bad && !boot_work.state && boot_work.done == 1 && !strcmp(boot_work.title, "RESETTING SETTINGS") && music_crc() == crc);
+    {   /* the update loader keeps musical storage when a committed settings copy has the tag here (ldr_core.c) */
+        int tagged = 0; st_hdr_t h;
+        for (uint32_t c = 0; c < 2u; c++)
+            tagged |= !st_head(OBJ_SETTINGS, c, &h) && h.len >= 116u && !memcmp(nor + 0xFC000u + c * 0x1000u + 368u, "MDS\1", 4);
+        bad += check("saved settings carry the owner tag where the update loader reads it", tagged);
+    }
     before = erases; uint32_t flushed = boot_syncs;
     persist_boot();
     bad += check("cleaned foreign settings need no write on subsequent boot", erases == before && boot_syncs == flushed && defaults() && music_crc() == crc);

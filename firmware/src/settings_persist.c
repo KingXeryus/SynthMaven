@@ -26,6 +26,7 @@ typedef struct {
 #define PERSIST_MAGIC 0x50455235u
 _Static_assert(sizeof(((persist_t *)0)->ext) == 32u, "ext: 8 words, new fields take spare ones");
 _Static_assert(sizeof(persist_t) == 604u, "the record's layout: new settings take spare bytes (favorites.c)");
+_Static_assert(__builtin_offsetof(persist_t, favorites.factory[1]) + 28u == 112u, "the update loader finds SETTINGS_OWNER here (ldr_core.c)");
 
 static int16_t settings_glo[4];                     /* ext.glo: project.c GLO_KEPT (glo_restore, glo_poll) */
 #define RECORD_PREF_TAG 0x52500000u /* RP, high half of the old zoom word */

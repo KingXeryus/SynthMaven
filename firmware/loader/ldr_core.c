@@ -174,15 +174,33 @@ static int ldr_sector(uint32_t fl_off, uint32_t s, uint8_t *sec, uint8_t *cur, u
     return -11;                                          /* verify failed twice */
 }
 
-/* SynthMaven update policy: clear musical storage before committing the new
- * app marker. Never touch the flash head, loader staging or reserved sectors.
+/* SynthMaven update policy: keep musical storage written by SynthMaven 3.5+
+ * (or Melodee), whose settings record carries the owner tag; clear it over any
+ * other firmware before committing the new app marker. Never touch the flash
+ * head, loader staging or reserved sectors. Neither settings copy is owned when
+ * a reset starts, so a retry after an interruption resumes the reset.
  * An interruption leaves the staged loader available for a complete retry. */
 #ifndef SYNTHMAVEN_FACTORY_RESET
 #define SYNTHMAVEN_FACTORY_RESET 0
 #endif
+#if SYNTHMAVEN_FACTORY_RESET
+#define LDR_SET_SEC 0xFC000u                    /* storage.c OBJ_SETTINGS copy A; B follows */
+#define LDR_SET_OWNER 368u                      /* ST_PAYLOAD_OFF + SETTINGS_OWNER's offset (settings_persist.c) */
+static int ldr_settings_owned(uint8_t *cur)       /* a committed settings header (storage.c st_head) with the tag */
+{
+    for(uint32_t copy=0;copy<2u;copy++){
+        if(ldr_fread(LDR_SET_SEC+copy*0x1000u,cur,LDR_SET_OWNER+4u))continue;
+        if(ota_rd32(cur)==0x554C4546u && ota_rd16(cur+4)==0u && ota_rd16(cur+6)==copy &&
+           ota_rd32(cur+12)>=LDR_SET_OWNER+4u-256u && ota_rd32(cur+28)==ldr_crc32(cur,28u) &&
+           ota_memeq(cur+LDR_SET_OWNER,(const uint8_t *)"MDS\1",4u))return 1;
+    }
+    return 0;
+}
+#endif
 static int ldr_factory_reset(uint8_t *cur,uint32_t mark,uint32_t *open)
 {
 #if SYNTHMAVEN_FACTORY_RESET
+    if(ldr_settings_owned(cur))return 0;          /* an update: the user's programs, sounds and settings stay */
     const uint32_t ranges[][2]={{0x93000u,0xE0000u},{0xE5000u,0xFB000u},{0xFC000u,0xFF000u}};
     for(uint32_t r=0;r<3u;r++)for(uint32_t off=ranges[r][0];off<ranges[r][1];off+=0x1000u){
         if(ldr_fread(off,cur,0x1000u))return -8;
