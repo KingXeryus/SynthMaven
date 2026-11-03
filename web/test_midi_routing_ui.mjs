@@ -6,7 +6,7 @@ const errors=[],sent=[];
 const dev={mapping:{maps:Array.from({length:24},()=>Array(12).fill(0)),learn:0,serial:0},info:{pe0:20},dump:{engine:0},pdesc:[],input:{},
  routes:{enabled:0,input:[0,0,0,0,0],channel:[1,2,3,4,10],drumPart:3},routeLayers:{enabled:0,low:[0,0,0,0],high:[127,127,127,127]}};
 const CMD={ROUTES:118,LAYERS:111};
-const ctx={document,window:{},dev,el,$:id=>document.getElementById(id),access:null,controllerForwards:new Map(),pack7:x=>x,say:x=>errors.push(x),CMD,
+const ctx={document,window:{},dev,el,octControl:i=>el('div',{class:'oct','data-part':i}),$:id=>document.getElementById(id),access:null,controllerForwards:new Map(),pack7:x=>x,say:x=>errors.push(x),CMD,
  sessionRequest:async(d,[cmd,args])=>{sent.push([cmd,args]);return {cmd,args};},
  parse:{[CMD.ROUTES]:r=>({rc:0,drumPart:3,...ctx.routesDecode(r.args.slice(1))}),[CMD.LAYERS]:r=>({layers:ctx.__layers})}};
 ctx.__REQ__={layersPut:s=>{ctx.__layers=s;return [CMD.LAYERS,[1]];}};
@@ -20,7 +20,7 @@ ctx.renderMapping();
 assert.equal(button('Routing').getAttribute('aria-pressed'),'true','routing opens first when the firmware has it');
 assert.equal(q('.midi-route-table').hidden,true,'off by default: ROUT applies');assert.equal(button('Save to SynthMaven FM1').disabled,true);
 const toggle=q('[aria-label="Use custom routing"]');toggle.checked=true;toggle.onchange();
-assert.equal(q('.midi-route-table').hidden,false);assert.equal(button('Save to SynthMaven FM1').disabled,false);
+assert.equal(q('.midi-route-table').hidden,false);assert.equal(document.querySelectorAll('.midi-route-table .oct').length,4,'each layer row: its octave');assert.equal(button('Save to SynthMaven FM1').disabled,false);
 pick('Layer 1 input',2);pick('Layer 1 channel',1);pick('Layer 2 input',2);pick('Layer 2 channel',1);pick('Layer 1 highest note',59);pick('Layer 2 lowest note',60);
 assert.match(q('.midi-route-notice').textContent,/Layer 1 and Layer 2 split TRS, channel 1/);
 pick('Layer 2 lowest note',50);assert.equal(q('.midi-route-notice').dataset.kind,'stack');pick('Layer 2 lowest note',60);

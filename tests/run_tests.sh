@@ -175,6 +175,7 @@ web_tests() {                                     # the editor mock's tables mus
         step "Learn-first MIDI assignment grid" node web/test_midi_learn_ui.mjs
         step "Layer and drummer MIDI routing screen" node web/test_midi_routing_ui.mjs
         step "Library and sound browser filters" node web/test_library_filters.mjs
+        step "Connected editor: Prophet ENV, layer octaves, Device sounds filters" node web/test_editor_layers_env.mjs
         step "HYBRID editor and Vital import" node web/test_hybrid_import.mjs
         step "SynthMaven controller input routing" node web/test_controller_route.mjs
         step "installer UI: release selection, fetch races, cache and write lock" node web/test_installer.mjs
