@@ -48,13 +48,13 @@ static int layer_set_open(void);                       /* (ui_layer.c) */
 static int8_t *octave_control(void)
 { return TSEL->p[P_QUANT] == Q_MPC ? &TSEL->mpc_octave : &song.octave; }
 /* an OCT- / OCT+ tap (d -1 / +1; 0: both together, back to 0) on v; layered: the selected layer's own octave, its TRN
- * (midi_control.c), keeping its semitones */
+ * (midi_control.c) */
 static void octave_step(int8_t *v, int d)
 {
     int16_t *t = &TSEL->p[P_TRANS];
     if (!layer_octave_on(TSEL)) { *v = (int8_t)(d ? clamp(*v + d, -3, 3) : 0); return; }
-    int32_t n = d ? *t + 12 * d : *t % 12;
-    if (n >= -24 && n <= 24) *t = (int16_t)n;
+    int32_t n = d ? *t + 12 * d : 0;
+    if ((uint32_t)(n + 24) <= 48u) *t = (int16_t)n;
 }
 /* OCT- / OCT+ shift the octave on Stage (HOME) only; everywhere else, and over Stage's menu, dialogs and popups,
  * they are Esc / Enter (docs/design/README.md, Navigation) */
@@ -82,7 +82,7 @@ static uint32_t oct_leds(void)
         return 1u | (blink && (ui.confirm || (ui.menu ? ui.menu == 1u : act_ready())) ? 2u : 0u);
     if (oct_nav())
         return 1u | (oct_enter_ok() ? 2u : 0u);
-    int32_t octave = input_octave_shown(TSEL);
+    int32_t octave = input_octave(TSEL) * 12 + (layer_octave_on(TSEL) ? TSEL->p[P_TRANS] : 0);   /* layered: the layer's own */
     return (octave < 0 ? 1u : 0u) | (octave > 0 ? 2u : 0u);
 }
 

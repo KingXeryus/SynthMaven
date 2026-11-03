@@ -160,8 +160,6 @@ static uint32_t sm_chord_free(void){uint32_t n=0;for(uint32_t i=0;i<MCHORD_N;i++
  * kb_map and midi_map already add it per layer. MPC banks keep their own octave. */
 static int layer_octave_on(const track_t *t)
 { return sm_layers.enabled && t->p[P_QUANT] != Q_MPC; }
-static int32_t input_octave_shown(const track_t *t)      /* the header pill and the OCT LEDs */
-{ return layer_octave_on(t) ? song.octave + t->p[P_TRANS] / 12 : input_octave(t); }
 static int sm_layer_key_on(uint32_t k)
 {
     uint32_t mask;

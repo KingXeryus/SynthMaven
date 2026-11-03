@@ -26,7 +26,7 @@ int main(void)
         memcpy(name, sm_program_name, 13);
         measure(1u, &lead_peak, &lead_rms); assert(!sm_program_load(s)); measure(15u, &all_peak, &all_rms);
         for (uint32_t k = 1; k < 4; k++) { double a, b; int layered = (assert(!sm_program_load(s)), sm_layers.enabled); sm_layers.enabled = 1; measure(1u << k, &a, &b); printf("   L%u eng %u rms %.3f peak %.3f\n", k + 1, trk[k].eng_req, b, a);
-            assert(b > lead_rms * (layered ? 0.02 : 0.01)); }   /* (-34 dB: the limiter no longer squashes layered leads, SM_LAYER_TRIM_Q12;
+            assert(b > lead_rms * (layered ? 0.02 : 0.01)); }   /* (-34 dB: the limiter no longer squashes layered leads, SM_LAYER_TRIM;
                                                                     * a lead measured unlayered has no -6 dB trim) */
         printf("P%u %-12s lead peak %.3f rms %.3f | layered peak %.3f rms %.3f (%+.1f dB)\n", s + 1, name, lead_peak, lead_rms, all_peak, all_rms, 20 * log10(all_rms / lead_rms));
         assert(lead_rms > 0.05 && lead_peak < 0.98 && all_peak < 1.0 && all_rms > lead_rms * 0.8);

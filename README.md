@@ -6,7 +6,7 @@
 
 Maqam tuning, layered keys, drums and a sequencer, ready for the stage.
 
-**[Install](https://kingxeryus.github.io/SynthMaven/webapp/installer/)** · [Web editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [Illustrated guide](https://kingxeryus.github.io/SynthMaven/webapp/manual/) · [Release notes](docs/RELEASE_4.1.md)
+**[Install](https://kingxeryus.github.io/SynthMaven/webapp/installer/)** · [Web editor](https://kingxeryus.github.io/SynthMaven/webapp/editor/) · [Illustrated guide](https://kingxeryus.github.io/SynthMaven/webapp/manual/) · [Release notes](docs/RELEASE_4.1.1.md)
 
 </td></tr></table>
 
@@ -35,7 +35,7 @@ Maqam tuning, layered keys, drums and a sequencer, ready for the stage.
 
 ## Installation and limitations
 
-Back up before installing: **every firmware flash resets user settings and programs**. Version 3.5 introduced a new storage format, which 4.1 keeps. Keep older whole-device backups for rollback with the matching firmware; do not restore a 3.0 binary backup into 3.5 or later.
+Back up before installing: **every firmware flash resets user settings and programs**. Version 3.5 introduced a new storage format, which 4.1.1 keeps. Keep older whole-device backups for rollback with the matching firmware; do not restore a 3.0 binary backup into 3.5 or later.
 
 This release is **USB-only**. Bluetooth adaptation is a separate experiment and will not be promoted without audio and timing validation. Four parts share CPU, memory and voice resources; they do not each receive an independent guaranteed voice budget. Factory backing parts use lighter mono voices to retain timing headroom. USB capture follows the physical MASTER control.
 

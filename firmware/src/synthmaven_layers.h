@@ -19,8 +19,8 @@ static uint32_t sm_layer_mask(uint32_t note,uint32_t parts)
 #define SM_LAYER_KEYS_PER_BLOCK 1u
 /* Layered, four sounds sum into the master limiter: at full volume a held chord sat 4-10 dB into it and every new
  * attack pumped it down further (the chord ducked). A fixed trim of the master while layering keeps the limiter
- * for peaks; Q12. */
-#define SM_LAYER_TRIM_Q12 2048u                   /* -6 dB */
+ * for peaks; a right shift: 1 is -6 dB. (No ramp: the flash had no room; toggling layering steps the level.) */
+#define SM_LAYER_TRIM 1u
 #define SM_LAYERS_WIRE 16u
 static int sm_layers_valid(const sm_layers_t *s){if(s->enabled>1)return 0;for(uint32_t i=0;i<4;i++)if(s->low[i]>s->high[i]||s->high[i]>127)return 0;return 1;}
 static void sm_layers_encode(uint8_t *b,const sm_layers_t *s){for(uint32_t i=0;i<16;i++)b[i]=0;b[0]='S';b[1]='M';b[2]='L';b[3]=1;b[4]=s->enabled;for(uint32_t i=0;i<4;i++){b[5+i]=s->low[i];b[9+i]=s->high[i];}}

@@ -260,7 +260,7 @@ static void draw_head(void)
     uint32_t low = !(usb.config && !usb.suspended) && batt_level() <= 1, msg = ui.msg_t || ui.layer;
     uint32_t sig, moved = 0;
     int16_t bpm = song.g[G_BPM];                        /* (read once: what is noted is what is drawn) */
-    int32_t octave = input_octave_shown(TSEL);
+    int32_t octave = input_octave(TSEL);
     head_chip_text(chip);
     const char *px=head_punch();
     sig = (uint32_t)seq_erase_active(TSEL) * 8191u + (uint32_t)song.playing * 3u + song.rec * 5u + song.rec_wait * 65537u + (uint32_t)(octave + 8) * 11u +

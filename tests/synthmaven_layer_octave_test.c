@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 Kerem Kilic (Ellic Studio) */
 /* Layered, OCT- / OCT+ on Stage move the selected layer's own octave (its TRN): every layer plays the same key at its
- * own octave, the split stays on the key played, and OCT- with OCT+ puts the layer back. */
+ * own octave, the split stays on the key played, and OCT- with OCT+ puts the layer back to 0. */
 #define UI_TEST_NO_MAIN 1
 #include "ui_test.c"
 #include <assert.h>
@@ -20,7 +20,7 @@ int main(void)
     sm_layers = (sm_layers_t){.enabled = 1, .low = {0, 0, 0, 0}, .high = {127, 127, 127, 127}};
     track_select(0); frame(); song.octave = 0;
     press(B_OCTDN); press(B_OCTDN);
-    assert(trk[0].p[P_TRANS] == -24 && song.octave == 0 && input_octave_shown(TSEL) == -2);
+    assert(trk[0].p[P_TRANS] == -24 && song.octave == 0 && oct_leds() == 1u);   /* (OCT- lit: this layer is down) */
     press(B_OCTDN);                                     /* (TRN's range: no further) */
     assert(trk[0].p[P_TRANS] == -24);
     track_select(2); frame(); press(B_OCTUP);
@@ -36,9 +36,9 @@ int main(void)
     assert(sounding_note(&trk[0]) == 36 && !sounding_note(&trk[1]));   /* the split follows the key, not -2 octaves */
     fm1_in.notes = 0; for (uint32_t b = 0; b < 4; b++) mix_block(out, CTL);
     trk[0].p[P_TRANS] = -22; both_oct();
-    assert(trk[0].p[P_TRANS] == -10);                   /* back to octave 0, the semitones kept */
+    assert(trk[0].p[P_TRANS] == 0);                     /* back to 0 */
     sm_layers.enabled = 0; song.octave = 0; press(B_OCTUP);
-    assert(song.octave == 1 && trk[0].p[P_TRANS] == -10);   /* not layered: the shared octave, as before */
-    puts("Layer octaves: OCT-/OCT+ per layer, each layer at its own octave, split on the key, reset keeps semitones");
+    assert(song.octave == 1 && trk[0].p[P_TRANS] == 0);     /* not layered: the shared octave, as before */
+    puts("Layer octaves: OCT-/OCT+ per layer, each layer at its own octave, split on the key, both together reset");
     return 0;
 }

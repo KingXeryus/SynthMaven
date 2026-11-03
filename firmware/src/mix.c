@@ -326,7 +326,7 @@ static __attribute__((noinline)) void mix_part(track_t *t,uint32_t n)
     if(mod.on)mod_end(t);
     if(extra){void (*volatile run)(uint32_t)=mix_extra_sends;run(n);}
 }
-static int32_t mix_master_q12, mix_trim_q12 = 4096;    /* MASTER this block; the layered trim, ramped (no step) */
+static int32_t mix_master_q12;                          /* MASTER this block (layered: SM_LAYER_TRIM) */
 static __attribute__((noinline,section(".dsp_text"))) void master_samples(int32_t *out,uint32_t n)
 {
     int32_t gain=fx_bus_mix,target=fx_bus_target;
@@ -369,8 +369,7 @@ static __attribute__((noinline)) void mix_block(int32_t *out,uint32_t n)
     sm_drum_mix(mix_l,mix_r,n,beat_samples(),1);
     fx_bus_start(n);
     /* Dry gain overlaps the shared wet processing; limiter sees their sum. */
-    {int32_t want=sm_layers.enabled?(int32_t)SM_LAYER_TRIM_Q12:4096;mix_trim_q12+=clamp(want-mix_trim_q12,-64,64);}   /* ~32 blocks: 23 ms */
-    mix_master_q12=(int32_t)((song.master_q12*(uint32_t)mix_trim_q12)>>12);
+    mix_master_q12=(int32_t)(song.master_q12>>(sm_layers.enabled?SM_LAYER_TRIM:0u));
     for(uint32_t i=0;i<n;i++){mix_l[i]=((mix_l[i]>>2)*mix_master_q12)>>10;mix_r[i]=((mix_r[i]>>2)*mix_master_q12)>>10;}
     fx_bus_join();
     void (*volatile run)(int32_t *,uint32_t)=master_samples;
