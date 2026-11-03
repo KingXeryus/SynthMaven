@@ -293,7 +293,7 @@
       <li data-t="factTime">About 3 minutes</li>
     </ul>
     <ol class="strip" id="strip">
-      <li data-state="active"><b data-t="stripBack">1 Back up</b><span data-t="stripBackSub">Installing resets your settings</span></li>
+      <li data-state="active"><b data-t="stripBack">1 Back up</b><span data-t="stripBackSub">Keep a backup, just in case</span></li>
       <li data-state="todo"><b data-t="stripConnect">2 Connect</b><span data-t="stripConnectSub">Find the FM-1</span></li>
       <li data-state="todo"><b data-t="stripInstall">3 Install</b><span data-t="stripInstallSub">Keep it plugged in</span></li>
     </ol>
@@ -376,9 +376,9 @@
       <li>A shared web/iPad Perform screen with program and scene navigation, quick controls and mixer, plus a Tuning tab. Hybrid-style mixer, sequencer and drum-grid layouts, touch-sized controls and screen pages instead of scrolling. Play/Stop controls the connected FM-1 over USB.</li>
       <li>Ten named and numbered GLO pages bring device-wide controls together, including themes, display, USB, recording and performance preferences.</li>
     </ul>
-    <p><a href="../manual/">Illustrated guide</a> · <a id="guidePdf" href="../manual/SynthMaven-4.1.3-Illustrated-Guide.pdf">Download the printable PDF</a> · <a href="https://github.com/KingXeryus/SynthMaven/releases">Release notes and recovery downloads</a></p>
+    <p><a href="../manual/">Illustrated guide</a> · <a id="guidePdf" href="../manual/SynthMaven-4.1.4-Illustrated-Guide.pdf">Download the printable PDF</a> · <a href="https://github.com/KingXeryus/SynthMaven/releases">Release notes and recovery downloads</a></p>
     <p>The printable guide includes screen illustrations, control references and step-by-step workflows for firmware settings, sound editing, programs, scenes, tuning, sequencing, MIDI, USB host setup and the existing web/iPad editors.</p>
-    <p><strong>USB-only release.</strong> Direct pedals/controllers require a powered adapter or hub. Every firmware flash resets user settings and musical storage: export a backup first. Older SynthMaven backups require their matching firmware for restoration.</p>
+    <p><strong>USB-only release.</strong> Direct pedals/controllers require a powered adapter or hub. Installing over SynthMaven 3.5 or later keeps your programs, sounds and settings; installing over stock firmware or SynthMaven 3.0 resets them. Export a backup first. Older SynthMaven backups require their matching firmware for restoration.</p>
   </section>
 <p id="status" role="status" aria-live="polite"></p>
 
@@ -2174,7 +2174,7 @@ function fakeAccess(options = {}) {
 return {fakeAccess};
 })();
 
-const meta = {"version": "4.1.3", "product": "FM-1_94013", "pkg": {"dual": "../../firmware/melodee-4.1.3.fwsc"}, "sha256": {"dual": "4422c78eed79d5e0b5bea1d59808f2983e15429c46bc68b6872c33cc7aa32810"}, "nightly": null, "rc": null, "releases": [{"version": "4.1.3", "product": "FM-1_94013", "pkg": {"dual": "../../firmware/melodee-4.1.3.fwsc"}, "sha256": {"dual": "4422c78eed79d5e0b5bea1d59808f2983e15429c46bc68b6872c33cc7aa32810"}}, {"version": "4.1.2", "product": "FM-1_94012", "pkg": {"dual": "../../firmware/melodee-4.1.2.fwsc"}, "sha256": {"dual": "8e521259fbf5a9d06d19a50e2b16167aeb94c7b92025a272911cc3cceabfbbcc"}}, {"version": "4.1.1", "product": "FM-1_94011", "pkg": {"dual": "../../firmware/melodee-4.1.1.fwsc"}, "sha256": {"dual": "0153eaab5196e59a82c34e2ac3b91713037caa2fac6c26115b53d3d198ed6e7b"}}, {"version": "3.5.9", "product": "FM-1_93059", "pkg": {"dual": "../../firmware/melodee-3.5.9.fwsc"}, "sha256": {"dual": "7b191e8b82ba71901d48f97b4f9ce7b5f047c6d6f77b8b60905010f4a46c2981"}}, {"version": "3.5.7", "product": "FM-1_93057", "pkg": {"dual": "../../firmware/melodee-3.5.7.fwsc"}, "sha256": {"dual": "da37b6ff401b6c23e33f67d625c69b27dd946935c381a4db6328bfa21cd512a8"}}, {"version": "3.5.5", "product": "FM-1_93055", "pkg": {"dual": "../../firmware/melodee-3.5.5.fwsc"}, "sha256": {"dual": "151d870d15fda9b55ce6c2e70f2ef4af3677db3df0dd908aed3897280ef49391"}}, {"version": "3.5.3", "product": "FM-1_93053", "pkg": {"dual": "../../firmware/melodee-3.5.3.fwsc"}, "sha256": {"dual": "5ccb6a0d775701fdf710a66c00c4c7be4c323a9bf9ab2229cc30de0b2111a4ba"}}, {"version": "3.5.2", "product": "FM-1_93052", "pkg": {"dual": "../../firmware/melodee-3.5.2.fwsc"}, "sha256": {"dual": "81fd9d0a6799a251081dd2fa7e156759c0b4ef7992e5672348e3ab534ecd1a0e"}}, {"version": "3.5.1", "product": "FM-1_93051", "pkg": {"dual": "../../firmware/melodee-3.5.1.fwsc"}, "sha256": {"dual": "9a06105cfdc7c82803b225628e69031b0bc44593d2b025d599dd9283a35204bb"}}]};
+const meta = {"version": "4.1.4", "product": "FM-1_94014", "pkg": {"dual": "../../firmware/melodee-4.1.4.fwsc"}, "sha256": {"dual": "e52a2c132c78c93ec5c635447cbd22a6cfc402eb9d51531cd5a74f447b202be8"}, "nightly": null, "rc": null, "releases": [{"version": "4.1.4", "product": "FM-1_94014", "pkg": {"dual": "../../firmware/melodee-4.1.4.fwsc"}, "sha256": {"dual": "e52a2c132c78c93ec5c635447cbd22a6cfc402eb9d51531cd5a74f447b202be8"}}, {"version": "4.1.3", "product": "FM-1_94013", "pkg": {"dual": "../../firmware/melodee-4.1.3.fwsc"}, "sha256": {"dual": "4422c78eed79d5e0b5bea1d59808f2983e15429c46bc68b6872c33cc7aa32810"}}, {"version": "4.1.2", "product": "FM-1_94012", "pkg": {"dual": "../../firmware/melodee-4.1.2.fwsc"}, "sha256": {"dual": "8e521259fbf5a9d06d19a50e2b16167aeb94c7b92025a272911cc3cceabfbbcc"}}, {"version": "4.1.1", "product": "FM-1_94011", "pkg": {"dual": "../../firmware/melodee-4.1.1.fwsc"}, "sha256": {"dual": "0153eaab5196e59a82c34e2ac3b91713037caa2fac6c26115b53d3d198ed6e7b"}}, {"version": "3.5.9", "product": "FM-1_93059", "pkg": {"dual": "../../firmware/melodee-3.5.9.fwsc"}, "sha256": {"dual": "7b191e8b82ba71901d48f97b4f9ce7b5f047c6d6f77b8b60905010f4a46c2981"}}, {"version": "3.5.7", "product": "FM-1_93057", "pkg": {"dual": "../../firmware/melodee-3.5.7.fwsc"}, "sha256": {"dual": "da37b6ff401b6c23e33f67d625c69b27dd946935c381a4db6328bfa21cd512a8"}}, {"version": "3.5.5", "product": "FM-1_93055", "pkg": {"dual": "../../firmware/melodee-3.5.5.fwsc"}, "sha256": {"dual": "151d870d15fda9b55ce6c2e70f2ef4af3677db3df0dd908aed3897280ef49391"}}, {"version": "3.5.3", "product": "FM-1_93053", "pkg": {"dual": "../../firmware/melodee-3.5.3.fwsc"}, "sha256": {"dual": "5ccb6a0d775701fdf710a66c00c4c7be4c323a9bf9ab2229cc30de0b2111a4ba"}}, {"version": "3.5.2", "product": "FM-1_93052", "pkg": {"dual": "../../firmware/melodee-3.5.2.fwsc"}, "sha256": {"dual": "81fd9d0a6799a251081dd2fa7e156759c0b4ef7992e5672348e3ab534ecd1a0e"}}, {"version": "3.5.1", "product": "FM-1_93051", "pkg": {"dual": "../../firmware/melodee-3.5.1.fwsc"}, "sha256": {"dual": "9a06105cfdc7c82803b225628e69031b0bc44593d2b025d599dd9283a35204bb"}}]};
 (() => {
 // SPDX-License-Identifier: MPL-2.0
 // Copyright (C) 2026 Kerem Kilic (Ellic Studio)
@@ -2205,7 +2205,7 @@ const TEXT = {
     demo: "Demo: a simulated FM-1. Nothing is written.", demoleave: "Leave the demo",
     kicker: "Firmware for the M-VAVE FM-1", title: "Install SynthMaven",
     lede: "Synths, sequencing and effects for the FM-1, installed over USB from this page.",
-    stripBack: "1 Back up", stripBackSub: "Installing resets your settings", stripConnect: "2 Connect", stripConnectSub: "Find the FM-1", stripInstall: "3 Install", stripInstallSub: "Keep it plugged in",
+    stripBack: "1 Back up", stripBackSub: "Keep a backup, just in case", stripConnect: "2 Connect", stripConnectSub: "Find the FM-1", stripInstall: "3 Install", stripInstallSub: "Keep it plugged in",
     factBrowser: "Chrome or Edge", factCable: "A USB data cable", factTime: "About 3 minutes",
     resumeBannerH: "An installation didn't finish.",
     resumeBanner: "Your FM-1 is waiting in update mode. Connect it and press Find FM-1 to finish.",
@@ -2222,9 +2222,9 @@ const TEXT = {
     goInstall: "Install SynthMaven {v}", goUpdate: "Update to SynthMaven {v}", goReinstall: "Reinstall SynthMaven {v}",
     goResume: "Resume installation", goBoot: "Install m-bootloader",
     planInstall: "SynthMaven {v} replaces this FM-1's firmware. Back up your sounds first: Settings, then Backup, in the editor.",
-    planUpdate: "Every firmware update resets settings and musical storage. Export a complete backup in the editor first.",
+    planUpdate: "Updating from SynthMaven 3.5 or later keeps your programs, sounds and settings. Export a complete backup in the editor first, just in case.",
     planResume: "The FM-1 is waiting in update mode. Resuming writes SynthMaven {v} again from the start of the write.",
-    planThis: "SynthMaven {v} is already on this FM-1. Reinstalling resets all settings and musical storage. Export a backup first.",
+    planThis: "SynthMaven {v} is already on this FM-1. Reinstalling keeps your programs, sounds and settings.",
     planBoot: "SynthMaven {v} is already on this FM-1, so only m-bootloader is written.",
     planOpen: "This FM-1 runs M-VAVE's Open firmware. Go back to M-VAVE's firmware first (below), then install SynthMaven.",
     planModel: "This is not an FM-1 ({id}). SynthMaven runs only on the M-VAVE FM-1.",
@@ -2245,7 +2245,7 @@ const TEXT = {
     pf3h: "It takes about 3 minutes", pf3: "The FM-1's screen shows UPDATING, or stays dark. Both are normal.",
     pfboot: "m-bootloader is written last, after one more restart. Keep the power on until the page says Done.",
     pfbootonly: "Writing the boot area takes a few seconds. Keep the power on until the page says Done.",
-    pfok: "I have a backup and understand that installation resets settings and musical storage.", cancel: "Cancel", start: "Start installation",
+    pfok: "I've backed up my sounds, or have nothing to keep.", cancel: "Cancel", start: "Start installation",
     runwarn: "Keep this tab open and in front. Don't unplug the FM-1.",
     runInstall: "Installing SynthMaven {v}", runResume: "Finishing the installation", runBoot: "Installing m-bootloader",
     runStock: "Installing M-VAVE's firmware",
@@ -2312,7 +2312,7 @@ const TEXT = {
     demo: "デモ：FM-1 をシミュレートしています。何も書き込まれません。", demoleave: "デモを終了",
     kicker: "M-VAVE FM-1 用ファームウェア", title: "SynthMaven をインストール",
     lede: "FM-1 用シンセサイザー、シーケンサー、エフェクト。このページから USB でインストールできます。",
-    stripBack: "1 バックアップ", stripBackSub: "インストールすると設定はリセットされます", stripConnect: "2 接続", stripConnectSub: "FM-1 を探す", stripInstall: "3 インストール", stripInstallSub: "接続したままにしてください",
+    stripBack: "1 バックアップ", stripBackSub: "念のためバックアップ", stripConnect: "2 接続", stripConnectSub: "FM-1 を探す", stripInstall: "3 インストール", stripInstallSub: "接続したままにしてください",
     factBrowser: "Chrome または Edge", factCable: "USB データケーブル", factTime: "約 3 分",
     resumeBannerH: "前回のインストールが完了していません。",
     resumeBanner: "FM-1 はアップデートモードで待機しています。接続して「FM-1 を探す」を押すと、続きから完了できます。",
