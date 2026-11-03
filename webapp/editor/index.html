@@ -9,7 +9,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SynthMaven FM1 Editor · 4.0</title>
+<title>SynthMaven FM1 Editor · 4.1.2</title>
 <style>
   /* Fukiai: Hügelton Instruments' icon font (MIT, FUKIAI-LICENSE.txt). Icons are text in .ic spans;
      they stay hidden until the face has loaded (html.fk), so a missing font never shows boxes. */
@@ -155,6 +155,7 @@
   .strip.muted .fader, .strip.muted .lv { opacity: .35; }
   .strip button { width: 100%; padding: 1px 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .strip button.selb:disabled { opacity: 1; background: none; color: var(--dim); }
+.oct { display: flex; align-items: center; gap: 4px; width: 100%; } .oct button { flex: 1; } .oct .v { flex: 1.4; text-align: center; white-space: nowrap; }
   #sysinfo th { padding-right: 16px; }
   [hidden] { display: none !important; }
   .site { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
@@ -330,7 +331,7 @@ body[data-screen=tracks] #trackbar{display:none}.strip input.fader{height:110px}
 .workspace-inactive{display:none!important}#p-library #libsec{display:contents}#p-library #libpane,#library-bank-section,#p-settings .group,#sm-mapping,#p-library #device-presets{background:#17191f;border:1px solid #45454d;border-radius:14px;padding:14px;margin:8px 0;box-sizing:border-box}
 #p-settings #setgroups{display:contents}#p-settings>.touch-tabs{gap:6px}#p-settings>.touch-tabs button{padding:8px 12px;min-width:90px}#p-settings .row{min-height:48px;gap:12px}#p-settings select,#p-library select{font-size:16px;min-height:44px;max-width:100%}#p-library .bar{gap:8px;flex-wrap:wrap;margin:8px 0}#p-library input[type=search]{flex:1;min-width:150px}#p-library .list td{height:44px;padding:4px 10px;font-size:15px}#p-library .list tr.sel{background:#35161d;outline:1px solid var(--accent)}#p-library .list{border:1px solid #45454d;border-radius:10px}#p-library .group>p.dim{margin:6px 0;font-size:12px}.list-pages{display:flex;gap:16px;align-items:center;justify-content:center;margin:8px 0}.list-pages button{min-width:100px;min-height:44px}.list-pages span{font-size:13px;color:#c7cbd3}#p-library h2,#p-settings h2{margin:0 0 10px}
 
-#sm-mapping>p{margin:8px 0;font-size:13px}#sm-mapping .touch-tabs{margin:0 0 8px}.midi-workspace{display:grid;grid-template-columns:minmax(260px,.9fr) minmax(380px,1.4fr);gap:16px}.midi-workspace[hidden]{display:none}.midi-workspace h3{font-size:15px;color:#f4f4f6;margin:10px 0}.midi-wizard{border-right:1px solid #45454d;padding-right:16px}.midi-wizard>label{display:flex;flex-direction:column;gap:6px}.midi-wizard select{width:100%}.midi-wizard>button{margin:8px 8px 0 0;min-height:44px}.midi-assignment-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.midi-assignment-options label{font-size:12px;display:flex;flex-direction:column;gap:6px}.midi-assignment-options input{width:100%;box-sizing:border-box;min-height:44px}.learned-action-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.learned-action{border:1px solid #55565e;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0;background:#111216}.learned-action strong{font-size:14px}.learned-action span{font-size:12px}.learned-action .bar{gap:6px;margin:4px 0 0}.learned-action button{min-height:44px;padding:8px 10px;flex:1}.midi-routing{display:flex;flex-direction:column;gap:10px}.midi-route-switch{display:flex;align-items:center;gap:10px;min-height:44px;font-weight:600}.midi-route-switch input{width:22px;height:22px}.midi-routing>p{margin:0;font-size:13px}.midi-route-table{overflow-x:auto;border:1px solid #45454d;border-radius:12px;padding:4px 12px}.midi-route-table[hidden]{display:none}.midi-route-row{display:grid;grid-template-columns:150px 170px 210px 90px 90px minmax(150px,1fr);gap:10px;align-items:center;min-width:940px;padding:8px 0;border-bottom:1px solid #2a2a30}.midi-route-row:last-child{border-bottom:0}.midi-route-head{color:#a5a5ad;font-size:12px}.midi-route-row select,.midi-route-row input{width:100%;box-sizing:border-box;min-height:44px}.midi-route-note{grid-column:span 3;font-size:13px;color:#c4c4ca}.midi-route-range{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#c4c4ca}.midi-route-bar{position:relative;display:block;height:10px;border-radius:3px;background:#24242a;overflow:hidden}.midi-route-bar span{position:absolute;top:0;bottom:0;background:var(--accent)}.midi-route-notice{padding:8px 12px;border:1px solid #2f4a5a;border-radius:10px;background:#0e1a21}.midi-route-notice[data-kind=stack]{border-color:#6b5320;background:#211a0a}.midi-route-notice[data-kind=conflict]{border-color:#7a2a2e;background:#260d0f}.midi-route-save{align-items:center;gap:12px}.midi-route-save button{min-height:44px}.midi-forward{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #2a2a30}.midi-forward select{min-height:44px;min-width:240px}.midi-connection p{font-size:14px}.midi-connection[hidden]{display:none}
+#sm-mapping>p{margin:8px 0;font-size:13px}#sm-mapping .touch-tabs{margin:0 0 8px}.midi-workspace{display:grid;grid-template-columns:minmax(260px,.9fr) minmax(380px,1.4fr);gap:16px}.midi-workspace[hidden]{display:none}.midi-workspace h3{font-size:15px;color:#f4f4f6;margin:10px 0}.midi-wizard{border-right:1px solid #45454d;padding-right:16px}.midi-wizard>label{display:flex;flex-direction:column;gap:6px}.midi-wizard select{width:100%}.midi-wizard>button{margin:8px 8px 0 0;min-height:44px}.midi-assignment-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.midi-assignment-options label{font-size:12px;display:flex;flex-direction:column;gap:6px}.midi-assignment-options input{width:100%;box-sizing:border-box;min-height:44px}.learned-action-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.learned-action{border:1px solid #55565e;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0;background:#111216}.learned-action strong{font-size:14px}.learned-action span{font-size:12px}.learned-action .bar{gap:6px;margin:4px 0 0}.learned-action button{min-height:44px;padding:8px 10px;flex:1}.midi-routing{display:flex;flex-direction:column;gap:10px}.midi-route-switch{display:flex;align-items:center;gap:10px;min-height:44px;font-weight:600}.midi-route-switch input{width:22px;height:22px}.midi-routing>p{margin:0;font-size:13px}.midi-route-table{overflow-x:auto;border:1px solid #45454d;border-radius:12px;padding:4px 12px}.midi-route-table[hidden]{display:none}.midi-route-row{display:grid;grid-template-columns:150px 170px 210px 90px 90px minmax(150px,1fr) 150px;gap:10px;align-items:center;min-width:1100px;padding:8px 0;border-bottom:1px solid #2a2a30}.midi-route-row:last-child{border-bottom:0}.midi-route-head{color:#a5a5ad;font-size:12px}.midi-route-row select,.midi-route-row input{width:100%;box-sizing:border-box;min-height:44px}.midi-route-note{grid-column:span 3;font-size:13px;color:#c4c4ca}.midi-route-range{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#c4c4ca}.midi-route-bar{position:relative;display:block;height:10px;border-radius:3px;background:#24242a;overflow:hidden}.midi-route-bar span{position:absolute;top:0;bottom:0;background:var(--accent)}.midi-route-notice{padding:8px 12px;border:1px solid #2f4a5a;border-radius:10px;background:#0e1a21}.midi-route-notice[data-kind=stack]{border-color:#6b5320;background:#211a0a}.midi-route-notice[data-kind=conflict]{border-color:#7a2a2e;background:#260d0f}.midi-route-save{align-items:center;gap:12px}.midi-route-save button{min-height:44px}.midi-forward{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #2a2a30}.midi-forward select{min-height:44px;min-width:240px}.midi-connection p{font-size:14px}.midi-connection[hidden]{display:none}
 @media(max-width:700px){.midi-workspace{grid-template-columns:1fr}.midi-wizard{border-right:0;padding:0}}
 
 /* Tuning is one bounded workspace; secondary library actions occupy their own tab. */
@@ -524,7 +525,7 @@ body[data-screen=sequencer] #trackbar{display:none}
       <a href="../manual/">Manual</a>
     </div>
   </nav>
-  <h1>FM1 Editor <small>4.0</small></h1>
+  <h1>FM1 Editor <small>4.1.2</small></h1>
   <!-- always visible: connection, version, sync mode, the tabs and (Sound / Sequencer / Tracks) the track selector -->
   <header class="top">
     <div class="bar">
@@ -683,6 +684,10 @@ body[data-screen=sequencer] #trackbar{display:none}
       <h2 data-t="devicePresets"></h2>
       <p class="dim" data-t="deviceFavHelp"></p>
       <label><span data-t="deviceList"></span> <select id="device-filter"></select></label>
+      <div class="bar"><input type="search" id="devq" spellcheck="false" placeholder="Search sound or engine" aria-label="Search device sounds">
+        <select id="deveng" aria-label="Engine"></select>
+        <select id="devkind" aria-label="Sound source"><option value="">All sounds</option><option value="f">Factory</option><option value="u">User slots</option></select>
+        <span class="dim" id="devcount"></span></div>
       <div class="list" id="device-preset-list" style="margin-top:8px"></div>
     </div>
     <div class="libcols" id="libsec">
@@ -1197,6 +1202,7 @@ function upName(s) { return String(s ?? "").replace(/[^\x20-\x7E]/g, "").trim().
 const req = {
   prophetGet: track => [CMD.PROPHET,[0,track]],
   prophetPut: (track,raw) => [CMD.PROPHET,[1,track,...P5.sysex(raw).slice(1,-1)]],
+  prophetField: (track,id,v) => [CMD.PROPHET,[2,track,id,v]],
   prophetEdit: (track,id,value) => [CMD.PROPHET,[2,track,id,value]],
   native: (engine,op,index,...args) => [CMD.NATIVE,[engine,op,index,...args]],
   czBank: bank => [CMD.CZ_BANK,[bank]],
@@ -4175,6 +4181,7 @@ async function load(d) {
     const rqd = (r, o) => sessionRequest(d, r, o);
     d.watch = await startWatch(rqd);
     d.v4 = d.watch === 3;                           /* TRACK_PARAM / TRACK_CHANGED */
+    if (d.mix) renderMixer();                       /* (v4: every strip's octave, not only the selected one's) */
     if (d.watch) {
       sayK("readingBank");
       try { d.bank = await bank.list((r, o) => sessionRequest(d, r, { ...o, quiet: true }),d.info); }
@@ -4428,6 +4435,35 @@ function addSoundHelpers(){
  if(engine===22)filters.append(el('button',{onclick:()=>{showTab('native');}},'Open HYBRID dual filters'));
  $('groups').append(filters);
 }
+/* the engines with envelopes of their own (engine_t.ownenv): the track's ADSR does nothing there. As the device's ENV
+   page (ui.c native_titles), ENV edits the engine's own: PROPHET its filter and amp envelopes, live (95 op 2) */
+const OWN_ENV = ["PROPHET", "FM6", "CZ-1"];
+function nativeEnvGroup() {
+  const n = engName(), div = el("div", { class: "group" }, el("h2", { ic: HEAD_IC.ENV, text: "ENV" }));
+  if (n !== "PROPHET") {
+    div.append(el("p", { class: "dim", text: n === "FM6" ? "FM6 plays its six operator envelopes: edit them on the FM6 page." : "CZ-1 plays its own eight-step envelopes: edit them in CZ-1 native patches." }));
+    return div;
+  }
+  if (!dev.dump.p5) return null;
+  for (const [title, ids] of [["Filter envelope", [43, 45, 47, 49]], ["Amplifier envelope", [44, 46, 48, 50]]]) {
+    div.append(el("h3", { text: title }));
+    for (const id of ids) {
+      const f = P5.FIELDS.find((f) => f.id === id), v = dev.dump.p5[id];
+      const input = el("input", { type: "range", min: f.min, max: f.max, step: 1, value: v, title: f.label }), out = el("span", { class: "v", text: String(v) });
+      input.addEventListener("input", () => { out.textContent = input.value; p5Field(id, +input.value); });
+      div.append(el("div", { class: "row" }, el("span", { text: f.label.split(" ")[1].replace(/^./, (c) => c.toUpperCase()) }), input, out));
+    }
+  }
+  return div;
+}
+/* one Prophet field of the selected track, now (the latest value per field in flight) */
+function p5Field(id, v) {
+  const d = dev;
+  if (!d?.dump?.p5) return;
+  d.dump.p5[id] = v;
+  rq(req.prophetField(d.sel || 0, id, v), { key: "p5:" + id })
+    .then((r) => { if (parse[CMD.PROPHET](r).rc) say("Prophet edit refused"); }).catch(report);
+}
 function buildGroups() {
   ctl.clear();
   for(const id of ['effects-groups','motionfx-groups','chords-groups'])$(id).replaceChildren();
@@ -4438,6 +4474,7 @@ function buildGroups() {
   const { info } = dev;
   if (knownLayout(info)) {
     for (const g of LAYOUT(info.pe0)) {
+      if (g.t === "ENV" && OWN_ENV.includes(engName())) { const n = nativeEnvGroup(); if (n) groups.groups.push(n); continue; }
       if (dev.dump.engine===15 && ["ENV","EDIT"].includes(g.t)) continue;
       const div = el("div", { class: "group" }, el("h2", { ic: HEAD_IC[g.t], text: g.engine ? `EDIT ${info.engines[dev.dump.engine] || ""}` : g.t }));
       if (g.mod != null) {                          /* MOD: slot number, SRC, DST, AMT in one row */
@@ -5240,7 +5277,7 @@ function renderRouting(d,state){
  const on=el('input',{type:'checkbox','aria-label':'Use custom routing'});on.checked=!!draft.enabled;on.onchange=()=>{draft.enabled=on.checked?1:0;touch();};
  box.append(el('label',{class:'midi-route-switch'},on,'Use custom routing'),el('p',{class:'dim'},draft.enabled?'Choose which input and MIDI channel plays each layer and the drummer. Saved on the SynthMaven FM1, so it also applies in USB HOST.':'Off: MIDI follows SYSTEM → ROUT, as before.'));
  const table=el('div',{class:'midi-route-table'});table.hidden=!draft.enabled;box.append(table);
- table.append(el('div',{class:'midi-route-row midi-route-head'},...['Target','Input','Channel','Lowest note','Highest note','Note range'].map(text=>el('span',{},text))));
+ table.append(el('div',{class:'midi-route-row midi-route-head'},...['Target','Input','Channel','Lowest note','Highest note','Note range','Octave'].map(text=>el('span',{},text))));
  ROUTE_TARGETS.forEach((name,i)=>{
   const row=el('div',{class:'midi-route-row'}),isDrumPart=i===live.drumPart&&draft.channel[4];
   const input=el('select',{'aria-label':name+' input'});['Any','USB','TRS'].forEach((text,value)=>input.append(el('option',{value,text})));input.value=draft.input[i];input.onchange=()=>{draft.input[i]=+input.value;touch();};
@@ -5253,6 +5290,7 @@ function renderRouting(d,state){
    const bar=el('span',{class:'midi-route-bar','aria-hidden':'true'}),fill=el('span',{});fill.style.left=`${draft.low[i]/128*100}%`;fill.style.width=`${(draft.high[i]-draft.low[i]+1)/128*100}%`;bar.append(fill);
    row.append(number('low','lowest note'),number('high','highest note'),el('span',{class:'midi-route-range'},bar,`${midiNoteName(draft.low[i])} to ${midiNoteName(draft.high[i])}`));
   }
+  row.append(i<4?octControl(i):el('span'));   /* (live, as on the strips: not part of Save) */
   table.append(row);
  });
  const notices=draft.enabled?routingNotices(draft,draft,live.drumPart):[],blocked=notices.some(n=>n.kind==='conflict');
@@ -5339,14 +5377,16 @@ function renderPerform(){
  const parts=el('div',{class:'perform-parts'});for(let part=0;part<Math.min(d.info.ntrk||1,4);part++)parts.append(el('button',{'aria-pressed':(d.sel||0)===part,onclick:()=>selectTrack(part)},'Part '+(part+1),el('small',{},d.mix?.tracks[part]?trackName(d.mix.tracks[part]):'')));
  // FM6 owns its six operator envelopes; the generic track ADSR is inactive.
  // Expose its native envelope/velocity macros instead of ineffective controls.
- const nativeFM=d.info.engines[d.dump.engine]==='FM6';
+ const nativeFM=d.info.engines[d.dump.engine]==='FM6',p5env=d.info.engines[d.dump.engine]==='PROPHET'&&d.dump.p5;   /* (PROPHET: ENV is its amp envelope) */
  const ids=nativeFM?[[d.info.pe0+4,'Modulator ENV time'],[d.info.pe0+5,'Velocity response'],[9,'LFO rate'],[14,'LFO → brightness']]:[[1,'ENV attack'],[4,'ENV release'],[9,'LFO rate'],[14,'LFO → filter']];
+ if(d.info.engines[d.dump.engine]==='CZ-1')ids.splice(0,2);   /* (its own envelopes: the track ADSR does nothing) */
  for(let i=0;i<4;i++){const id=d.info.pe0+(d.info.engines[d.dump.engine]==='HYBRID'?4:0)+i;ids.push([id,d.pdesc[id]?.label||'Engine control']);}
  const grid=el('div',{class:'perform-knobs'});
  for(const [id,label] of ids){const desc=d.pdesc[id];if(!desc)continue;const value=d.dump.p[id],box=el('div',{class:'perform-control'}),out=el('button',{type:'button',class:'perform-value','aria-label':PERFORM_NAME[label]?PERFORM_NAME[label]+' value: tap to type it':label+' value: tap to type it',onclick:()=>box.classList.toggle('exact-open')},fmtValue(desc,value).filter(Boolean).join(' '));
   const input=el('input',{type:'range',min:desc.min,max:desc.max,step:1,value,'aria-label':label,disabled:desc.min===desc.max});
   input.onpointerdown=()=>{performDragging=true;};
-  input.oninput=()=>{const v=+input.value;out.textContent=fmtValue(desc,v).filter(Boolean).join(' ');userSet(0,id,v,false);};input.onchange=()=>userSet(0,id,+input.value,true);
+  const p5id=p5env&&{1:44,4:50}[id];if(p5id){input.value=d.dump.p5[p5id];out.textContent=input.value;}
+  input.oninput=()=>{const v=+input.value;if(p5id){out.textContent=v;p5Field(p5id,v);return;}out.textContent=fmtValue(desc,v).filter(Boolean).join(' ');userSet(0,id,v,false);};input.onchange=()=>{if(!p5id)userSet(0,id,+input.value,true);};
   box.append(el('span',{},PERFORM_NAME[label]||label),out,rotaryControl(input),rotaryExact(input,label));grid.append(box);
  }
  controls.replaceChildren(parts,grid);placePerformPanels();
@@ -5429,12 +5469,9 @@ function buildStrip(i) {
     mute: el("button", { type: "button", class: "tog", ic: "control_speaker_mute", onclick: () => setMute(i, !dev.mix.tracks[i].mute) }, t("mute")),
     panOut: el("span", { class: "v" }),
     selb: el("button", { type: "button", class: "selb", onclick: () => selectTrack(i) }),
-    octDn: el("button", { type: "button", "aria-label": `Octave down ${i + 1}`, onclick: () => setOct(i, -1) }, "Oct \u2212"),
-    octUp: el("button", { type: "button", "aria-label": `Octave up ${i + 1}`, onclick: () => setOct(i, 1) }, "Oct +"),
-    octOut: el("span", { class: "v" }),
   };
   c.strip = el("div", { class: "strip", role: "group", "aria-label": `${t("track")} ${i + 1}` },
-    el("div", { class: "bar" }, c.octDn, c.octOut, c.octUp), c.num, c.snd, el("span", { class: "v dim" }, t("pan")), rotaryControl(pan), c.panOut,
+    octControl(i), c.num, c.snd, el("span", { class: "v dim" }, t("pan")), rotaryControl(pan), c.panOut,
     fader, c.lvOut, c.mute, c.rec, c.selb,
     el('button',{onclick:()=>{selectTrack(i);showTab('sound');}},'Edit sound'));
   mixCtl[i] = c;
@@ -5465,10 +5502,24 @@ function updateStrip(i) {
   c.rec.classList.toggle("on", !!x.armed);
   c.selb.disabled = sel;
   c.selb.textContent = t(sel ? "selectedTrack" : "selectTrack");
-  const o = x.trn == null ? null : Math.trunc(x.trn / 12), d = dev.pdesc[pTrn()];   /* the layer's own octave: TRN in octaves */
-  c.octOut.textContent = o == null || midiOnly ? "--" : `Oct ${o > 0 ? "+" : ""}${o}`;
-  c.octDn.disabled = midiOnly || o == null || !octOk(i) || x.trn - 12 < d.min;
-  c.octUp.disabled = midiOnly || o == null || !octOk(i) || x.trn + 12 > d.max;
+  for (const o of document.querySelectorAll(`.oct[data-part="${i}"]`)) paintOct(o, i);
+}
+/* a layer's octave, ‹ Oct n ›: the same control on every layer screen (the strips, MIDI routing) */
+function octControl(i) {
+  const c = el("div", { class: "oct", "data-part": i },
+    el("button", { type: "button", "aria-label": `Octave down ${i + 1}`, onclick: () => setOct(i, -1) }, "\u2039"),
+    el("span", { class: "v" }),
+    el("button", { type: "button", "aria-label": `Octave up ${i + 1}`, onclick: () => setOct(i, 1) }, "\u203A"));
+  paintOct(c, i);
+  return c;
+}
+function paintOct(c, i) {
+  const x = dev && dev.mix && dev.mix.tracks[i], [dn, out, up] = c.children;
+  const midiOnly = !x || dev.info.engines[x.engine] === "MIDI Track";
+  const o = !x || x.trn == null ? null : Math.trunc(x.trn / 12), d = dev && dev.pdesc[pTrn()];   /* the layer's own octave: TRN in octaves */
+  out.textContent = o == null || midiOnly ? "--" : `Oct ${o > 0 ? "+" : ""}${o}`;
+  dn.disabled = midiOnly || o == null || !octOk(i) || x.trn - 12 < d.min;
+  up.disabled = midiOnly || o == null || !octOk(i) || x.trn + 12 > d.max;
 }
 window.addEventListener("pointerup", () => { mixDrag = null; });
 window.addEventListener("pointercancel", () => { mixDrag = null; });
@@ -5777,7 +5828,14 @@ function renderPreferences(force = false) {
   filter.setAttribute("aria-label", t("deviceList"));
   filter.replaceChildren(el("option", { value: 0, text: t("deviceAll") }), el("option", { value: 1, text: t("deviceFavorites") }));
   filter.value = p.state.filter;
-  const rows = devicePresetRows(d.info, d.names, p);
+  /* as the Library: search, engine, factory or user */
+  const engOf = (row) => row.user ? (d.info.shared ? d.info.engines[row.actualEngine] : t("bank")) : d.info.engines[row.engine];
+  const all = devicePresetRows(d.info, d.names, p), engs = [...new Set(all.map(engOf))];
+  fillSelect($("deveng"), [["", t("allEngines")], ...engineOrder(engs).map((i) => [engs[i], engs[i]])]);
+  const q = $("devq").value.trim().toLowerCase(), fe = $("deveng").value, kind = $("devkind").value;
+  const rows = all.filter((row) => (!fe || engOf(row) === fe) && (!kind || (kind === "u") === !!row.user) &&
+    (!q || (row.name + " " + engOf(row)).toLowerCase().includes(q)));
+  $("devcount").textContent = `${rows.length} / ${all.length}`;
   const table = el("table");
   table.append(el("colgroup", {}, el("col", { style: "width:40px" }), el("col"), el("col", { style: "width:110px" })));
   for (const row of rows) {
@@ -5786,10 +5844,12 @@ function renderPreferences(force = false) {
     star.addEventListener("click", () => changeFavorite(row));
     const load = el("button", { text: name });
     load.addEventListener("click", () => { if (!dev || busy) return; row.user ? bankLoad(row.preset,row.nativeEngine||0) : choosePreset(row.engine, row.preset); });
-    table.append(el("tr", {}, el("td", {}, star), el("td", {}, load), el("td", { text: row.user ? (d.info.shared?d.info.engines[row.actualEngine]:t("bank")) : d.info.engines[row.engine] })));
+    table.append(el("tr", {}, el("td", {}, star), el("td", {}, load), el("td", { text: engOf(row) })));
   }
-  $("device-preset-list").replaceChildren(rows.length ? table : el("p", { class: "dim", text: t("deviceEmpty") }));
+  $("device-preset-list").replaceChildren(rows.length ? table : el("p", { class: "dim", text: t(all.length ? "noMatch" : "deviceEmpty") }));
 }
+$("devq").addEventListener("input", () => renderPreferences(true));
+["deveng", "devkind"].forEach((id) => $(id).addEventListener("change", () => renderPreferences(true)));
 $("device-filter").addEventListener("change", () => changePreference(3, +$("device-filter").value));
 setInterval(() => {
   if (!dev || !dev.preferences || busy || document.hidden || !["settings", "library"].includes(tab)) return;

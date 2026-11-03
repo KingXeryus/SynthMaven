@@ -1,10 +1,10 @@
 {
-  "version": "4.1.1",
-  "product": "FM-1_94011",
+  "version": "4.1.2",
+  "product": "FM-1_94012",
   "pkg": {
-    "dual": "../../firmware/melodee-4.1.1.fwsc"
+    "dual": "../../firmware/melodee-4.1.2.fwsc"
   },
   "sha256": {
-    "dual": "0153eaab5196e59a82c34e2ac3b91713037caa2fac6c26115b53d3d198ed6e7b"
+    "dual": "8e521259fbf5a9d06d19a50e2b16167aeb94c7b92025a272911cc3cceabfbbcc"
   }
 }
