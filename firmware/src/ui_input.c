@@ -47,6 +47,15 @@ static uint32_t cur_fam(void)                       /* (an engine's own envelope
 static int layer_set_open(void);                       /* (ui_layer.c) */
 static int8_t *octave_control(void)
 { return TSEL->p[P_QUANT] == Q_MPC ? &TSEL->mpc_octave : &song.octave; }
+/* an OCT- / OCT+ tap (d -1 / +1; 0: both together, back to 0) on v; layered: the selected layer's own octave, its TRN
+ * (midi_control.c), keeping its semitones */
+static void octave_step(int8_t *v, int d)
+{
+    int16_t *t = &TSEL->p[P_TRANS];
+    if (!layer_octave_on(TSEL)) { *v = (int8_t)(d ? clamp(*v + d, -3, 3) : 0); return; }
+    int32_t n = d ? *t + 12 * d : *t % 12;
+    if (n >= -24 && n <= 24) *t = (int16_t)n;
+}
 /* OCT- / OCT+ shift the octave on Stage (HOME) only; everywhere else, and over Stage's menu, dialogs and popups,
  * they are Esc / Enter (docs/design/README.md, Navigation) */
 static int oct_nav(void)
@@ -73,7 +82,7 @@ static uint32_t oct_leds(void)
         return 1u | (blink && (ui.confirm || (ui.menu ? ui.menu == 1u : act_ready())) ? 2u : 0u);
     if (oct_nav())
         return 1u | (oct_enter_ok() ? 2u : 0u);
-    int32_t octave = input_octave(TSEL);
+    int32_t octave = input_octave_shown(TSEL);
     return (octave < 0 ? 1u : 0u) | (octave > 0 ? 2u : 0u);
 }
 
@@ -2138,9 +2147,9 @@ static void ui_input(void)
         if(oct_eat&1u)sm_octdn=BT_NONE;if(oct_eat&2u)octup=BT_NONE;
         if(pressed&sm_octmask){oct_deferred_value=octave_control();oct_deferred=1;}
         pressed&=~sm_octmask;
-        if((fm1_in.buttons&sm_octmask)==sm_octmask){sm_octdn_t0|=2u;ui.oct_t0|=2u;*octave_control()=0;sm_octdn=octup=BT_NONE;}
+        if((fm1_in.buttons&sm_octmask)==sm_octmask){sm_octdn_t0|=2u;ui.oct_t0|=2u;octave_step(octave_control(), 0);sm_octdn=octup=BT_NONE;}
         if(sm_octdn==BT_HOLD||octup==BT_HOLD){if(sm_program_step(octup==BT_HOLD?1:-1))ui_message("STOP PLAYBACK");ui.force=1;}
-        else if(sm_octdn==BT_TAP||octup==BT_TAP){int8_t *v=oct_deferred_value?oct_deferred_value:octave_control();int n=*v+(octup==BT_TAP?1:-1);*v=(int8_t)clamp(n,-3,3);}
+        else if(sm_octdn==BT_TAP||octup==BT_TAP)octave_step(oct_deferred_value?oct_deferred_value:octave_control(),octup==BT_TAP?1:-1);
         octup=BT_NONE;
     }   /* held: the page's sheet */
     uint32_t oct;
@@ -2149,7 +2158,7 @@ static void ui_input(void)
         oct_deferred = 0;
         if(bulk_context())ui.bulk_hold=1;else page_sheet_open();
     } else if (octup == BT_TAP && oct_deferred) {
-        *oct_deferred_value += *oct_deferred_value < 3 ? 1 : 0;
+        octave_step(oct_deferred_value, 1);
     }
     if (octup != BT_NONE || !((fm1_in.buttons >> panel.btn[B_OCTUP]) & 1u))
         oct_deferred = 0;
@@ -2449,15 +2458,14 @@ static void ui_input(void)
             if (oct_nav())                              /* off Stage: Esc / Enter, on release (below) */
                 break;
             if ((fm1_in.buttons & both) == both) {
-                *octave_control() = 0;
+                octave_step(octave_control(), 0);
                 ui.oct_t0 |= 2u;                        /* (OCT+ then neither a tap nor a sheet) */
                 oct_deferred = 0;
             } else if (b == B_OCTUP && page_sheet() == 1u) {
                 oct_deferred = 1;                       /* Stage: OCT+ on release, held: the sound's sheet */
                 oct_deferred_value = octave_control();  /* keep the bank where the press began */
             } else {
-                int8_t *value = octave_control();
-                *value += b == B_OCTDN ? (*value > -3 ? -1 : 0) : (*value < 3 ? 1 : 0);
+                octave_step(octave_control(), b == B_OCTDN ? -1 : 1);
             }
             break;
         }

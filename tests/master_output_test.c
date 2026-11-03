@@ -41,7 +41,7 @@ static int32_t random_state=901;
 static uint32_t random_u(void){return noise32(&random_state);}
 static void setup(uint32_t wet,uint32_t gain,uint32_t target)
 {
-    punch_reset();song.master_q12=4096;
+    punch_reset();song.master_q12=4096;mix_master_q12=4096;   /* (mix_block's MASTER: not layered, no trim) */
     fx_bus_result=(int)wet;fx_bus_mix=(int32_t)gain;fx_bus_target=(int32_t)target;
     lim_env=18000+(int32_t)(random_u()%100000u);
     dc_l=(int32_t)(random_u()%100000u)-50000;dc_r=-dc_l;

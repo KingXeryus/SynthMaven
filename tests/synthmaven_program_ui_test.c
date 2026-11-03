@@ -35,7 +35,8 @@ int main(void){
   for(unsigned n=0;n<220;n++)frame();assert(sm_program_current==(direction?1:7));
   fm1_in.buttons&=~bit;frame();assert(*octave_control()==octave);sm_program_current=0;
  }
- press(B_OCTUP);assert(*octave_control()==octave+1);press(B_OCTDN);assert(*octave_control()==octave);
+ /* (layered, a tap moves the selected layer's own octave: what the header shows) */
+ {int32_t shown=input_octave_shown(TSEL);press(B_OCTUP);assert(input_octave_shown(TSEL)==shown+1);press(B_OCTDN);assert(input_octave_shown(TSEL)==shown);}
  /* KNOB 4: the drummer's volume while it runs, on both HOME screens; stopped, as before */
  ui.menu=0;ui.home=1;sm_drums.enabled=1;
  for(uint32_t pg=0;pg<2;pg++){int16_t bpm=song.g[G_BPM];ui.home_pg=(uint8_t)pg;sm_drums.volume=90;turn(EN_K4,1);assert(sm_drums.volume==91&&song.g[G_BPM]==bpm);frame();}

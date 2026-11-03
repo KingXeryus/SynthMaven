@@ -13,9 +13,14 @@ static uint32_t sm_layer_mask(uint32_t note,uint32_t parts)
 }
 /* Measured on an FM-1 with all four layers (tools/synthmaven_layer_load.py): above 16 points a chord starts more
  * voices than the CPU can finish before overload shedding cuts them, and the audio misses its deadline. Each key
- * starts a voice per layer, so at most this many keys start per dispatch; a big chord rolls over a few milliseconds. */
+ * starts a voice per layer, so at most this many keys start per dispatch; a big chord rolls over a few milliseconds.
+ * (2026-11-03, the same tool: 20 and 24 missed the deadline from three keys on P1; 16 holds up to three.) */
 #define SM_LAYER_BUDGET 16u
 #define SM_LAYER_KEYS_PER_BLOCK 1u
+/* Layered, four sounds sum into the master limiter: at full volume a held chord sat 4-10 dB into it and every new
+ * attack pumped it down further (the chord ducked). A fixed trim of the master while layering keeps the limiter
+ * for peaks; Q12. */
+#define SM_LAYER_TRIM_Q12 2048u                   /* -6 dB */
 #define SM_LAYERS_WIRE 16u
 static int sm_layers_valid(const sm_layers_t *s){if(s->enabled>1)return 0;for(uint32_t i=0;i<4;i++)if(s->low[i]>s->high[i]||s->high[i]>127)return 0;return 1;}
 static void sm_layers_encode(uint8_t *b,const sm_layers_t *s){for(uint32_t i=0;i<16;i++)b[i]=0;b[0]='S';b[1]='M';b[2]='L';b[3]=1;b[4]=s->enabled;for(uint32_t i=0;i<4;i++){b[5+i]=s->low[i];b[9+i]=s->high[i];}}

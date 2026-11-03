@@ -564,6 +564,9 @@ body[data-screen=sequencer] #trackbar{display:none}
   <section class="panel" id="p-sound" data-tab="sound" data-dev hidden>
     <div class="browser" id="browser">
       <label><span data-t="engine"></span><br><select id="engine"></select></label>
+      <div class="bar"><input type="search" id="presetq" spellcheck="false" aria-label="Search sounds">
+        <select id="presetkind" aria-label="Sound source"><option value="">All sounds</option><option value="f">Factory</option><option value="u">User slots</option></select>
+        <span class="dim" id="presetcount"></span></div>
       <label><span data-t="presets"></span><br><select id="preset" size="8"></select></label>
       <div>
         <p class="bar"><button id="init" data-t="initSound"></button>
@@ -2312,6 +2315,7 @@ const mixer = {
     for (let i = 0; i < tr.ntrk; i++) {
       const d = parse[CMD.TRACK_DUMP](await rq(req.trackDump(i)), info);
       tr.tracks[i].pan = ids.pan == null ? null : d.p[ids.pan];
+      tr.tracks[i].trn = ids.trn == null ? null : d.p[ids.trn];
     }
     return tr;
   },
@@ -3848,7 +3852,7 @@ function applyLang() {
   $("lang").textContent = t("other");
   setLabel($("connect"), t(dev ? "disconnect" : "connect"));
   if (lastKey) $("status").textContent = t(lastKey) + lastArg;
-  $("libq").placeholder = t("libSearch");
+  $("libq").placeholder = $("presetq").placeholder = t("libSearch");
   renderLive();
   renderLib();
   renderBank();
@@ -4004,7 +4008,7 @@ const gEng = () => { const i = dev.gdesc.findIndex((d) => d && d.label === "ENG"
 const pSlen = () => { const i = dev.pdesc.findIndex((d) => d && d.fmt === F.STEPS); return i >= 0 ? i : P.SLEN; };
 /* mixer ids by DESC label (core.h: P_PAN 39, P_MUTE 40) */
 const pById = (label, def) => { const i = dev.pdesc.findIndex((d, k) => d && k < dev.info.pe0 && d.label === label); return i >= 0 ? i : def; };
-const pPan = () => pById("PAN", 39), pMute = () => pById("MUTE", 40);
+const pPan = () => pById("PAN", 39), pMute = () => pById("MUTE", 40), pTrn = () => pById("TRN", null);
 
 /* -------------------------------------------------------------- MIDI --- */
 const controllerForwards=new Map();
@@ -4376,12 +4380,26 @@ function updateBrowser() {
   const currentNative=e===19 && !dev.dump.user && dev.dump.p5 && P5.name(dev.dump.p5)!==names[dev.dump.preset] ? P5.name(dev.dump.p5) : null;
   const pool=dev.info.shared?{slots:dev.bank?.slots.filter(x=>x.engine===e)}:dev.nativePools?.[e],sig=JSON.stringify([e,pool,currentNative]);
   if(ps.dataset.engine!==sig){
-    ps.replaceChildren(...names.map((n,i)=>el("option",{value:i,text:n,hidden:aliasOf(names,i)!==i})),...(pool?.slots||[]).filter(x=>x.used).map(x=>el("option",{value:`u:${x.slot}`,text:`${slotName(x.slot,e)} ${x.name}`})));
+    ps.replaceChildren(...names.map((n,i)=>el("option",{value:i,text:n,"data-alias":aliasOf(names,i)!==i})),...(pool?.slots||[]).filter(x=>x.used).map(x=>el("option",{value:`u:${x.slot}`,text:`${slotName(x.slot,e)} ${x.name}`})));
     if(currentNative)ps.append(el("option",{value:"current-native",text:`${currentNative} (current)`,disabled:true}));
     ps.dataset.engine=sig;
   }
   if(document.activeElement!==ps)ps.value=dev.dump.user?`u:${dev.dump.user-1}`:currentNative?"current-native":String(dev.dump.preset);
+  filterPresets();
 }
+/* the Library's search and source filters on the sound browser: hidden options are skipped by the browse arrows */
+function filterPresets() {
+  const q=$("presetq").value.trim().toLowerCase(),kind=$("presetkind").value,opts=[...$("preset").options];
+  let n=0,total=0;
+  for(const o of opts){
+    if(o.disabled||o.hasAttribute("data-alias")){o.hidden=o.hasAttribute("data-alias");continue;}
+    const user=o.value.startsWith("u:");total++;
+    o.hidden=(!!q&&!o.textContent.toLowerCase().includes(q))||(kind==="f"&&user)||(kind==="u"&&!user);
+    n+=!o.hidden;
+  }
+  $("presetcount").textContent=q||kind?`${n} / ${total}`:"";
+}
+$("presetq").addEventListener("input",filterPresets);$("presetkind").addEventListener("change",filterPresets);
 
 function visible(d) { return d && d.max > d.min && !!d.label && d.label !== "-"; }
 /* a matrix destination E1..E8 by the engine's label of that parameter (as the device shows it) */
@@ -5091,7 +5109,7 @@ function trackName(x) {
 async function readMixer(d = dev) {
   assertSession(d);
   if (!d || !hasTracks()) return;
-  const m = await mixer.read((r, o) => sessionRequest(d, r, o), d.info, { pan: pPan() });
+  const m = await mixer.read((r, o) => sessionRequest(d, r, o), d.info, { pan: pPan(), trn: pTrn() });
   if (d !== dev) return;
   if (d.mix) m.tracks.forEach((x, i) => {           /* what the user is moving stays */
     const o = d.mix.tracks[i];
@@ -5114,6 +5132,7 @@ function mixFromDump() {
       x.mute = dev.dump.p[pMute()] ? 1 : 0;
     }
     if (!mixTouched("pan", dev.sel)) x.pan = dev.dump.p[pPan()];
+    if (pTrn() != null) x.trn = dev.dump.p[pTrn()];        /* (the Sound view's TRN, the device's OCT- / OCT+) */
   }
   if (mixCtl.length === m.ntrk) m.tracks.forEach((_, i) => updateStrip(i));
 }
@@ -5410,9 +5429,12 @@ function buildStrip(i) {
     mute: el("button", { type: "button", class: "tog", ic: "control_speaker_mute", onclick: () => setMute(i, !dev.mix.tracks[i].mute) }, t("mute")),
     panOut: el("span", { class: "v" }),
     selb: el("button", { type: "button", class: "selb", onclick: () => selectTrack(i) }),
+    octDn: el("button", { type: "button", "aria-label": `Octave down ${i + 1}`, onclick: () => setOct(i, -1) }, "Oct \u2212"),
+    octUp: el("button", { type: "button", "aria-label": `Octave up ${i + 1}`, onclick: () => setOct(i, 1) }, "Oct +"),
+    octOut: el("span", { class: "v" }),
   };
   c.strip = el("div", { class: "strip", role: "group", "aria-label": `${t("track")} ${i + 1}` },
-    c.num, c.snd, el("span", { class: "v dim" }, t("pan")), rotaryControl(pan), c.panOut,
+    el("div", { class: "bar" }, c.octDn, c.octOut, c.octUp), c.num, c.snd, el("span", { class: "v dim" }, t("pan")), rotaryControl(pan), c.panOut,
     fader, c.lvOut, c.mute, c.rec, c.selb,
     el('button',{onclick:()=>{selectTrack(i);showTab('sound');}},'Edit sound'));
   mixCtl[i] = c;
@@ -5443,10 +5465,30 @@ function updateStrip(i) {
   c.rec.classList.toggle("on", !!x.armed);
   c.selb.disabled = sel;
   c.selb.textContent = t(sel ? "selectedTrack" : "selectTrack");
+  const o = x.trn == null ? null : Math.trunc(x.trn / 12), d = dev.pdesc[pTrn()];   /* the layer's own octave: TRN in octaves */
+  c.octOut.textContent = o == null || midiOnly ? "--" : `Oct ${o > 0 ? "+" : ""}${o}`;
+  c.octDn.disabled = midiOnly || o == null || !octOk(i) || x.trn - 12 < d.min;
+  c.octUp.disabled = midiOnly || o == null || !octOk(i) || x.trn + 12 > d.max;
 }
 window.addEventListener("pointerup", () => { mixDrag = null; });
 window.addEventListener("pointercancel", () => { mixDrag = null; });
 
+/* a layer's octave (OCT- / OCT+ on the device's Stage while layered): its TRN a whole octave down / up; the selected
+   track as any Sound parameter, another with TRACK_PARAM (v4 firmware) */
+const octOk = (i) => !!dev && (i === dev.sel || dev.v4);
+async function setOct(i, dir) {
+  const d = dev, x = d && d.mix && d.mix.tracks[i], id = pTrn();
+  if (!x || x.trn == null || !octOk(i)) return;
+  const v = x.trn + 12 * dir, desc = d.pdesc[id];
+  if (v < desc.min || v > desc.max) return;
+  x.trn = v;
+  updateStrip(i);
+  if (i === d.sel) { userSet(0, id, v, true); return; }
+  try {
+    const r = parse[CMD.TRACK_PARAM](await rq(req.trackParam(i, id, v), { key: "trn:" + i })).value;
+    if (d === dev && d.mix) { d.mix.tracks[i].trn = r; updateStrip(i); }   /* the device's value after clamping */
+  } catch (e) { report(e); }
+}
 /* level and mute: TRACK_MIX, one in flight per track and one queued with the latest values (as SET) */
 function setLevel(i, v) {
   if (!dev || !dev.mix) return;
@@ -6053,19 +6095,22 @@ function libView() {
     created: (a, b) => b.created.localeCompare(a.created),
     modified: (a, b) => b.modified.localeCompare(a.modified),
   }[$("libsort").value] || ((a, b) => b.modified.localeCompare(a.modified));
-  return lib.filter((p) => (!q || p.name.toLowerCase().includes(q) || p.tags.some((x) => x.toLowerCase().includes(q)))
-    && (!fe || p.engineName === fe) && (!ft || p.tags.includes(ft))).sort(by);
+  return lib.filter((p) => (!q || p.name.toLowerCase().includes(q) || (p.tags || []).some((x) => x.toLowerCase().includes(q)))
+    && (!fe || libEngine(p) === fe) && (!ft || (p.tags || []).includes(ft))).sort(by);
 }
 function fillSelect(sel, opts) {
   const v = sel.value;
   sel.replaceChildren(...opts.map(([val, txt]) => el("option", { value: val, text: txt })));
   if (opts.some(([val]) => val === v)) sel.value = v;
 }
+/* the engine a library entry is listed and filtered by (entries stored without a name: by index) */
+const libEngine = (p) => p.engineName || (dev ? dev.info.engines : libMeta.engines || [])[p.engine] || String(p.engine);
 function renderLib() {
-  const all = [...new Set([...(dev ? dev.info.engines : libMeta.engines || []), ...lib.map((p) => p.engineName).filter(Boolean)])];
+  /* only engines the library holds: every device engine made most choices match nothing */
+  const all = [...new Set(lib.map(libEngine))];
   const engs = engineOrder(all).map((i) => all[i]);
   fillSelect($("libeng"), [["", t("allEngines")], ...engs.map((e) => [e, e])]);
-  const tags = [...new Set(lib.flatMap((p) => p.tags))].sort();
+  const tags = [...new Set(lib.flatMap((p) => p.tags || []))].sort();
   fillSelect($("libtag"), [["", t("allTags")], ...tags.map((x) => [x, x])]);
   fillSelect($("libsort"), [["modified", t("sortModified")], ["created", t("sortCreated")], ["name", t("sortName")], ["engine", t("sortEngine")]]);
   const v = libView();
@@ -6078,8 +6123,8 @@ function renderLib() {
     for (const p of v) {
       const tr = el("tr", { "data-id": p.id, class: p.id === libSel ? "sel" : null, draggable: "true", title: p.name },
         el("td", {}, p.pattern || p.grid ? icon("note_eight") : "", p.name),
-        el("td", { text: p.engineName || String(p.engine) }),
-        el("td", { text: p.tags.join(", ") }),
+        el("td", { text: libEngine(p) }),
+        el("td", { text: (p.tags || []).join(", ") }),
         el("td", { text: new Date(p.modified).toLocaleDateString(lang) }));
       tr.addEventListener("click", () => { libSel = p.id; renderLib(); });
       tr.addEventListener("dblclick", () => libAudition(p.id));

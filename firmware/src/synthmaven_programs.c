@@ -139,7 +139,7 @@ static int sm_config_valid(const uint8_t *b)
 _Static_assert(SM_PROGRAM_BANK<=ST_BANK_BASE_MAX+ST_BANK_EXT_MAX,"eight programs fit existing atomic project extents");
 static int sm_program_bank(uint32_t bank,st_hdr_t *h,uint8_t *header)
 {
-    if(bank>=4)return -1;int copy=st_current(OBJ_BANK0+bank,h);if(copy<0)return -1;
+    if(bank>=4)return -1;int copy=st_current(OBJ_BANK0+bank,h);if(copy<0||!h->len)return -1;   /* (a restored empty bank: none) */
     if(h->len!=SM_PROGRAM_BANK||st_read_range(OBJ_BANK0+bank,(uint32_t)copy,0,header,16))return -2;
     if(memcmp(header,"SMP5",4)||header[4]!=2||header[5]>3)return -2;
     for(uint32_t i=6;i<16;i++)if(header[i])return -2;

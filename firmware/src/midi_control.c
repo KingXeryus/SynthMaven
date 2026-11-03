@@ -156,11 +156,17 @@ static int midi_play(track_t *t, uint32_t ch, uint32_t note, uint32_t vel, uint3
 }
 
 static uint32_t sm_chord_free(void){uint32_t n=0;for(uint32_t i=0;i<MCHORD_N;i++)n+=!mchord[i].id;return n;}
+/* Layered, each layer's own octave is its TRN in whole octaves (OCT- / OCT+ on Stage, the editor's layer cards):
+ * kb_map and midi_map already add it per layer. MPC banks keep their own octave. */
+static int layer_octave_on(const track_t *t)
+{ return sm_layers.enabled && t->p[P_QUANT] != Q_MPC; }
+static int32_t input_octave_shown(const track_t *t)      /* the header pill and the OCT LEDs */
+{ return layer_octave_on(t) ? song.octave + t->p[P_TRANS] / 12 : input_octave(t); }
 static int sm_layer_key_on(uint32_t k)
 {
     uint32_t mask;
-    /* kb_map owns octave/transpose; use its selected-part chromatic reference for the split. */
-    int32_t raw=53+(int32_t)k+input_octave(TSEL)*12+TSEL->p[P_TRANS];
+    /* The split is on the key played (with the shared octave), not on any layer's own octave. */
+    int32_t raw=53+(int32_t)k+input_octave(TSEL)*12;
     mask=raw<0||raw>127?0:sm_layer_mask((uint32_t)raw,trk_n());
     uint32_t count=0;for(uint32_t tr=0;tr<4;tr++)count+=(mask>>tr)&1u;
     if(!count || sm_chord_free()<count)return 0;

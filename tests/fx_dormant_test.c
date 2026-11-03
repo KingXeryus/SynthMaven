@@ -123,7 +123,8 @@ static void trace(int audio_only)
                 digest(&resource[RES_FX0+si].size,sizeof resource[RES_FX0+si].size);
                 if(resource[RES_FX0+si].size)digest(resource[RES_FX0+si].ptr,resource[RES_FX0+si].size);
             }
-            if(mode){memset(mix_l,0,sizeof mix_l);memset(mix_r,0,sizeof mix_r);master_samples(out,CTL);digest(out,sizeof out);}
+            if(mode){memset(mix_l,0,sizeof mix_l);memset(mix_r,0,sizeof mix_r);mix_master_q12=(int32_t)song.master_q12;   /* (mix_block's, not layered) */
+                master_samples(out,CTL);digest(out,sizeof out);}
             if(block==1100u)fx_clear_all();
         }
     }

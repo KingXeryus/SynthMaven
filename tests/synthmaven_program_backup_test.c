@@ -12,6 +12,8 @@ int main(void){
  assert(st_crc32(archive,sizeof archive)==crc);
  assert(!put_all(3,archive,sizeof archive,crc));assert(!sm_program_load(2));assert(trk[0].p[P_LEVEL]==71);assert(!sm_program_load(3));assert(trk[0].p[P_LEVEL]==82);assert(!sm_scene_load(1));assert(trk[0].p[P_LEVEL]==71);
  uint8_t old=archive[4];archive[4]=99;assert(put_all(3,archive,sizeof archive,st_crc32(archive,sizeof archive))==2);archive[4]=old;assert(!sm_program_load(3)&&trk[0].p[P_LEVEL]==82);
+ /* A backup's empty bank restores as an empty object: its programs are the factory ones, not damaged (rc 3). */
+ assert(!put_all(5,archive,0,0));assert(!sm_program_load(6)&&!sm_program_load(7));
  /* Runtime restore stages into the inactive copy without replacing saved programs. */
  static uint8_t runtime[BANK_STORE_SIZE];
  proj_cur=0;

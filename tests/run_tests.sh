@@ -174,6 +174,7 @@ web_tests() {                                     # the editor mock's tables mus
         step "Song timeline sections and playback protection" node web/test_song_arranger.mjs
         step "Learn-first MIDI assignment grid" node web/test_midi_learn_ui.mjs
         step "Layer and drummer MIDI routing screen" node web/test_midi_routing_ui.mjs
+        step "Library and sound browser filters" node web/test_library_filters.mjs
         step "HYBRID editor and Vital import" node web/test_hybrid_import.mjs
         step "SynthMaven controller input routing" node web/test_controller_route.mjs
         step "installer UI: release selection, fetch races, cache and write lock" node web/test_installer.mjs
@@ -411,6 +412,8 @@ if core && [ $TABLES = 1 ]; then
     t "SynthMaven MIDI learn and persistent mappings" synthmaven_mapping_test -O1 $FW -- "$OUT/synthmaven_mapping_test"
     t "SynthMaven compact program backup recovery" synthmaven_program_backup_test -O1 $FW -- "$OUT/synthmaven_program_backup_test"
     t "SynthMaven delayed button shortcuts" synthmaven_shortcuts_test -O1 $FW -- "$OUT/synthmaven_shortcuts_test"
+    t "SynthMaven per-layer octave on OCT- / OCT+" synthmaven_layer_octave_test -O1 $FW -- "$OUT/synthmaven_layer_octave_test"
+    t "SynthMaven layered chords do not duck in the limiter" synthmaven_layer_duck_test -O1 $FW -- "$OUT/synthmaven_layer_duck_test"
     t "Independent drum USB control" synthmaven_drum_editor_test -O1 $FW -- "$OUT/synthmaven_drum_editor_test"
     t "Loudness compensation: factory sounds and programs at the DX7 program's loudness" loudness_measure -O1 $FW -Itests -- "$OUT/loudness_measure" check
     t "Independent drum machine: timing, bounds and four-part isolation" synthmaven_drums_test -O1 $FW -- "$OUT/synthmaven_drums_test"

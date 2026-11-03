@@ -1168,6 +1168,12 @@ async function editorMixer() {
   const d0 = E.parse[C.DUMP](await rq(E.req.dump()), info);
   ok(p2 === -40 && p0 === 63 && m2.sel === 0 && m2.tracks[2].pan === -40 && m2.tracks[0].pan === 63 && d0.p[PAN] === 63 && m2.tracks[1].pan === -24
     && ev.pushes.length === pushes, "mixer: pan of any track via SET (other track selected for a moment, then back; no push)");
+  /* a layer's own octave (the layer cards' Oct - / Oct +): TRN of any track, read back with the strips */
+  const TRN = 28;
+  const t2 = E.parse[C.TRACK_PARAM](await rq(E.req.trackParam(2, TRN, -24))).value;
+  const mt = await E.mixer.read(rq, info, { pan: PAN, trn: TRN });
+  ok(t2 === -24 && mt.tracks[2].trn === -24 && mt.tracks[1].trn === 0 && mt.sel === 0,
+    "mixer: a layer's octave is its TRN, written to any track (TRACK_PARAM) and read with the strips");
   /* the device's TRACKS page: level of the selected track pushes CHANGED; REC arm shows in TRACK */
   m.sim.level(33);
   m.sim.arm(1);
