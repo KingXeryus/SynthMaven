@@ -49,6 +49,8 @@
  X(RAST_DESC, "RAST DESCENDING", 9) \
  X(BAYATI_RAST, "BAYATI UPPER RAST", 5) \
  X(HIJAZ_RAST, "HIJAZ UPPER RAST", 14)
+/* In each 12-bit mask, bit 0 (the rightmost/low bit) is the tonic; bit n
+ * represents the chromatic key n semitones above it. */
 static const uint16_t MAQAM_MASKS[][3] = { /* down 50, up 50, down 25 cents */
     {0b100000010000,0b000000000000,0b000000000000},
     {0b000000000100,0b000000000000,0b000000000000},
