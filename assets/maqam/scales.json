@@ -163,21 +163,21 @@
       1150
     ],
     "offsets": [
-      0,
-      0,
-      -50,
-      0,
-      -50,
       -50,
       0,
       0,
-      -50,
-      -50,
       0,
-      50
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
     ],
     "profile": 3,
-    "note": "Tonic normalized from a half-flat reference; descending outline"
+    "note": "descending outline"
   },
   {
     "id": "BASTANIKAR",
@@ -194,18 +194,18 @@
       1150
     ],
     "offsets": [
+      -50,
+      0,
+      0,
       0,
       0,
       -50,
       0,
-      -50,
       0,
       0,
-      -50,
-      -50,
       0,
-      50,
-      50
+      0,
+      0
     ],
     "profile": 4,
     "note": "First octave only; upper ajnas extend beyond the octave"
@@ -434,21 +434,21 @@
       1050
     ],
     "offsets": [
-      0,
-      0,
-      -50,
-      0,
-      -50,
       -50,
       0,
       0,
-      -50,
-      -50,
       0,
-      -50
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
     ],
-    "profile": 6,
-    "note": "Tonic normalized from a half-flat reference"
+    "profile": 3,
+    "note": ""
   },
   {
     "id": "IRAQ",
@@ -464,21 +464,21 @@
       1050
     ],
     "offsets": [
+      -50,
+      0,
+      0,
       0,
       0,
       -50,
       0,
-      -50,
       0,
       0,
-      -50,
       0,
-      -50,
       0,
-      -50
+      0,
     ],
     "profile": 7,
-    "note": "Tonic normalized from a half-flat reference"
+    "note": ""
   },
   {
     "id": "JIHARKAH",
@@ -674,21 +674,21 @@
       1050
     ],
     "offsets": [
-      0,
-      0,
-      0,
-      -50,
       -50,
       0,
-      -50,
-      -50,
       0,
-      -50,
       0,
-      -50
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
     ],
-    "profile": 10,
-    "note": "Tonic normalized from a half-flat reference"
+    "profile": 3,
+    "note": ""
   },
   {
     "id": "NAHAWAND",
@@ -1064,18 +1064,18 @@
       1050
     ],
     "offsets": [
+      -50,
+      0,
+      0,
+      0,
+      0,
       0,
       0,
       -50,
       0,
-      -50,
-      0,
-      -50,
       0,
       0,
-      -50,
-      0,
-      -50
+      0
     ],
     "profile": 12,
     "note": "Tonic normalized from a half-flat reference"
