@@ -14,10 +14,10 @@ typedef struct {
     uint16_t mask;
 } sm_tuning_t;
 static sm_tuning_t sm_tuning = {.apply=15,.mask=0xfff};
-#define SM_MAQAM_PROFILE(id,name,profile) profile,
+#define SM_MAQAM_PROFILE(id,name,profile,note_mask) profile,
 static const uint8_t SM_MAQAM_PROFILES[]={MAQAM_EXISTING(SM_MAQAM_PROFILE) MAQAM_ADDED(SM_MAQAM_PROFILE)};
 #undef SM_MAQAM_PROFILE
-#define SM_MAQAM_NAME(id,name,profile) "A/" name,
+#define SM_MAQAM_NAME(id,name,profile,note_mask) "A/" name,
 static const char *const SM_TUNE_NAMES[]={"W/Chromatic",MAQAM_EXISTING(SM_MAQAM_NAME) MAQAM_ADDED(SM_MAQAM_NAME) "Custom/User","W/Major","W/Natural minor","W/Harmonic minor","W/Melodic minor","W/Dorian","W/Phrygian","W/Lydian","W/Mixolydian","W/Locrian","W/Major pentatonic","W/Minor pentatonic","W/Blues","W/Whole tone","W/Diminished"};
 #undef SM_MAQAM_NAME
 static int sm_tuning_valid(const sm_tuning_t *t)
