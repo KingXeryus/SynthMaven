@@ -52,3 +52,5 @@ Based on [Melodee](https://github.com/keremimo/melodee), by Kerem Kilic (Ellic S
 Version 4 retains DX7/FM6, HYBRID/Vital translations, ANALOG, DIGITAL, VOICE, STRINGS, JUNO, ACID, VPS and WSEQ alongside the Melodee native engines. ACID/VPS/WSEQ add 42 presets. FMX, VECTOR, TERRAIN, WAVE and MACRO are excluded. WSEQ retains its sequences and crossfades with compact oscillator waveforms; it is not a bit-identical port of the older FMX-table oscillator. Four layers and independent drums remain available. The startup icon is losslessly packed without reducing resolution.
 
 The shared editors include named custom-scale saving, compatible Scala import/export, modulation templates, engine-aware filter controls, two-card sound editing and paged Effects/LFO/ARP controls. Output compensation and Bluetooth are excluded. See the illustrated guide for direct USB host and powered-hub wiring, and the separate computer/iPad-hosted editing setup.
+
+You can also try Synthmaven in the browser, no flashing needed, in the free community [FM-1 Emulator](https://fm1-emulator.atst.tools/).
