@@ -248,4 +248,47 @@ export class Updater {
     }
     return true;
   }
+
+  // "Replace programs and sounds" (chosen before installing): with the new firmware running, erase every used
+  // slot of the shared user library (editor command 80: op 0 list, op 5 erase; all engines, 384 slots).
+  // Projects, scales, MIDI mappings and settings stay. -> the number of slots erased
+  async clearLibrary(onStep) {
+    const step = onStep || (() => {});
+    const dev = await this.waitFor((id) => !IS_OTA(id), 40000);
+    if (!dev) throw fail("notfound", "FM-1 not found after the install: erase sounds in the editor instead");
+    const ask = async (args, ms = 8000) => {          // F0 7D 46 4C 80 args F7 -> the reply's args (op, slot lo, hi, rc, ...)
+      dev.link.drain();
+      if (!dev.link.send([0xF0, 0x7D, 0x46, 0x4C, 80, ...args, 0xF7])) throw fail("lost", "The FM-1 was disconnected while erasing sounds.");
+      const end = Date.now() + ms;
+      while (Date.now() < end) {
+        const p = await dev.link.read(end - Date.now());
+        if (p && p[1] === 0x7D && p[2] === 0x46 && p[3] === 0x4C && p[4] === 80 && p[5] === args[0] && p[6] === args[1] && p[7] === args[2]) return p.slice(5, -1);
+      }
+      throw fail("stopped", "The FM-1 did not answer while erasing sounds.");
+    };
+    let erased = 0;
+    try {
+      step("clear");
+      for (let s = 0, total = 1; s < total;) {
+        const r = await ask([0, s & 0x7F, s >> 7, 16]);   // list: rc, count, total lo/hi, per slot used engine old name\0
+        if (r[3]) throw fail("stopped", `The FM-1 could not list its sounds (code ${r[3]}).`);
+        const n = r[4], keep = [];
+        total = r[5] | (r[6] << 7);
+        for (let k = 0, i = 7; k < n; k++) {
+          if (r[i] || r[i + 2]) keep.push(s + k);        // used, or an older-format record
+          i += 3;
+          while (i < r.length && r[i++] !== 0);
+        }
+        for (const k of keep) {
+          const e = await ask([5, k & 0x7F, k >> 7]);
+          if (e[3]) throw fail("stopped", `Sound U${k + 1} could not be erased (code ${e[3]}). Stop playback and try again in the editor.`);
+          erased++;
+        }
+        if (!n) break;
+        s += n;
+      }
+    } finally { dev.link.close(); }
+    step("cleared", erased);
+    return erased;
+  }
 }

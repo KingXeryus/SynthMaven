@@ -74,6 +74,12 @@ const TEXT = {
     pfboot: "m-bootloader is written last, after one more restart. Keep the power on until the page says Done.",
     pfbootonly: "Writing the boot area takes a few seconds. Keep the power on until the page says Done.",
     pfok: "I've backed up my sounds, or have nothing to keep.", cancel: "Cancel", start: "Start installation",
+    pfprog: "Your programs and sounds",
+    pfkeep: "Keep them (updating from SynthMaven 3.5 or later; an FM-1 with older firmware always starts clean)",
+    pfreplace: "Replace them: after installing, erase every USER sound and program so this version's factory sounds show. Projects, scales and settings stay.",
+    stClear: "Erasing your USER sounds",
+    tipCleared: "{n} USER sounds erased: this version's factory sounds are ready.",
+    tipClearFail: "The firmware is installed, but your USER sounds were not all erased ({m}). Erase them in the editor's library.",
     runwarn: "Keep this tab open and in front. Don't unplug the FM-1.",
     runInstall: "Installing SynthMaven {v}", runResume: "Finishing the installation", runBoot: "Installing m-bootloader",
     runStock: "Installing M-VAVE's firmware",
@@ -181,6 +187,12 @@ const TEXT = {
     pfboot: "m-bootloader は最後に、もう一度再起動してから書き込みます。「完了」と表示されるまで電源を切らないでください。",
     pfbootonly: "ブート領域の書き込みは数秒で終わります。「完了」と表示されるまで電源を切らないでください。",
     pfok: "サウンドをバックアップした（または残したいものはない）", cancel: "キャンセル", start: "インストールを開始",
+    pfprog: "プログラムとサウンド",
+    pfkeep: "残す（SynthMaven 3.5 以降からの更新。それより古いファームウェアの FM-1 は常に初期状態から始まります）",
+    pfreplace: "置き換える：インストール後、USER サウンドとプログラムをすべて消去し、このバージョンの工場出荷時サウンドにします。プロジェクト、スケール、設定は残ります。",
+    stClear: "USER サウンドを消去しています",
+    tipCleared: "{n} 個の USER サウンドを消去しました。このバージョンの工場出荷時サウンドが使えます。",
+    tipClearFail: "ファームウェアはインストールされましたが、USER サウンドを一部消去できませんでした（{m}）。エディターのライブラリで消去してください。",
     runwarn: "このタブを開いたまま前面に。FM-1 のケーブルを抜かないでください。",
     runInstall: "SynthMaven {v} をインストール中", runResume: "インストールを完了しています", runBoot: "m-bootloader をインストール中",
     runStock: "M-VAVE のファームウェアをインストール中",
@@ -338,7 +350,7 @@ async function demoAccess() {
     // fakeAccess is bundled for the exact same Saadet demo.
     const p = st.meta.product;
     const opts = {
-      stock: { identity: "FM-1_016" }, melodee: { identity: "FM-1_9000900" }, current: { identity: p },
+      stock: { identity: "FM-1_016" }, melodee: { identity: "FM-1_9000900", library: [0, 3, 17] }, current: { identity: p, library: [0, 3, 17] },
       update: { identity: "FM-1_016", state: "loader" }, interrupt: { identity: "FM-1_016", interruptAt: 0.45 },
       open: { identity: "FM1_OFFICIAL_OPEN" },
     }[DEMO] || { identity: "FM-1_016" };
@@ -458,6 +470,8 @@ function preflight(plan) {
   $("pfboot").lastElementChild.textContent = t(plan.firmware ? "pfboot" : "pfbootonly");
   const askBackup = plan.firmware && !plan.resume;   /* in update mode there is no firmware running to back up */
   $("pfcheck").hidden = !askBackup;
+  $("pfprog").hidden = !plan.firmware || !!plan.stock;   /* the official firmware has no SynthMaven sounds to keep */
+  d.querySelector('input[name="pfprog"][value="keep"]').checked = true;
   $("pfok").checked = false;
   $("pfgo").disabled = askBackup;
   d.showModal();
@@ -557,6 +571,7 @@ function stepper(pm) {
     else if (k === "done" && r.plan.boot) setStep("stBootWait", "boot");
     else if (k === "bootstart") { setStep("stBoot", "boot"); setPct(share ? 96 : 30); }
     else if (k === "bootwrite") { setStep("stBoot", "boot"); setPct(share ? 98 : 70); }
+    else if (k === "clear") setStep("stClear", "restart");
   };
 }
 
@@ -618,6 +633,8 @@ function endRun(state, err) {
     else {
       title = t(plan.boot ? "endDoneBootH" : "endDoneH", v);
       text = t("endDone", v);
+      if (r.clearErr) tips.push(t("tipClearFail", { m: r.clearErr.message }));
+      else if (r.cleared != null) tips.push(t("tipCleared", { n: r.cleared }));
       tips.push(t("tipEditor"));
       if (plan.boot) tips.push(t("tipBoot"));
     }
@@ -672,7 +689,7 @@ async function resumeWrite(up, image, product, step) {
 }
 async function start(isStock = false) {
   if (st.running || finding) return;
-  const plan = isStock ? { firmware: true, resume: st.dev?.kind === "loader", boot: false } : currentPlan();
+  const plan = isStock ? { firmware: true, resume: st.dev?.kind === "loader", boot: false, stock: true } : currentPlan();
   if (!plan) return;
   const pending = pendingInstall();
   if (plan.resume && pending?.key && pending.key !== buildKey()) {
@@ -691,6 +708,7 @@ async function start(isStock = false) {
     render();
     return;
   }
+  const replace = plan.firmware && !isStock && document.querySelector('input[name="pfprog"]:checked')?.value === "replace";
   render();
   openRun(plan, isStock);
   const image = isStock ? st.stock.image : st.image;
@@ -711,6 +729,10 @@ async function start(isStock = false) {
       mark(false);
     }
     if (plan.boot) { phase = "boot"; await up.installBoot(st.boot.image, product, step); }
+    if (replace) {                                    /* the firmware is in: a failed erase is reported, not a failed install */
+      try { st.run.cleared = await up.clearLibrary(step); }
+      catch (e) { st.run.clearErr = e; log(String(e?.stack || e)); }
+    }
   } catch (e) {
     {
       state = afterFailure(e?.code, phase);
