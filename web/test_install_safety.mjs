@@ -180,4 +180,11 @@ for (const valid of [false,true]) {
   page.window.close();
 }
 console.log('Published bundle: starts with actual firmware; checksum mismatch blocks Install; cancellation sends no MIDI; complete controller install verifies the returned identity');
-
+{
+  // "Replace programs and sounds": every used shared-library slot (any of the 384) is erased, empty ones are left
+  const lib = fakeAccess({identity:PRODUCT,library:[0,5,200,383]});
+  assert.equal(await new SteadyUpdater(lib.access).clearLibrary(),4);
+  assert.equal(lib.device.library.size,0);
+  assert.deepEqual(lib.device.log.filter(x=>x.startsWith('erased')),['erased U1','erased U6','erased U201','erased U384']);
+}
+console.log('Replace programs and sounds: all used USER slots erased through the shared library, empty slots untouched');

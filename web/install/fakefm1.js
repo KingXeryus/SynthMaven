@@ -83,6 +83,7 @@ class Device {
     this.log = [];                            // what the device did, in words
     this.reply = null;                        // the pending read's resolver
     this.busy = false;
+    this.library = new Set(o.library || []);  // used shared-library slots (editor command 80)
     this.input = new Port(this, "Saadet FM-1", "input");
     this.output = new Port(this, "Saadet FM-1", "output");
   }
@@ -98,6 +99,16 @@ class Device {
     if (!this.online) return;
     if (same(bytes, HS_QUERY)) { this.emit(identityFrame(this.text)); return; }
     if (same(bytes, UPGRADE)) { if (!this.busy) this.session(); return; }
+    if (bytes[1] === 0x7D && bytes[2] === 0x46 && bytes[3] === 0x4C && bytes[4] === 80 && this.state === "app") {
+      const [op, lo, hi, cnt] = bytes.slice(5, -1), k = lo | (hi << 7), head = [0xF0, 0x7D, 0x46, 0x4C, 80, op, lo, hi];
+      if (op === 0) {                         // list: rc, count, total lo/hi, per slot used engine old name\0
+        if (k >= 384) { this.emit([...head, 1, 0xF7]); return; }
+        const n = Math.min(cnt, 384 - k), rows = [];
+        for (let j = k; j < k + n; j++) rows.push(...(this.library.has(j) ? [1, 3, 0, 0x41, 0] : [0, 0, 0, 0]));
+        this.emit([...head, 0, n, 384 & 127, 384 >> 7, ...rows, 0xF7]);
+      } else if (op === 5) { this.library.delete(k); this.log.push(`erased U${k + 1}`); this.emit([...head, 0, 0xF7]); }
+      return;
+    }
     if (this.reply && bytes[0] === 0xF0) {
       const r = parseReply(bytes);
       if (r) { const f = this.reply; this.reply = null; f(r); }

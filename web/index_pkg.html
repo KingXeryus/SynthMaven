@@ -216,6 +216,10 @@
         <div><b data-t="pf3h">It takes about 3 minutes</b><span data-t="pf3">The FM-1's screen shows UPDATING, or stays dark. Both are normal.</span></div></li>
     </ul>
     <p class="note caution" id="pfboot"><svg class="i"><use href="#i-alert"/></svg><span data-t="pfboot">m-bootloader is written last, after one more restart. Keep the power on until the page says Done.</span></p>
+    <fieldset class="choice" id="pfprog"><legend data-t="pfprog">Your programs and sounds</legend>
+      <label class="check"><input type="radio" name="pfprog" value="keep" checked><span data-t="pfkeep">Keep them</span></label>
+      <label class="check"><input type="radio" name="pfprog" value="replace"><span data-t="pfreplace">Replace them with this version's factory sounds</span></label>
+    </fieldset>
     <label class="check" id="pfcheck"><input type="checkbox" id="pfok"><span data-t="pfok">I've backed up my sounds, or have nothing to keep.</span></label>
     <div class="row">
       <button type="submit" value="cancel" class="btn ghost" data-t="cancel">Cancel</button>
